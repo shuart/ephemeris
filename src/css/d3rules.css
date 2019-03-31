@@ -1,0 +1,141 @@
+rect.selection {
+    stroke          : gray;
+    stroke-dasharray: 2px;
+    stroke-opacity  : 0.5;
+    fill            : transparent;
+}
+
+g.state circle {
+    stroke  : gray;
+}
+
+g.state circle.inner {
+    /* fill        : white; */
+    transition  : fill 0.5s;
+    cursor      : move;
+}
+g.state circle.inner {
+    stroke      : white;
+}
+
+g.state circle.inner.hover,
+g.state circle.outer.hover {
+    fill : aliceblue;
+}
+
+g.state circle.outer.hover {
+    stroke-width    : 1px;
+}
+
+g.state circle.outer {
+    stroke-width    : 0px;
+    stroke-dasharray: 2px;
+    stroke-color    : gray;
+    fill            : transparent;
+    transition      : all 0.5s;
+    cursor          : pointer;
+}
+
+g.state.selected circle.outer {
+    stroke-width    : 1px;
+}
+
+g.state text {
+    font                : 12px sans-serif;
+    font-weight         : bold;
+    pointer-events      : none;
+}
+
+g.transition path,
+path.dragline {
+    fill        : none;
+    stroke      : gray;
+    stroke-width: 1px;
+}
+
+g.transition path.foreground {
+    marker-end  : url(#end-arrow);
+}
+
+g.transition.hover path.background {
+    stroke-dasharray: none;
+    stroke : aliceblue;
+    stroke-opacity  : 1.0;
+    transition : all 0.5s;
+}
+
+g.transition path.background {
+    stroke-dasharray: none;
+    stroke-width: 8px;
+    stroke : transparent;
+}
+
+g.transition.selected path.foreground {
+    stroke-dasharray: 2px;
+    stroke-color    : gray;
+}
+
+
+g.transition path {
+    cursor : default;
+}
+
+.end-arrow {
+    fill            : gray;
+    stroke-width    : 1px;
+}
+
+g.transition circle.endpoint {
+    display         : none;
+    fill            : none;
+    cursor          : pointer;
+    stroke          : gray;
+    stroke-dasharray: 2px;
+}
+
+g.transition circle.point {
+    display         : none;
+    fill            : aliceblue;
+    cursor          : move;
+    stroke          : gray;
+}
+
+g.transition.selected circle.endpoint,
+g.transition.selected circle.point {
+    display        : inline;
+    transition : all 0.5s;
+}
+
+g.transition:not( .selected).hover *,
+path.dragline {
+    display         : inline;
+
+}
+
+
+g.transition:not( .selected).hover {
+    transition      : all 0.5s;
+}
+
+path.dragline {
+    pointer-events: none;
+    stroke-opacity  : 0.5;
+    stroke-dasharray: 2px;
+}
+
+path.dragline.hidden {
+    stroke-width: 0;
+}
+
+    /* disable text selection */
+svg *::selection {
+    background : transparent;
+}
+
+svg *::-moz-selection {
+    background:transparent;
+}
+
+svg *::-webkit-selection {
+    background:transparent;
+}

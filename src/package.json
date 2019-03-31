@@ -1,0 +1,8 @@
+{
+  "name": "Createur de Cahier des Charges v0.3.1 - S.Huart",
+  "main": "src/index.html",
+  "window": {
+    "width": 1280,
+    "height": 1024
+  }
+}
