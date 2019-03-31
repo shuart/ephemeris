@@ -970,13 +970,18 @@ function stellae(_selector, _options) {
             var rel = d3.select(this),
                 outline = rel.select('.outline'),
                 text = rel.select('.text'),
-                bbox = text.node().getBBox(),
                 padding = 3;
+
+            var bbox = {width:text.node().getComputedTextLength(), height:0};
+
+                //firfox workaround
+                //THis appens becaus text is not displayed. TODO find a way to display it
+                //Also, bbox = text.node().getBBox(); is dreadfull for performance as it force a rerender it seems
 
             outline.attr('d', function(d) {
                 var center = { x: 0, y: 0 },
                     angle = rotation(d.source, d.target),
-                    textBoundingBox = text.node().getBBox(),
+                    textBoundingBox = bbox,
                     textPadding = 5,
                     u = unitaryVector(d.source, d.target),
                     textMargin = { x: (d.target.x - d.source.x - (textBoundingBox.width + textPadding) * u.x) * 0.5, y: (d.target.y - d.source.y - (textBoundingBox.width + textPadding) * u.y) * 0.5 },
