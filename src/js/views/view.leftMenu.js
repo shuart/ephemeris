@@ -160,7 +160,28 @@ var createLeftMenu = function () {
       //add current cdc area
       // document.querySelector(".current-area-title").innerHTML = "My CSC"
       document.querySelector(".current-area-title").innerHTML = ""//Temporary blank
-      document.querySelector(".pbsFlatView-area-title").innerHTML = "My Project"
+      // document.querySelector(".pbsFlatView-area-title").innerHTML = "My Project"
+
+      //Display project name or application name
+      if (app.state.currentProject) {
+        console.log(document.querySelector(".project_title_area"));
+        document.querySelector(".project_title_area").innerHTML=`
+        <h5 class="ui header">
+          <i class="building outline icon"></i>
+          <div class="content">
+            ${store.reference}, ${store.name}
+          </div>
+        </h5>
+        `
+      }else{
+        document.querySelector(".project_title_area").innerHTML=`
+        <h3 class="ui header">
+          <div class="content">
+            Ephemeris
+          </div>
+        </h3>
+        `
+      }
 
       lastTopCat ={ name:undefined};
       lastMiddleCat = { name:undefined};
@@ -212,7 +233,10 @@ var createLeftMenu = function () {
       document.querySelector(".current-area").innerHTML = ""
       document.querySelector(".pbsFlatView-area").innerHTML = ""
       document.querySelector(".pbsFlatView-area").innerHTML += generateNextActionList()
-      document.querySelector(".pbsFlatView-area-title").innerHTML = ""
+      document.querySelector(".project_title_area").innerHTML = `
+      <h3 class="ui header">
+          Ephemeris
+      </h3>`
     }
   }
 
