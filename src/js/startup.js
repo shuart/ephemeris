@@ -96,35 +96,37 @@ function createStartUp() {
     mainEl.innerHTML = `
     <div class="ui container">
       <h2 class='ui center aligned icon header'>
-        <i class="circular building outline icon"></i>
+        <i class="circular compass outline icon"></i>
         <div class="ui content">
-        Kraken
+        Ephemeris
         </div>
       </h2>
+      <div class="ui horizontal divider">Load a session</div>
       <div class="ui center aligned container">
-        <button class="ui center aligned big teal button action_startup_reload_item">Reload last session</button>
+        <button class="ui center aligned big teal button action_startup_reload_item">Last session</button>
       </div>
-    </div>
-    <div class="ui horizontal divider">or</div>
-    <div class="ui form">
-      <div class="field">
-        <label>Reference Number</label>
-        <input class="input-su-in" type="text" name="IN" placeholder="REF-0000">
-      </div>
-      <div class="field">
-        <label>Project Name</label>
-        <input class="input-su-name" type="text" name="project-name" placeholder="Nom">
-      </div>
-      <div class="field">
-        <div class="ui checkbox">
-          <input type="checkbox" tabindex="0" class="hidden">
-          <label>I agree to the Terms and Conditions</label>
+
+      <div class="ui horizontal divider">or</div>
+      <div class="ui form">
+        <div class="field">
+          <label>Reference Number</label>
+          <input class="input-su-in" type="text" name="IN" placeholder="REF-0000">
         </div>
-      </div>
-      <button class="ui button action_startup_submit_item" type="submit">Confirm</button>
-      <button class="ui basic tiny button action_startup_load_reveal" type="submit">or load a file</button>
-      <div style="visibility:hidden" class="statup_input_zone">
-        <input class="ui input statup_input" type="file" accept=".json" />
+        <div class="field">
+          <label>Project Name</label>
+          <input class="input-su-name" type="text" name="project-name" placeholder="Nom">
+        </div>
+        <div class="field">
+          <div class="ui checkbox">
+            <input type="checkbox" tabindex="0" class="hidden">
+            <label>I agree to the Terms and Conditions</label>
+          </div>
+        </div>
+        <button class="ui button action_startup_submit_item" type="submit">Confirm</button>
+        <button class="ui basic tiny button action_startup_load_reveal" type="submit">or load a file</button>
+        <div style="visibility:hidden" class="statup_input_zone">
+          <input class="ui input statup_input" type="file" accept=".json" />
+        </div>
       </div>
     </div>
     `
