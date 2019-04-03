@@ -3,7 +3,12 @@ function saveDB() {
   //var currentProjectListIndex = app.store.projects.findIndex(e=> e.uuid == store.uuid)
   //app.store.projects[currentProjectListIndex]= store;
   //console.log(app.store.projects);
-  return localforage.setItem("sessionProjects", app.store.projects)
+  // return localforage.setItem("sessionProjects", app.store.projects)
+  if (app.state.currentUser && app.store.projects) {
+    persist.setProject(app.state.currentUser, app.store.projects)
+  }else {
+    alert("cannot save DB")
+  }
 }
 
 function setCurrentProject(project) {

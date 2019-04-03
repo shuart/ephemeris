@@ -32,7 +32,7 @@ var createDbAdaptater = function () {
 
   function setUser(data) { //name
     var newUuid = uuid()
-    return users.setItem(newUuid,{uuid:newUuid,name:data.name || "new user", info:{}, projects:[]})
+    return users.setItem(newUuid,{uuid:newUuid,name:data.name || "new user", info:{}, projects:data.projects||[]})
   }
 
   function removeUser(uuid) {
@@ -51,8 +51,15 @@ var createDbAdaptater = function () {
 
   }
 
-  function setProject() {
-
+  function setProject(uuid, projects) {//separate user and projects
+    return new Promise(function(resolve, reject) {
+      users.getItem(uuid).then(function (user) {
+        user.projects = projects
+        resolve(users.setItem(uuid, user))
+      }).catch(function(err) {
+        reject(err)
+      });
+    });
   }
   function removeProject() {
 

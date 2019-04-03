@@ -13,6 +13,10 @@ var createTopMenu = function (containerSelector) {
     document.addEventListener('storeUpdated', function (e) {
       update()
     }, false)
+
+    connect(".topmenu_action_reload_all","click", function (e) {
+      startupScreen.init()
+    })
   }
 
   var render = function () {

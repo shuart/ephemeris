@@ -34,7 +34,7 @@ function createStartUp() {
           renderCDC() //TODO change update mecanism
           sourceEl.remove()
         }
-        if (event.target.classList.contains("action_startup_reload_item")) {
+        if (event.target.classList.contains("action_startup_reload_item")) {//TODO remove when session is removed
           console.log(event.target);
           localforage.getItem('sessionProjects').then(function(value) {
               app.store.projects = value;
@@ -43,6 +43,17 @@ function createStartUp() {
               sourceEl.remove()
           }).catch(function(err) {
               // This code runs if there were any errors
+              console.log(err);
+          });
+        }
+        if (event.target.classList.contains("action_startup_load_user")) {
+          persist.getUser(event.target.dataset.id).then(function (user) {
+            app.store.projects = user.projects; //TODO use actions
+            app.state.currentUser = user.uuid; //TODO use actions
+            pageManager.setActivePage("unified")
+            renderCDC() //TODO change update mecanism
+            sourceEl.remove()
+          }).catch(function(err) {
               console.log(err);
           });
         }
@@ -67,15 +78,17 @@ function createStartUp() {
         if (event.target.classList.contains("action_startup_add_user")) {
           var userName = prompt("Add a user")
           if (userName != "") {
-            persist.setUser({name:userName}).then(function () {
+            persist.setUser({name:userName,projects:[createNewProject("New Project"),createNewProject("Another Project")]}).then(function () {
               renderUserSessionView()
             })
           }
         }//end event
         if (event.target.classList.contains("action_startup_remove_user")) {
-          persist.removeUser(event.target.dataset.id).then(function () {
-            renderUserSessionView()
-          })
+            if (confirm("This will remove the user and all it's projects")) {
+              persist.removeUser(event.target.dataset.id).then(function () {
+                renderUserSessionView()
+              })
+            }
         }//end event
     }
   }
@@ -99,7 +112,7 @@ function createStartUp() {
           html+= `
             <div class="item">
             <div class="ui labeled button" tabindex="0">
-              <div class="ui button ">
+              <div data-id="${user.uuid}" class="ui teal button action_startup_load_user">
                 <i class="user icon"></i> ${user.name}
               </div>
               <a data-id="${user.uuid}" class="ui basic label action_startup_remove_user">
@@ -111,7 +124,7 @@ function createStartUp() {
         })
         html+= `
         </div>
-        <button class="ui center aligned teal button action_startup_add_user">Create a new user</button>
+        <button class="ui center aligned basic button action_startup_add_user">Create a new user</button>
         </div>`
       }else {
         html+= `
@@ -157,43 +170,32 @@ function createStartUp() {
         Ephemeris
         </div>
       </h2>
-      <div class="ui horizontal divider">Load a session</div>
-      <div class="ui center aligned container">
-        <button class="ui center aligned big teal button action_startup_reload_item">Last session</button>
+      <div class="startup_userlist">
+        <div class="ui horizontal divider">Log in</div>
+        <div class="ui vertical loading segment">
+          <p></p>
+          <p></p>
+        </div>
       </div>
 
-      <div class="startup_userlist"></div>
-
       <div class="ui horizontal divider">or</div>
-      <div class="ui form">
-        <div class="field">
-          <label>Reference Number</label>
-          <input class="input-su-in" type="text" name="IN" placeholder="REF-0000">
-        </div>
-        <div class="field">
-          <label>Project Name</label>
-          <input class="input-su-name" type="text" name="project-name" placeholder="Nom">
-        </div>
-        <div class="field">
-          <div class="ui checkbox">
-            <input type="checkbox" tabindex="0" class="hidden">
-            <label>I agree to the Terms and Conditions</label>
+        <div class="ui center aligned container">
+          <button class="ui button action_startup_load_reveal" type="submit">load a database file</button>
+          <div style="visibility:hidden" class="statup_input_zone">
+            <input class="ui input statup_input" type="file" accept=".json" />
           </div>
-        </div>
-        <button class="ui button action_startup_submit_item" type="submit">Confirm</button>
-        <button class="ui basic tiny button action_startup_load_reveal" type="submit">or load a file</button>
-        <div style="visibility:hidden" class="statup_input_zone">
-          <input class="ui input statup_input" type="file" accept=".json" />
         </div>
       </div>
     </div>
     `
-
-    document.querySelector('.app-loader-cache').remove();
-
+    if (document.querySelector('.app-loader-cache')) {
+      document.querySelector('.app-loader-cache').remove();
+    }
   }
+  self.render = render
   self.init = init
   return self
 }
 
-var startUp = createStartUp().init()
+var startupScreen = createStartUp()
+startupScreen.init()
