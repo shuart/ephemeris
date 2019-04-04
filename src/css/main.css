@@ -129,6 +129,7 @@ textarea {
     bottom: 0px;
     left: 50px;
     width: 0px;
+    overflow: hidden;
     background-color: #002321;
    }
    .main-menu .bottomMenuItems:hover .bottomMenuExtension{
