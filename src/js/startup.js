@@ -62,7 +62,7 @@ function createStartUp() {
           function readJSON(e) {
             reader.readAsText(document.querySelector(".statup_input").files[0]);
           }
-          document.querySelector(".statup_input_zone").style.visibility = "visible"
+          //document.querySelector(".statup_input_zone").style.visibility = "visible"
           document.querySelector(".statup_input").addEventListener("change", readJSON);
           reader.addEventListener("load", function() {
             console.log(reader.result);
@@ -77,6 +77,8 @@ function createStartUp() {
             // renderCDC() //TODO change update mecanism
             // sourceEl.remove()
           });
+
+          document.querySelector(".statup_input").click();
         }
 
         if (event.target.classList.contains("action_startup_add_user")) {
