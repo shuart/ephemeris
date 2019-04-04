@@ -66,12 +66,15 @@ function createStartUp() {
           reader.addEventListener("load", function() {
             console.log(reader.result);
             // var textContent = JSON.stringify(reader.result, null, 2);
-            var jsonContent = JSON.parse(reader.result);
-            console.log(jsonContent);
-            app.store.projects = jsonContent
-            pageManager.setActivePage("unified")
-            renderCDC() //TODO change update mecanism
-            sourceEl.remove()
+            // var jsonContent = JSON.parse(reader.result);
+            // console.log(jsonContent);
+            // app.store.projects = jsonContent
+            loadSavedData(reader.result, function() {
+              renderUserSessionView()
+            })
+            // pageManager.setActivePage("unified")
+            // renderCDC() //TODO change update mecanism
+            // sourceEl.remove()
           });
         }
 
