@@ -181,10 +181,10 @@ textarea {
 
    .side-left-menu {
      /* position: fixed; */
-     background-color: #f4f5f6;
+     background-color: #f7f6f5;
      border-right-style: solid;
      border-right-width: 1px;
-     border-right-color: #d8d8d8;
+     border-right-color: #ddd;
 
      left: 0px;
      height: 100%;
