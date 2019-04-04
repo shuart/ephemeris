@@ -3,6 +3,7 @@ function createStartUp() {
   var sourceEl;
 
   function init() {
+
     render()
     connect()
   }
@@ -97,6 +98,7 @@ function createStartUp() {
   }
 
   function render() {
+    app.state.currentUser=undefined //TODO move to actions
     renderHTML()
     renderUserSessionView()
   }

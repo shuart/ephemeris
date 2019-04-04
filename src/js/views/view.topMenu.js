@@ -4,15 +4,29 @@ var createTopMenu = function (containerSelector) {
   var container = document.querySelector(containerSelector)
   var upd = 0
 
+  let file, url, reader = new FileReader;
+
+
   var init = function () {
     connections()
     update()
 
   }
   var connections =function () {
+    function readJSON(e) {
+      reader.readAsText(document.querySelector("#file-project-input").files[0]);
+    }
+
     document.addEventListener('storeUpdated', function (e) {
       update()
     }, false)
+
+    document.querySelector("#file-project-input").addEventListener("change", readJSON);
+    reader.addEventListener("load", function() {
+      loadSavedData(reader.result, function() {
+        renderCDC()
+      })
+    });
 
     connect(".topmenu_action_reload_all","click", function (e) {
       startupScreen.init()
