@@ -195,6 +195,48 @@ textarea {
      width: 256px;
      flex-shrink: 0;
  }
+
+ .side-left-menu .title{
+  	padding: 0 0;
+  	font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+  	font-weight: 800;
+  	line-height: 1.28571429em;
+  	text-transform: none;
+  	color: rgba(0,0,0,.87);
+  	font-size: 15px;
+  	margin-top: 15px;
+  	margin-bottom: 10px;
+    padding-left: 10px;
+ }
+ .side-left-menu .left-list {
+     color: #666;
+     font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+
+ }
+ .side-left-menu .left-list .list-item:first-of-type{
+     border-top-color: #e6e6e6;
+     border-top-style: solid;
+     border-top-width: 1px;
+ }
+ .side-left-menu .left-list .list-item{
+     border-bottom-color: #e6e6e6;
+     border-bottom-style: solid;
+     border-bottom-width: 1px;
+     cursor: pointer;
+     padding: 6px;
+     margin-right: 5px;
+     padding-left: 10px;
+ }
+ .side-left-menu .left-list .list-item:hover{
+     background-color: #ececec;
+ }
+ .side-left-menu .left-list .list-item i{
+    float: right;
+    vertical-align: bottom;
+    bottom: 0px;
+    padding: 2px;
+    padding-right: 10px;
+ }
    .center-container{
      height: 100%;
      padding-top: 15px;

@@ -202,13 +202,14 @@ var createLeftMenu = function () {
       }
 
       //add pbs area
-      var showTreeHtml = `
-      <div class="item">
-        <button class="action_toogle_tree_pbs ui labeled icon mini basic button">
-          <i class="dolly icon"></i>
-          Show PBS tree
-        </button>
-      </div>`
+      var showTreeHtml = "";
+      // var showTreeHtml = `
+      // <div class="item">
+      //   <button class="action_toogle_tree_pbs ui labeled icon mini basic button">
+      //     <i class="dolly icon"></i>
+      //     Show PBS tree
+      //   </button>
+      // </div>`
 
       if (store.currentPbs.items[0]) {
         console.log(store.currentPbs.items);
@@ -221,10 +222,10 @@ var createLeftMenu = function () {
         //       ${item.name}
         //     </div>`
         // }
-        document.querySelector(".pbsFlatView-area").innerHTML = showTreeHtml+ pbsHTML
-        document.querySelector(".pbsFlatView-area").appendChild(treeHtmlEl)
+        document.querySelector(".left-menu-area").innerHTML = '<div class="title">Project PBS</div><div class="left-list"></div>' + pbsHTML + showTreeHtml
+        document.querySelector(".left-menu-area .left-list").appendChild(treeHtmlEl)
       }else {
-        document.querySelector(".pbsFlatView-area").innerHTML = showTreeHtml
+        document.querySelector(".left-menu-area").innerHTML = showTreeHtml
       }
 
 
@@ -232,7 +233,8 @@ var createLeftMenu = function () {
       document.querySelector(".current-area-title").innerHTML = ""
       document.querySelector(".current-area").innerHTML = ""
       document.querySelector(".pbsFlatView-area").innerHTML = ""
-      document.querySelector(".pbsFlatView-area").innerHTML += generateNextActionList()
+      document.querySelector(".left-menu-area").innerHTML = ""
+      document.querySelector(".left-menu-area").innerHTML += generateNextActionList()
       document.querySelector(".project_title_area").innerHTML = `
       <h3 class="ui header">
           Ephemeris
@@ -260,16 +262,14 @@ var createLeftMenu = function () {
       //acc += generateTasksHTML(items.reverse() , i.uuid)
       var actionListHtml = items.reduce((out,i)=>{
         return out + `
-          <div class="item">
-            <i class="calendar times outline icon"></i>
-            <div class="content">
-              ${i.name}
-            </div>
+          <div class="list-item">
+            ${i.name}
+            <i class="far fa-calendar-times"></i>
           </div>`
       },'')
       return acc + actionListHtml
     },'')
-    return `<div class='ui item header'>Next Actions</div><div class='relaxed divided list'>${html}</div>`
+    return `<div class="title">Next actions</div><div class="left-list">${html}</div>`
 
   }
   function buildTree(tree,level) {
@@ -298,7 +298,7 @@ var createLeftMenu = function () {
 
     }
     el.innerHTML = `
-      <div style="margin-left:${level*6}px" class="item pbs_flat_item">
+      <div style="margin-left:${level*6}px" class="list-item pbs_flat_item">
         ${node.name}
         ${reqHtml}
       </div>`
