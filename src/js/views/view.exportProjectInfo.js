@@ -52,9 +52,25 @@ var createExportProjectInfoView = function () {
       //populate
       appendHtml(container, theme.title(store.name))
       //List All Items
+      appendHtml(container, theme.section("Stakeholders","All project stakeholders"))
+      for (stakeholder of store.stakeholders.items) {
+        let name = stakeholder.name +" "+ stakeholder.lastName
+        let uuid = stakeholder.uuid
+        let desc = stakeholder.role +"  "+ stakeholder.org + "  " + stakeholder.mail
+        appendHtml(container, theme.item(name,uuid, desc))
+      }
       appendHtml(container, theme.section("Products","All project products"))
       for (product of store.currentPbs.items) {
         appendHtml(container, theme.item(product.name,product.uuid, product.desc))
+      }
+      appendHtml(container, theme.section("functions","All project functions"))
+      for (item of store.functions.items) {
+        appendHtml(container, theme.item(item.name,item.uuid, item.desc))
+      }
+      appendHtml(container, theme.section("requirements","All project requirements"))
+      for (requirement of store.requirements.items) {
+        // let linkedTo = store.metaLinks.filter(e=>e.)
+        appendHtml(container, theme.item(requirement.name,requirement.uuid, requirement.desc))
       }
       //inject in DOM
       queryDOM(".center-container").appendChild(fragment)
