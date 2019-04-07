@@ -149,7 +149,13 @@ textarea {
     color: white;
     text-align: center;
     display: block;
+    background-color: #00232100;
+
     /* background: linear-gradient(to bottom, #00b5ad, #2ebf91); */
+   }
+   .main-menu .button:hover{
+    background-color: #002321;
+    transition: background-color 0.5s ease-in-out;
    }
    .main-menu .button .content{
      position: absolute;
