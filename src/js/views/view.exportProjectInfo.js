@@ -62,19 +62,28 @@ var createExportProjectInfoView = function () {
       }
       appendHtml(container, theme.section("Products","All project products"))
       for (product of store.currentPbs.items) {
-        appendHtml(container, theme.item(product.name,product.uuid, product.desc))
+        let linkToText = getRelatedItems(product, "functions").reduce(function (acc, item) {
+          console.log(item);
+          if (item[0]) {//why is it needed? because not all elements are from same type TODO
+            return acc += item[0].name +", "
+          }else { return acc }
+        },"") + getRelatedItems(product, "requirements").reduce(function (acc, item) {
+          if (item[0]) {//why is it needed? because not all elements are from same type TODO
+            return acc += item[0].name +", "
+          }else { return acc  }
+        },"")
+        appendHtml(container, theme.item(product.name,product.uuid, product.desc, linkToText))
       }
       appendHtml(container, theme.section("functions","All project functions"))
       for (item of store.functions.items) {
-        appendHtml(container, theme.item(item.name,item.uuid, item.desc))
+        let linkToText = getRelatedItems(item, "requirements").reduce(function (acc, item) {
+          return acc += item[0].name +", "
+        },"")
+        appendHtml(container, theme.item(item.name,item.uuid, item.desc, linkToText))
       }
       appendHtml(container, theme.section("requirements","All project requirements"))
       for (requirement of store.requirements.items) {
-        let linkedTo = store.metaLinks.items.filter(e=>e.source == requirement.uuid)
-        console.log(linkedTo);
-        let linkToText = linkedTo.map(e=>query.items("stakeholders", function (i) {
-          return i.uuid == e.target
-        })).reduce(function (acc, item) {
+        let linkToText = getRelatedItems(requirement, "stakeholders").reduce(function (acc, item) {
           return acc += item[0].name +" "+item[0].lastName+" "
         },"")
         appendHtml(container, theme.item(requirement.name,requirement.uuid, requirement.desc, linkToText))
@@ -85,6 +94,17 @@ var createExportProjectInfoView = function () {
     }else {
       alert("focus on a project first")
     }
+  }
+
+  function getRelatedItems(sourceItem, groupToSearch) {
+    var store = query.currentProject()
+    let linkedTo = store.metaLinks.items.filter(e=>e.source == sourceItem.uuid)
+    console.log(linkedTo);
+    let linkToText = linkedTo.map(e=>query.items(groupToSearch, function (i) {
+      return i.uuid == e.target
+    }))
+    console.log(linkToText);
+    return linkToText
   }
 
   var update = function () {
