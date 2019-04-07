@@ -14,7 +14,7 @@ query.items = (group, condition) => {
   //#general cases
 
   if (!storeGroup && typeof group == "string") {
-    storeGroup = store[group];
+    storeGroup = store[group].items;
   }else if (Array.isArray(group)) {
     for (prop of group) {
       console.log(storeGroup);
@@ -24,6 +24,7 @@ query.items = (group, condition) => {
 
   //#filtering
   if (storeGroup && condition) {
+    console.log(storeGroup);
     console.log('condition applied');
     return storeGroup.filter(condition)
   }else {

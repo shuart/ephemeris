@@ -12,9 +12,10 @@ var createExportProjectInfoView = function () {
       <h2 class="ui header">${sectionName}</h2>
       <div class="sub header">${subtitle}</div>
       `,
-    item:(itemName,id,description)=>`
+    item:(itemName,id,description, links)=>`
       <h3 class="ui header">${itemName}</h3>
       <div class="sub header">ID:${id}</div>
+      ${ (links && links !="") ? "<h4 class='ui header'>Linked To</h4><p><strong>"+links+"</strong></p> ": ""}
       <h4 class="ui header">Description</h4>
       <p>${description || "No Description"}</p>
       `,
@@ -69,8 +70,14 @@ var createExportProjectInfoView = function () {
       }
       appendHtml(container, theme.section("requirements","All project requirements"))
       for (requirement of store.requirements.items) {
-        // let linkedTo = store.metaLinks.filter(e=>e.)
-        appendHtml(container, theme.item(requirement.name,requirement.uuid, requirement.desc))
+        let linkedTo = store.metaLinks.items.filter(e=>e.source == requirement.uuid)
+        console.log(linkedTo);
+        let linkToText = linkedTo.map(e=>query.items("stakeholders", function (i) {
+          return i.uuid == e.target
+        })).reduce(function (acc, item) {
+          return acc += item[0].name +" "+item[0].lastName+" "
+        },"")
+        appendHtml(container, theme.item(requirement.name,requirement.uuid, requirement.desc, linkToText))
       }
       //inject in DOM
       queryDOM(".center-container").appendChild(fragment)
