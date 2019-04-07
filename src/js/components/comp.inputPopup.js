@@ -72,6 +72,7 @@ var createInputPopup = function ({
     easyMDE = new EasyMDE({
       element: document.querySelector('.inputTextAreaEditor'),
       autoDownloadFontAwesome:false,
+      spellChecker:false,
       initialValue : originalData
     });
   }
