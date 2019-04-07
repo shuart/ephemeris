@@ -5,7 +5,7 @@ function saveDB() {
   //console.log(app.store.projects);
   // return localforage.setItem("sessionProjects", app.store.projects)
   if (app.state.currentUser && app.store.projects) {
-    persist.setProject(app.state.currentUser, app.store.projects)
+    persist.setProject(app.state.currentUser, app.store.projects, app.store.userData)
   }else {
     alert("cannot save DB")
   }

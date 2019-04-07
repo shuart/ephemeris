@@ -58,6 +58,7 @@ var reparse = false;
   pageManager.addComponent({name:"unified",object:unifiedView, haveSideBar:false})
   pageManager.addComponent({name:"externalUsersManagement",object:externalUsersManagement, haveSideBar:false})
   pageManager.addComponent({name:"exportProjectInfo",object:exportProjectInfoView, haveSideBar:false})
+  pageManager.addComponent({name:"notesManager",object:notesManager, haveSideBar:false})
 
   function renderCDC(db, filter) {
     leftMenu.update() //TODO remove and centralize
@@ -103,6 +104,9 @@ var reparse = false;
   })
   connect(".action_toogle_export_Project_informations","click",(e)=>{
     pageManager.setActivePage("exportProjectInfo")
+  })
+  connect(".action_toogle_notes_manager","click",(e)=>{
+    pageManager.setActivePage("notesManager")
   })
 
 

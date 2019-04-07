@@ -243,6 +243,39 @@ textarea {
     padding: 2px;
     padding-right: 10px;
  }
+
+ .side-left-menu .button {
+  	-moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
+  	-webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+  	box-shadow:inset 0px 1px 0px 0px #ffffff;
+  	background-color:#ffffff;
+  	-moz-border-radius:6px;
+  	-webkit-border-radius:6px;
+  	border-radius:6px;
+  	border:1px solid #dcdcdc;
+  	display:inline-block;
+  	cursor:pointer;
+  	color:#666666;
+  	font-family:Arial;
+  	font-size:15px;
+  	font-weight:bold;
+  	padding:6px 24px;
+  	text-decoration:none;
+  	text-shadow:0px 1px 0px #ffffff;
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+   .side-left-menu .button:hover {
+  	background-color:#f6f6f6;
+  }
+   .side-left-menu .button.small {
+  	padding:3px 5px;
+  }
+   .side-left-menu .button:active {
+  	position:relative;
+  	top:1px;
+  }
+
    .center-container{
      height: 100%;
      padding-top: 15px;

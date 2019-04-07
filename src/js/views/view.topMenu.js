@@ -38,6 +38,7 @@ var createTopMenu = function (containerSelector) {
     if (app.state.currentProject) {
       container.innerHTML=`
       <a class="button action_toogle_unified"><i class="tasks icon"></i><div class="content">Tasks</div></a>
+      <a class="button action_toogle_notes_manager"><i class="sticky note outline icon"></i><div class="content">Notes</div></a>
         <a class="button action_toogle_overview">
           <i class="columns icon"></i>
           <div class="content">overview</div>
@@ -56,6 +57,7 @@ var createTopMenu = function (containerSelector) {
     }else{
       container.innerHTML=`
         <a class="button action_toogle_unified"><i class="tasks icon"></i><div class="content">Tasks</div></a>
+        <a class="button action_toogle_notes_manager"><i class="sticky note outline icon"></i><div class="content">Notes</div></a>
       `
     }
   }

@@ -50,7 +50,7 @@ function createSaver({
   create.addEventListener("click", function () {
       var link = document.createElement("a");
       link.setAttribute("download", filename);
-      var json = createJSONFile(JSON.stringify({type:type, data:app.store.projects}));//TODO closure issue again
+      var json = createJSONFile(JSON.stringify({type:type, userData:app.store.userData , data:app.store.projects}));//TODO closure issue again
       // var json = createJSONFile(JSON.stringify(object));
       //var json = createJSONFile(JSON.stringify(store.db));
       if (json !== "Invalid JSON") {
@@ -150,7 +150,7 @@ function loadSavedData(data, callback) {
     if (!app.state.currentUser) {
       var userName = prompt("Select a user name to import this section")
       if (userName != "") {
-        persist.setUser({name:userName,projects:jsonContent.data}).then(function () {
+        persist.setUser({name:userName,userData:jsonContent.userData,projects:jsonContent.data}).then(function () {
           callback()
         })
       }
