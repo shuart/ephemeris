@@ -54,7 +54,7 @@ var createExternalUsersManagement = function (targetSelector) {
   }
 
   var generateUsersViewList = function (owners) {
-    ShowSelectMenu({
+    showListMenu({
       sourceData:owners,
       targetDomContainer:".center-container",
       fullScreen:true,
@@ -118,7 +118,7 @@ var createExternalUsersManagement = function (targetSelector) {
   }
 
   var generateUsersFusionList = function (owners, IdToFuse, ProjectWhereFusedIs) {
-    ShowSelectMenu({
+    showListMenu({
       sourceData:owners,
       displayProp:"name",
       display:[

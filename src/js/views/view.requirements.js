@@ -14,7 +14,7 @@ var createRequirementsView = function () {
   var render = function () {
 
     var store = query.currentProject()
-      ShowSelectMenu({
+      showListMenu({
         sourceData:store.requirements.items,
         sourceLinks:store.requirements.links,
         metaLinks:store.metaLinks.items,
@@ -24,7 +24,7 @@ var createRequirementsView = function () {
         display:[
           {prop:"name", displayAs:"name", edit:"true"},
           {prop:"desc", displayAs:"Description", edit:"true"},
-          {prop:"origin", displayAs:"Reçu de", meta:true, choices:store.stakeholders.items, edit:"true"}
+          {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:"true"}
         ],
         idProp:"uuid",
         onEditItem: (ev)=>{
@@ -38,7 +38,7 @@ var createRequirementsView = function () {
           var metalinkType = ev.target.dataset.prop;
           var sourceTriggerId = ev.target.dataset.id;
           var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-          ShowSelectMenu({
+          showListMenu({
             sourceData:store.stakeholders.items,
             parentSelectMenu:ev.select ,
             multipleSelection:currentLinksUuidFromDS,
@@ -95,7 +95,7 @@ var createRequirementsView = function () {
         },
         onClick: (ev)=>{
           var originItem = store.requirements.items.filter(e=> e.uuid == ev.target.dataset.id)
-          ShowSelectMenu({
+          showListMenu({
             sourceData:store.requirements.items,
             sourceLinks:store.requirements.links,
             metaLinks:store.metaLinks.items,
@@ -106,12 +106,12 @@ var createRequirementsView = function () {
             rulesToDisplaySingleElement:[
               {prop:"name", displayAs:"Name", edit:"true"},
               {prop:"desc", displayAs:"Description", edit:"true"},
-              {prop:"origin", displayAs:"Reçu de", meta:true, choices:store.stakeholders.items, edit:false}
+              {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:false}
             ],
             display:[
               {prop:"name", displayAs:"Name", edit:false},
               {prop:"desc", displayAs:"Description", edit:false},
-              {prop:"origin", displayAs:"Reçu de", meta:true, choices:store.stakeholders.items, edit:false}
+              {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:false}
             ],
             idProp:"uuid",
             onCloseMenu: (ev)=>{
@@ -218,7 +218,7 @@ var createRequirementsView = function () {
         },
         onNodeClicked:(originev)=>{
           var originItem = store.requirements.items.filter(e=> e.uuid == originev.element.data.uuid)
-          ShowSelectMenu({
+          showListMenu({
             sourceData:store.requirements.items,
             sourceLinks:store.requirements.links,
             displayProp:"name",

@@ -17,7 +17,7 @@ var createPbsView = function () {
       createPBS()
     }
     console.log(store.currentPbs.items);
-      ShowSelectMenu({
+      showListMenu({
         sourceData:store.currentPbs.items,
         sourceLinks:store.currentPbs.links,
         metaLinks:store.metaLinks.items,
@@ -27,8 +27,8 @@ var createPbsView = function () {
         display:[
           {prop:"name", displayAs:"name", edit:"true"},
           {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-          {prop:"originNeed", displayAs:"Lié aux besoins", meta:true, choices:store.requirements.items, edit:"true"},
-          {prop:"originFunction", displayAs:"Lié a la fonction", meta:true, choices:store.functions.items, edit:"true"}
+          {prop:"originNeed", displayAs:"Lié aux besoins", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
+          {prop:"originFunction", displayAs:"Lié a la fonction", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"}
         ],
         idProp:"uuid",
         onEditItem: (ev)=>{
@@ -111,7 +111,7 @@ var createPbsView = function () {
   function showSingleItem(ev) {
     var store = query.currentProject()
     var originItem = store.currentPbs.items.filter(e=> e.uuid == ev.target.dataset.id)
-    ShowSelectMenu({
+    showListMenu({
       sourceData:store.currentPbs.items,
       sourceLinks:store.currentPbs.links,
       metaLinks:store.metaLinks.items,
@@ -122,14 +122,14 @@ var createPbsView = function () {
       rulesToDisplaySingleElement:[
         {prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-        {prop:"origin", displayAs:"Reçu de", meta:true, choices:store.requirements.items, edit:false},
-        {prop:"originFunction", displayAs:"Lié a la fonction", meta:true, choices:store.functions.items, edit:true}
+        {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
+        {prop:"originFunction", displayAs:"Lié a la fonction", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
       ],
       display:[
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true,edit:false},
-        {prop:"origin", displayAs:"Reçu de", meta:true, choices:store.requirements.items, edit:false},
-        {prop:"originFunction", displayAs:"Lié a la fonction", meta:true, choices:store.functions.items, edit:false}
+        {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
+        {prop:"originFunction", displayAs:"Lié a la fonction", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:false}
       ],
       idProp:"uuid",
       onCloseMenu: (ev)=>{
@@ -167,7 +167,7 @@ var createPbsView = function () {
     }else if (metalinkType == "originFunction") {
       sourceData=store.functions.items
     }
-    ShowSelectMenu({
+    showListMenu({
       sourceData:sourceData,
       parentSelectMenu:ev.select ,
       multipleSelection:currentLinksUuidFromDS,
@@ -246,7 +246,7 @@ var createPbsView = function () {
       },
       onNodeClicked:(originev)=>{
         var originItem = store.currentPbs.items.filter(e=> e.uuid == originev.element.data.uuid)
-        ShowSelectMenu({
+        showListMenu({
           sourceData:store.currentPbs.items,
           sourceLinks:store.currentPbs.links,
           metaLinks:store.metaLinks.items,
@@ -256,12 +256,12 @@ var createPbsView = function () {
           rulesToDisplaySingleElement:[
             {prop:"name", displayAs:"Name", edit:"true"},
             {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-            {prop:"origin", displayAs:"Reçu de", meta:true, choices:store.requirements.items, edit:true}
+            {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
           ],
           display:[
             {prop:"name", displayAs:"Name", edit:false},
             {prop:"desc", displayAs:"Description", fullText:true,edit:false},
-            {prop:"origin", displayAs:"Reçu de", meta:true, choices:store.requirements.items, edit:false}
+            {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
           ],
           idProp:"uuid",
           onCloseMenu: (ev)=>{
@@ -277,7 +277,7 @@ var createPbsView = function () {
             var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
             console.log(ev.selectDiv);
             //ev.selectDiv.remove()
-            ShowSelectMenu({
+            showListMenu({
               sourceData:store.requirements.items,
               parentSelectMenu:ev.select ,
               multipleSelection:currentLinksUuidFromDS,

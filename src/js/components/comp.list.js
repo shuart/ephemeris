@@ -52,7 +52,38 @@ function showListMenu({
             <i class="search icon"></i>
         </div>`
     },
-    nestedListClass: 'ui relaxed horizontal list'
+    nestedListClass: 'row',
+    listWrapper:(rows, firstCol) => {
+      return `
+      <div class='flexTable'>
+        <div class="spreaded_titles shadowed">${firstCol}</div>
+        <div class="table">${rows}</div>
+      </div>
+      `
+    },
+    listRow:(items) => {
+      return `
+      <div class='row'>
+      ${items}
+      </div>
+      `
+    },
+    topRow:(items) => {
+      return `
+      <div class='top row'>
+      ${items}
+      </div>
+      `
+    },
+    listItem:(content, colType) => {
+      return `
+      <div class='${colType||"column"}'>
+        <div class='orange-column'>
+          ${content}
+        </div>
+      </div>
+      `
+    },
   }
 
   //LOCAL VARS
@@ -328,7 +359,7 @@ function showListMenu({
         var filteredIds = filteredData.map(x => x.uuid);
         var searchedItems = sourceEl.querySelectorAll(".searchable")
         for (item of searchedItems) {
-          if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "block"}else{item.style.display = "none"}
+          if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "flex"}else{item.style.display = "none"}
         }
       });
     }
@@ -395,15 +426,11 @@ function showListMenu({
     var links = sourceLinks
     var rules = undefined
     var alreadySelectedItems = undefined
-    console.log("ezf",rootNodes, level );
-    console.log("ezf",rootNodes.length == 1 );
     var singleItem = (!Array.isArray(rootNodes))
 
     if (sourceLinks) { //filter list to display a hierarchy. Continued at the end
       source = links.map(item => item.source)
       targets = links.map(item => item.target)
-      console.log(data);
-      console.log(sourceData);
     }
     //define what is the data source
     if (sourceLinks && !singleItem) {
@@ -422,6 +449,16 @@ function showListMenu({
       alreadySelectedItems = data.filter(item => multipleSelection.includes(item[idProp]) )
       console.log(alreadySelectedItems);
     }
+
+    // if (!singleItem) { TODO add top menu
+    //   let listHeaderElements = ""
+    //   for (rule of rules) {
+    //     let dispName = rule.displayAs;
+    //     listHeaderElements += theme.listItem(dispName, 'title')
+    //   }
+    //
+    //   html += theme.topRow(listHeaderElements)
+    // }
 
     for (item of data) {
       var remove =""
@@ -459,15 +496,15 @@ function showListMenu({
           move =`
             <div class="right floated content">
               <div class="ui tiny buttons">
-                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Déplacer en dessous</button>
+                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Move next</button>
                 <div class="ou"></div>
-                <button data-id="${item[idProp]}" data-grandparentid="${parentId}" data-parentid="${item[idProp]}" class="ui positive button action_list_end_move_item">Lier</button>
+                <button data-id="${item[idProp]}" data-grandparentid="${parentId}" data-parentid="${item[idProp]}" class="ui positive button action_list_end_move_item">Link</button>
               </div>
             </div>
           `
         }else if (ismoving && !singleItem) {
           move = `<div class="right floated content">
-              <div data-id="${item[idProp]}" class="ui tiny blue button action_list_move_item">Annuler</div>
+              <div data-id="${item[idProp]}" class="ui tiny blue button action_list_move_item">Cancel</div>
             </div>`
         }
       }
@@ -478,18 +515,16 @@ function showListMenu({
       if (multipleSelection &&  multipleSelection.includes(item[idProp])) {
         extraStyle = "background-color: #DAF7A6; opacity: 0.8;"
       }
-      html += `<div style='padding-left: ${25*level}px; ${extraStyle}' data-id='${item[idProp]}' class='searchable item'>`//Start of Searchable item
+      //define row elemet
+      html += `<div ${extraStyle}' data-id='${item[idProp]}' class='searchable ${theme.nestedListClass}'>`//Start of Searchable item
       if (true) {//Display if is list
-        //add action button
-        html += remove
-        html += move
-        html += multipleSelect
-        html += extraButtonsHtml
-        var nestedHtml = "<div class='"+theme.nestedListClass+"'>"
+
+        var nestedHtml = ""
         if (singleItem) {
           html += `<h2>${item[rules[0].prop]}</h2>`
           nestedHtml = "<div class='ui container segment'>"
         }
+        let firstItemStyle = `style='padding-left: ${25*level}px;'`
         for (rule of rules) {
           var propName = rule.prop
           var dispName = rule.displayAs
@@ -553,8 +588,8 @@ function showListMenu({
           }
           if (!singleItem) {
             nestedHtml +=`
-            <div data-id="${item[idProp]}" class="item">
-              <div data-id="${item[idProp]}" class="content action_menu_select_option">
+            <div data-id="${item[idProp]}" class="column">
+              <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
                 <div class="header">${dispName}</div>
                 ${propDisplay}
                 ${editHtml}
@@ -575,15 +610,22 @@ function showListMenu({
             <div class="ui divider"></div>
             `
           }
+          if (firstItemStyle) {
+            firstItemStyle =""
+          }
         }
-        nestedHtml += "</div>"
         html += nestedHtml
         if (singleItem) {
           if (sourceLinks && source.includes(item.uuid)) {
-            html += "<h3>Eléments Liés</h3>"
+            html += "</div><h3>Eléments Liés</h3>"
           }
         }
       }
+      //add action button
+      html += remove
+      html += move
+      html += multipleSelect
+      html += extraButtonsHtml
       html += "</div>"//End of Searchable Item
 
       //Check if some children exist if there is a link items
@@ -632,11 +674,11 @@ function showListMenu({
     var container = document.createElement('div');
     container.style.overflow = "auto"
     if (singleElement) {
-      container.innerHTML ="<div class='"+ theme.singleElementsListClass + "'>"+ buildSingle(sourceData, sourceLinks, singleElement)+"</div>"
+      container.innerHTML =theme.listWrapper("<div class='"+ theme.singleElementsListClass + "'>"+ buildSingle(sourceData, sourceLinks, singleElement)+"</div>")
     }else if (editItemMode){
-      container.innerHTML ="<div class='"+ theme.multipleElementsListClass+ "'>"+ buildSingle(sourceData, sourceLinks, editItemMode.item)+"</div>"
+      container.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks, editItemMode.item))
     }else {
-      container.innerHTML ="<div class='"+ theme.multipleElementsListClass+ "'>"+ buildSingle(sourceData, sourceLinks)+"</div>"
+      container.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks))
     }
 
     mainEl.appendChild(container)
