@@ -477,7 +477,83 @@ textarea {
 
 
 
+/* flextables */
+.flexTable {
+  width: 100%;
+  position: relative;
+}
+.flexTable .spreaded_titles{
+  display: none;
+}
 
+
+
+.flexTable .row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding: 10px;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-bottom-color: #eaeaea;
+}
+.flexTable .row:nth-child(even)  {
+  background: #FCFCFC;
+}
+
+.flexTable .row .title {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+  font-weight: bold;
+}
+.flexTable .column {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+}
+.flexTable .column.extra {
+  flex: 0 0;
+}
+
+.flexTable.spreaded .table{
+  overflow-x: auto;
+}
+
+.flexTable.spreaded .row {
+  flex-wrap: nowrap;
+}
+.flexTable.spreaded .row .title:first-child {
+  flex: 0 0 300px;
+}
+.flexTable.spreaded .row .column:first-child {
+  flex: 0 0 300px;
+}
+.flexTable.spreaded .row .title{
+  flex: 0 0 300px;
+}
+.flexTable.spreaded .row .column{
+  flex: 0 0 300px;
+  flex-wrap: nowrap;
+}
+
+.flexTable.spreaded .spreaded_titles{
+  overflow: hidden;
+  display: inline-block;
+  position: absolute;
+  background-color: white;
+  z-index: 2;
+  left: 0px;
+  top: 0px;
+}
+.flexTable.spreaded:hover .spreaded_titles.shadowed{
+  box-shadow: 17px 0px 8px -13px rgba(0,0,0,0.13);
+}
 
 
 /* ==========================================================================

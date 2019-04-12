@@ -12,7 +12,7 @@ var createProjectsView = function () {
   }
 
   var render = function () {
-    ShowSelectMenu({
+    showListMenu({
       sourceData:app.store.projects,
       sourceLinks:undefined,
       metaLinks:undefined,
