@@ -113,7 +113,7 @@ var reparse = false;
   connect(".action_toogle_stakeholders","click",(e)=>{
     //e.target.dataset.id
     var store = query.currentProject()
-    ShowSelectMenu({
+    showListMenu({
       sourceData:store.stakeholders.items,
       displayProp:"name",
       display:[
