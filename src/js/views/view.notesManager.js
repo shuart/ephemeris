@@ -29,7 +29,7 @@ var createNotesManager = function (targetSelector) {
   }
   theme.notePreviewItem = function (i) {
      html =`
-     <div data-id="${i.uuid}" class="list-item action_note_manager_load_note">
+     <div data-id="${i.uuid}" class="searchable_note list-item action_note_manager_load_note">
        <strong data-id="${i.uuid}" >${i.title}</strong>
        <i class="fas fa-sticky-note"></i>
        <div data-id="${i.uuid}" >${i.content.substring(0,135)+".. "}</div>
@@ -44,6 +44,15 @@ var createNotesManager = function (targetSelector) {
         <span class="action_note_manager_add_note small button"> Add</span>
       </div>
       <div class="left-list">${html}</div>
+    `
+    return html
+  }
+  theme.noteSearchArea= function () {
+     html =`
+      <div class="side_searchArea">
+        <input class="note_search_input search_input" type="text" placeholder="Search..">
+        <span class=""> <i class="fas fa-search"></i></span>
+      </div>
     `
     return html
   }
@@ -98,14 +107,34 @@ var createNotesManager = function (targetSelector) {
   var render = function () {
     container.innerHTML = theme.noNote()
     let treeContainer = document.querySelector(".left-menu-area")
-    treeContainer.innerHTML= renderNoteTree()
+    let notePreviewArea = treeContainer.querySelector('.left-list')
+    let searchArea = treeContainer.querySelector('.side_searchArea')
+    if (notePreviewArea && searchArea) { //reuse what is already setup
+      updateNoteTree(notePreviewArea)
+    }else {
+      treeContainer.innerHTML= renderSearchArea() + renderNoteTree()
+    }
+    //update search event
+    setUpSearch(document.querySelector(".note_search_input"), app.store.userData.notes.items)
   }
+
+  function renderSearchArea() {
+    return theme.noteSearchArea()
+  }
+
   function renderNoteTree() {
     let html = ""
     app.store.userData.notes.items.forEach(function (e) {//todo add proper routes
       html += theme.notePreviewItem(e)
     })
     return theme.notePreviewList(html)
+  }
+  function updateNoteTree(container) {
+    let html = ""
+    app.store.userData.notes.items.forEach(function (e) {//todo add proper routes
+      html += theme.notePreviewItem(e)
+    })
+    container.innerHTML = html
   }
 
   function renderNote(e) {
@@ -121,6 +150,25 @@ var createNotesManager = function (targetSelector) {
     easyMDE.codemirror.on("change", function(){
     	console.log(easyMDE.value());
       e.content = easyMDE.value()//TODO use routes. UGLY
+    });
+  }
+  function setUpSearch(searchElement, sourceData) {
+    searchElement.addEventListener('keyup', function(e){
+      //e.stopPropagation()
+      var value = document.querySelector(".note_search_input").value
+      console.log("fefsefsef");
+      console.log(sourceData);
+      var filteredData = sourceData.filter((item) => {
+        if (fuzzysearch(value, item.title) || fuzzysearch(value, item.content) || fuzzysearch (value, item.title.toLowerCase()) || fuzzysearch (value, item.content.toLowerCase())) {
+          return true
+        }
+        return false
+      })
+      var filteredIds = filteredData.map(x => x.uuid);
+      var searchedItems = document.querySelectorAll(".searchable_note")
+      for (item of searchedItems) {
+        if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "block"}else{item.style.display = "none"}
+      }
     });
   }
 

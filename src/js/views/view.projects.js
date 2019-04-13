@@ -41,7 +41,7 @@ var createProjectsView = function () {
         var metalinkType = ev.target.dataset.prop;
         var sourceTriggerId = ev.target.dataset.id;
         var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-        ShowSelectMenu({
+        showListMenu({
           sourceData:store.stakeholders.items,
           parentSelectMenu:ev.select ,
           multipleSelection:currentLinksUuidFromDS,
