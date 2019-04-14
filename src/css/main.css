@@ -621,6 +621,45 @@ textarea {
 }
 
 
+.tag_area{
+  display: flex;
+}
+.tag_area .tag_list{
+  padding-bottom: 2px;
+  border-bottom-style: solid;
+  margin-bottom: 3px;
+  border-bottom-width: 1px;
+  border-color: lightgray;
+}
+.tag_area .tag_list .tag{
+
+  -moz-border-radius:6px;
+  -webkit-border-radius:6px;
+  border-radius:6px;
+  border:1px solid #dcdcdc;
+  display:inline-block;
+  cursor:pointer;
+  color:#666666;
+  font-size:12px;
+  font-weight: normal;
+  padding:0px 9px;
+  text-decoration:none;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+.manage_tag_button{
+  cursor:pointer;
+}
+
+.eph.teal{
+  background-color: #02b5ab !important;
+  color:#ffffff !important;
+  border-color: #02b5ab !important;
+}
+
+
+
+
 /* ==========================================================================
    Helper classes
    ========================================================================== */

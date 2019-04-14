@@ -32,6 +32,7 @@ var createDbAdaptater = function () {
 
   function setUser(data) { //name
     var newUuid = uuid()
+    var newNoteUuid = uuid()
     return users.setItem(newUuid,{
       uuid:newUuid,
       name:data.name || "new user",
@@ -39,11 +40,26 @@ var createDbAdaptater = function () {
         info:{},
         notes:{
           items:[{
-            uuid:genuuid(),
+            uuid:newNoteUuid,
             title:"How to add notes",
             content:"Use Markdown"
           }]
-        }},
+        },
+        tags:{
+          items:[
+            {
+              uuid:genuuid(),
+              name:"How To",
+              targets:[newNoteUuid]
+            },
+            {
+              uuid:genuuid(),
+              name:"Another Tag",
+              targets:[newNoteUuid]
+            }
+          ]
+        }
+      },
       projects:data.projects||[]
     })
   }

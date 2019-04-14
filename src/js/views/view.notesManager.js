@@ -5,6 +5,8 @@ var createNotesManager = function (targetSelector) {
   let easymde = undefined
   let nodeToDisplay = undefined
 
+  let currentOpenedNote = undefined
+
   let theme = {}
   theme.noNote = function () {
     return `
@@ -22,8 +24,25 @@ var createNotesManager = function (targetSelector) {
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_note_manager_rename_note">Rename</button>
           <button data-id="${e.uuid}" class="ui basic red mini button action_note_manager_remove_note">Delete Note</button>
         </h1>
+        ${theme.noteTagArea(e)}
        <textarea class="inputNoteAreaEditor"></textarea>
      </div>
+    `
+    return html
+  }
+  theme.noteTagArea= function (note) {
+     html =`
+     <div class="tag_area">
+       <div class="tag_list">
+       </div>
+       <span data-id="${note.uuid}" class="action_note_manager_add_tag"> <i data-id="${note.uuid}" class="manage_tag_button far fa-edit"></i></span>
+     </div>
+    `
+    return html
+  }
+  theme.noteTag= function (tagName, tagId) {
+     html =`
+      <div data-id="" class="eph teal tag">${tagName}</div>
     `
     return html
   }
@@ -66,10 +85,7 @@ var createNotesManager = function (targetSelector) {
     connect(".action_note_manager_load_note", "click", (e)=>{
       console.log(e.target.dataset.id);
       let noteId = e.target.dataset.id
-      let note = app.store.userData.notes.items.filter(n=>n.uuid == noteId)[0]
-      if (note) {
-        renderNote(note)
-      }
+      loadNoteByUuid(noteId)
     })
     connect(".action_note_manager_remove_note", "click", (e)=>{
       console.log(e.target.dataset.id);
@@ -101,6 +117,73 @@ var createNotesManager = function (targetSelector) {
         content:"Click to edit the note"
       })
       update()
+    })
+    connect(".action_note_manager_add_tag", "click", (e)=>{
+      let noteUuid = e.target.dataset.id
+      let linkedTag = app.store.userData.tags.items.filter((t) => {
+        return t.targets.includes(noteUuid)
+      })
+      let linkedTagUuid = linkedTag.map((t)=>t.uuid)
+      showListMenu({
+        sourceData:app.store.userData.tags.items,
+        multipleSelection:linkedTagUuid,
+        displayProp:"name",
+        searchable : true,
+        display:[
+          {prop:"name", displayAs:"Name", edit:false}
+        ],
+        idProp:"uuid",
+        onCloseMenu: (ev)=>{
+          update()
+        },
+        onAdd:(ev)=>{
+          let newTagName = prompt('Add a Tag')
+          if (newTagName) {
+            app.store.userData.tags.items.push({
+              uuid:genuuid(),
+              name:newTagName,
+              targets:[]
+            })
+          }
+        },
+        onRemove:(ev)=>{
+          let tagToRemoveName = ev.target.dataset.id
+          if (tagToRemoveName) {
+            app.store.userData.tags.items= app.store.userData.tags.items.filter((i) => {
+              return !(i.uuid==tagToRemoveName)
+            })
+            console.log(ev);
+            ev.select.updateData(app.store.userData.tags.items)
+          }
+        },
+        onChangeSelect: (ev)=>{//TODO all ugly change
+          console.log(ev.select.getSelected());
+          let selectedTags = ev.select.getSelected()
+          app.store.userData.tags.items.forEach((item) => {
+            if (selectedTags.includes(item.uuid)) {//if one of selected
+              var index = item.targets.indexOf(noteUuid);
+              if (index < 0) {
+                item.targets.push(noteUuid)
+              }
+            }else {
+              var index = item.targets.indexOf(noteUuid);
+              if (index > -1) {
+                item.targets.splice(index, 1);
+              }
+            }
+          })
+
+        },
+        onClick: (ev)=>{
+          console.log("select");
+        }
+      })
+      // app.store.userData.notes.items.push({
+      //   uuid:genuuid(),
+      //   title:"A new Note",
+      //   content:"Click to edit the note"
+      // })
+
     })
   }
 
@@ -139,6 +222,7 @@ var createNotesManager = function (targetSelector) {
 
   function renderNote(e) {
     container.innerHTML = theme.editor(e)
+    container.querySelector(".tag_list").innerHTML= renderTagList(e)
     console.log(e.content);
     easyMDE = new EasyMDE({
       element: document.querySelector('.inputNoteAreaEditor'),
@@ -151,6 +235,15 @@ var createNotesManager = function (targetSelector) {
     	console.log(easyMDE.value());
       e.content = easyMDE.value()//TODO use routes. UGLY
     });
+  }
+  function renderTagList(note) {
+    let linkedTag = app.store.userData.tags.items.filter((t) => {
+      console.log(t.targets);
+      return t.targets.includes(note.uuid)
+    })
+    let linkedTagHtml = linkedTag.map((t)=>theme.noteTag(t.name,t.id))
+    return linkedTagHtml.join("")
+    // let tagedNoteList = app.store.userData.notes.items.map((i) => {})
   }
   function setUpSearch(searchElement, sourceData) {
     searchElement.addEventListener('keyup', function(e){
@@ -172,8 +265,20 @@ var createNotesManager = function (targetSelector) {
     });
   }
 
+  function loadNoteByUuid(noteId) {
+    let note = app.store.userData.notes.items.filter(n=>n.uuid == noteId)[0]
+    if (note) {
+      currentOpenedNote = note.uuid
+      renderNote(note)
+    }
+  }
+
   var update = function () {
+    saveDB() //TODO move all to actions!
     render()
+    if (currentOpenedNote) {
+      loadNoteByUuid(currentOpenedNote)
+    }
   }
 
   var setActive =function () {
