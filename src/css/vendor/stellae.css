@@ -102,7 +102,7 @@
   opacity: .3;
 }
 
-.selection {
+.selection_box {
   fill: #ADD8E6;
   stroke: #ADD8E6;
   fill-opacity: 0.3;

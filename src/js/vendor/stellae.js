@@ -44,10 +44,37 @@ function stellae(_selector, _options) {
     var linkMode = false;
     var linkModeStartNode = undefined;
     var linkModeEndNode = undefined;
+    var currentSelectedNodes = undefined;
 
     //box selection elements TODO reorganise
     function rect(x, y, w, h) {
       return "M"+[x,y]+" l"+[w,0]+" l"+[0,h]+" l"+[-w,0]+"z";
+    }
+    function moveCurrentSelectedNodes(delta) {
+      for (var i = 0; i < currentSelectedNodes.length; i++) {
+        let currentNode = currentSelectedNodes[i]
+        if (!currentNode.fx) {
+          currentNode.fx = currentNode.x
+          currentNode.fy = currentNode.y
+        }
+        currentNode.fx += delta[0]
+        currentNode.fy += delta[1]
+      }
+    }
+    function checkSelectedNode(start, end, nodes) {
+      let selectedNodes = nodes.filter(e=>{
+        console.log("captured nodes");
+        console.log(e.x);
+        console.log(e.y);
+        console.log(start);
+        console.log(end);
+        console.log(e.y < start[1]);
+
+        return (e.x > start[0] && e.x < end[0] && e.y > start[1] && e.y < end[1] )
+        // return (e.x > start[0] && e.y < start[1] && e.x < end[0] && e.y > end[1] )
+        // return {uuid:e.uuid,fx : e.x,fy : e.y}
+      });
+      return selectedNodes
     }
 
     var startSelection = function(start) {
@@ -61,6 +88,10 @@ function stellae(_selector, _options) {
 
     var endSelection = function(start, end) {
       selection.attr("visibility", "hidden");
+      console.log(start);
+      console.log(end);
+      currentSelectedNodes = checkSelectedNode(start, end, nodes)
+      console.log(currentSelectedNodes);
     };
 
     var zoom = d3.zoom().on('zoom', function() {
@@ -96,9 +127,10 @@ function stellae(_selector, _options) {
                     let start = mouseTransform(d3.mouse(this))
                      startSelection(start);
                      base
-                       .on("mousemove.selection", function() {
+                       .on("mousemove.selection_box", function() {
                          moveSelection(start, mouseTransform(d3.mouse(this)));
-                       }).on("mouseup.selection", function() {
+                       })
+                       .on("mouseup.selection_box", function() {
                          endSelection(start, mouseTransform(d3.mouse(this)));
                          base.on("mousemove.selection", null).on("mouseup.selection", null);
                          base.call(zoom)
@@ -122,8 +154,8 @@ function stellae(_selector, _options) {
              .attr('width', '100%')
              .attr('height', '100%');
 
-        selection = svg.append("path")
-                 .attr("class", "selection")
+        selection = svg.append("path") //add selection rectangle
+                 .attr("class", "selection_box")
                  .attr("visibility", "hidden");
 
 
@@ -585,7 +617,7 @@ function stellae(_selector, _options) {
       if (!linkMode) {
         stickNode(d);
       }else {
-        updateLinkModePreview(d,dragContext )
+        updateLinkModePreview(d,dragContext )//Update the new link positions
       }
     }
 
@@ -600,7 +632,7 @@ function stellae(_selector, _options) {
         if (typeof options.onNodeDragStart === 'function') {
             options.onNodeDragStart(d);
         }
-        if (linkMode) {
+        if (linkMode) {//get activated when mouse on external circle
           linkModePreview = d3.select(this).append('g')
                               .append("line")          // attach a line
                               .style("stroke", "black")  // colour the line
@@ -971,8 +1003,16 @@ function stellae(_selector, _options) {
     }
 */
     function stickNode(d) {
-        d.fx = d3.event.x;
-        d.fy = d3.event.y;
+        if (d3.event.sourceEvent.ctrlKey && currentSelectedNodes) {//move other selected nodes
+          let delta = [
+            -d.fx + d3.event.x,
+            -d.fy + d3.event.y
+          ]
+          moveCurrentSelectedNodes(delta)
+        }else {
+          d.fx = d3.event.x;//move only main targeted node
+          d.fy = d3.event.y;
+        }
     }
 
     function tick() {
