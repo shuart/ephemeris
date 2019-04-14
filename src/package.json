@@ -4,7 +4,9 @@
   "description": "System Engineering and requirements management application",
   "main": "index.html",
   "window": {
+    "icon": "img/app.png",
     "width": 1280,
     "height": 1024
+
   }
 }
