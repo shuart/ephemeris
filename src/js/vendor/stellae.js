@@ -12,6 +12,7 @@ module.exports = stellae;
 
 function stellae(_selector, _options) {
     var base, scale, translate, container, graph, info, node, nodes, relationship, relationshipOutline, relationshipOverlay, relationshipText, relationships, selector, simulation, svg, svgNodes, svgRelationships, svgScale, svgTranslate,
+        selection,
         classes2colors = {},
         justLoaded = false,
         numClasses = 0,
@@ -44,6 +45,24 @@ function stellae(_selector, _options) {
     var linkModeStartNode = undefined;
     var linkModeEndNode = undefined;
 
+    //box selection elements TODO reorganise
+    function rect(x, y, w, h) {
+      return "M"+[x,y]+" l"+[w,0]+" l"+[0,h]+" l"+[-w,0]+"z";
+    }
+
+    var startSelection = function(start) {
+        selection.attr("d", rect(start[0], start[0], 0, 0))
+          .attr("visibility", "visible");
+    };
+
+    var moveSelection = function(start, moved) {
+        selection.attr("d", rect(start[0], start[1], moved[0]-start[0], moved[1]-start[1]));
+    };
+
+    var endSelection = function(start, end) {
+      selection.attr("visibility", "hidden");
+    };
+
     var zoom = d3.zoom().on('zoom', function() {
 
         svg.attr("transform", d3.event.transform); // updated for d3 v4
@@ -66,6 +85,26 @@ function stellae(_selector, _options) {
              .attr('width', '100%')
              .attr('height', '100%')
              .attr('class', 'stellae-graph')
+             .on("mousedown", function(e) {//Selection box creation
+               function mouseTransform(mouse) {
+                 var xy = mouse;
+                 var transform = d3.zoomTransform(base.node());
+                 return transform.invert(xy);
+               }
+               if (d3.event.ctrlKey) {
+                    base.on('.zoom', null);
+                    let start = mouseTransform(d3.mouse(this))
+                     startSelection(start);
+                     base
+                       .on("mousemove.selection", function() {
+                         moveSelection(start, mouseTransform(d3.mouse(this)));
+                       }).on("mouseup.selection", function() {
+                         endSelection(start, mouseTransform(d3.mouse(this)));
+                         base.on("mousemove.selection", null).on("mouseup.selection", null);
+                         base.call(zoom)
+                       });
+                }
+              })
              .call(zoom)
              .on('dblclick.zoom', null)
              .on('dblclick', function(d) {//catch dblclick on canvas
@@ -82,6 +121,11 @@ function stellae(_selector, _options) {
              .append('g')
              .attr('width', '100%')
              .attr('height', '100%');
+
+        selection = svg.append("path")
+                 .attr("class", "selection")
+                 .attr("visibility", "hidden");
+
 
         svgRelationships = svg.append('g')
                               .attr('class', 'relationships');
