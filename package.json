@@ -1,0 +1,31 @@
+{
+  "name": "ephemeris",
+  "version": "0.9.0",
+  "description": "System Engineering and requirements management application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gulp": "gulp",
+    "build": "node pack.js",
+    "pack": "gulp && node pack.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shuart/ephemeris.git"
+  },
+  "keywords": [
+    "SE"
+  ],
+  "author": "Stéphane Huart",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shuart/ephemeris/issues"
+  },
+  "homepage": "https://github.com/shuart/ephemeris#readme",
+  "devDependencies": {
+    "nw-builder": "^3.5.7"
+  },
+  "dependencies": {
+    "gulp": "^4.0.0"
+  }
+}
