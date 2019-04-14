@@ -9,8 +9,11 @@ var createInterfacesView = function () {
   var lastSelectedNode = undefined;
   var previousSelectedNode = undefined;
   var addMode = "physical";
+  var addItemMode ="currentPbs"
   var showCompose = true;
   var showInterfaces = true;
+
+  var itemsToFixAtNextUpdate = []
 
   var currentGraphTransformation=[0,0,1]
 
@@ -102,8 +105,10 @@ var createInterfacesView = function () {
         if (query.currentProject().graphs && query.currentProject().graphs.items[1]) {
           fixedValuesList = query.currentProject().graphs.items[1] //check if graph is in DB
         }
-        console.log(fixedValuesList);
-        fixedValuesList.forEach(f =>{
+        //concat with items to fix this time
+        var allFixedValues = fixedValuesList.concat(itemsToFixAtNextUpdate)
+        itemsToFixAtNextUpdate = []//clear buffer of new objects to be fixed
+        allFixedValues.forEach(f =>{
           var match = concatData.find(c => c.uuid == f.uuid)
           if (match) {
             match.fx =f.fx ; match.x =f.fx;
@@ -348,6 +353,19 @@ var createInterfacesView = function () {
         console.log(e);
         currentGraphTransformation=[e.translate[0],e.translate[1],e.scale]
       },
+      onCanvasDoubleClick:function (e) {//TODO finish implementation
+        console.log(e);
+        if (addItemMode) {//if item mode engaged
+          var initValue = prompt("Add an item")
+          if (initValue) {
+            var uuid = genuuid()
+            addItems(addItemMode, uuid, initValue)
+            //itemsToFixAtNextUpdate=[]
+            itemsToFixAtNextUpdate.push({uuid:uuid, fx:e.x, fy:e.y})
+            update()
+          }
+        }
+      },
       startTransform:currentGraphTransformation,
       zoomFit: false
   });
@@ -502,6 +520,19 @@ var createInterfacesView = function () {
         console.log("select");
       }
     })
+  }
+
+  function addItems(type, uuid, initValue) {
+    if (type == 'requirements') {
+      push(addRequirement({uuid:uuid, name:initValue}))
+    }else if (type == 'currentPbs') {
+      push(addPbs({uuid:uuid, name:initValue}))
+      push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+    }else if (type == 'stakeholders') {
+      push(act.add('stakeholders',{uuid:uuid, name:initValue}))
+    }else if (type = 'functions') {
+      push(act.add('functions',{uuid:uuid, name:initValue}))
+    }
   }
 
   self.setActive = setActive
