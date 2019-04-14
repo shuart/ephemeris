@@ -50,6 +50,16 @@ function stellae(_selector, _options) {
     function rect(x, y, w, h) {
       return "M"+[x,y]+" l"+[w,0]+" l"+[0,h]+" l"+[-w,0]+"z";
     }
+    function markNodesSelected(currentSelectedNodes) {
+      d3.selectAll(".node").select(".selection_ring").style("opacity",0); //clear all
+      if (currentSelectedNodes) {//mark selected
+        let currentSelectedUuid = currentSelectedNodes.map(e=>e.uuid)
+        var currentSelectedDom = d3.selectAll(".node").filter(function(d){
+                  return currentSelectedUuid.includes(d.uuid)
+                });
+        currentSelectedDom.select(".selection_ring").style("opacity",1);
+      }
+    }
     function moveCurrentSelectedNodes(delta) {
       for (var i = 0; i < currentSelectedNodes.length; i++) {
         let currentNode = currentSelectedNodes[i]
@@ -84,14 +94,15 @@ function stellae(_selector, _options) {
 
     var moveSelection = function(start, moved) {
         selection.attr("d", rect(start[0], start[1], moved[0]-start[0], moved[1]-start[1]));
+        currentSelectedNodes = checkSelectedNode(start, moved, nodes)
+        markNodesSelected(currentSelectedNodes)
     };
 
     var endSelection = function(start, end) {
-      selection.attr("visibility", "hidden");
-      console.log(start);
-      console.log(end);
-      currentSelectedNodes = checkSelectedNode(start, end, nodes)
-      console.log(currentSelectedNodes);
+        selection.attr("visibility", "hidden");
+        currentSelectedNodes = checkSelectedNode(start, end, nodes)
+        markNodesSelected(currentSelectedNodes)
+        console.log(currentSelectedNodes);
     };
 
     var zoom = d3.zoom().on('zoom', function() {
@@ -129,10 +140,11 @@ function stellae(_selector, _options) {
                      base
                        .on("mousemove.selection_box", function() {
                          moveSelection(start, mouseTransform(d3.mouse(this)));
+
                        })
                        .on("mouseup.selection_box", function() {
                          endSelection(start, mouseTransform(d3.mouse(this)));
-                         base.on("mousemove.selection", null).on("mouseup.selection", null);
+                         base.on("mousemove.selection_box", null).on("mouseup.selection_box", null);
                          base.call(zoom)
                        });
                 }
@@ -313,6 +325,7 @@ function stellae(_selector, _options) {
     function appendNodeToGraph() {
         var n = appendNode();
 
+        appendSelectionRingToNode(n)
         appendRingToNode(n);
         appendOutlineToNode(n);
         appendSideTextToNode(n);
@@ -362,6 +375,18 @@ function stellae(_selector, _options) {
                    .append('title').text(function(d) {
                        return toString(d);
                    });
+    }
+    function appendSelectionRingToNode(node) {
+        return node.append('circle')
+                   .attr('class', 'selection_ring')
+                   .attr('r', options.nodeRadius * 1.2)
+                   // .on('mousedown', function(d) {
+                   //     linkMode = true;
+                   //     linkModeStartNode = d;
+                   // })
+                   // .append('title').text(function(d) {
+                   //     return toString(d);
+                   // });
     }
 
     function appendTextToNode(node) {
@@ -1012,6 +1037,11 @@ function stellae(_selector, _options) {
         }else {
           d.fx = d3.event.x;//move only main targeted node
           d.fy = d3.event.y;
+        }
+
+        if (currentSelectedNodes && !d3.event.sourceEvent.ctrlKey) {//remove selection on move without control
+          currentSelectedNodes = undefined
+          markNodesSelected(currentSelectedNodes)
         }
     }
 
