@@ -246,10 +246,10 @@ var createInterfacesView = function () {
           }, {
               class: 'User',
               property: 'userId',
-              value: 'eisman'
+              value: 'start'
           }
       ],
-      groupLabels:true,
+      groupLabels:false,
       rootNode:true,
       fadeOtherNodesOnHoover:fadeOtherNodesOnHoover,
       icons: {

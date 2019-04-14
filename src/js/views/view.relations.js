@@ -308,7 +308,7 @@ var createRelationsView = function () {
           }, {
               class: 'User',
               property: 'userId',
-              value: 'eisman'
+              value: 'start'
           }
       ],
       groupLabels:true,
