@@ -1226,7 +1226,7 @@ function stellae(_selector, _options) {
     }
 
     function updateNodesAndRelationships(n, r) {
-      if (options.groupLabels) {
+      if (options.groupLabels ) {
         updateNodes(n);
         var newLinks = r.concat(createGroupLinks(nodes))
         if (options.rootNode) {
@@ -1246,13 +1246,21 @@ function stellae(_selector, _options) {
     }
 
     function createGroupLinks(nodes) {
+      function checkIfLabelMustGroup(label) {
+        if (!Array.isArray(options.groupLabels) ) {
+          return options.groupLabels
+        }else {
+          return options.groupLabels.includes(label)
+        }
+      }
       console.log(nodes);
       var lastLabel ='none'
       var currentNode = undefined
       var curentIndex =-1;
       var groupLinks = []
       nodes.forEach(function (i) {
-        if (i.labels[0] != lastLabel && i.id!=1) {
+        console.log(checkIfLabelMustGroup(i.labels[0]));
+        if (i.labels[0] != lastLabel && i.id!=1 && checkIfLabelMustGroup(i.labels[0])) {
           currentNode = i
           lastLabel = i.labels[0]
           nodes.filter(e=>e.labels[0] == lastLabel && e != currentNode).forEach(function (i) {
