@@ -22,6 +22,12 @@ var createRelationsView = function () {
   var showInterfaces = false;
   var showCompose = false;
 
+  var groupFunctions = true;
+  var groupRequirements = true;
+  var groupStakeholders = true;
+  var groupPbs = false;
+  var currentGroupedLabels = []
+
 
 
   var init = function () {
@@ -37,6 +43,11 @@ var createRelationsView = function () {
       displayType = "network"
       update()
     })
+    connect(".action_relations_toogle_group_functions","click",(e)=>{ groupFunctions = !groupFunctions; update(); })
+    connect(".action_relations_toogle_group_requirements","click",(e)=>{ groupRequirements = !groupRequirements; update(); })
+    connect(".action_relations_toogle_group_stakeholders","click",(e)=>{ groupStakeholders = !groupStakeholders; update(); })
+    connect(".action_relations_toogle_group_pbs","click",(e)=>{ groupPbs = !groupPbs; update(); })
+
     connect(".action_relations_toogle_show_functions","click",(e)=>{ showFunctions = !showFunctions; update(); })
     connect(".action_relations_toogle_show_requirements","click",(e)=>{ showRequirements = !showRequirements; update(); })
     connect(".action_relations_toogle_show_stakeholders","click",(e)=>{ showStakeholders = !showStakeholders; update(); })
@@ -133,7 +144,21 @@ var createRelationsView = function () {
     var groupLinks =[]
     var initIndex = 0
     var currentIndex = 0
-    var groups = [array1,array2,array3,array4]
+    // check the elements that should be grouped together
+    //TODO not connected to stellae.. REDO
+    var groups = []
+    currentGroupedLabels = []
+
+
+    if (groupRequirements) { currentGroupedLabels.push('Requirements')}
+    if (groupFunctions) { currentGroupedLabels.push('Functions') };
+    if (groupStakeholders) { currentGroupedLabels.push('User') }
+    if (groupPbs) { currentGroupedLabels.push('Pbs') }
+    // if (groupRequirements) { groups.push(array3); currentGroupedLabels.push('Requirements')}
+    // if (groupFunctions) { groups.push(array1); currentGroupedLabels.push('Functions') };
+    // if (groupStakeholders) { groups.push(array4); currentGroupedLabels.push('User') }
+    // if (groupPbs) { groups.push(array2); currentGroupedLabels.push('Pbs') }
+
     for (group of groups) {
       var groupLinks1  = group.map((e)=>{
         currentIndex +=1;
@@ -263,6 +288,15 @@ var createRelationsView = function () {
         <a class="${showInterfaces ? 'active teal':''} ui item action_relations_toogle_show_interfaces">Interfaces</a>
         </div>
       </div>
+      <div class="item">
+        <div class="header">Group Items Together</div>
+        <div class="menu">
+        <a class="${groupFunctions ? 'active teal':''} ui item action_relations_toogle_group_functions">Functions</a>
+        <a class="${groupRequirements ? 'active teal':''} ui item action_relations_toogle_group_requirements">Requirements</a>
+        <a class="${groupStakeholders ? 'active teal':''} ui item action_relations_toogle_group_stakeholders">Stakeholders</a>
+        <a class="${groupPbs ? 'active teal':''} ui item action_relations_toogle_group_pbs">Products</a>
+        </div>
+      </div>
     </div>
     `
   }
@@ -311,8 +345,8 @@ var createRelationsView = function () {
               value: 'start'
           }
       ],
-      groupLabels:true,
-      rootNode:true,
+      groupLabels:currentGroupedLabels,
+      rootNode:false,
       fadeOtherNodesOnHoover:fadeOtherNodesOnHoover,
       icons: {
           'Functions': 'cogs',
