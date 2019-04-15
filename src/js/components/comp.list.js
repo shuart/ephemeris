@@ -31,6 +31,13 @@ function showListMenu({
   extraButtons = []
   }={}) {
 
+    //utility to parse html
+    function toNode(html) {
+      var tpl = document.createElement('template');
+      tpl.innerHTML = html;
+      return tpl.content;
+    }
+
   //LOCAL THEME
   var theme = {
     windowedContainerClass : "ui raised padded container segment",
@@ -53,8 +60,24 @@ function showListMenu({
         </div>`
     },
     nestedListClass: 'row',
+    topMenu:() => {
+      var html = /*html*/`
+      <div class="ui mini menu target_menu_left_buttons">
+        <div class="right menu target_menu_right_buttons">
+        </div>
+      </div>
+      `
+      return html
+    },
+    button:(name, color, action, data ) => {
+      return /*html*/`
+      <div class="item">
+          <div ${data? data:''} class="ui ${color? color:''} button ${action? action:''}">${name}</div>
+      </div>
+      `
+    },
     listWrapper:(rows, firstCol) => {
-      return `
+      return /*html*/`
       <div class='flexTable'>
         <div class="spreaded_titles shadowed">${firstCol}</div>
         <div class="table">${rows}</div>
@@ -103,6 +126,14 @@ function showListMenu({
 
   function connect(){
     sourceEl.onclick = function(event) {
+        if (event.target.classList.contains("action_list_clear")) {
+            onClear({selectDiv:sourceEl, target:undefined})
+        }
+        if (event.target.classList.contains("action_list_add")) {
+          onAdd({selectDiv:sourceEl, select:self, target:undefined})
+          sourceEl.remove()
+          render()
+        }
         if (event.target.classList.contains("action_menu_select_option")) {
           onClick({selectDiv:sourceEl, select:self, target:event.target})
           console.log(event.target);
@@ -253,6 +284,8 @@ function showListMenu({
       sourceEl.appendChild(dimmer)
     }
     sourceEl.appendChild(mainEl)
+
+    return sourceEl
   }
 
   function createAddTemplate() {//TODO refactor, this is not working
@@ -264,87 +297,60 @@ function showListMenu({
   }
 
   function createMenu() {
-    var menuArea = document.createElement('div');
-    menuArea.classList = theme.menuContainerClass;
-    mainEl.appendChild(menuArea)
+    mainEl.appendChild(toNode(theme.topMenu()));
 
     // clear button
     if (onClear) {
-      var clearActions = document.createElement('div');
-      clearActions.innerHTML =`
-        <div class="${theme.menuButtonsContainerClass}">
-          <button class="${theme.menuClearButtonClass}">
-            ${clearButtonValue}
-          </button>
-        </div>
-        `
-      clearActions.addEventListener('click', function(e){
-        e.stopPropagation()
-        onClear({selectDiv:sourceEl, target:undefined})
-      });
-
-      menuArea.appendChild(clearActions)
+     let target = mainEl.querySelector(".target_menu_left_buttons")
+     target.insertBefore(
+        toNode(theme.button(clearButtonValue, 'black', 'action_list_clear')),
+        target.firstChild
+      )
     }
-
-
     //add button
     if (onAdd) {
-      var addActions = document.createElement('div');
-      addActions.innerHTML =`
-        <div class="${theme.menuButtonsContainerClass}">
-          <button class="${theme.menuAddButtonClass}">
-            ${addButtonValue}
-          </button>
-        </div>
-        `
-      addActions.addEventListener('click', function(e){
-        e.stopPropagation()
-        onAdd({selectDiv:sourceEl, select:self, target:undefined})
-        sourceEl.remove()
-        render()
-      });
-      menuArea.appendChild(addActions)
+      let target = mainEl.querySelector(".target_menu_left_buttons")
+      target.insertBefore(
+         toNode(theme.button(addButtonValue, 'teal', 'action_list_add')),
+         target.firstChild
+       )
     }
     //display extra action buttons
     if (extraActions) {
       for (action of extraActions) {
-        var addAction = document.createElement('div');
         var actionClass="action_extra_"+action.name;
         var buttonClass = action.customButtonClass || theme.menuExtraButtonClass
-        addAction.innerHTML =`
-          <div class="${theme.menuButtonsContainerClass}">
-            <button class="${buttonClass} action_extra_${actionClass}">
-              ${action.name}
-            </button>
-          </div>`
-          menuArea.appendChild(addAction);
-          function addEventL(action) {
-            var callBack = function (e) {
-              e.stopPropagation()
-              //console.log(action);
-              console.log(action);
-              action.action({select:self})
-              sourceEl.remove()
-              render()
-            }
-            return callBack
-          }
 
-          addAction.addEventListener('click', addEventL(action),false);
+        let target = mainEl.querySelector(".target_menu_left_buttons")
+        target.insertBefore(
+           toNode(theme.button(action.name, 'grey', "action_extra_"+actionClass)),
+           target.firstChild
+         )
+         //add events
+        let actionTarget = mainEl.querySelector(".action_extra_"+actionClass)
+        function addEventL(action) {
+          var callBack = function (e) {
+            e.stopPropagation()
+            //console.log(action);
+            console.log(action);
+            action.action({select:self})
+            sourceEl.remove()
+            render()
+          }
+          return callBack
+        }
+        actionTarget.addEventListener('click', addEventL(action),false);
       }
     }
 
-    //right part
-    var rightMenuArea = document.createElement('div');
-    rightMenuArea.classList = theme.menuRightMenuContainerClass
-    menuArea.appendChild(rightMenuArea)
-
     //search menu
     if (searchable) {
+      let target = mainEl.querySelector(".target_menu_right_buttons")
+
       var addSearch = document.createElement('div');
       addSearch.classList= theme.menuButtonsContainerClass
       addSearch.innerHTML =theme.menuSearchAreaHtml("list-search-input")
-      rightMenuArea.appendChild(addSearch)
+      target.appendChild(addSearch)
 
       addSearch.addEventListener('keyup', function(e){
         //e.stopPropagation()
@@ -365,55 +371,38 @@ function showListMenu({
     }
     //close button
     if (!targetDomContainer) {
-      var close = document.createElement('div');
-      close.innerHTML =`
-        <div class="${theme.menuButtonsContainerClass}">
-          <button class="${theme.menuCloseButtonClass} action_list_close">
-            ${closeButtonValue}
-          </button>
-        </div>
-        `
-      rightMenuArea.appendChild(close)
+      let target = mainEl.querySelector(".target_menu_right_buttons")
+      target.appendChild(
+         toNode(theme.button(closeButtonValue, 'red', 'action_list_close'))
+       )
+
     }
     if (editItemMode) {//in case of editing a single item
-      menuArea.innerHTML=""//clear area
-      var rightMenuArea = document.createElement('div');
-      rightMenuArea.classList = theme.menuRightMenuContainerClass
-      menuArea.appendChild(rightMenuArea)
+      let target = mainEl.querySelector(".target_menu_left_buttons")
+      target.innerHTML=""
 
-      var cancel = document.createElement('div');
-      cancel.innerHTML =`
-        <div class="${theme.menuButtonsContainerClass}">
-          <button data-id="${editItemMode.item.uuid}" class="${theme.menuCloseButtonClass}">
-            ${cancelButtonValue}
-          </button>
-        </div>
-        `
-      cancel.addEventListener('click', function(e){
+      target.appendChild(
+         toNode(theme.button(addButtonValue, 'teal', 'action_list_add_edit','data-id="editItemMode.item.uuid"'))
+       )
+       let actionAddTarget = mainEl.querySelector(".action_list_add_edit")
+      actionAddTarget.addEventListener('click', function(e){
+        editItemMode = undefined
+        sourceEl.remove()
+        render()
+      });
+
+      target.appendChild(
+         toNode(theme.button(cancelButtonValue, 'red', 'action_list_cancel','data-id="editItemMode.item.uuid"'))
+       )
+
+      let actionCancelTarget = mainEl.querySelector(".action_list_cancel")
+      actionCancelTarget.addEventListener('click', function(e){
+        //TODO not working
         editItemMode.onLeave({select:self,selectDiv:sourceEl, target:event.target})
         editItemMode = undefined
         sourceEl.remove()
         render()
       });
-
-      var save = document.createElement('div');
-      save.innerHTML =`
-        <div class="${theme.menuButtonsContainerClass}">
-          <button data-id="${editItemMode.item.uuid}" class="${theme.menuAddButtonClass}">
-            ${addButtonValue}
-          </button>
-        </div>
-        `
-      save.addEventListener('click', function(e){
-        editItemMode = undefined
-        sourceEl.remove()
-        render()
-      });
-
-
-      rightMenuArea.appendChild(save)
-      rightMenuArea.appendChild(cancel)
-
     }
   }
 
