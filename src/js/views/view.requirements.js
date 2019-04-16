@@ -22,7 +22,7 @@ var createRequirementsView = function () {
         fullScreen:true,
         displayProp:"name",
         display:[
-          {prop:"name", displayAs:"name", edit:"true"},
+          {prop:"name", displayAs:"Name", edit:"true"},
           {prop:"desc", displayAs:"Description", edit:"true"},
           {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:"true"}
         ],

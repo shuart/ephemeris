@@ -42,14 +42,9 @@ function showListMenu({
   var theme = {
     windowedContainerClass : "ui raised padded container segment",
     embededContainerClass: "ui container",
-    menuContainerClass: "ui small pointing menu",
     addAreaContainerClass: "ui segment",
     menuButtonsContainerClass: "item",
-    menuClearButtonClass: "ui secondary button",
-    menuAddButtonClass: "ui green button",
-    menuCloseButtonClass: "ui red button",
     menuExtraButtonClass: "ui button",
-    menuRightMenuContainerClass: "right menu",
     fullscreenContainerClass : "ui container",
     multipleElementsListClass: "ui middle aligned divided list",
     singleElementsListClass: "ui middle aligned divided list",
@@ -406,6 +401,17 @@ function showListMenu({
     }
   }
 
+  function buildTitleLine(rules,extraButtons) {
+    let props = rules
+    if (onMove || onRemove || onChangeSelect ||  extraButtons[0]) {
+      props = rules.concat([{displayAs:"Actions"}])
+    }
+    let items = props.map( p => theme.listItem(p.displayAs)).join("")
+    let row = theme.topRow(items)
+    let wrapper = theme.listWrapper(row)
+    return wrapper
+  }
+
   function buildSingle(sourceData, sourceLinks, rootNodes, level, parentId, greyed) {
     var source = undefined
     var targets = undefined
@@ -579,7 +585,6 @@ function showListMenu({
             nestedHtml +=`
             <div data-id="${item[idProp]}" class="column">
               <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
-                <div class="header">${dispName}</div>
                 ${propDisplay}
                 ${editHtml}
               </div>
@@ -667,7 +672,11 @@ function showListMenu({
     }else if (editItemMode){
       container.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks, editItemMode.item))
     }else {
-      container.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks))
+      //build top row
+      let titleLineHtml = buildTitleLine(display, extraButtons)
+      mainEl.appendChild(toNode(titleLineHtml));
+      //build all list
+      container.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
     }
 
     mainEl.appendChild(container)

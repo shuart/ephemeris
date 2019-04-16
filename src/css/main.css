@@ -577,6 +577,10 @@ textarea {
   flex: 1;
   font-weight: bold;
 }
+.flexTable .top.row {
+  text-align: center;
+  font-weight: bold;
+}
 .flexTable .column {
   display: flex;
   flex-direction: column;
