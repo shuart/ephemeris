@@ -514,7 +514,7 @@ var createInterfacesView = function () {
           push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
         }
         //ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-        ev.select.getParent().update()
+        // ev.select.getParent().update()
       },
       onClick: (ev)=>{
         console.log("select");

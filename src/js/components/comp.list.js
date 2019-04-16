@@ -133,7 +133,6 @@ function showListMenu({
             sourceEl.remove()
             render()
           }
-
         }
         if (event.target.classList.contains("action_menu_select_option")) {
           onClick({selectDiv:sourceEl, select:self, target:event.target})
@@ -176,12 +175,22 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_edit_item")) {
           onEditItem({select:self, selectDiv:sourceEl, target:event.target})
-          refreshList()
+          if (!editItemMode) {
+            refreshList()
+          }else {
+            sourceEl.remove()
+            render()
+          }
         }
         if (event.target.classList.contains("action_list_edit_choice_item")) {
           onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target})
           console.log(event.target);
-          refreshList()
+          if (!editItemMode) {
+            refreshList()
+          }else {
+            sourceEl.remove()
+            render()
+          }
         }
         if (event.target.classList.contains("action_list_edit_time_item")) {
           console.log(event.target.parentElement.querySelector("input"));
