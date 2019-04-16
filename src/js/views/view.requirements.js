@@ -51,7 +51,7 @@ var createRequirementsView = function () {
             idProp:"uuid",
             onCloseMenu: (ev)=>{
               console.log(ev.select);
-              ev.select.getParent().update()
+              ev.select.getParent().refreshList()
             },
             onChangeSelect: (ev)=>{
               console.log(ev.select.getSelected());
@@ -62,7 +62,7 @@ var createRequirementsView = function () {
                 push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
               }
               ev.select.getParent().updateMetaLinks(store.metaLinks.items)
-              ev.select.getParent().update()
+              ev.select.getParent().refreshList()
             },
             onClick: (ev)=>{
               console.log("select");

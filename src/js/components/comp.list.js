@@ -111,6 +111,7 @@ function showListMenu({
   var sourceEl = undefined
   var mainEl = undefined
   var editItemMode = undefined
+  var listContainer =undefined;
 
   var self={}
 
@@ -151,20 +152,16 @@ function showListMenu({
           console.log('fefsf');
           multipleSelection.push( event.target.dataset.id)
           onChangeSelect({select:self,selectDiv:sourceEl, target:event.target})
-          sourceEl.remove()
-          render()
+          refreshList()
           //sourceEl.remove()
         }
         if (event.target.classList.contains("action_list_move_item")) {
-          //onsole.log(event.target);
-          //sourceEl.remove()
           if (ismoving) {
             ismoving = false
           }else {
             ismoving = event.target
           }
-          sourceEl.remove()
-          render()
+          refreshList()
 
         }
         if (event.target.classList.contains("action_list_end_move_item") ) {
@@ -173,23 +170,17 @@ function showListMenu({
             onMove({select:self,selectDiv:sourceEl, originTarget:ismoving, target:event.target, targetParentId:event.target.dataset.parentid})
             ismoving = false
           }
-          sourceEl.remove()
-          render()
+          refreshList()
 
         }
         if (event.target.classList.contains("action_list_edit_item")) {
           onEditItem({select:self, selectDiv:sourceEl, target:event.target})
-          console.log(event.target);
-          sourceEl.remove()
-          render()
-          //sourceEl.remove()
+          refreshList()
         }
         if (event.target.classList.contains("action_list_edit_choice_item")) {
           onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target})
           console.log(event.target);
-          //sourceEl.remove()
-          //render()
-          //sourceEl.remove()
+          refreshList()
         }
         if (event.target.classList.contains("action_list_edit_time_item")) {
           console.log(event.target.parentElement.querySelector("input"));
@@ -229,8 +220,7 @@ function showListMenu({
         sourceEl.addEventListener("click",function () {
           if (event.target.classList.contains("action_extra_"+action.class)) {
             action.action(event.target)
-            sourceEl.remove()
-            render()
+            refreshList()
           }
         }, false)
       }
@@ -666,22 +656,28 @@ function showListMenu({
     createMenu()//create the inside of the list
     //createAddTemplate()//create a placeholder area to add items
 
-    //item list
-    var container = document.createElement('div');
-    container.style.overflow = "auto"
+    //add area between menu and list
+    var containerTopArea = document.createElement('div');
+    containerTopArea.style.overflow = "auto"
+    //item list (global var)
+    listContainer = document.createElement('div');
+    listContainer.style.overflow = "auto"
+
+    //build contente
     if (singleElement) {
-      container.innerHTML =theme.listWrapper("<div class='"+ theme.singleElementsListClass + "'>"+ buildSingle(sourceData, sourceLinks, singleElement)+"</div>")
+      listContainer.innerHTML =theme.listWrapper("<div class='"+ theme.singleElementsListClass + "'>"+ buildSingle(sourceData, sourceLinks, singleElement)+"</div>")
     }else if (editItemMode){
-      container.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks, editItemMode.item))
+      listContainer.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks, editItemMode.item))
     }else {
       //build top row
       let titleLineHtml = buildTitleLine(display, extraButtons)
-      mainEl.appendChild(toNode(titleLineHtml));
+      containerTopArea.appendChild(toNode(titleLineHtml));
       //build all list
-      container.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
+      listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
     }
 
-    mainEl.appendChild(container)
+    mainEl.appendChild(containerTopArea)
+    mainEl.appendChild(listContainer)
 
     //inject document framgent in DOM
     if (!targetDomContainer) {
@@ -713,6 +709,9 @@ function showListMenu({
   function setEditItemMode(data) {
     editItemMode = {item:data.item, onLeave:data.onLeave}
   }
+  function refreshList() {
+    listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
+  }
   function update() {
     if (sourceEl) {
       sourceEl.remove()
@@ -727,6 +726,7 @@ function showListMenu({
   self.getSelected = getSelected
   self.getParent = getParent
   self.updateData = updateData
+  self.refreshList = refreshList
   self.updateLinks = updateLinks
   self.updateMetaLinks = updateMetaLinks
   self.update = update
