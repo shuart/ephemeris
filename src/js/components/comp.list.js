@@ -127,7 +127,13 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_add")) {
           onAdd({selectDiv:sourceEl, select:self, target:undefined})
-          refreshList()
+          if (!editItemMode) {
+            refreshList()
+          }else {
+            sourceEl.remove()
+            render()
+          }
+
         }
         if (event.target.classList.contains("action_menu_select_option")) {
           onClick({selectDiv:sourceEl, select:self, target:event.target})
