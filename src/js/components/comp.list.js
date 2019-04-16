@@ -392,8 +392,10 @@ function showListMenu({
 
       let actionCancelTarget = mainEl.querySelector(".action_list_cancel")
       actionCancelTarget.addEventListener('click', function(e){
-        //TODO not working
-        editItemMode.onLeave({select:self,selectDiv:sourceEl, target:event.target})
+
+        if (editItemMode.onLeave) {
+          editItemMode.onLeave({select:self,selectDiv:sourceEl, target:event.target})
+        }
         editItemMode = undefined
         sourceEl.remove()
         render()
