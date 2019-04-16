@@ -462,35 +462,35 @@ function showListMenu({
       var extraButtonsHtml =""
       if (onRemove && !singleItem) {
         remove = `<div class="right floated content">
-            <div data-id="${item[idProp]}" class="ui tiny basic red button action_list_remove_item">remove</div>
+            <div data-id="${item[idProp]}" class="ui mini basic red button action_list_remove_item">remove</div>
           </div>`
       }
       if (extraButtons && !singleItem) {
         for (action of extraButtons) {
           extraButtonsHtml = `<div class="right floated content">
-              <div data-extra="${item[action.prop]}" data-id="${item[idProp]}" class="ui tiny basic teal button action_extra_${action.class}">${action.name}</div>
+              <div data-extra="${item[action.prop]}" data-id="${item[idProp]}" class="ui mini basic teal button action_extra_${action.class}">${action.name}</div>
             </div>`
         }
       }
       if (multipleSelection && !singleItem) {
         if (multipleSelection.includes(item[idProp])) {
           multipleSelect = `<div class="right floated content">
-              <div data-id="${item[idProp]}" class="ui tiny green button action_list_remove_item_from_selection">unselect</div>
+              <div data-id="${item[idProp]}" class="ui mini green button action_list_remove_item_from_selection">unselect</div>
             </div>`
         }else{
           multipleSelect = `<div class="right floated content">
-              <div data-id="${item[idProp]}" class="ui tiny basic green button action_list_add_item_to_selection">Select</div>
+              <div data-id="${item[idProp]}" class="ui mini basic green button action_list_add_item_to_selection">Select</div>
             </div>`
         }
       }
       if (onMove && !greyed && !singleItem) {
         move = `<div class="right floated content">
-            <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui tiny basic blue button action_list_move_item">move</div>
+            <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui mini basic blue button action_list_move_item">move</div>
           </div>`
         if (ismoving && ismoving.dataset.id != item[idProp]) {
           move =`
             <div class="right floated content">
-              <div class="ui tiny buttons">
+              <div class="ui mini buttons">
                 <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Move next</button>
                 <div class="ou"></div>
                 <button data-id="${item[idProp]}" data-grandparentid="${parentId}" data-parentid="${item[idProp]}" class="ui positive button action_list_end_move_item">Link</button>
@@ -499,7 +499,7 @@ function showListMenu({
           `
         }else if (ismoving && !singleItem) {
           move = `<div class="right floated content">
-              <div data-id="${item[idProp]}" class="ui tiny blue button action_list_move_item">Cancel</div>
+              <div data-id="${item[idProp]}" class="ui mini blue button action_list_move_item">Cancel</div>
             </div>`
         }
       }
