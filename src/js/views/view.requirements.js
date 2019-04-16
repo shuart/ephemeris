@@ -25,7 +25,7 @@ var createRequirementsView = function () {
           {prop:"name", displayAs:"Name", edit:"true"},
           {prop:"desc", displayAs:"Description", edit:"true"},
           {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
-          {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false}
+          {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
         ],
         idProp:"uuid",
         onEditItem: (ev)=>{
@@ -36,39 +36,7 @@ var createRequirementsView = function () {
           }
         },
         onEditChoiceItem: (ev)=>{
-          var metalinkType = ev.target.dataset.prop;
-          var sourceTriggerId = ev.target.dataset.id;
-          var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-          showListMenu({
-            sourceData:store.stakeholders.items,
-            parentSelectMenu:ev.select ,
-            multipleSelection:currentLinksUuidFromDS,
-            displayProp:"name",
-            searchable : true,
-            display:[
-              {prop:"name", displayAs:"Name", edit:false},
-              {prop:"desc", displayAs:"Description", edit:false}
-            ],
-            idProp:"uuid",
-            onCloseMenu: (ev)=>{
-              console.log(ev.select);
-              ev.select.getParent().refreshList()
-            },
-            onChangeSelect: (ev)=>{
-              console.log(ev.select.getSelected());
-              console.log(store.metaLinks.items);
-              store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
-              console.log(store.metaLinks.items);
-              for (newSelected of ev.select.getSelected()) {
-                push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
-              }
-              ev.select.getParent().updateMetaLinks(store.metaLinks.items)
-              ev.select.getParent().refreshList()
-            },
-            onClick: (ev)=>{
-              console.log("select");
-            }
-          })
+          startSelection(ev)
         },
         onRemove: (ev)=>{
           console.log("remove");
@@ -259,10 +227,16 @@ var createRequirementsView = function () {
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
     var sourceData = undefined
-    if (metalinkType == "originNeed") {
-      sourceData=store.requirements.items
-    }else if (metalinkType == "originFunction") {
-      sourceData=store.functions.items
+    var invert = false
+    var source = "source"
+    var target = "target"
+    if (metalinkType == "origin") {
+      sourceData=store.stakeholders.items
+    }else if (metalinkType == "originNeed") {
+      invert = true;
+      sourceData=store.currentPbs.items
+      source = "target"
+      target = "source"
     }
     showListMenu({
       sourceData:sourceData,
@@ -280,12 +254,13 @@ var createRequirementsView = function () {
         ev.select.getParent().refreshList()
       },
       onChangeSelect: (ev)=>{
-        console.log(ev.select.getSelected());
-        console.log(store.metaLinks.items);
-        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
-        console.log(store.metaLinks.items);
+        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
         for (newSelected of ev.select.getSelected()) {
-          push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+          if (!invert) {
+            push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+          }else {
+            push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+          }
         }
         ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
         ev.select.getParent().refreshList()
