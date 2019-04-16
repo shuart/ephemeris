@@ -127,8 +127,7 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_add")) {
           onAdd({selectDiv:sourceEl, select:self, target:undefined})
-          sourceEl.remove()
-          render()
+          refreshList()
         }
         if (event.target.classList.contains("action_menu_select_option")) {
           onClick({selectDiv:sourceEl, select:self, target:event.target})
@@ -137,16 +136,12 @@ function showListMenu({
         if (event.target.classList.contains("action_list_remove_item") && onRemove) {
           onRemove({select:self,selectDiv:sourceEl, target:event.target})
           console.log(event.target);
-          sourceEl.remove()
-          render()
-          //sourceEl.remove()
+          refreshList()
         }
         if (event.target.classList.contains("action_list_remove_item_from_selection")) {
           multipleSelection = multipleSelection.filter(i => i != event.target.dataset.id)
           onChangeSelect({select:self,selectDiv:sourceEl, target:event.target})
-          sourceEl.remove()
-          render()
-          //sourceEl.remove()
+          refreshList()
         }
         if (event.target.classList.contains("action_list_add_item_to_selection")) {
           console.log('fefsf');
