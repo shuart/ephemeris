@@ -36,11 +36,11 @@ var createPbsView = function () {
             originalData:ev.target.dataset.value,
             onSave:e =>{
               push(editPbs({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:e}))
-              ev.select.update()
+              ev.select.refreshList()
             },
             onClose:e =>{
               push(editPbs({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:e}))
-              ev.select.update()
+              ev.select.refreshList()
             }
           })
           // console.log("Edit");
@@ -138,7 +138,7 @@ var createPbsView = function () {
         ev.select.getParent().updateMetaLinks(store.metaLinks.items)
         ev.select.getParent().updateData(store.currentPbs.items)
         ev.select.getParent().updateLinks(store.currentPbs.links)
-        ev.select.getParent().update()
+        ev.select.getParent().refreshList()
       },
       onEditItem: (ev)=>{
         console.log("Edit");
@@ -180,7 +180,7 @@ var createPbsView = function () {
       idProp:"uuid",
       onCloseMenu: (ev)=>{
         console.log(ev.select);
-        ev.select.getParent().update()
+        ev.select.getParent().refreshList()
       },
       onChangeSelect: (ev)=>{
         console.log(ev.select.getSelected());
@@ -191,7 +191,7 @@ var createPbsView = function () {
           push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
         }
         ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-        ev.select.getParent().update()
+        ev.select.getParent().refreshList()
       },
       onClick: (ev)=>{
         console.log("select");
@@ -290,7 +290,7 @@ var createPbsView = function () {
               idProp:"uuid",
               onCloseMenu: (ev)=>{
                 console.log(ev.select);
-                ev.select.getParent().update()
+                ev.select.getParent().refreshList()
               },
               onChangeSelect: (ev)=>{
                 console.log(ev.select.getSelected());
@@ -301,7 +301,7 @@ var createPbsView = function () {
                   push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
                 }
                 ev.select.getParent().updateMetaLinks(store.metaLinks.items)
-                ev.select.getParent().update()
+                ev.select.getParent().refreshList()
               },
               onClick: (ev)=>{
                 console.log("select");
@@ -314,7 +314,7 @@ var createPbsView = function () {
             if (newValue) {
               push(editPbs({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
             }
-            ev.select.update()
+            ev.select.refreshList()
           }
         })
       }

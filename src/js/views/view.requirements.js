@@ -117,7 +117,7 @@ var createRequirementsView = function () {
             onCloseMenu: (ev)=>{
               //console.log("fefsefse");
               console.log(ev.select);
-              ev.select.getParent().update()
+              ev.select.getParent().refreshList()
             },
             onEditItem: (ev)=>{
               console.log("Edit");

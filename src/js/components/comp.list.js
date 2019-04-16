@@ -127,7 +127,7 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_add")) {
           onAdd({selectDiv:sourceEl, select:self, target:undefined})
-          if (!editItemMode) {
+          if (!editItemMode && !singleElement) {
             refreshList()
           }else {
             sourceEl.remove()
@@ -175,7 +175,7 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_edit_item")) {
           onEditItem({select:self, selectDiv:sourceEl, target:event.target})
-          if (!editItemMode) {
+          if (!editItemMode && !singleElement) {
             refreshList()
           }else {
             sourceEl.remove()
@@ -184,13 +184,14 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_edit_choice_item")) {
           onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target})
-          console.log(event.target);
-          if (!editItemMode) {
-            refreshList()
-          }else {
-            sourceEl.remove()
-            render()
-          }
+          //TODO this should be updated here with a promise
+          // console.log(event.target);
+          // if (!editItemMode && !singleElement) {
+          //   refreshList()
+          // }else {
+          //   sourceEl.remove()
+          //   render()
+          // }
         }
         if (event.target.classList.contains("action_list_edit_time_item")) {
           console.log(event.target.parentElement.querySelector("input"));
