@@ -1368,8 +1368,35 @@ function stellae(_selector, _options) {
         options.fadeOtherNodesOnHoover = value
     }
 
+    function unhideConnectedNodes(currentNode) {
+      var linkedByIndex = {};
+      relationships.forEach(function(d) {
+          linkedByIndex[d.source.index + "," + d.target.index] = 1;
+      });
+      function isConnected(a, b) {
+        return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index;
+      }
+      var visible = d3.selectAll(".node").filter(function(d){
+                return isConnected(d, currentNode);
+              });
+      visible.style("display","block");
+
+      var currentLinkedRel= d3.selectAll(".relationship").filter(function(o){
+                return o.source === currentNode || o.target === currentNode
+              });
+      currentLinkedRel.style("display","block");
+
+      // d3.selectAll(".relationship").each("display", function(o) {
+      //           return o.source === currentNode || o.target === currentNode ? "block" : "none";
+      //       });
+    }
+    function unhideAllNodes() {
+      d3.selectAll(".node").style("display","block");
+      d3.selectAll(".relationship").style("display","block");
+    }
+
     function setFocusedNodes(property, arrayOfFocusedValue, style){
-      if (style == "mark") {
+      if (style.includes("mark")) {
         d3.selectAll(".node").select(".selection_ring").style("opacity",0); //clear all
         if (arrayOfFocusedValue[0]) {//mark selected
           let currentSelected = arrayOfFocusedValue
@@ -1378,16 +1405,22 @@ function stellae(_selector, _options) {
                   });
           currentSelectedDom.select(".selection_ring").style("opacity",1);
         }
-      }else {
-        if (arrayOfFocusedValue[0]) {//mark selected
+      }
+      if (style.includes("hideOthers")){
+        if (arrayOfFocusedValue[0]) {
+          d3.selectAll(".relationship").style("display","none"); //clear all
           d3.selectAll(".node").style("display","none"); //clear all
           let currentSelected = arrayOfFocusedValue
           var currentSelectedDom = d3.selectAll(".node").filter(function(d){
                     return currentSelected.includes(d[property]) //check if prop value is in selected array
                   });
           currentSelectedDom.style("display","block");
+          currentSelectedDom.each((d) => {//display connected nodes
+            unhideConnectedNodes(d)
+          })
         }else {
           d3.selectAll(".node").style("display","block"); //show all
+          d3.selectAll(".relationship").style("display", "block");
         }
       }
 

@@ -291,9 +291,9 @@ var createRelationsView = function () {
         })
         let filteredDataUuid = filteredData.map(d => d.uuid)
         console.log(filteredDataUuid);
-        activeGraph.setFocusedNodes("uuid", filteredDataUuid, "mark")
+        activeGraph.setFocusedNodes("uuid", filteredDataUuid, ["mark","hideOthers"])
       }else {//if null reset
-        activeGraph.setFocusedNodes("uuid", [], "mark")
+        activeGraph.setFocusedNodes("uuid", [], ["mark","hideOthers"])
       }
     });
 
