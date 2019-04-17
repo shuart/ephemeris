@@ -29,6 +29,7 @@ var createRelationsView = function () {
   var currentGroupedLabels = [];
 
   var itemsToDisplay = []
+  var relations = []
 
 
 
@@ -195,7 +196,7 @@ var createRelationsView = function () {
         }
       })
 
-      var relations = []//checl what connection to display TODO store in func
+      relations = []//checl what connection to display TODO store in func
       if (showMetaLinks) {
         relations = relations.concat(store.metaLinks.items)
       }
@@ -227,6 +228,16 @@ var createRelationsView = function () {
       }
       renderforcesTree({nodes:itemsToDisplay, relationships:relations, groupLinks:groupLinks})
     }
+
+    rendersideListe()
+  }
+
+  var rendersideListe = function () {
+    createTreeList({
+      container:document.querySelector(".left-list"),
+      items: itemsToDisplay,
+      links:relations
+    })
   }
 
   var update = function () {
@@ -271,9 +282,11 @@ var createRelationsView = function () {
             <div class="ui button add_relations_nodes action_interface_add_functions">Add Functions</div>
           </div>
         </div>
-        <div class="ui icon input">
-          <input class="input_relation_search_nodes" type="text" placeholder="Search...">
-          <i class="search icon"></i>
+        <div class="ui item">
+          <div class="ui icon input">
+            <input class="input_relation_search_nodes" type="text" placeholder="Search...">
+            <i class="search icon"></i>
+          </div>
         </div>
       </div>
     </div>
