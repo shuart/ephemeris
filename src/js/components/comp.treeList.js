@@ -7,12 +7,14 @@ var createTreeList = function ({
   contentFunction = undefined
   }={}) {
   var self ={};
+  var domElement = undefined
+
   var objectIsActive = false;
   var theme = {}
 
   theme.item = function (i) {
      html =`
-     <div data-id="${i[identifier]}" class="searchable_item list-item action_note_manager_load_note">
+     <div data-id="${i[identifier]}" class="searchable_item list-item">
        <strong data-id="${i[identifier]}" >${valueFunction(i)}</strong>
        <i class="fas fa-sticky-note"></i>
        <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
@@ -20,14 +22,18 @@ var createTreeList = function ({
 
     return html
   }
-  theme.itemLeaf = function (i, branchesHTML) {
+  theme.itemLeaf = function (i, branchesHTML, caret) {
      html =`
-     <div data-id="${i[identifier]}" class="searchable_item list-item action_note_manager_load_note">
-       <strong data-id="${i[identifier]}" >${valueFunction(i)}</strong>
-       <i class="fas fa-sticky-note"></i>
-       <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
-       <div style ='margin-left=5px;'>${branchesHTML}</div>
-     </div>`
+     <div class="tree_leaf">
+       <div data-id="${i[identifier]}" class="searchable_item list-item">
+         <span>${caret? '<i style="float:left;" class="tree_caret fas fa-caret-down"></i>':""}</span>
+         <strong data-id="${i[identifier]}" >${valueFunction(i)}</strong>
+         <i class="fas fa-sticky-note"></i>
+         <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
+       </div>
+     </div>
+     <div class="tree_children_container" style ='margin-left:9px;'>${branchesHTML}</div>
+     `
 
     return html
   }
@@ -43,21 +49,40 @@ var createTreeList = function ({
   // }
 
   var init = function () {
+    //clear container and append main element
+    container.innerHTML=""
+    domElement = container.appendChild(document.createElement("div"))
+
     connections()
     update()
 
   }
   var connections =function () {
+    domElement.onclick = function(event) {
+        if (event.target.classList.contains("tree_caret")) {
+            console.log(event.target.parentNode.parentNode.parentNode.nextElementSibling);
+            let nextContainer =event.target.parentNode.parentNode.parentNode.nextElementSibling;
+            if (nextContainer.style.display == "none") {
+              nextContainer.style.display="block"
+              event.target.classList.remove('fa-caret-right')
+              event.target.classList.add('fa-caret-down')
+            }else {
+              nextContainer.style.display="none"
+              event.target.classList.remove('fa-caret-down')
+              event.target.classList.add('fa-caret-right')
+            }
 
+        }
+    }
   }
 
   var render = function () {
     if (!links) {
       let list = items.map(i=>theme.item(i)).join("")
-      container.innerHTML = list
+      domElement.innerHTML = list
     }else if (links) {
       let list = renderRecursiveList(items, links)
-      container.innerHTML = list
+      domElement.innerHTML = list
     }
 
   }
@@ -93,12 +118,16 @@ var createTreeList = function ({
     console.log(treeArray);
     return treeArray.map(function (t) {
       let branchesHTML = renderTreeHTML(t.branches)
-      let leafHTML = theme.itemLeaf(t.leaf, branchesHTML)
+      let caret = (branchesHTML != "") ? true :false;
+      let leafHTML = theme.itemLeaf(t.leaf, branchesHTML, caret)
       return leafHTML
     }).join("")
   }
 
   var update = function () {
+    render()
+  }
+  var refresh = function (items, links) {
     render()
   }
 
@@ -114,6 +143,7 @@ var createTreeList = function ({
   self.setActive = setActive
   self.setInactive = setInactive
   self.update = update
+  self.refresh = refresh
   self.init = init
 
   init()
