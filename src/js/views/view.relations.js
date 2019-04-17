@@ -26,7 +26,10 @@ var createRelationsView = function () {
   var groupRequirements = true;
   var groupStakeholders = true;
   var groupPbs = false;
-  var currentGroupedLabels = []
+  var currentGroupedLabels = [];
+
+  var itemsToDisplay = []
+
 
 
 
@@ -135,7 +138,7 @@ var createRelationsView = function () {
     var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
     var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
 
-    var itemsToDisplay = []
+    itemsToDisplay = []
     itemsToDisplay = itemsToDisplay.concat(array2)
     if (showRequirements) { itemsToDisplay = itemsToDisplay.concat(array3) }
     if (showFunctions) { itemsToDisplay = itemsToDisplay.concat(array1) }
@@ -239,6 +242,8 @@ var createRelationsView = function () {
     objectIsActive = false;
   }
 
+
+
   var renderMenu=function () {
     document.querySelector('.center-container .menuArea').innerHTML=`
     <div class="ui mini compact text menu">
@@ -266,9 +271,32 @@ var createRelationsView = function () {
             <div class="ui button add_relations_nodes action_interface_add_functions">Add Functions</div>
           </div>
         </div>
+        <div class="ui icon input">
+          <input class="input_relation_search_nodes" type="text" placeholder="Search...">
+          <i class="search icon"></i>
+        </div>
       </div>
     </div>
     `
+    document.querySelector('.input_relation_search_nodes').addEventListener('keyup', function(e){
+      //e.stopPropagation()
+      var value = document.querySelector(".input_relation_search_nodes").value
+      console.log(value);
+      if (value != "") {
+        var filteredData = itemsToDisplay.filter((item) => {
+          if (fuzzysearch(value, item.name) || fuzzysearch (value, item.name.toLowerCase())) {
+            return true
+          }
+          return false
+        })
+        let filteredDataUuid = filteredData.map(d => d.uuid)
+        console.log(filteredDataUuid);
+        activeGraph.setFocusedNodes("uuid", filteredDataUuid, "mark")
+      }else {//if null reset
+        activeGraph.setFocusedNodes("uuid", [], "mark")
+      }
+    });
+
     document.querySelector('.center-container .menuGraph').innerHTML=`
     <div class="ui item action_relations_toogle_show_graph_menu"><i class="close icon"></i></div>
     <div class="ui secondary pointing vertical menu">

@@ -1368,6 +1368,31 @@ function stellae(_selector, _options) {
         options.fadeOtherNodesOnHoover = value
     }
 
+    function setFocusedNodes(property, arrayOfFocusedValue, style){
+      if (style == "mark") {
+        d3.selectAll(".node").select(".selection_ring").style("opacity",0); //clear all
+        if (arrayOfFocusedValue[0]) {//mark selected
+          let currentSelected = arrayOfFocusedValue
+          var currentSelectedDom = d3.selectAll(".node").filter(function(d){
+                    return currentSelected.includes(d[property]) //check if prop value is in selected array
+                  });
+          currentSelectedDom.select(".selection_ring").style("opacity",1);
+        }
+      }else {
+        if (arrayOfFocusedValue[0]) {//mark selected
+          d3.selectAll(".node").style("display","none"); //clear all
+          let currentSelected = arrayOfFocusedValue
+          var currentSelectedDom = d3.selectAll(".node").filter(function(d){
+                    return currentSelected.includes(d[property]) //check if prop value is in selected array
+                  });
+          currentSelectedDom.style("display","block");
+        }else {
+          d3.selectAll(".node").style("display","block"); //show all
+        }
+      }
+
+    }
+
     function zoomFit(transitionDuration) {
         var bounds = svg.node().getBBox(),
             parent = svg.node().parentElement.parentElement,
@@ -1418,6 +1443,7 @@ function stellae(_selector, _options) {
         updateWithCustomData: updateWithCustomData,
         exportNodesPosition: exportNodesPosition,
         importNodesPosition: importNodesPosition,
+        setFocusedNodes:setFocusedNodes,
         setFadeOtherNodesOnHoover: setFadeOtherNodesOnHoover,
         version: version
     };
