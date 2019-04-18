@@ -16,8 +16,8 @@ var createTreeList = function ({
   theme.item = function (i) {
      html =`
      <div data-id="${i[identifier]}" class="searchable_item list-item">
-       <strong data-id="${i[identifier]}" >${valueFunction(i)}</strong>
-       <i class="fas fa-sticky-note"></i>
+       <span data-id="${i[identifier]}" >${valueFunction(i)}</span>
+       <i style="opacity:0.2" class="far fa-eye"></i>
        <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
      </div>`
 
@@ -28,8 +28,8 @@ var createTreeList = function ({
      <div class="tree_leaf">
        <div data-id="${i[identifier]}" class="searchable_item list-item">
          <span>${getCartStyle(caret, childrenAreClosed)}</span>
-         <strong data-id="${i[identifier]}" >${valueFunction(i)}</strong>
-         <i class="fas fa-sticky-note"></i>
+         <span data-id="${i[identifier]}" >${valueFunction(i)}</span>
+         <i style="opacity:0.2" class="far fa-eye"></i>
          <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
        </div>
      </div>
