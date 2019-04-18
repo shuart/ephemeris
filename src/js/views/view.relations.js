@@ -232,7 +232,7 @@ var createRelationsView = function () {
       renderforcesTree({nodes:itemsToDisplay, relationships:relations, groupLinks:groupLinks})
     }
     console.log(sideListe);
-    if (sideListe) {
+    if (sideListe && !document.querySelector(".tree_list_area")==null) {
       udapteSideListe()
     }else {
       renderSideListe()

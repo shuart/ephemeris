@@ -58,14 +58,17 @@ var createTreeList = function ({
   // }
 
   var init = function () {
-    //clear container and append main element
-    container.innerHTML=""
-    domElement = container.appendChild(document.createElement("div"))
-    console.log(domElement);
-
+    setContainerArea()
     connections()
     update()
 
+  }
+  var setContainerArea =function () {
+    //clear container and append main element
+    container.innerHTML=""
+    domElement = container.appendChild(document.createElement("div"))
+    domElement.classList="tree_list_area"
+    console.log(domElement);
   }
   var connections =function () {
     domElement.onclick = function(event) {
@@ -150,6 +153,10 @@ var createTreeList = function ({
   var refresh = function (newItems, newLinks) {
     items = newItems
     links = newLinks
+    if (document.querySelector(".tree_list_area") == null) {
+      console.log("container has disapeard");
+      setContainerArea()
+    }
 
     render()
   }
