@@ -31,11 +31,14 @@ var createRelationsView = function () {
   var itemsToDisplay = []
   var relations = []
 
+  var sideListe = undefined
+
 
 
 
   var init = function () {
     connections()
+
 
   }
   var connections =function () {//TODO rename everyting with _Relations_
@@ -228,17 +231,27 @@ var createRelationsView = function () {
       }
       renderforcesTree({nodes:itemsToDisplay, relationships:relations, groupLinks:groupLinks})
     }
-
-    rendersideListe()
+    console.log(sideListe);
+    if (sideListe) {
+      udapteSideListe()
+    }else {
+      renderSideListe()
+    }
   }
 
-  var rendersideListe = function () {
-    createTreeList({
+  var renderSideListe = function () {
+    sideListe = createTreeList({
       container:document.querySelector(".left-list"),
       items: itemsToDisplay,
       links:relations
     })
   }
+
+  var udapteSideListe = function () {
+    sideListe.refresh(itemsToDisplay, relations)
+  }
+
+
 
   var update = function () {
     render()

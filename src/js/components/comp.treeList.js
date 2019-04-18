@@ -8,6 +8,7 @@ var createTreeList = function ({
   }={}) {
   var self ={};
   var domElement = undefined
+  var closedCaret = []
 
   var objectIsActive = false;
   var theme = {}
@@ -22,20 +23,28 @@ var createTreeList = function ({
 
     return html
   }
-  theme.itemLeaf = function (i, branchesHTML, caret) {
+  theme.itemLeaf = function (i, branchesHTML, caret,childrenAreClosed) {
      html =`
      <div class="tree_leaf">
        <div data-id="${i[identifier]}" class="searchable_item list-item">
-         <span>${caret? '<i style="float:left;" class="tree_caret fas fa-caret-down"></i>':""}</span>
+         <span>${getCartStyle(caret, childrenAreClosed)}</span>
          <strong data-id="${i[identifier]}" >${valueFunction(i)}</strong>
          <i class="fas fa-sticky-note"></i>
          <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
        </div>
      </div>
-     <div class="tree_children_container" style ='margin-left:9px;'>${branchesHTML}</div>
+     <div class="tree_children_container" style ='${childrenAreClosed? 'display:none; ':''} margin-left:9px;'>${branchesHTML}</div>
      `
-
     return html
+  }
+  function getCartStyle(caret, childrenAreClosed) {
+    if (caret && childrenAreClosed) {
+      return '<i style="float:left;" class="tree_caret fas fa-caret-right"></i>'
+    }else if (caret && !childrenAreClosed) {
+      return '<i style="float:left;" class="tree_caret fas fa-caret-down"></i>'
+    }else {
+      return ''
+    }
   }
   // theme.item = function (i) {
   //    html =`
@@ -52,6 +61,7 @@ var createTreeList = function ({
     //clear container and append main element
     container.innerHTML=""
     domElement = container.appendChild(document.createElement("div"))
+    console.log(domElement);
 
     connections()
     update()
@@ -63,10 +73,18 @@ var createTreeList = function ({
             console.log(event.target.parentNode.parentNode.parentNode.nextElementSibling);
             let nextContainer =event.target.parentNode.parentNode.parentNode.nextElementSibling;
             if (nextContainer.style.display == "none") {
+              //remove element from closed carret list
+              var index = closedCaret.indexOf(event.target.parentNode.parentNode.dataset.id);
+              if (index > -1) {
+                closedCaret.splice(index, 1);
+              }
               nextContainer.style.display="block"
               event.target.classList.remove('fa-caret-right')
               event.target.classList.add('fa-caret-down')
             }else {
+              //add element to closed carret info
+              closedCaret.push(event.target.parentNode.parentNode.dataset.id)
+              console.log(closedCaret);
               nextContainer.style.display="none"
               event.target.classList.remove('fa-caret-down')
               event.target.classList.add('fa-caret-right')
@@ -119,7 +137,9 @@ var createTreeList = function ({
     return treeArray.map(function (t) {
       let branchesHTML = renderTreeHTML(t.branches)
       let caret = (branchesHTML != "") ? true :false;
-      let leafHTML = theme.itemLeaf(t.leaf, branchesHTML, caret)
+      let caretStatus = closedCaret.includes(t.leaf[identifier])
+      console.log(t.leaf[identifier], caretStatus)
+      let leafHTML = theme.itemLeaf(t.leaf, branchesHTML, caret, caretStatus)
       return leafHTML
     }).join("")
   }
@@ -127,7 +147,10 @@ var createTreeList = function ({
   var update = function () {
     render()
   }
-  var refresh = function (items, links) {
+  var refresh = function (newItems, newLinks) {
+    items = newItems
+    links = newLinks
+
     render()
   }
 
