@@ -24,6 +24,9 @@ function setCurrentProject(project) {
     renderCDC()
   }
 }
+function setCurrentPage(page) {
+  app.state.currentView = page
+}
 
 //MAIN ACTIONS
 

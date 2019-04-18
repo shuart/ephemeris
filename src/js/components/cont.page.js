@@ -1,4 +1,6 @@
-var createPageManager = function () {
+var createPageManager = function ({
+  onChange=undefined
+  }={}) {
   var self ={};
   var objectIsActive = false;
   var componentList = [];
@@ -45,6 +47,10 @@ var createPageManager = function () {
     }else {
       document.querySelector(".side-menu").style.width = "256px"
     }
+
+    if (onChange) {
+      onChange({componentName:componentName})
+    }
   }
 
   self.setActivePage = setActivePage
@@ -54,5 +60,8 @@ var createPageManager = function () {
   return self
 }
 
-var pageManager = createPageManager();
+var pageManager = createPageManager({
+  onChange: (e) =>{ setCurrentPage(e.componentName)}
+  }
+);
 pageManager.init()

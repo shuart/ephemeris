@@ -8,7 +8,8 @@ app.store = {
 
 app.state = {
   currentUser : undefined,
-  currentProject: undefined
+  currentProject: undefined,
+  currentView: undefined
 }
 
 app.cscDB ={

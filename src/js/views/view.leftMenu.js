@@ -155,7 +155,11 @@ var createLeftMenu = function () {
 
   var update = function () {
     var store = query.currentProject()
-    if (store) {
+    let currentView = app.state.currentView;
+    function checkIfShouldDisplay(currentView) {
+      return !(currentView == "relations")
+    }
+    if (store && checkIfShouldDisplay(currentView)) {
       //update document title
       //add current cdc area
       // document.querySelector(".current-area-title").innerHTML = "My CSC"
@@ -229,7 +233,7 @@ var createLeftMenu = function () {
       }
 
 
-    }else {
+    }else if(checkIfShouldDisplay(currentView)) {
       document.querySelector(".current-area-title").innerHTML = ""
       document.querySelector(".current-area").innerHTML = ""
       document.querySelector(".pbsFlatView-area").innerHTML = ""
