@@ -96,6 +96,12 @@ return 'itxxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 });
 }
 
+//remove item from array
+
+function removeFromArray(array, item) {
+  return array.filter( i => i != item);
+}
+
 //change element position in an Array
 
 function moveElementInArray (array, value, target) {

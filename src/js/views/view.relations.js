@@ -14,6 +14,7 @@ var createRelationsView = function () {
   var currentGraphTransformation=[0,0,1]
   var addItemMode ="currentPbs"
   //What to show
+  var hiddenItemsFromSideView = [];
   var showVisibilityMenu = false;
   var showFunctions = true;
   var showRequirements = true;
@@ -32,7 +33,6 @@ var createRelationsView = function () {
   var relations = []
 
   var sideListe = undefined
-
 
 
 
@@ -66,6 +66,19 @@ var createRelationsView = function () {
       addItemMode = 'stakeholders'
       document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
       queryDOM(".action_interface_add_stakeholder").classList.add('active')
+    })
+    connect(".action_tree_list_relations_toogle_visibility","click",(e)=>{
+      let current = e.target
+      let linkedNodeId = current.dataset.id
+      let isVisible = !hiddenItemsFromSideView.includes(linkedNodeId)
+      if (isVisible) {
+        hiddenItemsFromSideView.push(linkedNodeId)
+      }else {
+        hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedNodeId)
+        // current.classList.remove('fa-eye')
+        // current.classList.add('fa-eye-slash')
+      }
+      update()
     })
     connect(".action_relations_toogle_show_graph_menu","click",(e)=>{
       var elem = queryDOM('.menuGraph')
@@ -148,6 +161,10 @@ var createRelationsView = function () {
     if (showFunctions) { itemsToDisplay = itemsToDisplay.concat(array1) }
     if (showStakeholders) { itemsToDisplay = itemsToDisplay.concat(array4) }
 
+    //remove hidden items from tree
+
+    let filteredItemsToDisplay = itemsToDisplay.filter(i=> !hiddenItemsFromSideView.includes(i.uuid))
+
     var groupLinks =[]
     var initIndex = 0
     var currentIndex = 0
@@ -192,7 +209,7 @@ var createRelationsView = function () {
       var allFixedValues = fixedValuesList.concat(itemsToFixAtNextUpdate)
       itemsToFixAtNextUpdate = []//clear buffer of new objects to be fixed
       allFixedValues.forEach(f =>{
-        var match = itemsToDisplay.find(c => c.uuid == f.uuid)
+        var match = filteredItemsToDisplay.find(c => c.uuid == f.uuid)
         if (match) {
           match.fx =f.fx ; match.x =f.fx;
           match.fy=f.fy; match.y =f.fy;
@@ -229,7 +246,9 @@ var createRelationsView = function () {
           }
         }
       }
-      renderforcesTree({nodes:itemsToDisplay, relationships:relations, groupLinks:groupLinks})
+      //copy relations
+      let relationToDisplay = relations.concat([])
+      renderforcesTree({nodes:filteredItemsToDisplay, relationships:relationToDisplay, groupLinks:groupLinks})
     }
     console.log(sideListe);
     if (sideListe && !document.querySelector(".tree_list_area")==null) {
@@ -243,12 +262,32 @@ var createRelationsView = function () {
     sideListe = createTreeList({
       container:document.querySelector(".left-list"),
       items: itemsToDisplay,
-      links:relations
+      links:relations,
+      customEyeActionClass:"action_tree_list_relations_toogle_visibility"
     })
+    updateSideListeVisibility()
   }
 
   var udapteSideListe = function () {
     sideListe.refresh(itemsToDisplay, relations)
+    updateSideListeVisibility()
+  }
+
+  var updateSideListeVisibility = function () {//TODO integrate in list tree
+    let elementList = document.querySelector(".left-list").querySelectorAll('.action_tree_list_relations_toogle_visibility')
+    for (var i = 0; i < elementList.length; i++) {
+      let current = elementList[i]
+      let linkedNodeId = current.dataset.id
+      let isVisible = !hiddenItemsFromSideView.includes(linkedNodeId)
+      if (isVisible) {
+        current.classList.add('fa-eye')
+        current.classList.remove('fa-eye-slash')
+      }else {
+        current.classList.remove('fa-eye')
+        current.classList.add('fa-eye-slash')
+      }
+
+    }
   }
 
 

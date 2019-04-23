@@ -4,7 +4,10 @@ var createTreeList = function ({
   links = undefined,
   identifier = "uuid",
   valueFunction = (i)=> i.name,
-  contentFunction = undefined
+  contentFunction = undefined,
+  onToogleVisibility=undefined,
+  customEyeActionClass="",
+  arrayOfHiddenItems = undefined//unused
   }={}) {
   var self ={};
   var domElement = undefined
@@ -13,11 +16,11 @@ var createTreeList = function ({
   var objectIsActive = false;
   var theme = {}
 
-  theme.item = function (i) {
+  theme.item = function (i, visibility) {
      html =`
      <div data-id="${i[identifier]}" class="searchable_item list-item">
        <span data-id="${i[identifier]}" >${valueFunction(i)}</span>
-       <i style="opacity:0.2" class="far fa-eye"></i>
+       <i data-id="${i[identifier]} style="opacity:0.2" class="${customEyeActionClass} far ${visibility ? "fa-eye-slash":"fa-eye" }"></i>
        <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
      </div>`
 
@@ -29,7 +32,7 @@ var createTreeList = function ({
        <div data-id="${i[identifier]}" class="searchable_item list-item">
          <span>${getCartStyle(caret, childrenAreClosed)}</span>
          <span class="relaxed" data-id="${i[identifier]}" >${valueFunction(i)}</span>
-         <i style="opacity:0.2" class="far fa-eye"></i>
+         <i data-id="${i[identifier]}" style="opacity:0.2" class="far fa-eye ${customEyeActionClass}"></i>
          <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
        </div>
      </div>
@@ -111,7 +114,11 @@ var createTreeList = function ({
   var renderRecursiveList = function (items, links) {
     let listRoots = items.filter((i) => {
       return !links.find((l)=> {
-        return l.target[identifier] == i[identifier]
+        if (l.target[identifier]) {//check if links source is object
+          return l.target[identifier] == i[identifier]
+        }else{
+          return l.target == i[identifier]
+        }
       })
     })
     console.log(listRoots);
@@ -125,7 +132,11 @@ var createTreeList = function ({
       //get all the children of this element
       let itemsChildren = items.filter((i) => {
         return links.find((l)=> {
-          return l.source[identifier] == r[identifier] && l.target[identifier] == i[identifier]
+          if (l.source[identifier]) {//check if links source is object
+            return l.source[identifier] == r[identifier] && l.target[identifier] == i[identifier]
+          }else { //or ID
+            return l.source == r[identifier] && l.target == i[identifier]
+          }
         })
       })
       //recursively trandform them in leaf and branches
