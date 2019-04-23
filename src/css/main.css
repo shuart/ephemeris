@@ -244,6 +244,7 @@ textarea {
      padding: 6px;
      margin-right: 5px;
      padding-left: 10px;
+     display: flex;
  }
  .side-left-menu .left-list .list-item:hover{
      background-color: #ececec;
@@ -254,6 +255,9 @@ textarea {
     bottom: 0px;
     padding: 2px;
     padding-right: 10px;
+ }
+ .side-left-menu .left-list .list-item .relaxed{
+    flex-grow: 1;
  }
 
  .side-left-menu .button {
