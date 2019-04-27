@@ -16,6 +16,7 @@ var createRelationsView = function () {
   //What to show
   var hiddenItemsFromSideView = [];
   var showVisibilityMenu = false;
+
   var showFunctions = true;
   var showRequirements = true;
   var showStakeholders = true;
@@ -154,11 +155,10 @@ var createRelationsView = function () {
       }, 1);
     })
     connect(".action_relations_load_view","click",(e)=>{
-      // console.log(e.target.dataset.id);
-      // let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
-      // console.log(graph);
       function setSnapshot() {
+        let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
         fixedValues = true
+        hiddenItemsFromSideView= graph.hiddenItems || []
         currentSnapshot = e.target.dataset.id
         update()
       }
@@ -168,7 +168,7 @@ var createRelationsView = function () {
     })
     connect(".action_relations_add_snap_view","click",(e)=>{
       let snapshotName = prompt("Add a Snapshot")
-      let graphItem = {uuid:genuuid(), name:snapshotName, nodesPositions:activeGraph.exportNodesPosition("all")}
+      let graphItem = {uuid:genuuid(), name:snapshotName, hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
       push(act.add("graphs", graphItem))
       update()
     })
