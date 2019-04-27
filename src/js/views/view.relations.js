@@ -29,6 +29,8 @@ var createRelationsView = function () {
   var groupPbs = false;
   var currentGroupedLabels = [];
 
+  var currentSnapshot=undefined
+
   var itemsToDisplay = []
   var relations = []
 
@@ -37,9 +39,23 @@ var createRelationsView = function () {
   var theme={
     viewListItem:(item) => {
      let html = `
-      <button data-id="${item.uuid}" class="ui basic button action_relations_load_view">
-        <i class="icon user"></i>
-        ${item.name}
+      <div class="ui mini basic icon buttons">
+        <button data-id="${item.uuid}" class="ui mini basic button action_relations_load_view">
+          <i class="icon user"></i>
+          ${item.name}
+        </button>
+        <button data-id="${item.uuid}" class="ui button action_relations_update_snapshot"><i data-id="${item.uuid}" class="save icon "></i></button>
+        <button data-id="${item.uuid}" class="ui button action_relations_remove_snapshot"><i data-id="${item.uuid}" class="times circle outline icon "></i></button>
+      </div>
+      `
+
+    return html
+    },
+    viewListAdd:() => {
+     let html = `
+      <button data-id="" class="ui mini basic button action_relations_add_snap_view">
+        <i class="icon plus"></i>
+        Add a snapshot
       </button>`
     return html
     }
@@ -138,16 +154,38 @@ var createRelationsView = function () {
       }, 1);
     })
     connect(".action_relations_load_view","click",(e)=>{
-      console.log(e.target.dataset.id);
-      let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
-      console.log(graph);
-      function toggleFixedGraph() {
-        fixedValues = !fixedValues
+      // console.log(e.target.dataset.id);
+      // let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
+      // console.log(graph);
+      function setSnapshot() {
+        fixedValues = true
+        currentSnapshot = e.target.dataset.id
         update()
       }
       setTimeout(function () {
-        // toggleFixedGraph()
+        setSnapshot()
       }, 1);
+    })
+    connect(".action_relations_add_snap_view","click",(e)=>{
+      let snapshotName = prompt("Add a Snapshot")
+      let graphItem = {uuid:genuuid(), name:snapshotName, nodesPositions:activeGraph.exportNodesPosition("all")}
+      push(act.add("graphs", graphItem))
+      update()
+    })
+    connect(".action_relations_remove_snapshot","click",(e)=>{
+      if (confirm("Delete this snapshot")) {
+        push(act.remove("graphs", {uuid:e.target.dataset.id}))
+        update()
+      }
+    })
+    connect(".action_relations_update_snapshot","click",(e)=>{
+      if (confirm("Update this snapshot")) {
+        let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
+        let newGraphItem = {uuid:genuuid(), name:graph.name, nodesPositions:activeGraph.exportNodesPosition("all")}
+        push(act.remove("graphs", {uuid:e.target.dataset.id}))
+        push(act.add("graphs", newGraphItem))
+        update()
+      }
     })
     connect(".action_fade_other_node_toogle_network","change",(e)=>{
       console.log(e.target.value);
@@ -222,11 +260,16 @@ var createRelationsView = function () {
       state.init()
     }else if(displayType == "network"){
       var fixedValuesList = []
-      if (fixedValues) {
-        if (query.currentProject().graphs && query.currentProject().graphs.items[0]) {
-          fixedValuesList = query.currentProject().graphs.items[0].nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB
+      if (fixedValues) { //check if network is fixed or dynamic
+        if (currentSnapshot) {// has a snapshot been activated
+          fixedValuesList = query.currentProject().graphs.items.find(i=>i.uuid == currentSnapshot).nodesPositions
+          currentSnapshot = undefined//clear current snapshot
+        }else {// if not go to default
+          if (query.currentProject().graphs && query.currentProject().graphs.default) {
+            fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB backward compatibility
+          }
+          console.log(fixedValuesList);
         }
-        console.log(fixedValuesList);
       }
       //concat with items to fix this time
       var allFixedValues = fixedValuesList.concat(itemsToFixAtNextUpdate)
@@ -414,7 +457,7 @@ var createRelationsView = function () {
         </div>
       </div>
       <div class="item">
-        <div class="header">Views</div>
+        <div class="header">Snapshots</div>
         <div class="menu target_relations_view_list">
         </div>
       </div>
@@ -426,8 +469,18 @@ var createRelationsView = function () {
     //   relationViews = query.currentProject().graphs.items[0] //check if graph is in DB
     //   // fixedValuesList = query.currentProject().graphs.items[0] //check if graph is in DB
     // }
-    let viewMenuHtml =relationViews.map(v=>theme.viewListItem(v)).join('')
-    //queryDOM('.target_relations_view_list').innerHTML= viewMenuHtml
+    let viewMenuHtml =relationViews.slice()
+      .sort(function(a, b) {
+        if (a.name && b.name) {
+          var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+          var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+          if (nameA < nameB) {return -1;}
+          if (nameA > nameB) {return 1;}
+        }
+        return 0;})
+      .map(v=>theme.viewListItem(v))
+      .join('')
+    queryDOM('.target_relations_view_list').innerHTML= theme.viewListAdd() + viewMenuHtml
   }
 
   var dataToD3Format = function (data) {
@@ -527,14 +580,12 @@ var createRelationsView = function () {
       onNodeDragEnd:function (node) {
         if (fixedValues) {
           //TODO test to clean
-          if (!query.currentProject().graphs ) {
+          if (!query.currentProject().graphs ) {//backward compatibility
             query.currentProject().graphs = {}
             query.currentProject().graphs.items =[]
           }
           let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
-          query.currentProject().graphs.items[0] = graphItem
-          console.log(query.currentProject());
-          //END TEST
+          query.currentProject().graphs.default = graphItem//TODO use actions
         }
       },
       onNodeContextMenu:function (node) {
