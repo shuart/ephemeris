@@ -247,9 +247,9 @@ var createRelationsView = function () {
     store = JSON.parse(store)
     document.querySelector('.center-container').innerHTML=`
       <div class='menuArea'></div>
-      <div style="height: 100%; position: relative" class='graphArea'>
+      <div style="height: calc(100% - 45px); position: relative" class='graphArea'>
         <div style="height: 100%" class="interfaceGraph"></div>
-        <div style="opacity: 0.85;height: 99%;width: 250px;position: absolute;right:0px;top:1px;background-color: white;" class="${showVisibilityMenu ? '':'hidden'} menuGraph"></div>
+        <div style="opacity: 0.85;height: 99%;width: 250px;position: absolute;right:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenu ? '':'hidden'} menuGraph"></div>
       </div>`
 
     renderMenu()
@@ -501,7 +501,7 @@ var createRelationsView = function () {
       </div>
       <div class="item">
         <div class="header">Snapshots</div>
-        <div class="menu target_relations_view_list">
+        <div style="max-height=150px; overflow=auto;" class="menu target_relations_view_list">
         </div>
       </div>
     </div>
