@@ -17,18 +17,36 @@ var createRelationsView = function () {
   var hiddenItemsFromSideView = [];
   var showVisibilityMenu = false;
 
-  var showFunctions = true;
-  var showRequirements = true;
-  var showStakeholders = true;
-  var showMetaLinks = true;
-  var showInterfaces = false;
-  var showCompose = false;
+  var elementVisibility = {
+    functions : true,
+    requirements : true,
+    stakeholders : true,
+    metaLinks : true,
+    interfaces : false,
+    compose : false
+  }
 
-  var groupFunctions = true;
-  var groupRequirements = true;
-  var groupStakeholders = true;
-  var groupPbs = false;
-  var currentGroupedLabels = [];
+  var groupElements={
+    functions: true,
+    requirements: true,
+    stakeholders: true,
+    pbs:  false
+  }
+  var defaultElementVisibility = {
+    functions : true,
+    requirements : true,
+    stakeholders : true,
+    metaLinks : true,
+    interfaces : false,
+    compose : false
+  }
+
+  var defaultGroupElements={
+    functions: true,
+    requirements: true,
+    stakeholders: true,
+    pbs:  false
+  }
 
   var currentSnapshot=undefined
 
@@ -59,6 +77,14 @@ var createRelationsView = function () {
         Add a snapshot
       </button>`
     return html
+    },
+    viewListReset:() => {
+     let html = `
+      <button data-id="" class="ui mini basic button action_relations_reset_view">
+        <i class="icon sync"></i>
+        reset
+      </button>`
+    return html
     }
   }
 
@@ -78,17 +104,17 @@ var createRelationsView = function () {
       displayType = "network"
       update()
     })
-    connect(".action_relations_toogle_group_functions","click",(e)=>{ groupFunctions = !groupFunctions; update(); })
-    connect(".action_relations_toogle_group_requirements","click",(e)=>{ groupRequirements = !groupRequirements; update(); })
-    connect(".action_relations_toogle_group_stakeholders","click",(e)=>{ groupStakeholders = !groupStakeholders; update(); })
-    connect(".action_relations_toogle_group_pbs","click",(e)=>{ groupPbs = !groupPbs; update(); })
+    connect(".action_relations_toogle_group_functions","click",(e)=>{ groupElements.functions = !groupElements.functions; update(); })
+    connect(".action_relations_toogle_group_requirements","click",(e)=>{ groupElements.requirements = !groupElements.requirements; update(); })
+    connect(".action_relations_toogle_group_stakeholders","click",(e)=>{ groupElements.stakeholders = !groupElements.stakeholders; update(); })
+    connect(".action_relations_toogle_group_pbs","click",(e)=>{ groupElements.pbs = !groupElements.pbs; update(); })
 
-    connect(".action_relations_toogle_show_functions","click",(e)=>{ showFunctions = !showFunctions; update(); })
-    connect(".action_relations_toogle_show_requirements","click",(e)=>{ showRequirements = !showRequirements; update(); })
-    connect(".action_relations_toogle_show_stakeholders","click",(e)=>{ showStakeholders = !showStakeholders; update(); })
-    connect(".action_relations_toogle_show_metalinks","click",(e)=>{ showMetaLinks = !showMetaLinks; update(); })
-    connect(".action_relations_toogle_show_interfaces","click",(e)=>{ showInterfaces = !showInterfaces; update(); })
-    connect(".action_relations_toogle_show_compose","click",(e)=>{ showCompose = !showCompose; update(); })
+    connect(".action_relations_toogle_show_functions","click",(e)=>{ elementVisibility.functions = !elementVisibility.functions; update(); })
+    connect(".action_relations_toogle_show_requirements","click",(e)=>{ elementVisibility.requirements = !elementVisibility.requirements; update(); })
+    connect(".action_relations_toogle_show_stakeholders","click",(e)=>{ elementVisibility.stakeholders = !elementVisibility.stakeholders; update(); })
+    connect(".action_relations_toogle_show_metalinks","click",(e)=>{ elementVisibility.metaLinks = !elementVisibility.metaLinks; update(); })
+    connect(".action_relations_toogle_show_interfaces","click",(e)=>{ elementVisibility.interfaces = !elementVisibility.interfaces; update(); })
+    connect(".action_relations_toogle_show_compose","click",(e)=>{ elementVisibility.compose = !elementVisibility.compose; update(); })
 
     connect(".action_interface_add_stakeholder","click",(e)=>{
       addItemMode = 'stakeholders'
@@ -159,6 +185,10 @@ var createRelationsView = function () {
         let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
         fixedValues = true
         hiddenItemsFromSideView= graph.hiddenItems || []
+        if (graph.elementVisibility) {
+          groupElements= deepCopy(graph.groupElements);//prevent memory space linking between graph and view TODO investigate why needed here and in save
+          elementVisibility= deepCopy(graph.elementVisibility);
+        }
         currentSnapshot = e.target.dataset.id
         update()
       }
@@ -166,9 +196,22 @@ var createRelationsView = function () {
         setSnapshot()
       }, 1);
     })
+    connect(".action_relations_reset_view","click",(e)=>{
+      function setReset() {
+        fixedValues = false
+        hiddenItemsFromSideView= []
+        groupElements= deepCopy(defaultGroupElements);//prevent memory space linking between graph and view TODO investigate why needed here and in save
+        elementVisibility= deepCopy(defaultElementVisibility);
+        currentSnapshot = undefined
+        update()
+      }
+      setTimeout(function () {
+        setReset()
+      }, 1);
+    })
     connect(".action_relations_add_snap_view","click",(e)=>{
       let snapshotName = prompt("Add a Snapshot")
-      let graphItem = {uuid:genuuid(), name:snapshotName, hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+      let graphItem = {uuid:genuuid(), name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
       push(act.add("graphs", graphItem))
       update()
     })
@@ -218,9 +261,9 @@ var createRelationsView = function () {
 
     itemsToDisplay = []
     itemsToDisplay = itemsToDisplay.concat(array2)
-    if (showRequirements) { itemsToDisplay = itemsToDisplay.concat(array3) }
-    if (showFunctions) { itemsToDisplay = itemsToDisplay.concat(array1) }
-    if (showStakeholders) { itemsToDisplay = itemsToDisplay.concat(array4) }
+    if (elementVisibility.requirements) { itemsToDisplay = itemsToDisplay.concat(array3) }
+    if (elementVisibility.functions) { itemsToDisplay = itemsToDisplay.concat(array1) }
+    if (elementVisibility.stakeholders) { itemsToDisplay = itemsToDisplay.concat(array4) }
 
     //remove hidden items from tree
 
@@ -235,14 +278,14 @@ var createRelationsView = function () {
     currentGroupedLabels = []
 
 
-    if (groupRequirements) { currentGroupedLabels.push('Requirements')}
-    if (groupFunctions) { currentGroupedLabels.push('Functions') };
-    if (groupStakeholders) { currentGroupedLabels.push('User') }
-    if (groupPbs) { currentGroupedLabels.push('Pbs') }
-    // if (groupRequirements) { groups.push(array3); currentGroupedLabels.push('Requirements')}
-    // if (groupFunctions) { groups.push(array1); currentGroupedLabels.push('Functions') };
-    // if (groupStakeholders) { groups.push(array4); currentGroupedLabels.push('User') }
-    // if (groupPbs) { groups.push(array2); currentGroupedLabels.push('Pbs') }
+    if (groupElements.requirements) { currentGroupedLabels.push('Requirements')}
+    if (groupElements.functions) { currentGroupedLabels.push('Functions') };
+    if (groupElements.stakeholders) { currentGroupedLabels.push('User') }
+    if (groupElements.pbs) { currentGroupedLabels.push('Pbs') }
+    // if (groupElements.requirements) { groups.push(array3); currentGroupedLabels.push('Requirements')}
+    // if (groupElements.functions) { groups.push(array1); currentGroupedLabels.push('Functions') };
+    // if (groupElements.stakeholders) { groups.push(array4); currentGroupedLabels.push('User') }
+    // if (groupElements.pbs) { groups.push(array2); currentGroupedLabels.push('Pbs') }
 
     for (group of groups) {
       var groupLinks1  = group.map((e)=>{
@@ -283,13 +326,13 @@ var createRelationsView = function () {
       })
 
       relations = []//checl what connection to display TODO store in func
-      if (showMetaLinks) {
+      if (elementVisibility.metaLinks) {
         relations = relations.concat(store.metaLinks.items)
       }
-      if (showInterfaces) {
+      if (elementVisibility.interfaces) {
         relations = relations.concat(store.interfaces.items)
       }
-      if (showCompose) {
+      if (elementVisibility.compose) {
         relations = relations.concat(store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e}))
         groupLinks = []
       }
@@ -434,26 +477,26 @@ var createRelationsView = function () {
       <div class="item">
         <div class="header">Show Items</div>
         <div class="menu">
-        <a class="${showFunctions ? 'active teal':''} ui item action_relations_toogle_show_functions">Functions</a>
-        <a class="${showRequirements ? 'active teal':''} ui item action_relations_toogle_show_requirements">Requirements</a>
-        <a class="${showStakeholders ? 'active teal':''} ui item action_relations_toogle_show_stakeholders">Stakeholders</a>
+        <a class="${elementVisibility.functions ? 'active teal':''} ui item action_relations_toogle_show_functions">Functions</a>
+        <a class="${elementVisibility.requirements ? 'active teal':''} ui item action_relations_toogle_show_requirements">Requirements</a>
+        <a class="${elementVisibility.stakeholders ? 'active teal':''} ui item action_relations_toogle_show_stakeholders">Stakeholders</a>
         </div>
       </div>
       <div class="item">
         <div class="header">Show Links</div>
         <div class="menu">
-        <a class="${showMetaLinks ? 'active teal':''} ui item action_relations_toogle_show_metalinks">Origins</a>
-        <a class="${showCompose ? 'active teal':''} ui item action_relations_toogle_show_compose">Compositions</a>
-        <a class="${showInterfaces ? 'active teal':''} ui item action_relations_toogle_show_interfaces">Interfaces</a>
+        <a class="${elementVisibility.metaLinks ? 'active teal':''} ui item action_relations_toogle_show_metalinks">Origins</a>
+        <a class="${elementVisibility.compose ? 'active teal':''} ui item action_relations_toogle_show_compose">Compositions</a>
+        <a class="${elementVisibility.interfaces ? 'active teal':''} ui item action_relations_toogle_show_interfaces">Interfaces</a>
         </div>
       </div>
       <div class="item">
         <div class="header">Group Items Together</div>
         <div class="menu">
-        <a class="${groupFunctions ? 'active teal':''} ui item action_relations_toogle_group_functions">Functions</a>
-        <a class="${groupRequirements ? 'active teal':''} ui item action_relations_toogle_group_requirements">Requirements</a>
-        <a class="${groupStakeholders ? 'active teal':''} ui item action_relations_toogle_group_stakeholders">Stakeholders</a>
-        <a class="${groupPbs ? 'active teal':''} ui item action_relations_toogle_group_pbs">Products</a>
+        <a class="${groupElements.functions ? 'active teal':''} ui item action_relations_toogle_group_functions">Functions</a>
+        <a class="${groupElements.requirements ? 'active teal':''} ui item action_relations_toogle_group_requirements">Requirements</a>
+        <a class="${groupElements.stakeholders ? 'active teal':''} ui item action_relations_toogle_group_stakeholders">Stakeholders</a>
+        <a class="${groupElements.pbs ? 'active teal':''} ui item action_relations_toogle_group_pbs">Products</a>
         </div>
       </div>
       <div class="item">
@@ -480,7 +523,7 @@ var createRelationsView = function () {
         return 0;})
       .map(v=>theme.viewListItem(v))
       .join('')
-    queryDOM('.target_relations_view_list').innerHTML= theme.viewListAdd() + viewMenuHtml
+    queryDOM('.target_relations_view_list').innerHTML= theme.viewListReset() + theme.viewListAdd() + viewMenuHtml
   }
 
   var dataToD3Format = function (data) {

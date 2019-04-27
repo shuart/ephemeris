@@ -11,6 +11,11 @@ function removeItemsWithPropValue(array, prop, value) {
   return array.filter((item)=>item[prop] != value)
 }
 
+//deep copy an objects
+function deepCopy(src) {
+  return JSON.parse(JSON.stringify(src));
+}
+
 //create an high level element listener
 function connect(selector, action, callback) {
   document.addEventListener(action, function (event) {
