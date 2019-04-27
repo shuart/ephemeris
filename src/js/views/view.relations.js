@@ -34,6 +34,17 @@ var createRelationsView = function () {
 
   var sideListe = undefined
 
+  var theme={
+    viewListItem:(item) => {
+     let html = `
+      <button data-id="${item.uuid}" class="ui basic button action_relations_load_view">
+        <i class="icon user"></i>
+        ${item.name}
+      </button>`
+    return html
+    }
+  }
+
 
 
   var init = function () {
@@ -126,6 +137,18 @@ var createRelationsView = function () {
         toggleFixedGraph()
       }, 1);
     })
+    connect(".action_relations_load_view","click",(e)=>{
+      console.log(e.target.dataset.id);
+      let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
+      console.log(graph);
+      function toggleFixedGraph() {
+        fixedValues = !fixedValues
+        update()
+      }
+      setTimeout(function () {
+        // toggleFixedGraph()
+      }, 1);
+    })
     connect(".action_fade_other_node_toogle_network","change",(e)=>{
       console.log(e.target.value);
       fadeOtherNodesOnHoover = !fadeOtherNodesOnHoover
@@ -201,7 +224,7 @@ var createRelationsView = function () {
       var fixedValuesList = []
       if (fixedValues) {
         if (query.currentProject().graphs && query.currentProject().graphs.items[0]) {
-          fixedValuesList = query.currentProject().graphs.items[0] //check if graph is in DB
+          fixedValuesList = query.currentProject().graphs.items[0].nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB
         }
         console.log(fixedValuesList);
       }
@@ -390,8 +413,21 @@ var createRelationsView = function () {
         <a class="${groupPbs ? 'active teal':''} ui item action_relations_toogle_group_pbs">Products</a>
         </div>
       </div>
+      <div class="item">
+        <div class="header">Views</div>
+        <div class="menu target_relations_view_list">
+        </div>
+      </div>
     </div>
     `
+    //Add viewSelectionMenu
+    let relationViews = query.currentProject().graphs.items
+    // if (query.currentProject().graphs && query.currentProject().graphs.items[0]) {
+    //   relationViews = query.currentProject().graphs.items[0] //check if graph is in DB
+    //   // fixedValuesList = query.currentProject().graphs.items[0] //check if graph is in DB
+    // }
+    let viewMenuHtml =relationViews.map(v=>theme.viewListItem(v)).join('')
+    //queryDOM('.target_relations_view_list').innerHTML= viewMenuHtml
   }
 
   var dataToD3Format = function (data) {
@@ -495,7 +531,8 @@ var createRelationsView = function () {
             query.currentProject().graphs = {}
             query.currentProject().graphs.items =[]
           }
-          query.currentProject().graphs.items[0] = activeGraph.exportNodesPosition("all")
+          let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
+          query.currentProject().graphs.items[0] = graphItem
           console.log(query.currentProject());
           //END TEST
         }
