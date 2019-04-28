@@ -380,10 +380,14 @@ var createRelationsView = function () {
       let relationToDisplay = relations.concat([])
       renderforcesTree({nodes:filteredItemsToDisplay, relationships:relationToDisplay, groupLinks:groupLinks})
     }
-    console.log(sideListe);
-    if (sideListe && !document.querySelector(".tree_list_area")==null) {
+    // console.log(sideListe);
+    // console.log(document.querySelector(".tree_list_area"));
+    // console.log(!document.querySelector(".tree_list_area")==null);
+    // console.log(sideListe && !document.querySelector(".tree_list_area")==null);
+    if (sideListe && document.querySelector(".tree_list_area")) {
       udapteSideListe()
     }else {
+      alert('list rerender')
       renderSideListe()
     }
   }
