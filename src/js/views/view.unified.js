@@ -191,7 +191,7 @@ var createUnifiedView = function (targetSelector) {
           ${reference}
           <button data-id="${projectId}" class="ui mini basic button action_unified_load_project">
             Focus
-            <i class="icon right arrow"></i>
+            <i data-id="${projectId}" class="icon right arrow"></i>
           </button>
         </div>
       </div>
