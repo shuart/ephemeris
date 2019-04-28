@@ -387,7 +387,6 @@ var createRelationsView = function () {
     if (sideListe && document.querySelector(".tree_list_area")) {
       udapteSideListe()
     }else {
-      alert('list rerender')
       renderSideListe()
     }
   }
