@@ -60,7 +60,7 @@ var createRelationsView = function () {
      let html = `
       <div class="ui mini basic icon buttons">
         <button data-id="${item.uuid}" class="ui mini basic button action_relations_load_view">
-          <i class="icon user"></i>
+          <i class="icon camera"></i>
           ${item.name}
         </button>
         <button data-id="${item.uuid}" class="ui button action_relations_update_snapshot"><i data-id="${item.uuid}" class="save icon "></i></button>
