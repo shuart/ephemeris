@@ -245,7 +245,7 @@ var createRelationsView = function () {
     connect(".action_relations_update_snapshot","click",(e)=>{
       if (confirm("Update this snapshot")) {
         let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
-        let newGraphItem = {uuid:genuuid(), name:graph.name, nodesPositions:activeGraph.exportNodesPosition("all")}
+        let newGraphItem = {uuid:genuuid(), name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
         push(act.remove("graphs", {uuid:e.target.dataset.id}))
         push(act.add("graphs", newGraphItem))
         update()
