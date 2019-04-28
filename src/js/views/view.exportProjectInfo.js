@@ -175,7 +175,7 @@ var createExportProjectInfoView = function () {
     let currentLevel = level || 1
     let identifier = "uuid"
     return treeArray.map(function (t) {
-      let branchesHTML = renderTreeHTML(t.branches, currentLevel++)
+      let branchesHTML = renderTreeHTML(t.branches, currentLevel+1)
       // let caret = (branchesHTML != "") ? true :false;
       let linkToTextFunc = getRelatedItems(t.leaf, "functions").map(l=>l[0] ? l[0].name :"").join(", ")
       let linkToTextReq = getRelatedItems(t.leaf, "requirements").map(l=>l[0] ? l[0].name :"").join(", ")
