@@ -32,7 +32,7 @@ var createTreeList = function ({
        <div data-id="${i[identifier]}" class="searchable_item list-item">
          <span>${getCartStyle(caret, childrenAreClosed)}</span>
          <span class="relaxed" data-id="${i[identifier]}" >${valueFunction(i)}</span>
-         <i data-id="${i[identifier]}" style="opacity:0.2" class="far fa-eye ${customEyeActionClass}"></i>
+         <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="far fa-eye ${customEyeActionClass}"></i>
          <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
        </div>
      </div>

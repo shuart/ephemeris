@@ -125,6 +125,7 @@ var createRelationsView = function () {
       let controlChildrenVisibility = true;
       let current = e.target
       let linkedNodeId = current.dataset.id
+      let linkedNodeLabel = current.dataset.label
       let isVisible = !hiddenItemsFromSideView.includes(linkedNodeId)
       if (isVisible) {
         //Then HIDE
@@ -134,7 +135,7 @@ var createRelationsView = function () {
           let children = current.parentNode.parentNode.nextElementSibling.querySelectorAll('.action_tree_list_relations_toogle_visibility')
           for (var i = 0; i < children.length; i++) {
             let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
-            if (isVisible) {hiddenItemsFromSideView.push(linkedChildId)}
+            if (isVisible && child.dataset.label == linkedNodeLabel) {hiddenItemsFromSideView.push(linkedChildId)}
           }
         }
       }else {
@@ -145,7 +146,7 @@ var createRelationsView = function () {
           let children = current.parentNode.parentNode.nextElementSibling.querySelectorAll('.action_tree_list_relations_toogle_visibility')
           for (var i = 0; i < children.length; i++) {
             let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
-            if (!isVisible) {  hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedChildId)  }
+            if (!isVisible && child.dataset.label == linkedNodeLabel) {  hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedChildId)  }
           }
         }
         // current.classList.remove('fa-eye')
