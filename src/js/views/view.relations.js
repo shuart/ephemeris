@@ -122,16 +122,36 @@ var createRelationsView = function () {
       queryDOM(".action_interface_add_stakeholder").classList.add('active')
     })
     connect(".action_tree_list_relations_toogle_visibility","click",(e)=>{
+      let controlChildrenVisibility = true;
       let current = e.target
       let linkedNodeId = current.dataset.id
       let isVisible = !hiddenItemsFromSideView.includes(linkedNodeId)
       if (isVisible) {
+        //Then HIDE
         hiddenItemsFromSideView.push(linkedNodeId)
+        //propagate
+        if (controlChildrenVisibility == true) {
+          let children = current.parentNode.parentNode.nextElementSibling.querySelectorAll('.action_tree_list_relations_toogle_visibility')
+          for (var i = 0; i < children.length; i++) {
+            let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
+            if (isVisible) {hiddenItemsFromSideView.push(linkedChildId)}
+          }
+        }
       }else {
+        //Then SHOW
         hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedNodeId)
+        //propagate
+        if (controlChildrenVisibility == true) {
+          let children = current.parentNode.parentNode.nextElementSibling.querySelectorAll('.action_tree_list_relations_toogle_visibility')
+          for (var i = 0; i < children.length; i++) {
+            let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
+            if (!isVisible) {  hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedChildId)  }
+          }
+        }
         // current.classList.remove('fa-eye')
         // current.classList.add('fa-eye-slash')
       }
+
       update()
     })
     connect(".action_relations_toogle_show_graph_menu","click",(e)=>{
