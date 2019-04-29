@@ -1446,6 +1446,9 @@ function stellae(_selector, _options) {
         svg.attr('transform', 'translate(' + svgTranslate[0] + ', ' + svgTranslate[1] + ') scale(' + svgScale + ')');
 //        smoothTransform(svgTranslate, svgScale);
     }
+    function getSelectedNodes() {
+      return currentSelectedNodes
+    }
     function initialZoom(startPositions) {
         // svgScale = startPositions[2]
         // svgTranslate = [startPositions[0],startPositions[1]];
@@ -1478,6 +1481,7 @@ function stellae(_selector, _options) {
         importNodesPosition: importNodesPosition,
         setFocusedNodes:setFocusedNodes,
         setFadeOtherNodesOnHoover: setFadeOtherNodesOnHoover,
+        getSelectedNodes: getSelectedNodes,
         version: version
     };
 }

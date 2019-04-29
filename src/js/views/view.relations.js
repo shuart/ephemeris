@@ -192,6 +192,14 @@ var createRelationsView = function () {
       document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
       queryDOM(".action_interface_add_pbs").classList.add('active')
     })
+    connect(".action_relations_isolate_nodes","click",(e)=>{
+      let selectedNodes = activeGraph.getSelectedNodes()
+      isolateSelectedNodes(selectedNodes, false)
+    })
+    connect(".action_relations_isolate_nodes_and_children","click",(e)=>{
+      let selectedNodes = activeGraph.getSelectedNodes()
+      isolateSelectedNodes(selectedNodes, true)
+    })
     connect(".action_restore_last_interface_toogle_network","click",(e)=>{
       function toggleFixedGraph() {
         fixedValues = !fixedValues
@@ -423,6 +431,36 @@ var createRelationsView = function () {
     }
   }
 
+  var isolateSelectedNodes = function (currentSelected, showChildren) {
+    function findChildrenUuid(roots,items, links) {
+      return roots.reduce(function (acc, r) {
+        console.log(acc);
+        let rootArray = [r.uuid]
+        let itemsChildren = items.filter((i) => {//get all the children of this element
+          return links.find((l)=> {
+            if (l.source.uuid) {return l.source.uuid == r.uuid && l.target.uuid == i.uuid//check if links source is object
+            }else { return l.source == r.uuid && l.target == i.uuid}//or ID
+          })
+        })
+        //recursively trandform them in leaf and branches
+        let thisitemChildrenArray = findChildrenUuid(itemsChildren,items, links)
+        rootArray = rootArray.concat(thisitemChildrenArray)
+        console.log(acc);
+        return acc.concat(rootArray)
+      }, [])
+    }
+    let selectedNodes = currentSelected
+    let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+    let selectedNodesAndChildrenUuid = findChildrenUuid(selectedNodes, itemsToDisplay, relations)
+    let stayVisibleNodes = showChildren? selectedNodesAndChildrenUuid : selectedNodesUuid
+    hiddenItemsFromSideView=[] //resetGraph
+    let newDisplayList= itemsToDisplay.filter( i => !stayVisibleNodes.includes(i.uuid))
+    newDisplayList.forEach(function (item) {// hide everyting
+      hiddenItemsFromSideView.push(item.uuid)
+    })
+    update()
+  }
+
 
 
   var update = function () {
@@ -521,6 +559,13 @@ var createRelationsView = function () {
         <a class="${groupElements.requirements ? 'active teal':''} ui item action_relations_toogle_group_requirements">Requirements</a>
         <a class="${groupElements.stakeholders ? 'active teal':''} ui item action_relations_toogle_group_stakeholders">Stakeholders</a>
         <a class="${groupElements.pbs ? 'active teal':''} ui item action_relations_toogle_group_pbs">Products</a>
+        </div>
+      </div>
+      <div class="item">
+        <div class="header">Isolate</div>
+        <div class="ui mini vertical basic buttons">
+          <div class="ui mini button action_relations_isolate_nodes">Selected</div>
+          <div class="ui mini button action_relations_isolate_nodes_and_children">Selected and relations</div>
         </div>
       </div>
       <div class="item">
