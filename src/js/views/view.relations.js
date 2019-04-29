@@ -70,20 +70,20 @@ var createRelationsView = function () {
 
     return html
     },
-    viewListAdd:() => {
+    viewListOptions:() => {
      let html = `
-      <button data-id="" class="ui mini basic button action_relations_add_snap_view">
-        <i class="icon plus"></i>
-        Add a snapshot
-      </button>`
-    return html
-    },
-    viewListReset:() => {
-     let html = `
-      <button data-id="" class="ui mini basic button action_relations_reset_view">
-        <i class="icon sync"></i>
-        reset
-      </button>`
+      <div class="ui mini basic buttons">
+        <button data-id="" class="ui mini basic button action_relations_add_snap_view">
+          <i class="icon plus"></i>
+          Add
+        </button>
+        <button data-id="" class="ui mini basic button action_relations_reset_view">
+          <i class="icon sync"></i>
+          reset
+        </button>
+      </div>
+      <div class="ui divider"></div>
+      `
     return html
     }
   }
@@ -570,7 +570,7 @@ var createRelationsView = function () {
       </div>
       <div class="item">
         <div class="header">Snapshots</div>
-        <div style="max-height=150px; overflow=auto;" class="menu target_relations_view_list">
+        <div style="max-height=150px; overflow=auto;" class="target_relations_view_list">
         </div>
       </div>
     </div>
@@ -592,7 +592,7 @@ var createRelationsView = function () {
         return 0;})
       .map(v=>theme.viewListItem(v))
       .join('')
-    queryDOM('.target_relations_view_list').innerHTML= theme.viewListReset() + theme.viewListAdd() + viewMenuHtml
+    queryDOM('.target_relations_view_list').innerHTML= theme.viewListOptions() + viewMenuHtml
   }
 
   var dataToD3Format = function (data) {
