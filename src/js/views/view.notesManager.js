@@ -49,9 +49,11 @@ var createNotesManager = function (targetSelector) {
   theme.notePreviewItem = function (i) {
      html =`
      <div data-id="${i.uuid}" class="searchable_note list-item action_note_manager_load_note">
-       <strong data-id="${i.uuid}" >${i.title}</strong>
+       <div class="relaxed" data-id="${i.uuid}" >
+        <strong data-id="${i.uuid}" >${i.title}</strong>
+        <div data-id="${i.uuid}" >${i.content.substring(0,135)+".. "}</div>
+       </div>
        <i class="fas fa-sticky-note"></i>
-       <div data-id="${i.uuid}" >${i.content.substring(0,135)+".. "}</div>
      </div>`
 
     return html
