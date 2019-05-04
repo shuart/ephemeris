@@ -36,11 +36,17 @@ function connect(selector, action, callback) {
 
 //time
 const lessThanInSomeDays = (date,days) => {
+  let checkedDate = undefined
+    if (typeof date === "string") {
+      checkedDate = Date.parse(date)
+    }else {
+      checkedDate = date
+    }
     const HOUR = 1000 * 60 * 60;
     const XDaysFuture = Date.now() + HOUR*24* ( days|| 1);
-    console.log(XDaysFuture, date);
-    console.log(XDaysFuture < date);
-    return XDaysFuture > date;
+    console.log(XDaysFuture, checkedDate);
+    console.log(XDaysFuture < checkedDate);
+    return XDaysFuture > checkedDate;
 }
 const howLongAgo = (date) => {
   if (!date || date =="") {
