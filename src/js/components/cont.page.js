@@ -20,15 +20,19 @@ var createPageManager = function ({
   var addComponent = function ({
     name=undefined,
     object = undefined,
-    haveSideBar=true
+    haveSideBar=true,
+    linkedComponents = []
     } = {}) {
-    componentList.push({name, object, haveSideBar})
+    componentList.push({name, object, haveSideBar, linkedComponents})
   }
 
   var setActivePage = function (componentName) {
     var haveSideBar = true;
+    var componentObject = componentList.find(item=> item.name == componentName)
     console.log("set "+componentName+" active");
-    var componentToClose = componentList.filter(item=> item.name != componentName)
+
+    //main Component
+    var componentToClose = componentList.filter(item=> item.name != componentName).filter(c=>!componentObject.linkedComponents.includes(c.name))
     var componentToOpen = componentList.filter(item=> item.name == componentName)
     for (component of componentToClose) {
       if (component.object.setInactive) {
@@ -42,6 +46,16 @@ var createPageManager = function ({
         haveSideBar = component.haveSideBar;
       }
     }
+    //extra component to load
+    if (componentObject.linkedComponents[0]) {
+      var componentToOpen = componentList.filter(c=>componentObject.linkedComponents.includes(c.name))
+      for (component of componentToOpen) {
+        if (component.object.setActive) {
+          component.object.setActive();
+        }
+      }
+    }
+
     if (!haveSideBar) {
       document.querySelector(".side-menu").style.width = "0px"
     }else {

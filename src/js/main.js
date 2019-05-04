@@ -52,13 +52,15 @@ var reparse = false;
   pageManager.addComponent({name:"requirements",object:requirementsView, haveSideBar:false})
   pageManager.addComponent({name:"functions",object:functionsView, haveSideBar:false})
   pageManager.addComponent({name:"planning",object:planningView, haveSideBar:false})
-  pageManager.addComponent({name:"pbs",object:pbsView, haveSideBar:false})
+  pageManager.addComponent({name:"pbs",object:pbsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"interfaces",object:interfacesView, haveSideBar:false})
   pageManager.addComponent({name:"relations",object:relationsView, haveSideBar:false})
   pageManager.addComponent({name:"unified",object:unifiedView, haveSideBar:false})
   pageManager.addComponent({name:"externalUsersManagement",object:externalUsersManagement, haveSideBar:false})
   pageManager.addComponent({name:"exportProjectInfo",object:exportProjectInfoView, haveSideBar:false})
   pageManager.addComponent({name:"notesManager",object:notesManager, haveSideBar:false})
+  //side menu component
+  pageManager.addComponent({name:"leftMenuProjectTree",object:leftMenuProjectTree})
 
   function renderCDC(db, filter) {
     leftMenu.update() //TODO remove and centralize
