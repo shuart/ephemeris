@@ -75,7 +75,10 @@ var createPageManager = function ({
 }
 
 var pageManager = createPageManager({
-  onChange: (e) =>{ setCurrentPage(e.componentName)}
+  onChange: (e) =>{
+    setCurrentPage(e.componentName)
+    document.dispatchEvent(new Event('pageUpdated'))
+    }
   }
 );
 pageManager.init()

@@ -7,15 +7,41 @@ var createLeftMenuProjectTree = function () {
 
   }
   var connections =function () {
-
+    document.addEventListener("storeUpdated", function () {
+      if (objectIsActive) {
+        update()
+      }
+    })
   }
 
   var render = function () {
-    alert("proecttree")
+    document.querySelector(".left-menu-area .title").innerHTML = "Overview"
+    renderSideListe()
   }
 
   var update = function () {
     render()
+  }
+
+  var renderSideListe = function () {
+    var store = JSON.stringify(query.currentProject())
+    store = JSON.parse(store)
+    var itemsToDisplay =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
+    var relations = store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
+
+
+    sideListe = createTreeList({
+      container:document.querySelector(".left-list"),
+      items: itemsToDisplay,
+      links:relations,
+      customEyeActionClass:"action_LM_project_tree_show_item"
+    })
+    // updateSideListeVisibility()
+  }
+
+  var udapteSideListe = function () {
+    sideListe.refresh(itemsToDisplay, relations)
+    // updateSideListeVisibility()
   }
 
   var setActive =function () {
@@ -24,6 +50,9 @@ var createLeftMenuProjectTree = function () {
   }
 
   var setInactive = function () {
+    //clear
+    document.querySelector(".left-list").innerHTML=""
+
     objectIsActive = false;
   }
 

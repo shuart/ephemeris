@@ -13,6 +13,13 @@ var createLeftMenu = function () {
 
   }
   var connections =function () {
+    //connect to DB
+    document.addEventListener("storeUpdated", function () {
+      if (objectIsActive) {
+        update()
+      }
+    })
+    //component connection
     connect(".action_link_pbs_req","click",(e)=>{
       var store = query.currentProject()
       ShowSelectMenu({
@@ -156,36 +163,7 @@ var createLeftMenu = function () {
   var update = function () {
     var store = query.currentProject()
     let currentView = app.state.currentView;
-    function checkIfShouldDisplay(currentView) {
-      return !(currentView == "relations")
-    }
-    if (store && checkIfShouldDisplay(currentView)) {
-      //update document title
-      //add current cdc area
-      // document.querySelector(".current-area-title").innerHTML = "My CSC"
-      document.querySelector(".current-area-title").innerHTML = ""//Temporary blank
-      // document.querySelector(".pbsFlatView-area-title").innerHTML = "My Project"
-
-      //Display project name or application name
-      if (app.state.currentProject) {
-        console.log(document.querySelector(".project_title_area"));
-        document.querySelector(".project_title_area").innerHTML=`
-        <h5 class="ui header">
-          <i class="building outline icon"></i>
-          <div class="content">
-            ${store.reference}, ${store.name}
-          </div>
-        </h5>
-        `
-      }else{
-        document.querySelector(".project_title_area").innerHTML=`
-        <h3 class="ui header">
-          <div class="content">
-            Ephemeris
-          </div>
-        </h3>
-        `
-      }
+    if (store) {
 
       lastTopCat ={ name:undefined};
       lastMiddleCat = { name:undefined};
@@ -233,7 +211,7 @@ var createLeftMenu = function () {
       }
 
 
-    }else if(checkIfShouldDisplay(currentView)) {
+    }else {
       document.querySelector(".current-area-title").innerHTML = ""
       document.querySelector(".current-area").innerHTML = ""
       document.querySelector(".pbsFlatView-area").innerHTML = ""
@@ -385,4 +363,3 @@ var createLeftMenu = function () {
 
 var leftMenu = createLeftMenu()
 leftMenu.init()
-leftMenu.setActive()

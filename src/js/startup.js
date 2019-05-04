@@ -53,7 +53,6 @@ function createStartUp() {
             app.store.userData = user.userData; //TODO use actions
             app.state.currentUser = user.uuid; //TODO use actions
             pageManager.setActivePage("unified")
-            renderCDC() //TODO change update mecanism
             sourceEl.remove()
           }).catch(function(err) {
               console.log(err);

@@ -48,24 +48,26 @@ var reparse = false;
 
   pageManager.addComponent({name:"projects",object:projectsView,haveSideBar:false})
   pageManager.addComponent({name:"csc",object:cscViewer})
-  pageManager.addComponent({name:"overview",object:overview,haveSideBar:false})
-  pageManager.addComponent({name:"requirements",object:requirementsView, haveSideBar:false})
-  pageManager.addComponent({name:"functions",object:functionsView, haveSideBar:false})
+  pageManager.addComponent({name:"overview",object:overview,linkedComponents:["leftMenuProjectTree"],haveSideBar:false})
+  pageManager.addComponent({name:"requirements",object:requirementsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"functions",object:functionsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"planning",object:planningView, haveSideBar:false})
   pageManager.addComponent({name:"pbs",object:pbsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
-  pageManager.addComponent({name:"interfaces",object:interfacesView, haveSideBar:false})
+  pageManager.addComponent({name:"interfaces",object:interfacesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"relations",object:relationsView, haveSideBar:false})
-  pageManager.addComponent({name:"unified",object:unifiedView, haveSideBar:false})
+  pageManager.addComponent({name:"unified",object:unifiedView,linkedComponents:["leftMenuActions"], haveSideBar:false})
   pageManager.addComponent({name:"externalUsersManagement",object:externalUsersManagement, haveSideBar:false})
   pageManager.addComponent({name:"exportProjectInfo",object:exportProjectInfoView, haveSideBar:false})
   pageManager.addComponent({name:"notesManager",object:notesManager, haveSideBar:false})
   //side menu component
+  pageManager.addComponent({name:"leftMenu",object:leftMenu})
+  pageManager.addComponent({name:"leftMenuActions",object:leftMenuActions})
   pageManager.addComponent({name:"leftMenuProjectTree",object:leftMenuProjectTree})
 
-  function renderCDC(db, filter) {
-    leftMenu.update() //TODO remove and centralize
-    cscViewer.update() //TODO remove and centralize
 
+
+  function renderCDC(db, filter) {
+    // cscViewer.update() //TODO remove and centralize
   }
 
 

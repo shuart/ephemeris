@@ -15,6 +15,10 @@ var createOverview = function (targetSelector) {
   var render = function () {
     var store = query.currentProject()
     if (store) {
+      //create a PBS if first opening of project
+      if (!store.currentPbs.items[0]) {
+        createPBS()
+      }
 
       var headerHtml =`
       <h2 class="ui center aligned icon header">
@@ -75,6 +79,15 @@ var createOverview = function (targetSelector) {
       // </div> TODO readd spec when ready
       container.innerHTML = headerHtml+html;
     }
+  }
+
+  function createPBS() {
+    var store = query.currentProject()
+    store.currentPbs.items.push({name: store.reference+store.name, uuid: "ita2215151-a50f-4dd3-904e-146118d5d444"})
+    store.currentPbs.items.push({name: "Sous catégorie A", uuid:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
+    store.currentPbs.items.push({name: "Sous catégorie B", uuid:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
+    store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
+    store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
   }
 
   var update = function () {
