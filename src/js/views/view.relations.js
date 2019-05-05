@@ -473,6 +473,8 @@ var createRelationsView = function () {
   }
 
   var setInactive = function () {
+    //clean side menu
+    document.querySelector(".left-list").innerHTML=""
     objectIsActive = false;
   }
 

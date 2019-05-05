@@ -1,6 +1,7 @@
 var createLeftMenuProjectTree = function () {
   var self ={};
   var objectIsActive = false;
+  var sideListe=undefined
 
   var init = function () {
     connections()
@@ -9,7 +10,7 @@ var createLeftMenuProjectTree = function () {
   var connections =function () {
     document.addEventListener("storeUpdated", function () {
       if (objectIsActive) {
-        update()
+        udapteSideListe()
       }
     })
   }
@@ -40,13 +41,23 @@ var createLeftMenuProjectTree = function () {
   }
 
   var udapteSideListe = function () {
+    var store = JSON.stringify(query.currentProject())
+    store = JSON.parse(store)
+    var itemsToDisplay =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
+    var relations = store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
+
     sideListe.refresh(itemsToDisplay, relations)
     // updateSideListeVisibility()
   }
 
   var setActive =function () {
     objectIsActive = true;
-    update()
+    if (sideListe) {//if is already in use
+      udapteSideListe()
+    }else {
+      update()
+    }
+
   }
 
   var setInactive = function () {

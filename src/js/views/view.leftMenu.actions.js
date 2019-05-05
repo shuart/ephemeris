@@ -22,11 +22,11 @@ var createLeftMenuActions = function () {
   }
 
   var render = function () {
-    document.querySelector(".left-menu-area").innerHTML=`
-      <div class="title">Next actions</div>
-      <div class="left-list">
-      </div>
-    `
+    // document.querySelector(".left-menu-area").innerHTML=`
+    //   <div class="title">Next actions</div>
+    //   <div class="left-list">
+    //   </div>
+    // `
     if (true) {
       document.querySelector(".current-area-title").innerHTML = ""
       document.querySelector(".current-area").innerHTML = ""

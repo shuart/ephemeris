@@ -167,6 +167,7 @@ var createTreeList = function ({
     if (document.querySelector(".tree_list_area") == null) {
       console.log("container has disapeard");
       setContainerArea()
+      connections()
     }
 
     render()

@@ -362,4 +362,4 @@ var createLeftMenu = function () {
 }
 
 var leftMenu = createLeftMenu()
-leftMenu.init()
+// leftMenu.init()

@@ -58,22 +58,17 @@ var createNotesManager = function (targetSelector) {
 
     return html
   }
-  theme.notePreviewList= function (html) {
+  theme.notePreviewTitle= function (html) {
      html =`
-      <div class="title">
         Notes
         <span class="action_note_manager_add_note small button"> Add</span>
-      </div>
-      <div class="left-list">${html}</div>
     `
     return html
   }
   theme.noteSearchArea= function () {
      html =`
-      <div class="side_searchArea">
         <input class="note_search_input search_input" type="text" placeholder="Search..">
         <span class=""> <i class="fas fa-search"></i></span>
-      </div>
     `
     return html
   }
@@ -192,15 +187,18 @@ var createNotesManager = function (targetSelector) {
   var render = function () {
     container.innerHTML = theme.noNote()
     let treeContainer = document.querySelector(".left-menu-area")
+    let noteTitleArea = document.querySelector(".left-menu-area .title")
     let notePreviewArea = treeContainer.querySelector('.left-list')
     let searchArea = treeContainer.querySelector('.side_searchArea')
     if (notePreviewArea && searchArea) { //reuse what is already setup
+      noteTitleArea.innerHTML = theme.notePreviewTitle()
+      searchArea.innerHTML=theme.noteSearchArea()
       updateNoteTree(notePreviewArea)
-    }else {
-      treeContainer.innerHTML= renderSearchArea() + renderNoteTree()
-    }
     //update search event
     setUpSearch(document.querySelector(".note_search_input"), app.store.userData.notes.items)
+  }else {
+    alert("elemet missing")
+  }
   }
 
   function renderSearchArea() {
@@ -289,6 +287,7 @@ var createNotesManager = function (targetSelector) {
   }
 
   var setInactive = function () {
+    document.querySelector('.side_searchArea').innerHTML=""
     objectIsActive = false;
   }
 
