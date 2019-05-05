@@ -207,8 +207,19 @@ function stellae(_selector, _options) {
 
         elem.attr('href', '#')
             .attr('class', cls)
-            .html('<strong>' + property + '</strong>' + (value ? (': ' + value) : ''));
+            .html('<strong>' + property + '</strong>' + (!isNode ? (': ' + value) : ''));
 
+        if (isNode && value) {//customColor are used
+            elem.style('background-color', function(d) {
+                    return options.nodeOutlineFillColor ? options.nodeOutlineFillColor : value;
+                })
+                .style('border-color', function(d) {
+                    return options.nodeOutlineFillColor ? class2darkenColor(options.nodeOutlineFillColor) : class2darkenCustomColor(value);
+                })
+                .style('color', function(d) {
+                    return options.nodeOutlineFillColor ? class2darkenColor(options.nodeOutlineFillColor) : '#fff';
+                });
+        }
         if (!value) {
             elem.style('background-color', function(d) {
                     return options.nodeOutlineFillColor ? options.nodeOutlineFillColor : (isNode ? class2color(property) : defaultColor());
@@ -222,8 +233,8 @@ function stellae(_selector, _options) {
         }
     }
 
-    function appendInfoElementClass(cls, node) {
-        appendInfoElement(cls, true, node);
+    function appendInfoElementClass(cls, node, color) {
+        appendInfoElement(cls, true, node, color);
     }
 
     function appendInfoElementProperty(cls, property, value) {
@@ -1204,7 +1215,7 @@ function stellae(_selector, _options) {
         clearInfo();
 
         if (d.labels) {
-            appendInfoElementClass('class', d.labels[0]);
+            appendInfoElementClass('class', d.labels[0], d.customColor);
         } else {
             appendInfoElementRelationship('class', d.type);
         }
