@@ -780,14 +780,10 @@ var createRelationsView = function () {
       onCloseMenu: (ev)=>{
 
       },
+      onEditChoiceItem: (ev)=>{
+        startSelectionFromParametersView(ev)
+      },
       onEditItem: (ev)=>{
-        // console.log("Edit");
-        // var newValue = prompt("Edit Item",ev.target.dataset.value)
-        // if (newValue) {
-        //   console.log(ev.target.dataset.id);
-        //   console.log(ev.target.dataset.prop);
-        //   push(act.edit(storeGroup,{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-        // }
         createInputPopup({
           originalData:ev.target.dataset.value,
           onSave:e =>{
@@ -800,6 +796,67 @@ var createRelationsView = function () {
             update()//update graph
           }
         })
+      }
+    })
+  }
+
+  function startSelectionFromParametersView(ev) {
+    var store = query.currentProject()
+    var metalinkType = ev.target.dataset.prop;
+    var sourceTriggerId = ev.target.dataset.id;
+    var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+    var sourceGroup = undefined
+    if (metalinkType == "originNeed") {
+      sourceGroup="requirements"
+    }else if (metalinkType == "originFunction") {
+      sourceGroup="functions"
+    }
+    var sourceData = store[sourceGroup].items
+    showListMenu({
+      sourceData:sourceData,
+      parentSelectMenu:ev.select ,
+      multipleSelection:currentLinksUuidFromDS,
+      displayProp:"name",
+      searchable : true,
+      display:[
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ],
+      idProp:"uuid",
+      onAdd:(ev)=>{
+        var uuid = genuuid()
+        push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+        ev.select.setEditItemMode({
+          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+          onLeave: (ev)=>{
+            push(act.remove(sourceGroup,{uuid:uuid}))
+            ev.select.updateData(store[sourceGroup].items)
+          }
+        })
+      },
+      onEditItem: (ev)=>{
+        var newValue = prompt("Edit Item",ev.target.dataset.value)
+        if (newValue) {
+          push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+        }
+      },
+      onCloseMenu: (ev)=>{
+        console.log(ev.select);
+        ev.select.getParent().update()
+      },
+      onChangeSelect: (ev)=>{
+        console.log(ev.select.getSelected());
+        console.log(store.metaLinks.items);
+        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
+        console.log(store.metaLinks.items);
+        for (newSelected of ev.select.getSelected()) {
+          push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+        }
+        //ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+        // ev.select.getParent().update()
+      },
+      onClick: (ev)=>{
+        console.log("select");
       }
     })
   }
@@ -818,8 +875,8 @@ var createRelationsView = function () {
     }else if (type =="Pbs") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
-        {prop:"originNeed", displayAs:"Lié au besoins", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
-        {prop:"originFunction", displayAs:"Lié à la fonction", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:false}
+        {prop:"originNeed", displayAs:"Lié au besoins", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
+        {prop:"originFunction", displayAs:"Lié à la fonction", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
       ]
     }else {
       return [{prop:"name", displayAs:"Name", edit:"true"},

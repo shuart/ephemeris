@@ -490,7 +490,7 @@ var createInterfacesView = function () {
         ev.select.setEditItemMode({
           item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
           onLeave: (ev)=>{
-            push(act.remove(sourceGroup,{uuid:ev.target.dataset.id}))
+            push(act.remove(sourceGroup,{uuid:uuid}))
             ev.select.updateData(store[sourceGroup].items)
           }
         })
