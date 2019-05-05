@@ -126,6 +126,8 @@ function moveElementInArray (array, value, target) {
       newIndex = array.length
     }
 
+    console.log(oldIndex, newIndex);
+
     var arrayClone = array.slice();
     arrayClone.splice(oldIndex,1);
     arrayClone.splice(newIndex,0,value);
@@ -192,4 +194,29 @@ function renderDTree(db) {
 
   console.log(subCatList);
   return tree
+}
+
+//compare position with project order list
+var getOrderedProjectList= function (list, displayOrder) {
+
+  function comparePositions(a, b) {
+    let indexA = displayOrder.indexOf(a.uuid)
+    let indexB = displayOrder.indexOf(b.uuid)
+    if (indexA > -1 && indexB > -1) {//if a and b ordered
+      return indexA - indexB
+    }
+    if (indexA<0 && indexB<0) {//if a and b is not ordered
+      return 0
+    }
+    if (indexA<0) {//if a is not ordered
+      return -1
+    }
+    if (indexB<0) {//if b is not ordered
+      return 1
+    }
+
+    return a - b;
+  }
+
+  return list.slice().sort(comparePositions)
 }

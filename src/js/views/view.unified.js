@@ -84,7 +84,7 @@ var createUnifiedView = function (targetSelector) {
       var projectStore = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0];
       var metaLinks = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
-      ShowSelectMenu({
+      showListMenu({
         sourceData:projectStore.stakeholders.items,
         parentSelectMenu:e.select ,
         multipleSelection:currentLinksUuidFromDS,
@@ -147,7 +147,9 @@ var createUnifiedView = function (targetSelector) {
   }
 
   var renderList = function (container) {
-    var html = query.items("projects").filter(e=> fuzzysearch(filterProject,e.name)).reduce((acc,i)=>{
+    let sortedProject = getOrderedProjectList(query.items("projects"), app.store.userData.preferences.projectDisplayOrder)
+    let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
+    var html = sortedVisibleProject.filter(e=> fuzzysearch(filterProject,e.name)).reduce((acc,i)=>{
 
       acc += generateProjectTitleHTML(i.uuid, i.name, i.reference)
       acc += generateAddTaskArea(i.uuid)
@@ -159,7 +161,10 @@ var createUnifiedView = function (targetSelector) {
     container.querySelector('.ulist').innerHTML = html
   }
   var renderActionRepartition = function (container) {
-    var allActions = query.items("projects").reduce((acc,i)=>{
+    let sortedProject = getOrderedProjectList(query.items("projects"), app.store.userData.preferences.projectDisplayOrder)
+    let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
+
+    var allActions = sortedVisibleProject.reduce((acc,i)=>{
       var items = i.actions.items.filter( e => fuzzysearch(filterText, e.name))
       items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
       for (action of items.reverse()) {

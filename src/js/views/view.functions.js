@@ -224,7 +224,7 @@ var createFunctionsView = function () {
         },
         onNodeClicked:(originev)=>{
           var originItem = store.functions.items.filter(e=> e.uuid == originev.element.data.uuid)
-          ShowSelectMenu({
+          ShowListMenu({
             sourceData:store.functions.items,
             sourceLinks:store.functions.links,
             displayProp:"name",

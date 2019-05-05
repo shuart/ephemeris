@@ -52,6 +52,7 @@ function createStartUp() {
             app.store.projects = user.projects; //TODO use actions
             app.store.userData = user.userData; //TODO use actions
             app.state.currentUser = user.uuid; //TODO use actions
+            updateFileForRetroCompatibility()
             pageManager.setActivePage("unified")
             sourceEl.remove()
           }).catch(function(err) {
@@ -199,6 +200,23 @@ function createStartUp() {
       document.querySelector('.app-loader-cache').remove();
     }
   }
+
+  function updateFileForRetroCompatibility() {
+    function alertAboutUpdate() {
+      alert("This file was created with an earlier version and was updated")
+    }
+    //userPreferences
+    if (!app.store.userData.preferences) {
+      app.store.userData.preferences = {
+        projectDisplayOrder:[],
+        hiddenProject:[]
+      }
+      alertAboutUpdate() 
+    }
+  }
+
+
+
   self.render = render
   self.init = init
   return self

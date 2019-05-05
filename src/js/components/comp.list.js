@@ -490,13 +490,21 @@ function showListMenu({
         move = `<div class="right floated content">
             <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui mini basic blue button action_list_move_item">move</div>
           </div>`
-        if (ismoving && ismoving.dataset.id != item[idProp]) {
+        if (ismoving && ismoving.dataset.id != item[idProp] && sourceLinks) {
           move =`
             <div class="right floated content">
               <div class="ui mini buttons">
                 <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Move next</button>
                 <div class="ou"></div>
                 <button data-id="${item[idProp]}" data-grandparentid="${parentId}" data-parentid="${item[idProp]}" class="ui positive button action_list_end_move_item">Link</button>
+              </div>
+            </div>
+          `
+        }else if (ismoving && ismoving.dataset.id != item[idProp]) {
+          move =`
+            <div class="right floated content">
+              <div class="ui mini buttons">
+                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Move next</button>
               </div>
             </div>
           `
