@@ -23,17 +23,23 @@ var createRequirementsView = function () {
         displayProp:"name",
         display:[
           {prop:"name", displayAs:"Name", edit:"true"},
-          {prop:"desc", displayAs:"Description", edit:"true"},
+          {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
           {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
           {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
         ],
         idProp:"uuid",
         onEditItem: (ev)=>{
-          console.log("Edit");
-          var newValue = prompt("Edit Item",ev.target.dataset.value)
-          if (newValue) {
-            push(editRequirement({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-          }
+          createInputPopup({
+            originalData:ev.target.dataset.value,
+            onSave:e =>{
+              push(editRequirement({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:e}))
+              ev.select.refreshList()
+            },
+            onClose:e =>{
+              push(editRequirement({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:e}))
+              ev.select.refreshList()
+            }
+          })
         },
         onEditChoiceItem: (ev)=>{
           startSelection(ev)
