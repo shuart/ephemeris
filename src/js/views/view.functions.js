@@ -143,9 +143,24 @@ var createFunctionsView = function () {
             action:(ev)=>{
               renderGraph(ev)
             }
+          },
+          {
+            name:"CSV",
+            action:(ev)=>{
+              exportToCSV()
+            }
           }
         ]
       })
+  }
+
+  var exportToCSV = function () {
+    let store = query.currentProject()
+    let data = store.functions.items.map(i=>{
+      let linkToText = getRelatedItems(i, "requirements").map(s=> s[0] ? s[0].name:'').join(",")
+      return {id:i.uuid, name:i.name, description:i.desc, Requirements:linkToText}
+    })
+    JSONToCSVConvertor(data, 'Functions', true)
   }
 
   var update = function () {

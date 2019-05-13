@@ -124,16 +124,7 @@ var createExportProjectInfoView = function () {
     }
   }
 
-  function getRelatedItems(sourceItem, groupToSearch) {
-    var store = query.currentProject()
-    let linkedTo = store.metaLinks.items.filter(e=>e.source == sourceItem.uuid)
-    console.log(linkedTo);
-    let linkToText = linkedTo.map(e=>query.items(groupToSearch, function (i) {
-      return i.uuid == e.target
-    }))
-    console.log(linkToText);
-    return linkToText
-  }
+  
 
   var renderRecursiveList = function (items, links) {
     let identifier = "uuid"

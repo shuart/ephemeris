@@ -106,9 +106,24 @@ var createRequirementsView = function () {
             action:(ev)=>{
               renderRequirementsTree(ev)
             }
+          },
+          {
+            name:"CSV",
+            action:(ev)=>{
+              exportToCSV()
+            }
           }
         ]
       })
+  }
+
+  var exportToCSV = function () {
+    let store = query.currentProject()
+    let data = store.requirements.items.map(i=>{
+      let linkToText = getRelatedItems(i, "stakeholders").map(s=> s[0].name +" "+s[0].lastName).join(",")
+      return {id:i.uuid, name:i.name, description:i.desc, stakeholders:linkToText}
+    })
+    JSONToCSVConvertor(data, 'Requirements', true)
   }
 
   var update = function () {

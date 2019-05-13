@@ -87,9 +87,25 @@ var createPbsView = function () {
             action:(ev)=>{
               showPbsTree(ev)
             }
+          },
+          {
+            name:"CSV",
+            action:(ev)=>{
+              exportToCSV()
+            }
           }
         ]
       })
+  }
+
+  var exportToCSV = function () {
+    let store = query.currentProject()
+    let data = store.currentPbs.items.map(i=>{
+      let linkToTextFunc = getRelatedItems(i, "functions").map(s=> s[0] ? s[0].name:"").join(",")
+      let linkToTextReq = getRelatedItems(i, "requirements").map(s=> s[0] ? s[0].name:"").join(",")
+      return {id:i.uuid, name:i.name, description:i.desc, functions:linkToTextFunc, requirements:linkToTextReq}
+    })
+    JSONToCSVConvertor(data, 'Pbs', true)
   }
 
   var update = function () {

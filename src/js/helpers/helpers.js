@@ -220,3 +220,15 @@ var getOrderedProjectList= function (list, displayOrder) {
 
   return list.slice().sort(comparePositions)
 }
+
+//get related item
+function getRelatedItems(sourceItem, groupToSearch) {
+  var store = query.currentProject()
+  let linkedTo = store.metaLinks.items.filter(e=>e.source == sourceItem.uuid)
+  console.log(linkedTo);
+  let linkToText = linkedTo.map(e=>query.items(groupToSearch, function (i) {
+    return i.uuid == e.target
+  }))
+  console.log(linkToText);
+  return linkToText
+}
