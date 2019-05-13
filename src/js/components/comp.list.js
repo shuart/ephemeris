@@ -4,6 +4,7 @@ function showListMenu({
   parentSelectMenu = undefined,
   targetDomContainer = undefined,
   display = undefined,
+  focusSearchOnRender = true,
   singleElement =undefined,
   rulesToDisplaySingleElement = undefined,
   fullScreen= false,
@@ -712,6 +713,10 @@ function showListMenu({
       document.querySelector('body').appendChild(mainFragment);
     }else if (targetDomContainer) {
       document.querySelector(targetDomContainer).appendChild(mainFragment);
+    }
+    //focus on search
+    if (focusSearchOnRender) {
+      sourceEl.querySelector(".list-search-input").focus()
     }
   }
 
