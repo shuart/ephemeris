@@ -58,7 +58,7 @@ function showListMenu({
     nestedListClass: 'row',
     topMenu:() => {
       var html = /*html*/`
-      <div class="ui mini menu target_menu_left_buttons">
+      <div style="flex-shrink:0" class="ui mini menu target_menu_left_buttons">
         <div class="right menu target_menu_right_buttons">
         </div>
       </div>
@@ -688,6 +688,7 @@ function showListMenu({
     //add area between menu and list
     var containerTopArea = document.createElement('div');
     containerTopArea.style.overflow = "auto"
+    containerTopArea.style.flexShrink = "0"
     //item list (global var)
     listContainer = document.createElement('div');
     listContainer.style.overflow = "auto"
