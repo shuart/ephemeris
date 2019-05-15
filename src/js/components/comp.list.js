@@ -265,7 +265,8 @@ function showListMenu({
       mainEl.classList =theme.embededContainerClass;
       mainEl.style.position = "relative"
       mainEl.style.zIndex = "1"
-        mainEl.style.padding = "5em"
+        mainEl.style.padding = "4em"
+        mainEl.style.paddingTop = "1em"
         mainEl.style.width = "100%"
         mainEl.style.height = "100%"
         mainEl.style.left= "0px";
