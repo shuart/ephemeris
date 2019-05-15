@@ -7,6 +7,7 @@ var createTreeList = function ({
   contentFunction = undefined,
   onToogleVisibility=undefined,
   customEyeActionClass="",
+  customTextActionClass="",
   arrayOfHiddenItems = undefined//unused
   }={}) {
   var self ={};
@@ -31,7 +32,7 @@ var createTreeList = function ({
      <div class="tree_leaf">
        <div data-id="${i[identifier]}" class="searchable_item list-item">
          <span>${getCartStyle(caret, childrenAreClosed)}</span>
-         <span class="relaxed" data-id="${i[identifier]}" >${valueFunction(i)}</span>
+         <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
          <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="far fa-eye ${customEyeActionClass}"></i>
          <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
        </div>
