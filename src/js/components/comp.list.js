@@ -717,7 +717,10 @@ function showListMenu({
     }
     //focus on search
     if (focusSearchOnRender) {
-      sourceEl.querySelector(".list-search-input").focus()
+      let listInput = sourceEl.querySelector(".list-search-input")
+      if (listInput) {
+        listInput.focus()
+      }
     }
   }
 
