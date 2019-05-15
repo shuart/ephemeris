@@ -81,7 +81,8 @@ function createSingleProjectSaver({
   targetID = undefined,
   data = [],
   type = "json",
-  filename = "save.json"
+  filename = "save",
+  fileExtensions = ".json"
 }={}) {
 
  let file, url, reader = new FileReader;
@@ -101,7 +102,9 @@ function createSingleProjectSaver({
         return "Invalid JSON";
       }
       else {
-        file = new File([json], filename, {type:"application/json"});
+        let extraName = query.currentProject().name
+        if (query.currentProject()) { extraName = "_" +query.currentProject().name}
+        file = new File([json], filename + extraName + fileExtensions, {type:"application/json"});
         url = URL.createObjectURL(file);
         return url;
       }
@@ -123,7 +126,9 @@ function createSingleProjectSaver({
   create.addEventListener("click", function () {
     if (query.currentProject()) {
       var link = document.createElement("a");
-      link.setAttribute("download", filename);
+      let extraName = "_" +query.currentProject().name
+      let currentDate = "_" + new Date(Date.now()).toLocaleString()
+      link.setAttribute("download", filename + extraName + currentDate + fileExtensions);
       var json = createJSONFile(JSON.stringify({type:type, data:query.currentProject()}));//TODO closure issue again
       // var json = createJSONFile(JSON.stringify(object));
       //var json = createJSONFile(JSON.stringify(store.db));
@@ -142,7 +147,7 @@ function createSingleProjectSaver({
     }
   }, false);
 };
-createSingleProjectSaver({targetID:"topmenu_project_saver", type:"project", data:app.store.projects, filename:"ephemeris_project.json"})
+createSingleProjectSaver({targetID:"topmenu_project_saver", type:"project", data:app.store.projects, fileExtension:".json", filename:"ephemeris_project"})
 
 function loadSavedData(data, callback) {
   var jsonContent = JSON.parse(data);
