@@ -175,13 +175,17 @@ var createPbsView = function () {
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
     var sourceData = undefined
+    var sourceLinks= undefined
     if (metalinkType == "originNeed") {
       sourceData=store.requirements.items
+      sourceLinks= store.requirements.links
     }else if (metalinkType == "originFunction") {
       sourceData=store.functions.items
+      sourceLinks=store.functions.links
     }
     showListMenu({
       sourceData:sourceData,
+      sourceLinks:sourceLinks,
       parentSelectMenu:ev.select ,
       multipleSelection:currentLinksUuidFromDS,
       displayProp:"name",

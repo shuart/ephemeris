@@ -251,16 +251,19 @@ var createRequirementsView = function () {
     var invert = false
     var source = "source"
     var target = "target"
+    var sourceLinks= undefined
     if (metalinkType == "origin") {
       sourceData=store.stakeholders.items
     }else if (metalinkType == "originNeed") {
       invert = true;
       sourceData=store.currentPbs.items
-      source = "target"
+      source = "target"//invert link order for after
       target = "source"
+      sourceLinks=store.currentPbs.links
     }
     showListMenu({
       sourceData:sourceData,
+      sourceLinks:sourceLinks,
       parentSelectMenu:ev.select ,
       multipleSelection:currentLinksUuidFromDS,
       displayProp:"name",

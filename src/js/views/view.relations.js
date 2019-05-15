@@ -812,8 +812,10 @@ var createRelationsView = function () {
       sourceGroup="functions"
     }
     var sourceData = store[sourceGroup].items
+    var sourceLinks=store[sourceGroup].links
     showListMenu({
       sourceData:sourceData,
+      sourceLinks:sourceLinks,
       parentSelectMenu:ev.select ,
       multipleSelection:currentLinksUuidFromDS,
       displayProp:"name",

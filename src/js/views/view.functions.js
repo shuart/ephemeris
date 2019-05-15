@@ -39,6 +39,7 @@ var createFunctionsView = function () {
           var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
           showListMenu({
             sourceData:store.requirements.items,
+            sourceLinks:store.requirements.links,
             parentSelectMenu:ev.select ,
             multipleSelection:currentLinksUuidFromDS,
             displayProp:"name",
