@@ -148,8 +148,9 @@ var reparse = false;
         }
       },
       onAdd: (ev)=>{
-        var newReq = prompt("Nouveau Participant")
-        push(act.add("stakeholders",{uuid:genuuid(), name:newReq}))
+        let firstName = prompt("New stakeholder - First name")
+        let lastName = prompt("Last name")
+        push(act.add("stakeholders",{uuid:genuuid(), name:firstName, lastName:lastName}))
       },
       onClick: (ev)=>{
         //mutations
