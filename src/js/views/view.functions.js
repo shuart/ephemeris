@@ -91,7 +91,7 @@ var createFunctionsView = function () {
         onAdd: (ev)=>{
           //var newReq = prompt("Nouveau Besoin")
           var uuid = genuuid()
-          push(act.add("functions", {uuid:uuid,name:"Add a need"}))
+          push(act.add("functions", {uuid:uuid,name:"Add a function"}))
           console.log(ev);
           ev.select.setEditItemMode({
               item:store.functions.items.filter(e=> e.uuid == uuid)[0],
