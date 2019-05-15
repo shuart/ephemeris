@@ -60,9 +60,6 @@ var store = {
   },
   actions:{
     items:[
-        {uuid:"fe5454fiose", open:true, name:"Une action à faire", des:"Huart", dueDate:undefined, closedOn:undefined, created:Date.now(), assignedTo:false},
-        {uuid:"fe5888iose", open:false, name:"Une action terminée récement", des:"Huart", dueDate:undefined, closedOn:Date.now(),created:Date.now(), assignedTo:false},
-        {uuid:"ui88iose", open:false, name:"Une action terminée il y 2 jour", des:"Huart", dueDate:undefined, closedOn:(Date.now() - 1000*60*60*2*24),created:Date.now(), assignedTo:false}
     ]
   },
   graphs:{
