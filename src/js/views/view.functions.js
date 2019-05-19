@@ -103,6 +103,9 @@ var createFunctionsView = function () {
             }
           )
         },
+        onLabelClick: (ev)=>{
+          showSingleItemService.showById(ev.target.dataset.id)
+        },
         onClick: (ev)=>{
           var originItem = store.functions.items.filter(e=> e.uuid == ev.target.dataset.id)
           showListMenu({

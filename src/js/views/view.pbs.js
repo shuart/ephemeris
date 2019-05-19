@@ -75,6 +75,9 @@ var createPbsView = function () {
           push(addPbs({uuid:id, name:newReq}))
           push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
         },
+        onLabelClick: (ev)=>{
+          showSingleItemService.showById(ev.target.dataset.id)
+        },
         onClick: (ev)=>{
           showSingleItem(ev)
         },

@@ -780,6 +780,9 @@ var createRelationsView = function () {
       onCloseMenu: (ev)=>{
 
       },
+      onLabelClick: (ev)=>{
+        showSingleItemService.showById(ev.target.dataset.id)
+      },
       onEditChoiceItem: (ev)=>{
         startSelectionFromParametersView(ev)
       },

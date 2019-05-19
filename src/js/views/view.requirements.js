@@ -68,6 +68,9 @@ var createRequirementsView = function () {
           var newReq = prompt("Nouveau Besoin")
           push(addRequirement({name:newReq}))
         },
+        onLabelClick: (ev)=>{
+          showSingleItemService.showById(ev.target.dataset.id)
+        },
         onClick: (ev)=>{
           var originItem = store.requirements.items.filter(e=> e.uuid == ev.target.dataset.id)
           showListMenu({

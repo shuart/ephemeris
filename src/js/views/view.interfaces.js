@@ -397,6 +397,9 @@ var createInterfacesView = function () {
       onEditChoiceItem: (ev)=>{
         startSelectionFromParametersView(ev)
       },
+      onLabelClick: (ev)=>{
+        showSingleItemService.showById(ev.target.dataset.id)
+      },
       onEditItem: (ev)=>{
         createInputPopup({
           originalData:ev.target.dataset.value,

@@ -14,6 +14,7 @@ function showListMenu({
   multipleSelection = undefined,
   searchable = true,
   onClick = (e)=>{console.log("clik on select");},
+  onLabelClick = (e)=>{console.log("clik on label");},
   onAdd = undefined,
   onRemove= undefined,
   onMove= undefined,
@@ -138,6 +139,10 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_menu_select_option")) {
           onClick({selectDiv:sourceEl, select:self, target:event.target})
+          console.log(event.target);
+        }
+        if (event.target.classList.contains("action_list_click_label")) {
+          onLabelClick({selectDiv:sourceEl, select:self, target:event.target})
           console.log(event.target);
         }
         if (event.target.classList.contains("action_list_remove_item") && onRemove) {
@@ -593,10 +598,11 @@ function showListMenu({
               if (foudItem) {
                 var newItem = foudItem.name + " "+ (foudItem.lastName || " ")+" "
                 var formatedNewItem = newItem
+                var newItemId = foudItem.uuid
                 if(formatedNewItem.length > 25) {
                     formatedNewItem = newItem.substring(0,10)+".. ";
                 }
-                var htmlNewItem = `<div data-inverted="" data-tooltip="${newItem}" class="ui mini teal label">${formatedNewItem}</div>`
+                var htmlNewItem = `<div style="cursor:pointer;" data-inverted="" data-id="${newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${formatedNewItem}</div>`
                 return acc += htmlNewItem
               }else {
                 return acc
@@ -793,6 +799,9 @@ function showListMenu({
     }
     render()
   }
+  function removeList() {
+    sourceEl.remove()
+  }
 
   init();
 
@@ -804,6 +813,7 @@ function showListMenu({
   self.refreshList = refreshList
   self.updateLinks = updateLinks
   self.updateMetaLinks = updateMetaLinks
+  self.remove = removeList
   self.update = update
   return self
 }
