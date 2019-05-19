@@ -29,7 +29,8 @@ function showListMenu({
   closeButtonValue = "Close",
   cancelButtonValue = "Cancel",
   extraActions = undefined,
-  extraButtons = []
+  extraButtons = [],
+  currentSearchValue =""
   }={}) {
 
     //utility to parse html
@@ -353,22 +354,24 @@ function showListMenu({
       addSearch.addEventListener('keyup', function(e){
         //e.stopPropagation()
         var value = sourceEl.querySelector(".list-search-input").value
-        var filteredData = sourceData.filter((item) => {
-          for (rule of display) {
-            //TODO allow array search
-            if (fuzzysearch (value, item[rule.prop]) && item[rule.prop] && !Array.isArray(item[rule.prop])) {
-              return true
-            }else if (item[rule.prop] && !Array.isArray(item[rule.prop]) && fuzzysearch (value, item[rule.prop].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) ) {
-              return true
-            }
-          }
-          return false
-        })
-        var filteredIds = filteredData.map(x => x.uuid);
-        var searchedItems = sourceEl.querySelectorAll(".searchable")
-        for (item of searchedItems) {
-          if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "flex"}else{item.style.display = "none"}
-        }
+        currentSearchValue = value
+        filterDataWithValue(value)
+        // var filteredData = sourceData.filter((item) => {
+        //   for (rule of display) {
+        //     //TODO allow array search
+        //     if (fuzzysearch (value, item[rule.prop]) && item[rule.prop] && !Array.isArray(item[rule.prop])) {
+        //       return true
+        //     }else if (item[rule.prop] && !Array.isArray(item[rule.prop]) && fuzzysearch (value, item[rule.prop].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) ) {
+        //       return true
+        //     }
+        //   }
+        //   return false
+        // })
+        // var filteredIds = filteredData.map(x => x.uuid);
+        // var searchedItems = sourceEl.querySelectorAll(".searchable")
+        // for (item of searchedItems) {
+        //   if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "flex"}else{item.style.display = "none"}
+        // }
       });
     }
     //close button
@@ -723,6 +726,29 @@ function showListMenu({
         listInput.focus()
       }
     }
+    //searchItems if current search value
+    if (currentSearchValue != "") {
+       filterDataWithValue(currentSearchValue)
+    }
+  }
+
+  function filterDataWithValue(value) {
+    var filteredData = sourceData.filter((item) => {
+      for (rule of display) {
+        //TODO allow array search
+        if (fuzzysearch (value, item[rule.prop]) && item[rule.prop] && !Array.isArray(item[rule.prop])) {
+          return true
+        }else if (item[rule.prop] && !Array.isArray(item[rule.prop]) && fuzzysearch (value, item[rule.prop].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) ) {
+          return true
+        }
+      }
+      return false
+    })
+    var filteredIds = filteredData.map(x => x.uuid);
+    var searchedItems = sourceEl.querySelectorAll(".searchable")
+    for (item of searchedItems) {
+      if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "flex"}else{item.style.display = "none"}
+    }
   }
 
   //PUBLIC FUNC
@@ -749,6 +775,17 @@ function showListMenu({
   }
   function refreshList() {
     listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
+    //focus on search
+    if (focusSearchOnRender) {
+      let listInput = sourceEl.querySelector(".list-search-input")
+      if (listInput) {
+        listInput.focus()
+      }
+    }
+    //searchItems if current search value
+    if (currentSearchValue != "") {
+       filterDataWithValue(currentSearchValue)
+    }
   }
   function update() {
     if (sourceEl) {
