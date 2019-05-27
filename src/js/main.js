@@ -56,6 +56,7 @@ var reparse = false;
   pageManager.addComponent({name:"interfaces",object:interfacesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"relations",object:relationsView, haveSideBar:false})
   pageManager.addComponent({name:"unified",object:unifiedView,linkedComponents:["leftMenuActions"], haveSideBar:false})
+  pageManager.addComponent({name:"projectSelection",object:projectSelectionView,linkedComponents:["leftMenuActions"], haveSideBar:false})
   pageManager.addComponent({name:"externalUsersManagement",object:externalUsersManagement, haveSideBar:false})
   pageManager.addComponent({name:"exportProjectInfo",object:exportProjectInfoView, haveSideBar:false})
   pageManager.addComponent({name:"notesManager",object:notesManager, haveSideBar:false})
@@ -73,6 +74,9 @@ var reparse = false;
 
   //==========CONNECT
 
+  connect(".action_toogle_project_selection","click",(e)=>{
+    pageManager.setActivePage("projectSelection")
+  })
   connect(".action_toogle_projects","click",(e)=>{
     pageManager.setActivePage("projects")
   })

@@ -31,7 +31,7 @@ function createStartUp() {
           console.log(document.querySelector('.input-su-name').value);
           createPBS(document.querySelector('.input-su-in').value, document.querySelector('.input-su-name').value)
           //renderCDC(store.db, "")
-          pageManager.setActivePage("unified")
+          pageManager.setActivePage("projectSelection")
           renderCDC() //TODO change update mecanism
           sourceEl.remove()
         }
@@ -39,7 +39,7 @@ function createStartUp() {
           console.log(event.target);
           localforage.getItem('sessionProjects').then(function(value) {
               app.store.projects = value;
-              pageManager.setActivePage("unified")
+              pageManager.setActivePage("projectSelection")
               renderCDC() //TODO change update mecanism
               sourceEl.remove()
           }).catch(function(err) {
@@ -53,7 +53,7 @@ function createStartUp() {
             app.store.userData = user.userData; //TODO use actions
             app.state.currentUser = user.uuid; //TODO use actions
             updateFileForRetroCompatibility()
-            pageManager.setActivePage("unified")
+            pageManager.setActivePage("projectSelection")
             sourceEl.remove()
           }).catch(function(err) {
               console.log(err);
@@ -211,7 +211,7 @@ function createStartUp() {
         projectDisplayOrder:[],
         hiddenProject:[]
       }
-      alertAboutUpdate() 
+      alertAboutUpdate()
     }
   }
 

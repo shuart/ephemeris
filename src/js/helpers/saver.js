@@ -169,13 +169,13 @@ function loadSavedData(data, callback) {
           var projectIndex = app.store.projects.findIndex(e=> e.uuid == jsonContent.data.uuid )
           app.store.projects[projectIndex] = jsonContent.data
           renderCDC()
-          pageManager.setActivePage("unified")
+          pageManager.setActivePage("projectSelection")
         }
       }else {
         if (confirm("Import this project?")) {
           app.store.projects.push(jsonContent.data)
           renderCDC()
-          pageManager.setActivePage("unified")
+          pageManager.setActivePage("projectSelection")
         }
       }
     }else {alert("project files can only be added when logged in")}
