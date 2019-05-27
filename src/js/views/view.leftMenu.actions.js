@@ -64,6 +64,22 @@ var createLeftMenuActions = function () {
       },'')
       return acc + actionListHtml
     },'')
+    if (!html[0]) { //si pas d'action
+      html = `
+      <div class="list-item action_toogle_unified">
+      <div class="ui container">
+        <h3 class='ui center aligned small icon disabled header'>
+          <i class="inbox icon"></i>
+          <div class="ui content">
+          No action planned for the next days.
+          <div class="sub header">You can add more actions from the tasks view</div>
+
+          </div>
+        </h3>
+      </div>
+      </div>
+      `
+    }
     return html
 
   }
