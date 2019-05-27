@@ -114,8 +114,10 @@ var createProjectSelectionView = function (targetSelector) {
     connect(".action_project_selection_add_project","click",(e)=>{
       var newReq = prompt("Add a new Project")
       //TODO Bad
-      app.store.projects.push(createNewProject(newReq))
-      setTimeout(function () {update()}, 1000);
+      if (newReq) {
+        app.store.projects.push(createNewProject(newReq))
+        setTimeout(function () {update()}, 1000);
+      }
     })
     connect(".action_project_selection_change_info","click",(e)=>{
       setProjectData(e.target.dataset.id)
