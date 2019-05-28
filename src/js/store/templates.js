@@ -63,7 +63,11 @@ var store = {
     ]
   },
   tags:{
-    items:[{uuid: uuid(), name: "My Tag", color: "#ffffff"}]
+    items:[
+      {uuid: uuid(), name: "Approved", color: "#ffffff"},
+      {uuid: uuid(), name: "Closed", color: "#ffffff"},
+      {uuid: uuid(), name: "Rejected", color: "#ffffff"}
+    ]
   },
   graphs:{
     items:[

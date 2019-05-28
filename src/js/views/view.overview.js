@@ -99,7 +99,11 @@ var createOverview = function (targetSelector) {
     var store = query.currentProject()
     if (!store.tags) {
       store.tags = {
-        items:[{uuid: uuid(), name: "My Tag", color: "#ffffff"}]
+        items:[
+          {uuid: uuid(), name: "Approved", color: "#ffffff"},
+          {uuid: uuid(), name: "Closed", color: "#ffffff"},
+          {uuid: uuid(), name: "Rejected", color: "#ffffff"}
+        ]
       }
       alertAboutUpdate()
     }
