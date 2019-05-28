@@ -255,14 +255,23 @@ var createRequirementsView = function () {
     var source = "source"
     var target = "target"
     var sourceLinks= undefined
+    var displayRules= undefined
     if (metalinkType == "origin") {
       sourceData=store.stakeholders.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"lastName", displayAs:"Last name", edit:false}
+      ]
     }else if (metalinkType == "originNeed") {
       invert = true;
       sourceData=store.currentPbs.items
       source = "target"//invert link order for after
       target = "source"
       sourceLinks=store.currentPbs.links
+      displayRules = [
+        {prop:"name", displayAs:"First name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
     }
     showListMenu({
       sourceData:sourceData,
@@ -271,10 +280,7 @@ var createRequirementsView = function () {
       multipleSelection:currentLinksUuidFromDS,
       displayProp:"name",
       searchable : true,
-      display:[
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-      ],
+      display:displayRules,
       idProp:"uuid",
       onCloseMenu: (ev)=>{
         console.log(ev.select);

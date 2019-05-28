@@ -68,12 +68,20 @@ var createShowSingleItemService = function () {
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
     var sourceGroup = undefined
+    var displayRules = [
+      {prop:"name", displayAs:"Name", edit:false},
+      {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+    ];
     if (metalinkType == "originNeed") {
       sourceGroup="requirements"
     }else if (metalinkType == "originFunction") {
       sourceGroup="functions"
     }else if (metalinkType == "origin") {
-      sourceGroup="stakeholders"
+      sourceGroup="stakeholders";
+      displayRules = [
+        {prop:"name", displayAs:"First name", edit:false},
+        {prop:"lastName", displayAs:"Last name", fullText:true, edit:false}
+      ];
     }
     var sourceData = store[sourceGroup].items
     showListMenu({
@@ -82,10 +90,7 @@ var createShowSingleItemService = function () {
       multipleSelection:currentLinksUuidFromDS,
       displayProp:"name",
       searchable : true,
-      display:[
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-      ],
+      display:displayRules,
       idProp:"uuid",
       onAdd:(ev)=>{
         var uuid = genuuid()
@@ -145,8 +150,8 @@ var createShowSingleItemService = function () {
         {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
       ]
     }else {
-      return [{prop:"name", displayAs:"Name", edit:"true"},
-              {prop:"desc", displayAs:"Description", edit:"true"}
+      return [{prop:"name", displayAs:"First name", edit:"true"},
+              {prop:"lastName", displayAs:"Last name", edit:"true"}
       ]
     }
   }
