@@ -24,6 +24,10 @@ var createShowSingleItemService = function () {
     else if (store.functions.items.find(i=>i.uuid == uuid)) { storeGroup = "functions"; label='Functions'}
     else if (store.stakeholders.items.find(i=>i.uuid == uuid)) { storeGroup = "stakeholders"; label='Users'}
 
+    if (!store[storeGroup]) {
+      console.log("no group available");
+      return
+    }
     var originItem = store[storeGroup].items.filter(e=> e.uuid == uuid)
     showListMenu({
       sourceData:store[storeGroup].items,
@@ -43,8 +47,13 @@ var createShowSingleItemService = function () {
         startSelectionFromParametersView(ev)
       },
       onLabelClick: (ev)=>{
-        showSingleItemService.showById(ev.target.dataset.id)
-        ev.select.remove()//TODO add history
+        //check if label as a target or difined as a target in func checkIfTargetIsReachable
+        if (checkIfTargetIsReachable(ev.target.dataset.id)) {
+          showSingleItemService.showById(ev.target.dataset.id)
+          ev.select.remove()//TODO add history
+        }else {
+          console.log('no target');
+        }
       },
       onEditItem: (ev)=>{
         createInputPopup({
@@ -82,7 +91,13 @@ var createShowSingleItemService = function () {
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"lastName", displayAs:"Last name", fullText:true, edit:false}
       ];
+    }else if (metalinkType == "tags") {
+      sourceGroup="tags";
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ];
     }
+
     var sourceData = store[sourceGroup].items
     showListMenu({
       sourceData:sourceData,
@@ -130,6 +145,17 @@ var createShowSingleItemService = function () {
     })
   }
 
+  function checkIfTargetIsReachable(uuid){
+    var store = query.currentProject()
+    if (store.currentPbs.items.find(i=>i.uuid == uuid)) {return true }
+    else if (store.requirements.items.find(i=>i.uuid == uuid)) {return true }
+    else if (store.functions.items.find(i=>i.uuid == uuid)) { return true}
+    else if (store.stakeholders.items.find(i=>i.uuid == uuid)) {return true }
+    else {
+      return false
+    }
+  }
+
   function generateRulesFromNodeType(type, store) {
     var store = query.currentProject()
     if (type == "Functions") {
@@ -141,7 +167,8 @@ var createShowSingleItemService = function () {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
         {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
-        {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false}
+        {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
+        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
       ]
     }else if (type =="Pbs") {
       return [{prop:"name", displayAs:"Name", edit:"true"},

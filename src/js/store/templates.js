@@ -62,6 +62,9 @@ var store = {
     items:[
     ]
   },
+  tags:{
+    items:[{uuid: uuid(), name: "My Tag", color: "#ffffff"}]
+  },
   graphs:{
     items:[
       [{uuid: "f896546e", fx: 303.3567591326126, fy: 456.92026148965726},

@@ -15,6 +15,7 @@ var createOverview = function (targetSelector) {
   var render = function () {
     var store = query.currentProject()
     if (store) {
+      updateFileForRetroCompatibility() //check file for retrocompatbiity
       //create a PBS if first opening of project
       if (!store.currentPbs.items[0]) {
         createPBS()
@@ -88,6 +89,20 @@ var createOverview = function (targetSelector) {
     store.currentPbs.items.push({name: "Sous catégorie B", uuid:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
     store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
     store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
+  }
+
+  function updateFileForRetroCompatibility() {
+    function alertAboutUpdate() {
+      alert("This project was created with an earlier version and was updated")
+    }
+    //Tags from 1.7.2
+    var store = query.currentProject()
+    if (!store.tags) {
+      store.tags = {
+        items:[{uuid: uuid(), name: "My Tag", color: "#ffffff"}]
+      }
+      alertAboutUpdate()
+    }
   }
 
   var update = function () {

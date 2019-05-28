@@ -1,6 +1,7 @@
 var createRequirementsView = function () {
   var self ={};
   var objectIsActive = false;
+  var simpleView = true;
 
   var init = function () {
     connections()
@@ -13,6 +14,22 @@ var createRequirementsView = function () {
 
   var render = function () {
 
+    var displayRules = [
+      {prop:"name", displayAs:"Name", edit:"true"},
+      {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
+      {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
+      {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
+      {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
+    ]
+    if (simpleView) {
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:"true"},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
+        {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
+        {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
+      ]
+    }
+
     var store = query.currentProject()
       showListMenu({
         sourceData:store.requirements.items,
@@ -21,12 +38,7 @@ var createRequirementsView = function () {
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
-        display:[
-          {prop:"name", displayAs:"Name", edit:"true"},
-          {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-          {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
-          {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
-        ],
+        display:displayRules,
         idProp:"uuid",
         onEditItem: (ev)=>{
           createInputPopup({
@@ -110,6 +122,17 @@ var createRequirementsView = function () {
           renderCDC()
         },
         extraActions:[
+          {
+            name:"Tags",
+            action:(ev)=>{
+              simpleView = !simpleView;
+              setTimeout(function () {
+                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+                update()
+              }, 1000);
+              // ev.select.remove();
+            }
+          },
           {
             name:"Diagramme",
             action:(ev)=>{
@@ -271,6 +294,11 @@ var createRequirementsView = function () {
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
+    }else if (metalinkType == "tags") {
+      sourceData=store.tags.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
       ]
     }
     showListMenu({
