@@ -53,7 +53,6 @@ var createTopMenu = function (containerSelector) {
           <i class="columns icon"></i>
           <div class="content">overview</div>
         </a>
-        <a class="button top_button_pbs action_toogle_tags_view"><i class="tag icon"></i><div class="content">Tags</div></a>
         <a class="button top_button_stakeholders action_toogle_stakeholders"><i class="address book icon"></i><div class="content">Stakeholders</div></a>
         <a class="button top_button_relations action_toogle_diag_relations"><i class="sitemap icon"></i><div class="content">Relations</div></a>
         <a class="button top_button_interfaces action_toogle_diag_interfaces"><i class="sync icon"></i><div class="content">Interfaces</div></a>
@@ -65,10 +64,15 @@ var createTopMenu = function (containerSelector) {
       // <a class="item action_toogle_planning_view"><i class="calendar alternate outline icon"></i>Planning</a>
       // <a class="item action_toogle_csc"><i class="clipboard outline icon"></i>CSC</a>
       // <a class="item action_toogle_requirements_view"><i class="calculator icon"></i>Borderau</a>
+      document.querySelector('.target_context_settings').innerHTML=`
+      <a class="item action_toogle_tags_view"><i class="tags icon"></i>Tags</a>
+      `
     }else{
       container.innerHTML=`
         <a class="button top_button_unified action_toogle_unified"><i class="tasks icon"></i><div class="content">Tasks</div></a>
         <a class="button top_button_notesManager action_toogle_notes_manager"><i class="sticky note outline icon"></i><div class="content">Notes</div></a>
+      `
+      document.querySelector('.target_context_settings').innerHTML=`
       `
     }
   }
