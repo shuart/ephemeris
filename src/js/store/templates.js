@@ -69,6 +69,11 @@ var store = {
       {uuid: uuid(), name: "Rejected", color: "#ffffff"}
     ]
   },
+  workPackages:{
+    items:[
+      {uuid: uuid(), name: "A work package"}
+    ]
+  },
   graphs:{
     items:[
       [{uuid: "f896546e", fx: 303.3567591326126, fy: 456.92026148965726},

@@ -222,13 +222,22 @@ var getOrderedProjectList= function (list, displayOrder) {
 }
 
 //get related item
-function getRelatedItems(sourceItem, groupToSearch) {
+function getRelatedItems(sourceItem, groupToSearch, paramOptions) {//todo limit metalinks type
+  var paramOptions = paramOptions || {}
+  let options ={
+    objectIs :paramOptions.objectIs || "source",
+    metalinksType :paramOptions.metalinksType || undefined
+  }
+  let linkTotextItemType = options.objectIs == "source"? "target" : "source"
+
   var store = query.currentProject()
-  let linkedTo = store.metaLinks.items.filter(e=>e.source == sourceItem.uuid)
-  console.log(linkedTo);
+  let metaLinksToSearch = store.metaLinks.items
+  if (options.metalinksType) {
+    metaLinksToSearch =store.metaLinks.items.filter(e=>e.type == options.metalinksType)
+  }
+  let linkedTo = metaLinksToSearch.filter(e=>e[options.objectIs] == sourceItem.uuid)
   let linkToText = linkedTo.map(e=>query.items(groupToSearch, function (i) {
-    return i.uuid == e.target
+    return i.uuid == e[linkTotextItemType]
   }))
-  console.log(linkToText);
   return linkToText
 }

@@ -107,6 +107,14 @@ var createOverview = function (targetSelector) {
       }
       alertAboutUpdate()
     }
+    if (!store.workPackages) {
+      store.workPackages = {
+        items:[
+          {uuid: uuid(), name: "A work package"}
+        ]
+      }
+      alertAboutUpdate()
+    }
   }
 
   var update = function () {
