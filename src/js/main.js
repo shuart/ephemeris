@@ -124,6 +124,9 @@ var reparse = false;
   connect(".action_toogle_tags_view","click",(e)=>{
     tagsView.update()
   })
+  connect(".action_toogle_metalinks_view","click",(e)=>{
+    metalinksView.update()
+  })
 
 
   connect(".action_toogle_stakeholders","click",(e)=>{
