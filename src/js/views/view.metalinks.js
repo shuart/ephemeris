@@ -32,17 +32,6 @@ var createMetalinksView = function () {
     })
     return data
   }
-  var clearUncompleteLinks = function () {
-    var store = query.currentProject().metaLinks.items
-    for (link of store) {
-      //check if item is complete
-      if (!query.items("all", i=> i.uuid == link.source)[0]) {
-        push(act.remove("metaLinks",{uuid:link.uuid}))
-      }else if (!query.items("all", i=> i.uuid == link.target)[0]) {
-        push(act.remove("metaLinks",{uuid:link.uuid}))
-      }
-    }
-  }
 
   var render = function () {
     var store = query.currentProject()

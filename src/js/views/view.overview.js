@@ -15,6 +15,7 @@ var createOverview = function (targetSelector) {
   var render = function () {
     var store = query.currentProject()
     if (store) {
+      clearUncompleteLinks()//clean all uncomplete metalink of the project
       updateFileForRetroCompatibility() //check file for retrocompatbiity
       //create a PBS if first opening of project
       if (!store.currentPbs.items[0]) {

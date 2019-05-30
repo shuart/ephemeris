@@ -241,3 +241,16 @@ function getRelatedItems(sourceItem, groupToSearch, paramOptions) {//todo limit 
   }))
   return linkToText
 }
+
+//clear links with missing items
+var clearUncompleteLinks = function () {
+  var store = query.currentProject().metaLinks.items
+  for (link of store) {
+    //check if item is complete
+    if (!query.items("all", i=> i.uuid == link.source)[0]) {
+      push(act.remove("metaLinks",{uuid:link.uuid}))
+    }else if (!query.items("all", i=> i.uuid == link.target)[0]) {
+      push(act.remove("metaLinks",{uuid:link.uuid}))
+    }
+  }
+}
