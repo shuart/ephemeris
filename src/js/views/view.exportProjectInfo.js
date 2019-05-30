@@ -85,16 +85,8 @@ var createExportProjectInfoView = function () {
         appendHtml(container, treeHTML)
       }else {
         for (product of store.currentPbs.items) {
-          let linkToText = getRelatedItems(product, "functions").reduce(function (acc, item) {
-            console.log(item);
-            if (item[0]) {//why is it needed? because not all elements are from same type TODO
-              return acc += item[0].name +", "
-            }else { return acc }
-          },"") + getRelatedItems(product, "requirements").reduce(function (acc, item) {
-            if (item[0]) {//why is it needed? because not all elements are from same type TODO
-              return acc += item[0].name +", "
-            }else { return acc  }
-          },"")
+          let linkToText = getRelatedItems(i, patate, {metalinksType:"originFunction"}).map(s=> s[0]? s[0].name : "").join(",")
+          + getRelatedItems(i, "requirements", {metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : "").join(",")
           appendHtml(container, theme.item(product.name,product.uuid, product.desc, linkToText))
         }
       }
@@ -124,7 +116,7 @@ var createExportProjectInfoView = function () {
     }
   }
 
-  
+
 
   var renderRecursiveList = function (items, links) {
     let identifier = "uuid"
@@ -168,8 +160,8 @@ var createExportProjectInfoView = function () {
     return treeArray.map(function (t) {
       let branchesHTML = renderTreeHTML(t.branches, currentLevel+1)
       // let caret = (branchesHTML != "") ? true :false;
-      let linkToTextFunc = getRelatedItems(t.leaf, "functions").map(l=>l[0] ? l[0].name :"").join(", ")
-      let linkToTextReq = getRelatedItems(t.leaf, "requirements").map(l=>l[0] ? l[0].name :"").join(", ")
+      let linkToTextFunc = getRelatedItems(t.leaf, "functions", {metalinksType:"originFunction"}).map(l=>l[0] ? l[0].name :"").join(", ")
+      let linkToTextReq = getRelatedItems(t.leaf, "requirements", {metalinksType:"originNeed"}).map(l=>l[0] ? l[0].name :"").join(", ")
 
       let leafHTML = theme.itemLeaf(t.leaf, branchesHTML, currentLevel, linkToTextFunc + linkToTextReq)
       return leafHTML
