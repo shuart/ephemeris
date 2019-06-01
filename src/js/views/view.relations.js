@@ -1,6 +1,9 @@
 var createRelationsView = function () {
   var self ={};
   var objectIsActive = false;
+  var activeMode = 'relations'
+  //TODO the actions here are trying to update the other view. Should be updated.
+  //Graph is ok because it's two differents one. The issue is with the oterh actions.
 
   var displayType = "network";
   var activeGraph = undefined;
@@ -12,6 +15,7 @@ var createRelationsView = function () {
   var itemsToFixAtNextUpdate = []
 
   var currentGraphTransformation=[0,0,1]
+  var addMode = "compose";
   var addItemMode ="currentPbs"
   //What to show
   var hiddenItemsFromSideView = [];
@@ -90,7 +94,15 @@ var createRelationsView = function () {
 
 
 
-  var init = function () {
+  var init = function (options) {
+    // there is multiple mode in this view. default one
+    //is relation. This is modified by the init param when non-default view is triggered
+    if (options && options.context && options.context == "interfaces") {
+      elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
+      activeMode = 'interfaces'
+      addItemMode = "currentPbs"
+    }
+
     connections()
 
 
@@ -205,9 +217,11 @@ var createRelationsView = function () {
         fixedValues = !fixedValues
         update()
       }
-      setTimeout(function () {
-        toggleFixedGraph()
-      }, 1);
+      if (objectIsActive) {
+        setTimeout(function () {
+          toggleFixedGraph()
+        }, 1);
+      }
     })
     connect(".action_relations_load_view","click",(e)=>{
       function setSnapshot() {
@@ -267,6 +281,32 @@ var createRelationsView = function () {
       // queryDOM('.action_fade_other_node_toogle_network').checked = true;
       // queryDOM('.action_fade_other_node_toogle_network').dispatchEvent(new Event('change'))
       //update()
+    })
+
+    //INTERFACES MENU connections
+    connect(".action_interfaces_toogle_compose","click",(e)=>{
+      addMode = "compose"
+      update()
+    })
+    connect(".action_interfaces_toogle_physical","click",(e)=>{
+      addMode = "physical"
+      update()
+    })
+    connect(".action_interfaces_add_pbs","click",(e)=>{
+      var id = genuuid()
+      var newReq = prompt("Nouveau Besoin")
+      push(addPbs({uuid:id, name:newReq}))
+      push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+      //activeGraph.updateWithD3Data(data);
+      update()
+    })
+    connect(".action_interfaces_toogle_show_compose","click",(e)=>{
+        elementVisibility.compose = !elementVisibility.compose
+        update()
+    })
+    connect(".action_interfaces_toogle_show_interfaces","click",(e)=>{
+        elementVisibility.interfaces = !elementVisibility.interfaces
+        update()
     })
 
   }
@@ -336,11 +376,18 @@ var createRelationsView = function () {
         if (currentSnapshot) {// has a snapshot been activated
           fixedValuesList = query.currentProject().graphs.items.find(i=>i.uuid == currentSnapshot).nodesPositions
           currentSnapshot = undefined//clear current snapshot
-        }else {// if not go to default
+        }else if( activeMode =="relations") {// if not go to default
           if (query.currentProject().graphs && query.currentProject().graphs.default) {
-            fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB backward compatibility
+            fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB backward compatibility (TODO: remove)
           }
-          console.log(fixedValuesList);
+          console.log("relations")
+          // alert("relations")
+        }else if (activeMode == 'interfaces') {
+          if (query.currentProject().graphs && query.currentProject().graphs.interfaces) {
+            fixedValuesList = query.currentProject().graphs.interfaces.nodesPositions
+          }
+          console.log("interfaces")
+          // alert("interfaces")
         }
       }
       //concat with items to fix this time
@@ -464,7 +511,9 @@ var createRelationsView = function () {
 
 
   var update = function () {
-    render()
+    if (objectIsActive) {
+      render()
+    }
   }
 
   var setActive =function (options) {
@@ -494,44 +543,74 @@ var createRelationsView = function () {
     objectIsActive = false;
   }
 
-
-
   var renderMenu=function () {
-    document.querySelector('.center-container .menuArea').innerHTML=`
-    <div class="ui mini compact text menu">
-      <div class="ui item">
-        <div class="ui toggle checkbox">
-          <input ${fixedValues ? 'checked':''} class="action_restore_last_interface_toogle_network" type="checkbox" name="public">
-          <label>Fixed Graph</label>
-        </div>
+    let commonMenuHTML = `
+    <div class="ui item">
+      <div class="ui toggle checkbox">
+        <input ${fixedValues ? 'checked':''} class="action_restore_last_interface_toogle_network" type="checkbox" name="public">
+        <label>Fixed Graph</label>
       </div>
-      <div class="ui item">
-        <div class="ui toggle checkbox">
-          <input ${fadeOtherNodesOnHoover ? 'checked':''} class="action_fade_other_node_toogle_network" type="checkbox" name="public">
-          <label>Highlight connections</label>
-        </div>
+    </div>
+    <div class="ui item">
+      <div class="ui toggle checkbox">
+        <input ${fadeOtherNodesOnHoover ? 'checked':''} class="action_fade_other_node_toogle_network" type="checkbox" name="public">
+        <label>Highlight connections</label>
       </div>
-      <div class="ui item">
-        <div class="ui button basic action_relations_toogle_show_graph_menu">Toogle Visibility</div>
-      </div>
-      <div class="right menu">
-        <div class="ui item">
-          <div class="ui mini basic buttons">
-            <div class="ui button add_relations_nodes action_interface_add_stakeholder">Add Stakeholders</div>
-            <div class="ui button add_relations_nodes action_interface_add_requirement">Add Requirements</div>
-            <div class="ui button add_relations_nodes action_interface_add_pbs">Add Product</div>
-            <div class="ui button add_relations_nodes action_interface_add_functions">Add Functions</div>
-          </div>
-        </div>
-        <div class="ui item">
-          <div class="ui icon input">
-            <input class="input_relation_search_nodes" type="text" placeholder="Search...">
-            <i class="search icon"></i>
-          </div>
-        </div>
+    </div>
+    <div class="ui item">
+      <div class="ui icon input">
+        <input class="input_relation_search_nodes" type="text" placeholder="Search...">
+        <i class="search icon"></i>
       </div>
     </div>
     `
+    let relationsMenuHTML =`
+    <div class="ui item">
+      <div class="ui button basic action_relations_toogle_show_graph_menu">Toogle Visibility</div>
+    </div>
+    <div class="right menu">
+      <div class="ui item">
+        <div class="ui mini basic buttons">
+          <div class="ui button add_relations_nodes action_interface_add_stakeholder">Add Stakeholders</div>
+          <div class="ui button add_relations_nodes action_interface_add_requirement">Add Requirements</div>
+          <div class="ui button add_relations_nodes action_interface_add_pbs">Add Product</div>
+          <div class="ui button add_relations_nodes action_interface_add_functions">Add Functions</div>
+        </div>
+      </div>
+
+    </div>`
+    let interfacesMenuHTML =`
+    <div class="right menu">
+      <div class="ui item">
+        <div class="ui toggle checkbox">
+          <input ${elementVisibility.compose? 'checked':''} class="action_interfaces_toogle_show_compose" type="checkbox" name="public">
+          <label>Show Compositions</label>
+        </div>
+      </div>
+      <div class="ui item">
+        <div class="ui toggle checkbox">
+          <input ${elementVisibility.interfaces ? 'checked':''} class="action_interfaces_toogle_show_interfaces" type="checkbox" name="public">
+          <label>Show Interfaces</label>
+        </div>
+      </div>
+      <div class="ui item">
+        <div class="ui mini basic buttons">
+          <div class="ui button action_interfaces_add_pbs">Add Product</div>
+        </div>
+      </div>
+      <div class="ui item">
+        <div class="ui mini basic buttons">
+          <div class="${addMode=='compose' ? 'active':''} ui button action_interfaces_toogle_compose">Add Composed Connection</div>
+          <div class="${addMode=='physical' ? 'active':''} ui button action_interfaces_toogle_physical">Add Physical Connection</div>
+        </div>
+      </div>
+    </div>`
+    if (activeMode == "relations") {
+      document.querySelector('.center-container .menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + relationsMenuHTML +`</div>`
+    }else {
+      document.querySelector('.center-container .menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + interfacesMenuHTML +`</div>`
+    }
+
     document.querySelector('.input_relation_search_nodes').addEventListener('keyup', function(e){
       //e.stopPropagation()
       var value = document.querySelector(".input_relation_search_nodes").value
@@ -715,7 +794,12 @@ var createRelationsView = function () {
             query.currentProject().graphs.items =[]
           }
           let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
-          query.currentProject().graphs.default = graphItem//TODO use actions
+          //append to graph DB
+          if (activeMode=="relations") {
+            query.currentProject().graphs.default = graphItem//TODO use actions
+          }else if (activeMode == "interfaces") {
+            query.currentProject().graphs.interfaces = graphItem//TODO use actions
+          }
         }
       },
       onNodeContextMenu:function (node) {
@@ -929,6 +1013,15 @@ var createRelationsView = function () {
       push(act.add("metaLinks",{type:"originNeed", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
     }else if (nodeTypes[0] =="Functions" && nodeTypes[1] == "Pbs") {
       push(act.add("metaLinks",{type:"originFunction", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
+    }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "Pbs") {
+      if (addMode == "physical") {
+          push(act.add("interfaces",{type:"Physical connection", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+      }else if (addMode == "compose") {
+          push(movePbs({origin:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+          push(removePbsLink({target:previousSelectedNode.uuid}))
+
+          push(act.addLink("currentPbs",{ source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+      }
     }
   }
 
@@ -955,3 +1048,6 @@ var createRelationsView = function () {
 
 var relationsView = createRelationsView();
 relationsView.init()
+
+var interfacesView = createRelationsView();
+interfacesView.init({context:"interfaces"})

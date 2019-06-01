@@ -546,5 +546,5 @@ var createInterfacesView = function () {
   return self
 }
 
-var interfacesView = createInterfacesView();
-interfacesView.init()
+// var interfacesView = createInterfacesView();
+// interfacesView.init()
