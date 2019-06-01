@@ -467,7 +467,23 @@ var createRelationsView = function () {
     render()
   }
 
-  var setActive =function () {
+  var setActive =function (options) {
+    if (options && options.param) {
+      if (options.param.context && options.param.context == "extract") {
+        elementVisibility = {
+          functions : true,
+          requirements : true,
+          stakeholders : true,
+          metaLinks : true,
+          interfaces : false,
+          compose : true
+        }
+        update()//update first to poulate elements
+
+        isolateSelectedNodes([{uuid:options.param.uuid}], true)
+      }
+    }
+
     objectIsActive = true;
     update()
   }

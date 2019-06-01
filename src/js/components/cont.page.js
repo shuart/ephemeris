@@ -26,7 +26,10 @@ var createPageManager = function ({
     componentList.push({name, object, haveSideBar, linkedComponents})
   }
 
-  var setActivePage = function (componentName) {
+  var setActivePage = function (componentName, data) {
+    let options = data || {}
+    options.param = options.param || undefined//todo refactor
+
     var haveSideBar = true;
     var componentObject = componentList.find(item=> item.name == componentName)
     console.log("set "+componentName+" active");
@@ -41,7 +44,7 @@ var createPageManager = function ({
     }
     for (component of componentToOpen) {
       if (component.object.setActive) {
-        component.object.setActive();
+        component.object.setActive(options);
         //check options of the component
         haveSideBar = component.haveSideBar;
       }

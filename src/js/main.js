@@ -106,6 +106,9 @@ var reparse = false;
   connect(".action_toogle_diag_relations","click",(e)=>{
     pageManager.setActivePage("relations")
   })
+  connect(".action_toogle_diag_relations_options","click",(e)=>{
+    pageManager.setActivePage("relations", {param:{context:"extract", uuid:e.target.dataset.id}})
+  })
   connect(".action_toogle_unified","click",(e)=>{
     pageManager.setActivePage("unified")
   })

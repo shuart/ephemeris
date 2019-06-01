@@ -42,7 +42,7 @@ var createLeftMenuProjectTree = function () {
       container:document.querySelector(".left-list"),
       items: itemsToDisplay,
       links:relations,
-      customEyeActionClass:"action_LM_project_tree_show_item",
+      customEyeActionClass:"action_toogle_diag_relations_options",
       customTextActionClass:"action_LM_project_tree_show_item_popup"
     })
     // updateSideListeVisibility()
