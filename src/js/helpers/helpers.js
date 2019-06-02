@@ -33,6 +33,31 @@ function connect(selector, action, callback) {
 
   }, false);
 }
+//create a low level element listener
+function bind(selector, action, callback, boundary) {
+  let root = document
+  if (boundary) {
+    if (typeof boundary === 'string' || boundary instanceof String){
+      root = document.querySelector(boudary)
+    }else {
+      root = boundary
+    }
+  }
+  root.addEventListener(action, function (event) {
+    // If the clicked element doesn't have the right selector, bail
+    if (!event.target.matches(selector+","+selector+" *")) return;
+
+    // Don't follow the link
+    event.preventDefault();
+
+    //load callblack
+    callback(event);
+
+    // Log the clicked element in the console
+    console.log(event.target);
+
+  }, false);
+}
 
 //time
 const lessThanInSomeDays = (date,days) => {

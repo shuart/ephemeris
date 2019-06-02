@@ -2,8 +2,7 @@ var createRelationsView = function () {
   var self ={};
   var objectIsActive = false;
   var activeMode = 'relations'
-  //TODO the actions here are trying to update the other view. Should be updated.
-  //Graph is ok because it's two differents one. The issue is with the oterh actions.
+
 
   var displayType = "network";
   var activeGraph = undefined;
@@ -59,6 +58,8 @@ var createRelationsView = function () {
 
   var sideListe = undefined
 
+  var container = undefined
+
   var theme={
     viewListItem:(item) => {
      let html = `
@@ -103,37 +104,37 @@ var createRelationsView = function () {
       addItemMode = "currentPbs"
     }
 
-    connections()
+
 
 
   }
-  var connections =function () {//TODO rename everyting with _Relations_
-    connect(".action_interface_toogle_state","click",(e)=>{
+  var connections =function (container) {//TODO rename everyting with _Relations_
+    bind(".action_interface_toogle_state","click",(e)=>{
       displayType = "state"
       update()
-    })
-    connect(".action_interface_toogle_network","click",(e)=>{
+    }, container)
+    bind(".action_interface_toogle_network","click",(e)=>{
       displayType = "network"
       update()
-    })
-    connect(".action_relations_toogle_group_functions","click",(e)=>{ groupElements.functions = !groupElements.functions; update(); })
-    connect(".action_relations_toogle_group_requirements","click",(e)=>{ groupElements.requirements = !groupElements.requirements; update(); })
-    connect(".action_relations_toogle_group_stakeholders","click",(e)=>{ groupElements.stakeholders = !groupElements.stakeholders; update(); })
-    connect(".action_relations_toogle_group_pbs","click",(e)=>{ groupElements.pbs = !groupElements.pbs; update(); })
+    }, container)
+    bind(".action_relations_toogle_group_functions","click",(e)=>{ groupElements.functions = !groupElements.functions; update(); }, container)
+    bind(".action_relations_toogle_group_requirements","click",(e)=>{ groupElements.requirements = !groupElements.requirements; update(); }, container)
+    bind(".action_relations_toogle_group_stakeholders","click",(e)=>{ groupElements.stakeholders = !groupElements.stakeholders; update(); }, container)
+    bind(".action_relations_toogle_group_pbs","click",(e)=>{ groupElements.pbs = !groupElements.pbs; update(); }, container)
 
-    connect(".action_relations_toogle_show_functions","click",(e)=>{ elementVisibility.functions = !elementVisibility.functions; update(); })
-    connect(".action_relations_toogle_show_requirements","click",(e)=>{ elementVisibility.requirements = !elementVisibility.requirements; update(); })
-    connect(".action_relations_toogle_show_stakeholders","click",(e)=>{ elementVisibility.stakeholders = !elementVisibility.stakeholders; update(); })
-    connect(".action_relations_toogle_show_metalinks","click",(e)=>{ elementVisibility.metaLinks = !elementVisibility.metaLinks; update(); })
-    connect(".action_relations_toogle_show_interfaces","click",(e)=>{ elementVisibility.interfaces = !elementVisibility.interfaces; update(); })
-    connect(".action_relations_toogle_show_compose","click",(e)=>{ elementVisibility.compose = !elementVisibility.compose; update(); })
+    bind(".action_relations_toogle_show_functions","click",(e)=>{ elementVisibility.functions = !elementVisibility.functions; update(); }, container)
+    bind(".action_relations_toogle_show_requirements","click",(e)=>{ elementVisibility.requirements = !elementVisibility.requirements; update(); }, container)
+    bind(".action_relations_toogle_show_stakeholders","click",(e)=>{ elementVisibility.stakeholders = !elementVisibility.stakeholders; update(); }, container)
+    bind(".action_relations_toogle_show_metalinks","click",(e)=>{ elementVisibility.metaLinks = !elementVisibility.metaLinks; update(); }, container)
+    bind(".action_relations_toogle_show_interfaces","click",(e)=>{ elementVisibility.interfaces = !elementVisibility.interfaces; update(); }, container)
+    bind(".action_relations_toogle_show_compose","click",(e)=>{ elementVisibility.compose = !elementVisibility.compose; update(); }, container)
 
-    connect(".action_interface_add_stakeholder","click",(e)=>{
+    bind(".action_interface_add_stakeholder","click",(e)=>{
       addItemMode = 'stakeholders'
       document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
       queryDOM(".action_interface_add_stakeholder").classList.add('active')
-    })
-    connect(".action_tree_list_relations_toogle_visibility","click",(e)=>{
+    }, container)
+    bind(".action_tree_list_relations_toogle_visibility","click",(e)=>{
       let controlChildrenVisibility = true;
       let current = e.target
       let linkedNodeId = current.dataset.id
@@ -166,8 +167,8 @@ var createRelationsView = function () {
       }
 
       update()
-    })
-    connect(".action_relations_toogle_show_graph_menu","click",(e)=>{
+    }, container)
+    bind(".action_relations_toogle_show_graph_menu","click",(e)=>{
       var elem = queryDOM('.menuGraph')
       if (elem.classList.contains('hidden')) {
         elem.classList.remove('hidden')
@@ -176,43 +177,43 @@ var createRelationsView = function () {
         elem.classList.add('hidden')
         showVisibilityMenu = false
       }
-    })
-    connect(".action_interface_add_requirement","click",(e)=>{
+    }, container)
+    bind(".action_interface_add_requirement","click",(e)=>{
       addItemMode = 'requirements'
       console.log(document.querySelectorAll(".add_relations_nodes"));
       document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
       queryDOM(".action_interface_add_requirement").classList.add('active')
-    })
-    connect(".action_interface_add_functions","click",(e)=>{
+    }, container)
+    bind(".action_interface_add_functions","click",(e)=>{
       addItemMode = 'functions'
       document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
       queryDOM(".action_interface_add_functions").classList.add('active')
-    })
-    connect(".action_interface_set_new_metalink_mode","click",(e)=>{
+    }, container)
+    bind(".action_interface_set_new_metalink_mode","click",(e)=>{
       lastSelectedNode = undefined;
       previousSelectedNode = undefined;
       addLinkMode = !addLinkMode
       renderMenu()
-    })
-    connect(".action_interface_add_new_metalink","click",(e)=>{
+    }, container)
+    bind(".action_interface_add_new_metalink","click",(e)=>{
       addLinkMode = !addLinkMode
       linkNodes(lastSelectedNode,previousSelectedNode)
       update()
-    })
-    connect(".action_interface_add_pbs","click",(e)=>{
+    }, container)
+    bind(".action_interface_add_pbs","click",(e)=>{
       addItemMode = 'currentPbs'
       document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
       queryDOM(".action_interface_add_pbs").classList.add('active')
-    })
-    connect(".action_relations_isolate_nodes","click",(e)=>{
+    }, container)
+    bind(".action_relations_isolate_nodes","click",(e)=>{
       let selectedNodes = activeGraph.getSelectedNodes()
       isolateSelectedNodes(selectedNodes, false)
-    })
-    connect(".action_relations_isolate_nodes_and_children","click",(e)=>{
+    }, container)
+    bind(".action_relations_isolate_nodes_and_children","click",(e)=>{
       let selectedNodes = activeGraph.getSelectedNodes()
       isolateSelectedNodes(selectedNodes, true)
-    })
-    connect(".action_restore_last_interface_toogle_network","click",(e)=>{
+    }, container)
+    bind(".action_restore_last_interface_toogle_network","click",(e)=>{
       function toggleFixedGraph() {
         fixedValues = !fixedValues
         update()
@@ -222,8 +223,8 @@ var createRelationsView = function () {
           toggleFixedGraph()
         }, 1);
       }
-    })
-    connect(".action_relations_load_view","click",(e)=>{
+    }, container)
+    bind(".action_relations_load_view","click",(e)=>{
       function setSnapshot() {
         let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
         fixedValues = true
@@ -238,8 +239,8 @@ var createRelationsView = function () {
       setTimeout(function () {
         setSnapshot()
       }, 1);
-    })
-    connect(".action_relations_reset_view","click",(e)=>{
+    }, container)
+    bind(".action_relations_reset_view","click",(e)=>{
       function setReset() {
         fixedValues = false
         hiddenItemsFromSideView= []
@@ -251,20 +252,20 @@ var createRelationsView = function () {
       setTimeout(function () {
         setReset()
       }, 1);
-    })
-    connect(".action_relations_add_snap_view","click",(e)=>{
+    }, container)
+    bind(".action_relations_add_snap_view","click",(e)=>{
       let snapshotName = prompt("Add a Snapshot")
       let graphItem = {uuid:genuuid(), name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
       push(act.add("graphs", graphItem))
       update()
-    })
-    connect(".action_relations_remove_snapshot","click",(e)=>{
+    }, container)
+    bind(".action_relations_remove_snapshot","click",(e)=>{
       if (confirm("Delete this snapshot")) {
         push(act.remove("graphs", {uuid:e.target.dataset.id}))
         update()
       }
-    })
-    connect(".action_relations_update_snapshot","click",(e)=>{
+    }, container)
+    bind(".action_relations_update_snapshot","click",(e)=>{
       if (confirm("Update this snapshot")) {
         let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
         let newGraphItem = {uuid:genuuid(), name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
@@ -272,8 +273,8 @@ var createRelationsView = function () {
         push(act.add("graphs", newGraphItem))
         update()
       }
-    })
-    connect(".action_fade_other_node_toogle_network","change",(e)=>{
+    }, container)
+    bind(".action_fade_other_node_toogle_network","change",(e)=>{
       console.log(e.target.value);
       fadeOtherNodesOnHoover = !fadeOtherNodesOnHoover
       activeGraph.setFadeOtherNodesOnHoover(fadeOtherNodesOnHoover)
@@ -281,47 +282,60 @@ var createRelationsView = function () {
       // queryDOM('.action_fade_other_node_toogle_network').checked = true;
       // queryDOM('.action_fade_other_node_toogle_network').dispatchEvent(new Event('change'))
       //update()
-    })
+    }, container)
 
     //INTERFACES MENU connections
-    connect(".action_interfaces_toogle_compose","click",(e)=>{
+    bind(".action_interfaces_toogle_compose","click",(e)=>{
       addMode = "compose"
       update()
-    })
-    connect(".action_interfaces_toogle_physical","click",(e)=>{
+    }, container)
+    bind(".action_interfaces_toogle_physical","click",(e)=>{
       addMode = "physical"
       update()
-    })
-    connect(".action_interfaces_add_pbs","click",(e)=>{
+    }, container)
+    bind(".action_interfaces_add_pbs","click",(e)=>{
       var id = genuuid()
       var newReq = prompt("Nouveau Besoin")
       push(addPbs({uuid:id, name:newReq}))
       push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
       //activeGraph.updateWithD3Data(data);
       update()
-    })
-    connect(".action_interfaces_toogle_show_compose","click",(e)=>{
+    }, container)
+    bind(".action_interfaces_toogle_show_compose","click",(e)=>{
         elementVisibility.compose = !elementVisibility.compose
         update()
-    })
-    connect(".action_interfaces_toogle_show_interfaces","click",(e)=>{
+    }, container)
+    bind(".action_interfaces_toogle_show_interfaces","click",(e)=>{
         elementVisibility.interfaces = !elementVisibility.interfaces
         update()
-    })
+    }, container)
 
   }
 
   var render = function () {
+
+    container = document.createElement("div")
+    container.style.height = "100%"
+    connections(container)
+    //update all connections at each render. otherwise multiple views share the updae
+
     var store = JSON.stringify(query.currentProject())
     store = JSON.parse(store)
-    document.querySelector('.center-container').innerHTML=`
+    container.innerHTML=`
       <div class='menuArea'></div>
       <div style="height: calc(100% - 45px); position: relative" class='graphArea'>
         <div style="height: 100%" class="interfaceGraph"></div>
         <div style="opacity: 0.85;height: 99%;width: 250px;position: absolute;right:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenu ? '':'hidden'} menuGraph"></div>
       </div>`
 
-    renderMenu()
+    renderMenu(container)
+
+    //append container and add graph afterward //TODO should be reveresed
+
+    document.querySelector(".center-container").innerHTML=''
+    document.querySelector(".center-container").appendChild(container)
+
+    //render graph
 
     var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
     var array2 =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
@@ -543,7 +557,7 @@ var createRelationsView = function () {
     objectIsActive = false;
   }
 
-  var renderMenu=function () {
+  var renderMenu=function (container) {
     let commonMenuHTML = `
     <div class="ui item">
       <div class="ui toggle checkbox">
@@ -606,12 +620,12 @@ var createRelationsView = function () {
       </div>
     </div>`
     if (activeMode == "relations") {
-      document.querySelector('.center-container .menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + relationsMenuHTML +`</div>`
+      container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + relationsMenuHTML +`</div>`
     }else {
-      document.querySelector('.center-container .menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + interfacesMenuHTML +`</div>`
+      container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + interfacesMenuHTML +`</div>`
     }
 
-    document.querySelector('.input_relation_search_nodes').addEventListener('keyup', function(e){
+    container.querySelector('.input_relation_search_nodes').addEventListener('keyup', function(e){
       //e.stopPropagation()
       var value = document.querySelector(".input_relation_search_nodes").value
       console.log(value);
@@ -630,7 +644,7 @@ var createRelationsView = function () {
       }
     });
 
-    document.querySelector('.center-container .menuGraph').innerHTML=`
+    container.querySelector('.menuGraph').innerHTML=`
     <div class="ui item action_relations_toogle_show_graph_menu"><i class="close icon"></i></div>
     <div class="ui secondary pointing vertical menu">
       <div class="item">
@@ -689,7 +703,7 @@ var createRelationsView = function () {
         return 0;})
       .map(v=>theme.viewListItem(v))
       .join('')
-    queryDOM('.target_relations_view_list').innerHTML= theme.viewListOptions() + viewMenuHtml
+    container.querySelector('.target_relations_view_list').innerHTML= theme.viewListOptions() + viewMenuHtml
   }
 
   var dataToD3Format = function (data) {
