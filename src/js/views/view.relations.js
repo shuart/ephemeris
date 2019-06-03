@@ -820,6 +820,19 @@ var createRelationsView = function () {
           }
         }
       },
+      onRelationshipDoubleClick:function (d) {
+        console.log(d);
+
+        if (d.type != "Composed by" && confirm("remove link? ("+d.type+")")) {
+          if (d.type == "Physical connection") {
+            push(act.remove("interfaces",{uuid:d.uuid}))
+          }else {
+            push(act.remove("metaLinks",{uuid:d.uuid}))
+          }
+          
+          update()
+        }
+      },
       onNodeContextMenu:function (node) {
         showEditMenu(node)
       },
