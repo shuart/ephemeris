@@ -23,7 +23,6 @@ var createLeftMenuProjectTree = function () {
   }
 
   var render = function () {
-    document.querySelector(".left-menu-area .title").innerHTML = "Overview"
     renderSideListe()
   }
 
@@ -34,10 +33,12 @@ var createLeftMenuProjectTree = function () {
   var renderSideListe = function () {
     var store = JSON.stringify(query.currentProject())
     store = JSON.parse(store)
+
     var itemsToDisplay =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
     var relations = store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
 
-
+    document.querySelector(".left-menu-area .title").innerHTML = "Overview"
+    
     sideListe = createTreeList({
       container:document.querySelector(".left-list"),
       items: itemsToDisplay,
@@ -49,6 +50,7 @@ var createLeftMenuProjectTree = function () {
   }
 
   var udapteSideListe = function () {
+    document.querySelector(".left-menu-area .title").innerHTML = "Overview"
     var store = JSON.stringify(query.currentProject())
     store = JSON.parse(store)
     var itemsToDisplay =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
