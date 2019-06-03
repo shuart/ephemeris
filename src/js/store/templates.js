@@ -18,19 +18,19 @@ var store = {
     links:[]
   },
   plannings:{
-    items:[{uuid:"plaefse", name:"Planning du projet", items:[], links:[]}
+    items:[{uuid:"plaefse", name:"Project Planning", items:[], links:[]}
     ],
     links:[]
   },
   requirements:{
     items:[
-      {uuid:"fefsfse", name:"Ajouter des besoins"},
-      {uuid:"555sfse", name:"Un besoin dépendant du précédent"},
-      {uuid:"444sfse", name:"Un autre besoin dépendant du précédent"},
+      {uuid:"fefsfse", name:"A requirement"},
+      {uuid:"555sfse", name:"A linked requirement"},
+      {uuid:"444sfse", name:"An other linked requirement"},
 
-      {uuid:"789sfse", name:"Encore un besoin dépendant du précédent"},
-      {uuid:"999sfse", name:"Un sous sous besoin"},
-      {uuid:"f54846e", name:"Un autre besoin"}
+      {uuid:"789sfse", name:"Yet an other linked requirement"},
+      {uuid:"999sfse", name:"Requirements can have many levels"},
+      {uuid:"f54846e", name:"Another exemple requirement"}
     ],
     links:[
       {source:"fefsfse", target:"555sfse"},
@@ -41,10 +41,10 @@ var store = {
   },
   functions:{
     items:[
-      {uuid:"fefsf867", name:"Une fonction du projet"},
-      {uuid:"55567687", name:"Une fonction du dépendant de la précédente"},
-      {uuid:"f54877777", name:"Une autre fonction"},
-      {uuid:"99eeee86fse", name:"Une sous fonction"},
+      {uuid:"fefsf867", name:"A function"},
+      {uuid:"55567687", name:"A linked function"},
+      {uuid:"f54877777", name:"Another function"},
+      {uuid:"99eeee86fse", name:"Another linked function"},
     ],
     links:[
       {source:"fefsf867", target:"55567687"},
@@ -53,7 +53,7 @@ var store = {
   },
   stakeholders:{
     items:[
-      {uuid:"fefiose", name:"Stéphane", lastName:"Huart", org:"na", role:"", mail:""},
+      {uuid:"fefiose", name:"A", lastName:"Stakeholder", org:"na", role:"", mail:""},
       {uuid:"f896546e", name:"John", lastName:"Doe", org:"Entreprise inc", role:"PM", mail:""}
     ],
     links:[]

@@ -642,7 +642,7 @@ function showListMenu({
         html += nestedHtml
         if (singleItem) {
           if (sourceLinks && source.includes(item.uuid)) {
-            html += "</div><h3>Eléments Liés</h3>"
+            html += "</div><h3>Linked Elements</h3>"
           }
         }
       }

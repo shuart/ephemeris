@@ -21,9 +21,9 @@ var createFunctionsView = function () {
         fullScreen:true,
         displayProp:"name",
         display:[
-          {prop:"name", displayAs:"name", edit:"true"},
+          {prop:"name", displayAs:"Name", edit:"true"},
           {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-          {prop:"originNeed", displayAs:"lié aux besoins", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"}
+          {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"}
         ],
         idProp:"uuid",
         onEditItem: (ev)=>{
@@ -119,12 +119,12 @@ var createFunctionsView = function () {
             rulesToDisplaySingleElement:[
               {prop:"name", displayAs:"Name", edit:"true"},
               {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-              {prop:"originNeed", displayAs:"Lié au besoins", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
+              {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
             ],
             display:[
               {prop:"name", displayAs:"Name", edit:false},
               {prop:"desc", displayAs:"Description", fullText:true, edit:false},
-              {prop:"originNeed", displayAs:"Lié au besoins", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
+              {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
             ],
             idProp:"uuid",
             onCloseMenu: (ev)=>{

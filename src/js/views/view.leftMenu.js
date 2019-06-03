@@ -334,7 +334,7 @@ var createLeftMenu = function () {
     //actionTooglelink = `<i data-id="${item.uuid}"  class="action_toogle_selectmenu minus circle icon"></i>`
     var metalink = store.metaLinks.items.filter((i)=>i.target == item.uuid)
     if (!metalink[0]) {
-      actionTooglelink = `<a data-id="${item.uuid}"  class="action_toogle_selectmenu item">Lier à un élément</a>`
+      actionTooglelink = `<a data-id="${item.uuid}"  class="action_toogle_selectmenu item">Link to an element</a>`
     }else {
       console.log(store.currentPbs.items, metalink[0].source);
       var linkedItem = getItemsFromPropValue(store.currentPbs.items, "uuid", metalink[0].source)

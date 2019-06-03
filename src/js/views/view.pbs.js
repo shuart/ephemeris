@@ -24,8 +24,8 @@ var createPbsView = function () {
         display:[
           {prop:"name", displayAs:"name", edit:"true"},
           {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-          {prop:"originNeed", displayAs:"Lié aux besoins", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
-          {prop:"originFunction", displayAs:"Lié a la fonction", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"}
+          {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
+          {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"}
         ],
         idProp:"uuid",
         onEditItem: (ev)=>{
@@ -138,14 +138,14 @@ var createPbsView = function () {
       rulesToDisplaySingleElement:[
         {prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-        {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
-        {prop:"originFunction", displayAs:"Lié a la fonction", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
+        {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
+        {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
       ],
       display:[
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true,edit:false},
-        {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
-        {prop:"originFunction", displayAs:"Lié a la fonction", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:false}
+        {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
+        {prop:"originFunction", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:false}
       ],
       idProp:"uuid",
       onCloseMenu: (ev)=>{

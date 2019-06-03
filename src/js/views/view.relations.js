@@ -988,18 +988,18 @@ var createRelationsView = function () {
     if (type == "Functions") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
-        {prop:"originNeed", displayAs:"Lié au besoins", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
+        {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
       ]
     }else if (type =="Requirements") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
-        {prop:"origin", displayAs:"Lié à", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:false}
+        {prop:"origin", displayAs:"Linked to", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:false}
       ]
     }else if (type =="Pbs") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
-        {prop:"originNeed", displayAs:"Lié au besoins", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
-        {prop:"originFunction", displayAs:"Lié à la fonction", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
+        {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
+        {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
       ]
     }else {
       return [{prop:"name", displayAs:"Name", edit:"true"},

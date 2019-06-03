@@ -143,10 +143,10 @@ var reparse = false;
       sourceData:store.stakeholders.items,
       displayProp:"name",
       display:[
-        {prop:"name", displayAs:"Prénom", edit:"true"},
-        {prop:"lastName", displayAs:"Nom", edit:"true"},
-        {prop:"org", displayAs:"Entreprise", edit:"true"},
-        {prop:"role", displayAs:"Fonction", edit:"true"},
+        {prop:"name", displayAs:"First name", edit:"true"},
+        {prop:"lastName", displayAs:"Last Name", edit:"true"},
+        {prop:"org", displayAs:"Org", edit:"true"},
+        {prop:"role", displayAs:"Role", edit:"true"},
         {prop:"mail", displayAs:"E-mail", edit:"true"}
       ],
       idProp:"uuid",

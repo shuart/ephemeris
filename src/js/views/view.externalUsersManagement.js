@@ -61,10 +61,10 @@ var createExternalUsersManagement = function (targetSelector) {
       displayProp:"name",
       display:[
         {prop:"projectName", displayAs:"Project", edit:false},
-        {prop:"name", displayAs:"Prénom", edit:false},
-        {prop:"lastName", displayAs:"Nom", edit:false},
-        {prop:"org", displayAs:"Entreprise", edit:false},
-        {prop:"role", displayAs:"Fonction", edit:false},
+        {prop:"name", displayAs:"First name", edit:false},
+        {prop:"lastName", displayAs:"Last name", edit:false},
+        {prop:"org", displayAs:"Org", edit:false},
+        {prop:"role", displayAs:"Role", edit:false},
         {prop:"mail", displayAs:"E-mail", edit:false},
         {prop:"uuid", displayAs:"uuid", edit:false}
       ],
