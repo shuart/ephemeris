@@ -167,7 +167,7 @@ var createRelationsView = function () {
       }
 
       update()
-    }, container)
+    }, listContainer)
     bind(".action_relations_toogle_show_graph_menu","click",(e)=>{
       var elem = queryDOM('.menuGraph')
       if (elem.classList.contains('hidden')) {
@@ -316,6 +316,10 @@ var createRelationsView = function () {
 
     container = document.createElement("div")
     container.style.height = "100%"
+
+    listContainer = document.createElement("div")
+    listContainer.style.height = "100%"
+    document.querySelector(".left-list").appendChild(listContainer)
     connections(container)
     //update all connections at each render. otherwise multiple views share the updae
 
@@ -462,7 +466,7 @@ var createRelationsView = function () {
 
   var renderSideListe = function () {
     sideListe = createTreeList({
-      container:document.querySelector(".left-list"),
+      container:listContainer,
       items: itemsToDisplay,
       links:relations,
       customEyeActionClass:"action_tree_list_relations_toogle_visibility"
