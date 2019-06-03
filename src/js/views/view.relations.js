@@ -829,7 +829,7 @@ var createRelationsView = function () {
           }else {
             push(act.remove("metaLinks",{uuid:d.uuid}))
           }
-          
+
           update()
         }
       },
@@ -1045,13 +1045,29 @@ var createRelationsView = function () {
     }else if (nodeTypes[0] =="Functions" && nodeTypes[1] == "Pbs") {
       push(act.add("metaLinks",{type:"originFunction", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
     }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "Pbs") {
+      //check for circular references
       if (addMode == "physical") {
-          push(act.add("interfaces",{type:"Physical connection", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+          let isCircularRef = store.interfaces.items.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
+          if (!isCircularRef) {
+            push(act.add("interfaces",{type:"Physical connection", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+          }else {
+            alert("Circular reference. Action not possible")
+          }
       }else if (addMode == "compose") {
-          push(movePbs({origin:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
-          push(removePbsLink({target:previousSelectedNode.uuid}))
+          let isCircularRef = store.currentPbs.links.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
+          let targetIsRoot = !store.currentPbs.links.find(i=> i.target == previousSelectedNode.uuid)
 
-          push(act.addLink("currentPbs",{ source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+          if (!isCircularRef && !targetIsRoot) {
+            push(movePbs({origin:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+            push(removePbsLink({target:previousSelectedNode.uuid}))
+
+            push(act.addLink("currentPbs",{ source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+          }else if(isCircularRef){
+            alert("Circular reference. Action not possible")
+          }else if(targetIsRoot){
+            alert("Cannot target the root node")
+          }
+
       }
     }
   }
