@@ -133,6 +133,7 @@ function showListMenu({
           if (!editItemMode && !singleElement) {
             refreshList()
           }else {
+            currentSearchValue =""
             sourceEl.remove()
             render()
           }
