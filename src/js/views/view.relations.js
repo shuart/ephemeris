@@ -318,7 +318,6 @@ var createRelationsView = function () {
     container.style.height = "100%"
 
     listContainer = document.createElement("div")
-    listContainer.style.height = "100%"
     document.querySelector(".left-list").appendChild(listContainer)
     connections(container)
     //update all connections at each render. otherwise multiple views share the updae
@@ -469,7 +468,8 @@ var createRelationsView = function () {
       container:listContainer,
       items: itemsToDisplay,
       links:relations,
-      customEyeActionClass:"action_tree_list_relations_toogle_visibility"
+      customEyeActionClass:"action_tree_list_relations_toogle_visibility",
+      customExtraActionClass:"fas fa-link action_toogle_diag_relations_options"
     })
     updateSideListeVisibility()
   }

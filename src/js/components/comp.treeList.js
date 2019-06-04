@@ -7,7 +7,9 @@ var createTreeList = function ({
   contentFunction = undefined,
   onToogleVisibility=undefined,
   customEyeActionClass="",
+  customEyeIconClass=undefined,
   customTextActionClass="",
+  customExtraActionClass="",
   arrayOfHiddenItems = undefined//unused
   }={}) {
   var self ={};
@@ -21,11 +23,22 @@ var createTreeList = function ({
      html =`
      <div data-id="${i[identifier]}" class="searchable_item list-item">
        <span data-id="${i[identifier]}" >${valueFunction(i)}</span>
+       ${theme.itemExtraIcon(i)}
        <i data-id="${i[identifier]} style="opacity:0.2" class="${customEyeActionClass} far ${visibility ? "fa-eye-slash":"fa-eye" }"></i>
        <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
      </div>`
 
     return html
+  }
+
+  theme.itemExtraIcon = function (i) {
+    if (customExtraActionClass != "") {
+      html =`
+      <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customExtraActionClass}"></i>
+        `
+      return html
+    }
+    return ""
   }
   theme.itemLeaf = function (i, branchesHTML, caret,childrenAreClosed) {
      html =`
@@ -33,7 +46,8 @@ var createTreeList = function ({
        <div data-id="${i[identifier]}" class="searchable_item list-item">
          <span>${getCartStyle(caret, childrenAreClosed)}</span>
          <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
-         <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="far fa-eye ${customEyeActionClass}"></i>
+         ${theme.itemExtraIcon(i)}
+         <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customEyeIconClass? customEyeIconClass:"far fa-eye"} ${customEyeActionClass}"></i>
          <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
        </div>
      </div>

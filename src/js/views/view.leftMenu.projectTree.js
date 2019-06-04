@@ -38,12 +38,13 @@ var createLeftMenuProjectTree = function () {
     var relations = store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
 
     document.querySelector(".left-menu-area .title").innerHTML = "Overview"
-    
+
     sideListe = createTreeList({
       container:document.querySelector(".left-list"),
       items: itemsToDisplay,
       links:relations,
       customEyeActionClass:"action_toogle_diag_relations_options",
+      customEyeIconClass:"fas fa-link",
       customTextActionClass:"action_LM_project_tree_show_item_popup"
     })
     // updateSideListeVisibility()
