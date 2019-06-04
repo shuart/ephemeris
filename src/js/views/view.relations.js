@@ -545,6 +545,7 @@ var createRelationsView = function () {
           interfaces : false,
           compose : true
         }
+        objectIsActive = true;
         update()//update first to poulate elements
 
         isolateSelectedNodes([{uuid:options.param.uuid}], true)
