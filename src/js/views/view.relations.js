@@ -466,6 +466,7 @@ var createRelationsView = function () {
   var renderSideListe = function () {
     sideListe = createTreeList({
       container:listContainer,
+      searchContainer:document.querySelector(".side_searchArea"),
       items: itemsToDisplay,
       links:relations,
       customEyeActionClass:"action_tree_list_relations_toogle_visibility",
@@ -526,6 +527,15 @@ var createRelationsView = function () {
     update()
   }
 
+  var displaySideMenuFromSearch = function (filteredIds) {
+    console.log(filteredIds);
+    var searchedItems = document.querySelectorAll(".searchable_item.list-item")
+    for (item of searchedItems) {
+      if (filteredIds.includes(item.dataset.id) || !filteredIds[0]) {item.style.display = "block"}else{item.style.display = "none"}
+    }
+
+  }
+
 
 
   var update = function () {
@@ -559,6 +569,7 @@ var createRelationsView = function () {
   var setInactive = function () {
     //clean side menu
     document.querySelector(".left-list").innerHTML=""
+    document.querySelector(".side_searchArea").innerHTML=""
     objectIsActive = false;
   }
 
@@ -644,8 +655,10 @@ var createRelationsView = function () {
         let filteredDataUuid = filteredData.map(d => d.uuid)
         console.log(filteredDataUuid);
         activeGraph.setFocusedNodes("uuid", filteredDataUuid, ["mark","hideOthers"])
+        //displaySideMenuFromSearch(filteredDataUuid)//todo check if needed
       }else {//if null reset
         activeGraph.setFocusedNodes("uuid", [], ["mark","hideOthers"])
+        //displaySideMenuFromSearch([])
       }
     });
 

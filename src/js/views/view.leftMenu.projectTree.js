@@ -41,6 +41,7 @@ var createLeftMenuProjectTree = function () {
 
     sideListe = createTreeList({
       container:document.querySelector(".left-list"),
+      searchContainer:document.querySelector(".side_searchArea"),
       items: itemsToDisplay,
       links:relations,
       customEyeActionClass:"action_toogle_diag_relations_options",
@@ -74,6 +75,8 @@ var createLeftMenuProjectTree = function () {
   var setInactive = function () {
     //clear
     document.querySelector(".left-list").innerHTML=""
+    document.querySelector(".side_searchArea").innerHTML=""
+
 
     objectIsActive = false;
   }

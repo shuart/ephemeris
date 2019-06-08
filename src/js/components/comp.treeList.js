@@ -1,5 +1,6 @@
 var createTreeList = function ({
   container=undefined,
+  searchContainer=undefined,
   items = undefined,
   links = undefined,
   identifier = "uuid",
@@ -14,6 +15,8 @@ var createTreeList = function ({
   }={}) {
   var self ={};
   var domElement = undefined
+  var domSearchElement = undefined
+  var searchResults = undefined
   var closedCaret = []
 
   var objectIsActive = false;
@@ -24,10 +27,18 @@ var createTreeList = function ({
      <div data-id="${i[identifier]}" class="searchable_item list-item">
        <span data-id="${i[identifier]}" >${valueFunction(i)}</span>
        ${theme.itemExtraIcon(i)}
-       <i data-id="${i[identifier]} style="opacity:0.2" class="${customEyeActionClass} far ${visibility ? "fa-eye-slash":"fa-eye" }"></i>
+       <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customEyeIconClass? customEyeIconClass:"far fa-eye"} ${customEyeActionClass}"></i>
        <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
      </div>`
 
+    return html
+  }
+
+  theme.itemSearchArea= function () {
+     html =`
+        <input class="tree_item_search_input search_input" type="text" placeholder="Search..">
+        <span class=""> <i class="fas fa-search"></i></span>
+    `
     return html
   }
 
@@ -84,11 +95,22 @@ var createTreeList = function ({
   var setContainerArea =function () {
     //clear container and append main element
     container.innerHTML=""
+
     domElement = container.appendChild(document.createElement("div"))
     domElement.classList="tree_list_area"
+
+    //set up search if needed
+    if (searchContainer) {
+      searchContainer.innerHTML=""
+      domSearchElement = searchContainer.appendChild(document.createElement("div"))
+      domSearchElement.classList="tree_list_search_area"
+      domSearchElement.innerHTML=theme.itemSearchArea()
+      setUpSearch(domSearchElement.querySelector('.tree_item_search_input'), items);
+    }
     console.log(domElement);
   }
   var connections =function () {
+
     domElement.onclick = function(event) {
         if (event.target.classList.contains("tree_caret")) {
             console.log(event.target.parentNode.parentNode.parentNode.nextElementSibling);
@@ -116,7 +138,11 @@ var createTreeList = function ({
   }
 
   var render = function () {
-    if (!links) {
+    if (searchResults && searchResults[0]){
+      let list = searchResults.map(i=>theme.item(i)).join("")
+      domElement.innerHTML = list
+      searchResults = undefined //reset search result if reloading
+    }else if (!links) {
       let list = items.map(i=>theme.item(i)).join("")
       domElement.innerHTML = list
     }else if (links) {
@@ -171,6 +197,34 @@ var createTreeList = function ({
       let leafHTML = theme.itemLeaf(t.leaf, branchesHTML, caret, caretStatus)
       return leafHTML
     }).join("")
+  }
+
+  function setUpSearch(searchElement, sourceData) {
+    searchElement.addEventListener('keyup', function(e){
+      //e.stopPropagation()
+      var value = searchElement.value
+      console.log(value);
+      console.log(sourceData);
+      var filteredData = sourceData.filter((item) => {
+        if (fuzzysearch(value, item.name) || fuzzysearch (value, item.name.toLowerCase()) ) {
+          return true
+        }
+        return false
+      })
+      console.log(filteredData);
+      if (filteredData[0] && filteredData.length != items.length) {
+        searchResults = filteredData
+      }else {
+        searchResults = undefined
+      }
+      update()
+
+      // var filteredIds = filteredData.map(x => x.uuid);
+      // var searchedItems = document.querySelectorAll(".searchable_note")
+      // for (item of searchedItems) {
+      //   if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "block"}else{item.style.display = "none"}
+      // }
+    });
   }
 
   var update = function () {
