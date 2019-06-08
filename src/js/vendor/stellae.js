@@ -176,6 +176,21 @@ function stellae(_selector, _options) {
 
         svgNodes = svg.append('g')
                       .attr('class', 'nodes');
+        //markers
+        base.append("svg:defs").append("svg:marker")
+        .attr("id", "markerstriangle")
+        .attr("refX", 5)
+        .attr("refY", 5)
+        .attr("markerWidth", 10)
+        .attr("markerHeight", 10)
+        .attr("orient", "auto")
+      // .append("svg:path")
+      //   .attr("d", "M0,-5L10,0L0,5")
+      .append("svg:circle")
+        .attr("cx", 5)
+        .attr("cy", 5)
+        .attr("r", 3)
+        .style("fill", "#a5abb6");
     }
 
     function appendImageToNode(node) {
@@ -480,10 +495,15 @@ function stellae(_selector, _options) {
     }
 
     function appendOutlineToRelationship(r) {
+        // return r.append('path')
+        //         .attr('class', 'outline')
+        //         .attr('fill', '#a5abb6')
+        //         .attr('stroke', 'none');
         return r.append('path')
+                .attr("marker-end", "url(#markerstriangle)")
                 .attr('class', 'outline')
-                .attr('fill', '#a5abb6')
-                .attr('stroke', 'none');
+                .attr('fill', 'none')
+                .attr('stroke', '#a5abb6');
     }
 
     function appendOverlayToRelationship(r) {
@@ -1097,7 +1117,8 @@ function stellae(_selector, _options) {
                 text = rel.select('.text'),
                 padding = 3;
 
-            var bbox = {width:text.node().getComputedTextLength(), height:0};
+            var bbox = {width:relationship.type.length*4, height:0};// simplification considering each letter is 4px large
+            // var bbox = {width:text.node().getComputedTextLength(), height:0};
 
                 //firfox workaround
                 //THis appens becaus text is not displayed. TODO find a way to display it
@@ -1113,28 +1134,34 @@ function stellae(_selector, _options) {
                     n = unitaryNormalVector(d.source, d.target),
                     rotatedPointA1 = rotatePoint(center, { x: 0 + (options.nodeRadius + 1) * u.x - n.x, y: 0 + (options.nodeRadius + 1) * u.y - n.y }, angle),
                     rotatedPointB1 = rotatePoint(center, { x: textMargin.x - n.x, y: textMargin.y - n.y }, angle),
-                    rotatedPointC1 = rotatePoint(center, { x: textMargin.x, y: textMargin.y }, angle),
-                    rotatedPointD1 = rotatePoint(center, { x: 0 + (options.nodeRadius + 1) * u.x, y: 0 + (options.nodeRadius + 1) * u.y }, angle),
+                    // rotatedPointC1 = rotatePoint(center, { x: textMargin.x, y: textMargin.y }, angle),
+                    // rotatedPointD1 = rotatePoint(center, { x: 0 + (options.nodeRadius + 1) * u.x, y: 0 + (options.nodeRadius + 1) * u.y }, angle),
                     rotatedPointA2 = rotatePoint(center, { x: d.target.x - d.source.x - textMargin.x - n.x, y: d.target.y - d.source.y - textMargin.y - n.y }, angle),
-                    rotatedPointB2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - n.x - u.x * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - n.y - u.y * options.arrowSize }, angle),
-                    rotatedPointC2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - n.x + (n.x - u.x) * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - n.y + (n.y - u.y) * options.arrowSize }, angle),
-                    rotatedPointD2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y }, angle),
-                    rotatedPointE2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x + (- n.x - u.x) * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y + (- n.y - u.y) * options.arrowSize }, angle),
-                    rotatedPointF2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - u.x * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - u.y * options.arrowSize }, angle),
-                    rotatedPointG2 = rotatePoint(center, { x: d.target.x - d.source.x - textMargin.x, y: d.target.y - d.source.y - textMargin.y }, angle);
+                    rotatedPointB2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - n.x - u.x * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - n.y - u.y * options.arrowSize }, angle);
+                    // rotatedPointC2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - n.x + (n.x - u.x) * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - n.y + (n.y - u.y) * options.arrowSize }, angle),
+                    // rotatedPointD2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y }, angle),
+                    // rotatedPointE2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x + (- n.x - u.x) * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y + (- n.y - u.y) * options.arrowSize }, angle),
+                    // rotatedPointF2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - u.x * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - u.y * options.arrowSize }, angle),
+                    // rotatedPointG2 = rotatePoint(center, { x: d.target.x - d.source.x - textMargin.x, y: d.target.y - d.source.y - textMargin.y }, angle);
 
+
+                // let test =  'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
+                //        ' L ' + rotatedPointB1.x + ' ' + rotatedPointB1.y +
+                //        ' L ' + rotatedPointC1.x + ' ' + rotatedPointC1.y +
+                //        ' L ' + rotatedPointD1.x + ' ' + rotatedPointD1.y +
+                //        ' Z M ' + rotatedPointA2.x + ' ' + rotatedPointA2.y +
+                //        ' L ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
+                //        ' L ' + rotatedPointC2.x + ' ' + rotatedPointC2.y +
+                //        ' L ' + rotatedPointD2.x + ' ' + rotatedPointD2.y +
+                //        ' L ' + rotatedPointE2.x + ' ' + rotatedPointE2.y +
+                //        ' L ' + rotatedPointF2.x + ' ' + rotatedPointF2.y +
+                //        ' L ' + rotatedPointG2.x + ' ' + rotatedPointG2.y +
+                //        ' Z';
                 return 'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
-                       ' L ' + rotatedPointB1.x + ' ' + rotatedPointB1.y +
-                       ' L ' + rotatedPointC1.x + ' ' + rotatedPointC1.y +
-                       ' L ' + rotatedPointD1.x + ' ' + rotatedPointD1.y +
-                       ' Z M ' + rotatedPointA2.x + ' ' + rotatedPointA2.y +
-                       ' L ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
-                       ' L ' + rotatedPointC2.x + ' ' + rotatedPointC2.y +
-                       ' L ' + rotatedPointD2.x + ' ' + rotatedPointD2.y +
-                       ' L ' + rotatedPointE2.x + ' ' + rotatedPointE2.y +
-                       ' L ' + rotatedPointF2.x + ' ' + rotatedPointF2.y +
-                       ' L ' + rotatedPointG2.x + ' ' + rotatedPointG2.y +
-                       ' Z';
+                        ' L ' + rotatedPointB1.x + ' ' + rotatedPointB1.y +
+                        ' Z M ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
+                        ' L ' + rotatedPointA2.x + ' ' + rotatedPointA2.y +
+                        ' Z';
             });
         });
     }
