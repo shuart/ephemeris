@@ -1140,7 +1140,7 @@ var createRelationsView = function () {
       const string = serializer.serializeToString(svg);
       return new Blob([string], {type: "image/svg+xml"});
     }
-    function getSVGString( svgNode ) {
+    function getSVGString( svgNode ) {//not working
     	svgNode.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
     	var cssStyleText = getCSSStyles( svgNode );
     	appendCSS( cssStyleText, svgNode );
@@ -1258,11 +1258,158 @@ var createRelationsView = function () {
 
     let svg = document.querySelector(".stellae-graph")
     // let blob = new Blob([getSVGString(svg)], {type: "image/svg+xml"})
-    let inlineSVG = setInlineStyles(svg)
-    console.log(inlineSVG);
-    let file = {content:serializeSVG(inlineSVG), name:"test"}
+    // let inlineSVG = svg
+    // let inlineSVG = setInlineStyles(svg)
+    // let file = {content:serializeSVG(inlineSVG), name:"test"}
+    // saveFileOnUserDevice({content:serializeSVG(svg), name:"etests"})//working
 
-    saveFileOnUserDevice(file)
+    saveSvgAsPng(svg, "diagram.png");
+
+    function svgString2Image( svgString, width, height, format, callback ) {
+
+    	var format = format ? format : 'png';
+
+    	var imgsrc = 'data:image/svg+xml;base64,'+ btoa( unescape( encodeURIComponent( svgString ) ) ); // Convert SVG string to data URL
+
+    	var canvas = document.createElement("canvas");
+    	var context = canvas.getContext("2d");
+
+    	canvas.width = width;
+    	canvas.height = height;
+
+      // get svg data
+      var xml = new XMLSerializer().serializeToString(svgString);
+
+      // make it base64
+      var svg64 = btoa(unescape( encodeURIComponent( xml ) ) );
+      var b64Start = 'data:image/svg+xml;base64,';
+
+      // prepend a "header"
+      var image64 = b64Start + svg64;
+
+      // set it as the source of the img element
+      var img = new Image();
+      img.src = image64;
+
+    	img.onload = function() {
+    		context.clearRect ( 0, 0, width, height );
+    		context.drawImage(img, 0, 0, width, height);
+
+    		canvas.toBlob( function(blob) {
+    			var filesize = Math.round( blob.length/1024 ) + ' KB';
+    			if ( callback ) callback( blob, filesize );
+    		});
+
+
+    	};
+
+    	img.src = image64;
+    }
+    function svgString2ImageB( svgString, width, height, format, callback ) {
+
+    	var format = format ? format : 'png';
+
+    	var imgsrc = 'data:image/svg+xml;base64,'+ btoa( unescape( encodeURIComponent( svgString ) ) ); // Convert SVG string to data URL
+
+    	var canvas = document.createElement("canvas");
+    	var context = canvas.getContext("2d");
+
+    	canvas.width = width;
+    	canvas.height = height;
+
+    	var image = new Image();
+    	image.onload = function() {
+    		context.clearRect ( 0, 0, width, height );
+    		context.drawImage(image, 0, 0, width, height);
+
+    		canvas.toBlob( function(blob) {
+    			var filesize = Math.round( blob.length/1024 ) + ' KB';
+    			if ( callback ) callback( blob, filesize );
+    		});
+
+
+    	};
+
+    	image.src = imgsrc;
+    }
+    function rasterize(svg) {
+      let resolve, reject;
+      const promise = new Promise((y, n) => (resolve = y, reject = n));
+      const image = new Image;
+      var canvas = document.createElement("canvas");
+    	var context = canvas.getContext("2d");
+      const rect = svg.getBoundingClientRect();
+
+    	canvas.width = rect.width;
+    	canvas.height = rect.height;
+
+      image.onerror = reject;
+      image.onload = () => {
+        context.drawImage(image, 0, 0, rect.width, rect.height);
+        canvas.toBlob(function (blob) {
+          saveFileOnUserDevice({content:blob, name:"etests"})
+        });
+        canvas.toBlob(resolve);
+      };
+      image.src = URL.createObjectURL(serializeSVG(svg));
+      return promise;
+    }
+
+    // svgString2Image(inlineSVG,500,500,'png',function (blob) {
+    //   alert('fefsf')
+    //   saveFileOnUserDevice({content:blob, name:"test.png"})
+    // })
+
+    // saveFileOnUserDevice(file) //working only svg
+    // saveFileOnUserDevice({content:rasterize(svg), name:"etests"})
+
+    function pngexport() {
+
+        var doctype = '<?xml version="1.0" standalone="no"?>'
+          + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+
+        // serialize our SVG XML to a string.
+        var source = (new XMLSerializer()).serializeToString(d3.select('.stellae-graph').node());
+
+        // create a file blob of our SVG.
+        var blob = new Blob([ doctype + source], { type: 'image/svg+xml;charset=utf-8' });
+
+        var url = window.URL.createObjectURL(blob);
+
+        // Put the svg into an image tag so that the Canvas element can read it in.
+        var img = d3.select('body').append('img')
+         .attr('width', 500)
+         .attr('height', 500)
+         .node();
+
+
+        img.onload = function(){
+          // Now that the image has loaded, put the image into a canvas element.
+          setTimeout(function () {
+            var canvas = d3.select('body').append('canvas').node();
+            canvas.width = 500;
+            canvas.height = 500;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            var canvasUrl = canvas.toDataURL("image/png");
+            var img2 = d3.select('body').append('img')
+              .attr('width', 500)
+              .attr('height', 500)
+              .node();
+            // this is now the base64 encoded version of our PNG! you could optionally
+            // redirect the user to download the PNG by sending them to the url with
+            // window.location.href= canvasUrl
+            img2.onload = function () {
+              alert('done')
+              // window.location.href= canvasUrl
+            }
+            img2.src = canvasUrl;
+          }, 1000);
+        }
+        // start loading the image.
+        img.src = url;
+    }
+    pngexport()
 
   }
 
