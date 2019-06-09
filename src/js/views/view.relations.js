@@ -134,6 +134,9 @@ var createRelationsView = function () {
       document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
       queryDOM(".action_interface_add_stakeholder").classList.add('active')
     }, container)
+    bind(".action_relations_export_png","click",(e)=>{
+      saveSvgAsPng(container.querySelector('.stellae-graph'), "tree.png", {scale: 1.5})
+    }, container)
     bind(".action_tree_list_relations_toogle_visibility","click",(e)=>{
       let controlChildrenVisibility = true;
       let current = e.target
@@ -592,6 +595,9 @@ var createRelationsView = function () {
         <input class="input_relation_search_nodes" type="text" placeholder="Search...">
         <i class="search icon"></i>
       </div>
+    </div>
+    <div class="ui item">
+      <div class="ui button basic action_relations_export_png">PNG</div>
     </div>
     `
     let relationsMenuHTML =`
