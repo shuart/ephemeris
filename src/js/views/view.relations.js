@@ -1263,7 +1263,8 @@ var createRelationsView = function () {
     // let file = {content:serializeSVG(inlineSVG), name:"test"}
     // saveFileOnUserDevice({content:serializeSVG(svg), name:"etests"})//working
 
-    saveSvgAsPng(svg, "diagram.png");
+    // saveSvgAsPng(svg, "diagram.png");
+    svgAsDataUri(svg, "diagram.png").then(uri => console.log(uri));
 
     function svgString2Image( svgString, width, height, format, callback ) {
 
