@@ -20,7 +20,9 @@ var createPlanningView = function () {
   }
 
   var render = function () {
-      ShowSelectMenu({
+      var store = query.currentProject()
+      console.log(store.plannings.items[0].items);
+      showListMenu({
         sourceData:store.plannings.items[0].items,
         sourceLinks:store.plannings.items[0].links,
         targetDomContainer:".center-container",
@@ -68,6 +70,7 @@ var createPlanningView = function () {
         onAdd: (ev)=>{
           var newReq = prompt("Nouveau Besoin")
           push(addPlanningItem({name:newReq, duration:1}))
+          console.log(store.plannings);
         },
         onClick: (ev)=>{
         },

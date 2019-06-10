@@ -28,9 +28,11 @@ function reducer(action, store) {
   if (typeof group == "string") {
     storeGroup = store[group];
   }else if (Array.isArray(group)) {
+    storeGroup = store
     for (prop of group) {
-      console.log(storeGroup);
+      console.log(store);
       storeGroup = storeGroup[prop]
+      console.log(storeGroup);
     }
   }
   //find correct array

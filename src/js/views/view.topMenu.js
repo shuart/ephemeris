@@ -59,6 +59,7 @@ var createTopMenu = function (containerSelector) {
         <a class="button top_button_requirements action_toogle_requirements_view"><i class="comment icon"></i><div class="content">Requirements</div></a>
         <a class="button top_button_functions action_toogle_functions_view"><i class="cogs icon"></i><div class="content">Functions</div></a>
         <a class="button top_button_pbs action_toogle_tree_pbs"><i class="dolly icon"></i><div class="content">Products</div></a>
+        <a class="button top_button_pbs action_toogle_planning_view"><i class="dolly icon"></i><div class="content">Planning</div></a>
       `
       // Removed:
       // <a class="item action_toogle_planning_view"><i class="calendar alternate outline icon"></i>Planning</a>
