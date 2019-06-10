@@ -597,7 +597,7 @@ var createRelationsView = function () {
       </div>
     </div>
     <div class="ui item">
-      <button class="ui icon button">
+      <button class="ui basic icon button">
         <i class="download icon action_relations_export_png"></i>
       </button>
     </div>
