@@ -269,7 +269,7 @@ function stellae(_selector, _options) {
                            classes = 'node',
                            label = d.labels[0];
 
-                       if (icon(d)) {
+                       if (icon(d)|| options.customPathIcons[d.labels[0]]["path"]) {
                            classes += ' node-icon';
                        }
 
