@@ -31,11 +31,13 @@ var createGanttView = function ({
     taskNames = [ "D Job", "P Job", "E Job", "A Job", "N Job" ];
 
     if (false) {
+      console.log(data);
       // tasks = data.map((x) => {
       //   return {startDate}
       // })
       taskNames = []
       tasks = []
+      tasksRelations = []
       var currentStartDate =moment().toDate();
       var currentEndDate =moment().toDate();
       for (task of data) {
@@ -57,7 +59,7 @@ var createGanttView = function ({
       }
 
     }
-    if (data) {
+    if (true) {
       taskNames = []
       tasks = []
       tasksRelations = []
@@ -65,6 +67,7 @@ var createGanttView = function ({
       tasks = buildTasksListB(data,links,tasksRelations)
       taskNames = tasks.map(e =>e.uuid)
       console.log(tasksRelations);
+      console.log(tasks);
 
     }
 
@@ -281,7 +284,7 @@ var createGanttView = function ({
     onChangeLengthAction = (data) => {console.log(data);}
   }={}) {
     console.log(onLinkClickedAction);
-    update(store.plannings.items[0].items,store.plannings.items[0].links, onConnect,onLinkClickedAction,onChangeLengthAction)
+    update(query.currentProject().plannings.items[0].items,query.currentProject().plannings.items[0].links, onConnect,onLinkClickedAction,onChangeLengthAction)
   }
   function updateCurrentData(items, links) {
     var taskNames = []
