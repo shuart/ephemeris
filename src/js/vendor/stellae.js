@@ -27,6 +27,7 @@ function stellae(_selector, _options) {
             images: undefined,
             infoPanel: true,
             minCollision: undefined,
+            decay: 0.08,
             n4Data: undefined,
             n4DataUrl: undefined,
             nodeOutlineFillColor: undefined,
@@ -890,12 +891,13 @@ function stellae(_selector, _options) {
 //                           .force('y', d3.force().strength(0.002))
                            .force('collide', d3.forceCollide().radius(function(d) {
                                return options.minCollision;
-                           }).iterations(2))
-                           .force('charge', d3.forceManyBody())
+                           }).iterations(1))
+                           .force('charge', d3.forceManyBody().strength(-200))
                            .force('link', d3.forceLink().id(function(d) {
                                return d.id;
                            }))
                            .force('center', d3.forceCenter(svg.node().parentElement.parentElement.clientWidth / 2, svg.node().parentElement.parentElement.clientHeight / 2))
+                           .alphaDecay(options.decay)
                            .on('tick', function() {
                                tick();
                            })
