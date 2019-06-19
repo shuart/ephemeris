@@ -804,6 +804,7 @@ var createRelationsView = function () {
           'Usedr': 'img/twemoji/1f600.svg'
       },
       minCollision: 60,
+      chargeStrength: -900,
       customData: {
         "results": [
             {
