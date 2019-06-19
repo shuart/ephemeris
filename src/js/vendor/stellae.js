@@ -27,7 +27,7 @@ function stellae(_selector, _options) {
             images: undefined,
             infoPanel: true,
             minCollision: undefined,
-            decay: 0.08,
+            decay: 0.09,
             n4Data: undefined,
             n4DataUrl: undefined,
             nodeOutlineFillColor: undefined,
