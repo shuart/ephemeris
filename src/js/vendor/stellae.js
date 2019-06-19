@@ -37,7 +37,9 @@ function stellae(_selector, _options) {
             rootNode:false,
             fadeOtherNodesOnHoover:true,
             unpinNodeOnClick:true,
-            startTransform:false
+            startTransform:false,
+            showLinksText:true,
+            showLinksOverlay:true
         },
         VERSION = '0.0.1';
 
@@ -541,10 +543,17 @@ function stellae(_selector, _options) {
     }
 
     function appendRelationshipToGraph() {
+        var text = undefined;
+        var overlay = undefined;
         var relationship = appendRelationship(),
-            text = appendTextToRelationship(relationship),
-            outline = appendOutlineToRelationship(relationship),
-            overlay = appendOverlayToRelationship(relationship);
+            outline = appendOutlineToRelationship(relationship);
+
+            if (options.showLinksText) {
+              text = appendTextToRelationship(relationship);
+            }
+            if (options.showLinksOverlay) {
+              overlay = appendOverlayToRelationship(relationship);
+            }
 
         return {
             outline: outline,
@@ -1112,10 +1121,15 @@ function stellae(_selector, _options) {
             //     var angle = rotation(d.source, d.target);
             //     return 'translate(' + d.source.x+ + ', ' + d.source.y + ') rotate(' + angle + ')';
             // });
-
-            tickRelationshipsTexts();
+            if (options.showLinksText) {
+              tickRelationshipsTexts();
+            }
+            if (options.showLinksOverlay) {
+              tickRelationshipsOverlays();
+            }
             tickRelationshipsOutlines();
-            tickRelationshipsOverlays();
+
+
 
             //TODO clean code to move elements perp.
             relationship.attr('transform', function(d) {
@@ -1150,10 +1164,9 @@ function stellae(_selector, _options) {
                     textMargin = { x: (d.target.x - d.source.x - (textBoundingBox.width + textPadding) * u.x) * 0.5, y: (d.target.y - d.source.y - (textBoundingBox.width + textPadding) * u.y) * 0.5 },
                     n = unitaryNormalVector(d.source, d.target),
                     rotatedPointA1 = rotatePoint(center, { x: 0 + (options.nodeRadius + 1) * u.x - n.x, y: 0 + (options.nodeRadius + 1) * u.y - n.y }, angle),
-                    rotatedPointB1 = rotatePoint(center, { x: textMargin.x - n.x, y: textMargin.y - n.y }, angle),
+
                     // rotatedPointC1 = rotatePoint(center, { x: textMargin.x, y: textMargin.y }, angle),
                     // rotatedPointD1 = rotatePoint(center, { x: 0 + (options.nodeRadius + 1) * u.x, y: 0 + (options.nodeRadius + 1) * u.y }, angle),
-                    rotatedPointA2 = rotatePoint(center, { x: d.target.x - d.source.x - textMargin.x - n.x, y: d.target.y - d.source.y - textMargin.y - n.y }, angle),
                     rotatedPointB2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - n.x - u.x * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - n.y - u.y * options.arrowSize }, angle);
                     // rotatedPointC2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - n.x + (n.x - u.x) * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - n.y + (n.y - u.y) * options.arrowSize }, angle),
                     // rotatedPointD2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y }, angle),
@@ -1161,6 +1174,20 @@ function stellae(_selector, _options) {
                     // rotatedPointF2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - u.x * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - u.y * options.arrowSize }, angle),
                     // rotatedPointG2 = rotatePoint(center, { x: d.target.x - d.source.x - textMargin.x, y: d.target.y - d.source.y - textMargin.y }, angle);
 
+                    if (options.showLinksText) {
+                      var rotatedPointB1 = rotatePoint(center, { x: textMargin.x - n.x, y: textMargin.y - n.y }, angle);
+                      var rotatedPointA2 = rotatePoint(center, { x: d.target.x - d.source.x - textMargin.x - n.x, y: d.target.y - d.source.y - textMargin.y - n.y }, angle);
+
+                      return 'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
+                              ' L ' + rotatedPointB1.x + ' ' + rotatedPointB1.y +
+                              ' Z M ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
+                              ' L ' + rotatedPointA2.x + ' ' + rotatedPointA2.y +
+                              ' Z';
+                    }else {
+                      return 'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
+                              ' L ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
+                              ' Z';
+                    }
 
                 // let test =  'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
                 //        ' L ' + rotatedPointB1.x + ' ' + rotatedPointB1.y +
@@ -1174,11 +1201,7 @@ function stellae(_selector, _options) {
                 //        ' L ' + rotatedPointF2.x + ' ' + rotatedPointF2.y +
                 //        ' L ' + rotatedPointG2.x + ' ' + rotatedPointG2.y +
                 //        ' Z';
-                return 'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
-                        ' L ' + rotatedPointB1.x + ' ' + rotatedPointB1.y +
-                        ' Z M ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
-                        ' L ' + rotatedPointA2.x + ' ' + rotatedPointA2.y +
-                        ' Z';
+
             });
         });
     }
@@ -1385,11 +1408,18 @@ function stellae(_selector, _options) {
         relationshipOutline = svg.selectAll('.relationship .outline');
         relationshipOutline = relationshipEnter.outline.merge(relationshipOutline);
 
-        relationshipOverlay = svg.selectAll('.relationship .overlay');
-        relationshipOverlay = relationshipEnter.overlay.merge(relationshipOverlay);
+        if (options.showLinksOverlay) {
+          relationshipOverlay = svg.selectAll('.relationship .overlay');
+          relationshipOverlay = relationshipEnter.overlay.merge(relationshipOverlay);
+        }
 
-        relationshipText = svg.selectAll('.relationship .text');
-        relationshipText = relationshipEnter.text.merge(relationshipText);
+
+        if (options.showLinksText) {
+          relationshipText = svg.selectAll('.relationship .text');
+          relationshipText = relationshipEnter.text.merge(relationshipText);
+        }
+
+
     }
 
     function version() {
