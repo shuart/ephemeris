@@ -26,28 +26,28 @@ var createRelationsView = function () {
     stakeholders : true,
     metaLinks : true,
     interfaces : false,
-    compose : false
+    compose : true
   }
 
   var groupElements={
-    functions: true,
-    requirements: true,
-    stakeholders: true,
+    functions: false,
+    requirements: false,
+    stakeholders: false,
     pbs:  false
   }
-  var defaultElementVisibility = {
+  var defaultElementVisibility = { //todo: why default and not default?
     functions : true,
     requirements : true,
     stakeholders : true,
     metaLinks : true,
     interfaces : false,
-    compose : false
+    compose : true
   }
 
   var defaultGroupElements={
-    functions: true,
-    requirements: true,
-    stakeholders: true,
+    functions: false,
+    requirements: false,
+    stakeholders: false,
     pbs:  false
   }
 
@@ -778,6 +778,7 @@ var createRelationsView = function () {
       ],
       groupLabels:currentGroupedLabels,
       rootNode:false,
+      showLinksOverlay:false,
       fadeOtherNodesOnHoover:fadeOtherNodesOnHoover,
       // icons: {
       //     'Functions': 'cogs',
