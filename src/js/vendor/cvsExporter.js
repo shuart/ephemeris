@@ -38,3 +38,22 @@ function JSONToCSVConvertor(JSONData, ReportTitle) {
     link.click();
     document.body.removeChild(link);
 }
+
+function importCSVfromFileSelector(callback) {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = e => {
+       var file = e.target.files[0];
+    }
+    input.click();
+    input.addEventListener('change', handleFiles);
+
+    function handleFiles(e) {
+      Papa.parse(e.target.files[0], {
+      	complete: function(results) {
+      		console.log(results);
+          callback(results)
+      	}
+      });
+    }
+}

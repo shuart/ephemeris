@@ -187,7 +187,26 @@ var reparse = false;
         //store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
         //ev.selectDiv.remove()
         renderCDC()
-      }
+      },
+      extraActions:[
+        {
+          name:"Import",
+          action:(ev)=>{
+            importCSVfromFileSelector(function (results) {
+              let startImport = confirm(results.data.length+" stakeholders will be imported")
+              if (startImport) {
+                for (stakeholder of results.data) {
+                  push(act.add("stakeholders",{uuid:genuuid(), name:stakeholder[0], lastName:stakeholder[1]}))
+
+                }
+                alert("Close and restart view to complete import")//todo, not working automaticaly
+                ev.select.updateData(query.currentProject().stakeholders.items)
+              }
+            })
+
+          }
+        }
+      ]
     })
   })
 
