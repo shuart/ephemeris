@@ -182,12 +182,6 @@ var reparse = false;
         // ev.selectDiv.remove()
         // renderCDC(store.db, searchFilter)
       },
-      onClear: (ev)=>{
-        //mutations
-        //store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
-        //ev.selectDiv.remove()
-        renderCDC()
-      },
       extraActions:[
         {
           name:"Import",
