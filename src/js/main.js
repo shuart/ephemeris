@@ -190,7 +190,7 @@ var reparse = false;
               let startImport = confirm(results.data.length+" stakeholders will be imported")
               if (startImport) {
                 for (stakeholder of results.data) {
-                  push(act.add("stakeholders",{uuid:genuuid(), name:stakeholder[0], lastName:stakeholder[1]}))
+                  push(act.add("stakeholders",{uuid:genuuid(), name:stakeholder[0], lastName:stakeholder[1],org:stakeholder[2], role:stakeholder[3]}))
 
                 }
                 alert("Close and restart view to complete import")//todo, not working automaticaly
