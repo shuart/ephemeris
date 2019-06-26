@@ -25,7 +25,7 @@ var createTreeList = function ({
   theme.item = function (i, visibility) {
      html =`
      <div data-id="${i[identifier]}" class="searchable_item list-item">
-       <span data-id="${i[identifier]}" >${valueFunction(i)}</span>
+       <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
        ${theme.itemExtraIcon(i)}
        <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customEyeIconClass? customEyeIconClass:"far fa-eye"} ${customEyeActionClass}"></i>
        <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
