@@ -430,7 +430,9 @@ function displayThree({
         .duration(duration)
         .attr('d', function(d) {
           var o = {x: source.x, y: source.y}
+          console.log(d, source);
           return diagonal(o, o)
+
         })
         .remove();
 
