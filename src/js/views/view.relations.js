@@ -467,13 +467,15 @@ var createRelationsView = function () {
   }
 
   var renderSideListe = function () {
+    document.querySelector('.left-menu-area > .title').innerHTML="Overview"
     sideListe = createTreeList({
       container:listContainer,
       searchContainer:document.querySelector(".side_searchArea"),
       items: itemsToDisplay,
       links:relations,
       customEyeActionClass:"action_tree_list_relations_toogle_visibility",
-      customExtraActionClass:"fas fa-link action_toogle_diag_relations_options"
+      customExtraActionClass:"fas fa-link action_toogle_diag_relations_options",
+      customTextActionClass:"action_LM_project_tree_show_item_popup"//works because event listener is specified in leftmenu.projectTree
     })
     updateSideListeVisibility()
   }
