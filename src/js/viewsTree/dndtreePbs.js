@@ -39,6 +39,7 @@ function displayThree({
   var base
   var svg
 
+  var root;
   var treemap;
 
   var mode = "default";
@@ -58,6 +59,8 @@ function displayThree({
   var margin;
   var width;
   var height;
+
+  var updateCurrentTree = undefined
 
   function init() {
 
@@ -164,6 +167,7 @@ function displayThree({
   renderTreeView(data, container)
 
   function renderTreeView(treeData, target) {
+        updateCurrentTree = update
         // Calculate total nodes, max label length
         var totalNodes = 0;
         var maxLabelLength = 00;
@@ -176,7 +180,7 @@ function displayThree({
         // Misc. variables
         var i = 0;
         var duration = 750;
-        var root = d3.hierarchy(treeData, function(d) { return d.children; });
+        root = d3.hierarchy(treeData, function(d) { return d.children; });
         // size of the diagram
         var viewerWidth = $(document).width();
         var viewerHeight = $(document).height();
@@ -390,12 +394,16 @@ function displayThree({
             });
 
         function endDrag() {
+            lastHoover = selectedNode
+            sendEndDragInfos();
             selectedNode = null;
             d3.selectAll('.ghostCircle').attr('class', 'ghostCircle');
             d3.select(domNode).attr('class', 'node');
             // now restore the mouseover event or we won't be able to drag a 2nd time
             d3.select(domNode).select('.ghostCircle').attr('pointer-events', '');
+
             updateTempConnector();
+
             if (draggingNode !== null) {
                 update(root);
                 centerNode(draggingNode);
@@ -460,6 +468,14 @@ function displayThree({
                                    });
 
             link.exit().remove();
+        };
+        var sendEndDragInfos = function() {
+            console.log("Sendendrag");
+            console.log(draggingNode);
+            console.log(selectedNode);
+            if (draggingNode !== null && selectedNode !== null) {
+              onMove({element:draggingNode, newParent: selectedNode,sourceTree:self, target:d3.event.target})
+            }
         };
 
     		/*
@@ -646,7 +662,7 @@ function displayThree({
     root.y0 = 0;
     console.log(treeData);
     console.log(root);
-    update(lastHoover || root)
+    updateCurrentTree(lastHoover || root)
   }
 
   self.updateFromRoot=updateFromRoot
