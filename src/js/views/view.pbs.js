@@ -236,6 +236,9 @@ var createPbsView = function () {
         // sourceList.select.updateData(store.currentPbs.items)
         // sourceList.select.updateLinks(store.currentPbs.links)
         sourceList.select.update()
+        sourceList.select.updateData(store.currentPbs.items)
+        sourceList.select.updateLinks(store.currentPbs.links)
+        sourceList.select.refreshList()
       },
       onAdd:(ev)=>{
         var uuid = genuuid()
@@ -249,6 +252,7 @@ var createPbsView = function () {
         push(removePbsLink({source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
         push(addPbsLink({source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
         ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
+
       },
       onRemove:(ev)=>{
         if (confirm("Keep Childs?")) {

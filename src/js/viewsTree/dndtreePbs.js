@@ -387,15 +387,19 @@ function displayThree({
                     // Make sure that the node being added to is expanded so user can see added node is correctly moved
                     expand(selectedNode);
                     sortTree();
-                    endDrag();
+                    lastHoover = selectedNode
+                    if (confirm("Move selected nodes?")) {
+                      sendEndDragInfos();
+                    }
+                    endDrag();//todo not working without new exteral data . Parent is not ok.
+
                 } else {
                     endDrag();
                 }
             });
 
         function endDrag() {
-            lastHoover = selectedNode
-            sendEndDragInfos();
+
             selectedNode = null;
             d3.selectAll('.ghostCircle').attr('class', 'ghostCircle');
             d3.select(domNode).attr('class', 'node');
