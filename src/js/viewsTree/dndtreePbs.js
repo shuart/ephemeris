@@ -25,7 +25,7 @@ function displayThree({
   startCollapsed=false,
   onClose = (e)=>{console.log("tree closed", e.data)},
   onEdit = (e)=>{console.log("Node Edited", e.data)},
-  onNodeClicked = (e)=>{console.log("Node clicked", e.data)},
+  onLabelClicked = (e)=>{console.log("Label clicked", e.data)},
   onMove = (e)=>{console.log("Node moved", e.data)},
   onRemove = (e)=>{console.log("Node removed", e.data)},
   onAdd = (e)=>{console.log("Node removed", e.data)}
@@ -38,6 +38,7 @@ function displayThree({
 
   var base
   var svg
+  var nodes;
 
   var root;
   var treemap;
@@ -79,7 +80,7 @@ function displayThree({
       sourceEl.style.height = "100%";
       //fullscreen rules
       mainEl.classList ="ui current-tree-container"
-      mainEl.style.padding = "5em"
+      mainEl.style.padding = "0.5em"
       mainEl.style.width = "100%"
       mainEl.style.height = "100%"
       mainEl.style.left= "0px";
@@ -100,8 +101,8 @@ function displayThree({
     if (edit) {
       document.querySelector(".current-tree-container").insertAdjacentHTML('afterbegin',
               ` <div class="">
-                <button class="action_set_pbs_remove ui tiny basic button" type="button" name="button">remove</button>
-                <button class="action_set_pbs_move ui tiny basic button" type="button" name="button">move</button>
+                <button class="action_set_mm_collapse ui tiny basic  button" type="button" name="button">Collapse</button>
+                <button class="action_set_mm_uncollapse ui tiny basic  button" type="button" name="button">Un-collapse</button>
                 <button class="action_set_pbs_close ui tiny basic red button" type="button" name="button">close</button>
                 </div>`
               );
@@ -118,7 +119,7 @@ function displayThree({
   }
 
   function connect() {
-    d3.select(".action_set_pbs_move").on("click", function(d) { mode = "default"; })
+
     d3.select(".action_set_pbs_add").on("click", function(d) { mode = "add"; })
     d3.select(".action_set_pbs_remove").on("click", function(d) { mode = "remove"; })
     d3.select(".action_set_pbs_close").on("click", function(d) {
@@ -267,7 +268,16 @@ function displayThree({
           // y = y * t.k + viewerHeight / 2;
           // d3.select('svg').transition().duration(duration)
           //                              .call( zoomListener.transform, d3.zoomIdentity.translate(x,y).scale(t.k) );
-    }
+        }
+        function centerOnRoot() {//TODO viewer size is not correct. TBC at startup
+          t = d3.zoomTransform(baseSvg.node());
+          x = -400;
+          y = -600;
+          x = x * t.k + viewerWidth / 2;
+          y = y * t.k + viewerHeight / 2;
+          d3.select('svg').transition().duration(duration)
+                                       .call( zoomListener.transform, d3.zoomIdentity.translate(x,y).scale(t.k) );
+        }
         // define the zoomListener which calls the zoom function on the "zoom" event constrained within the scaleExtents
         var zoomListener = d3.zoom().scaleExtent([0.1, 3]).on("zoom", zoom);
         function initiateDrag(d, domNode) {
@@ -309,7 +319,7 @@ function displayThree({
         // define the baseSvg, attaching a class for styling and the zoomListener
         var baseSvg = target.append("svg").attr("width", viewerWidth)
                                                                 .attr("height", viewerHeight)
-                                                                .attr("class", "overlay")
+                                                                .attr("class", "mindmap_overlay")
                                                                 .call(zoomListener);
 
         // Define the drag listeners for drag/drop behaviour of nodes.
@@ -419,9 +429,9 @@ function displayThree({
 
         // Helper functions for collapsing and expanding nodes.
 
-        function nodeClicked(d) {
-          console.log(onNodeClicked);
-          onNodeClicked({element:d,sourceTree:self, target:d3.event.target})
+        function labelClicked(d) {
+          console.log(onLabelClicked);
+          onLabelClicked({element:d,sourceTree:self, target:d3.event.target})
           console.log(d);
           update(root)
         }
@@ -484,7 +494,7 @@ function displayThree({
             }
 
             var link = svgGroup.selectAll("path.templink").data(data)
-            link.enter().append("path").attr("class", "templink")
+            link.enter().append("path").attr("class", "templink").attr("stroke", "#00b5ad")
 
             link.attr("d", function(d) {
               var s = {x: d.source.x, y: d.source.y };
@@ -581,8 +591,8 @@ function displayThree({
     				// Berechnung x- und y-Positionen pro Knoten
     		    var treeData = treemap(root);
             // Compute the new tree layout.
-            var nodes = treeData.descendants(),
-    		        links = treeData.descendants().slice(1);
+            nodes = treeData.descendants();
+    		    var links = treeData.descendants().slice(1);
 
             // Set widths between levels based on maxLabelLength.
             nodes.forEach(function(d) {
@@ -601,19 +611,21 @@ function displayThree({
             nodeEnter.append("circle").attr('class', 'nodeCircle')
                                       //.attr("r", 0)
                                       .attr("r", 4.5)
-                                      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+                                      .style("fill", function(d) { return d._children ? "#00b5ad" : "#fff"; });
+
             nodeEnter.append("text").attr("x", function(d) { return d.children || d._children ? -10 : 10; })
                                     .attr("dy", ".35em")
                                     .attr('class', 'nodeText')
                                     .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
                                     .text(function(d) { return d.data.name; })
-                                    .style("fill-opacity", 0);
+                                    .style("fill-opacity", 0)
+                                    .on("click", labelClicked);
 
             // phantom node to give us mouseover in a radius around it
             nodeEnter.append("circle").attr('class', 'ghostCircle')
                                       .attr("r", 30)
                                       .attr("opacity", 0.2) // change this to zero to hide the target area
-                                      .style("fill", "red")
+                                      .style("fill", "#00b5ad")
                                       .attr('pointer-events', 'mouseover')
                                       .on("mouseover", function(node) { overCircle(node); })
                                       .on("mouseout", function(node) { outCircle(node); });
@@ -645,7 +657,7 @@ function displayThree({
                                .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
                                .text(function(d) { return d.data.name; });
             // Change the circle fill depending on whether it has children and is collapsed
-            node.select("circle.nodeCircle").attr("r", 4.5).style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+            node.select("circle.nodeCircle").attr("r", 4.5).style("fill", function(d) { return d._children ? "#00b5ad" : "#fff"; });
             // Transition nodes to their new position.
     				var nodeUpdate = nodeEnter.merge(node);
     				nodeUpdate.transition().duration(duration).attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
@@ -675,6 +687,7 @@ function displayThree({
 
         // Append a group which holds all nodes and which the zoom Listener can act upon.
         var svgGroup = baseSvg.append("g");
+        // svgGroup.attr("transform", "translate(" + 200 + "," + 200 + ")");//set base position
 
         // Define the root
         //root = treeData;
@@ -685,7 +698,18 @@ function displayThree({
 
         // Layout the tree initially and center on the root node.
         update(root);
-        centerNode(root);
+        centerOnRoot()
+        // centerNode(root);
+
+        //Connect to main top_buttons
+        d3.select(".action_set_mm_collapse").on("click", function(d) {
+          nodes.forEach(function(d) { collapse(d); });
+          update(root)
+        })
+        d3.select(".action_set_mm_uncollapse").on("click", function(d) {
+          nodes.forEach(function(d) { expand(d); });
+          update(root)
+        })
     }
 
   function updateFromRoot(d) {
