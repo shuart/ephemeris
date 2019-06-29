@@ -437,7 +437,7 @@ textarea {
 
 .node circle {
   fill: #fff;
-  stroke: steelblue;
+  stroke: #159892;
   stroke-width: 1.5px;
 }
 
@@ -459,7 +459,7 @@ textarea {
 
 .templink {
   fill: none;
-  stroke: red;
+  stroke: #00b5ad;
   stroke-width: 3px;
 }
 

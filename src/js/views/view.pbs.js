@@ -72,8 +72,11 @@ var createPbsView = function () {
         onAdd: (ev)=>{
           var id = genuuid()
           var newReq = prompt("Nouveau Besoin")
-          push(addPbs({uuid:id, name:newReq}))
-          push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+          if (newReq) {
+            push(addPbs({uuid:id, name:newReq}))
+            push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+          }
+
         },
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)
@@ -233,9 +236,10 @@ var createPbsView = function () {
       edit:true,
       onClose:(e)=>{
         renderCDC()
-        // sourceList.select.updateData(store.currentPbs.items)
-        // sourceList.select.updateLinks(store.currentPbs.links)
         sourceList.select.update()
+        sourceList.select.updateData(store.currentPbs.items)
+        sourceList.select.updateLinks(store.currentPbs.links)
+        sourceList.select.refreshList()
       },
       onAdd:(ev)=>{
         var uuid = genuuid()
@@ -249,6 +253,7 @@ var createPbsView = function () {
         push(removePbsLink({source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
         push(addPbsLink({source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
         ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
+
       },
       onRemove:(ev)=>{
         if (confirm("Keep Childs?")) {
@@ -264,79 +269,11 @@ var createPbsView = function () {
         //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
         ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
       },
-      onNodeClicked:(originev)=>{
-        var originItem = store.currentPbs.items.filter(e=> e.uuid == originev.element.data.uuid)
-        showListMenu({
-          sourceData:store.currentPbs.items,
-          sourceLinks:store.currentPbs.links,
-          metaLinks:store.metaLinks.items,
-          displayProp:"name",
-          searchable : false,
-          singleElement:originItem[0],
-          rulesToDisplaySingleElement:[
-            {prop:"name", displayAs:"Name", edit:"true"},
-            {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-            {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
-          ],
-          display:[
-            {prop:"name", displayAs:"Name", edit:false},
-            {prop:"desc", displayAs:"Description", fullText:true,edit:false},
-            {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
-          ],
-          idProp:"uuid",
-          onCloseMenu: (ev)=>{
-            //console.log("fefsefse");
-            console.log(originev.sourceTree);
-            // ev.select.getParent().update()
-            originev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-            originev.sourceTree.hardUpdate()//TODO find better way
-          },
-          onEditChoiceItem: (ev)=>{
-            var metalinkType = ev.target.dataset.prop;
-            var sourceTriggerId = ev.target.dataset.id;
-            var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-            console.log(ev.selectDiv);
-            //ev.selectDiv.remove()
-            showListMenu({
-              sourceData:store.requirements.items,
-              parentSelectMenu:ev.select ,
-              multipleSelection:currentLinksUuidFromDS,
-              displayProp:"name",
-              searchable : true,
-              display:[
-                {prop:"name", displayAs:"Name", edit:false},
-                {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-              ],
-              idProp:"uuid",
-              onCloseMenu: (ev)=>{
-                console.log(ev.select);
-                ev.select.getParent().refreshList()
-              },
-              onChangeSelect: (ev)=>{
-                console.log(ev.select.getSelected());
-                console.log(store.metaLinks.items);
-                store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
-                console.log(store.metaLinks.items);
-                for (newSelected of ev.select.getSelected()) {
-                  push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
-                }
-                ev.select.getParent().updateMetaLinks(store.metaLinks.items)
-                ev.select.getParent().refreshList()
-              },
-              onClick: (ev)=>{
-                console.log("select");
-              }
-            })
-          },
-          onEditItem: (ev)=>{
-            console.log("Edit");
-            var newValue = prompt("Edit Item",ev.target.dataset.value)
-            if (newValue) {
-              push(editPbs({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-            }
-            ev.select.refreshList()
-          }
-        })
+      onLabelClicked:(originev)=>{
+        showSingleItemService.showById(originev.element.data.uuid)
+      },
+      onStoreUpdate:(originev)=>{
+        originev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
       }
     })
   }
