@@ -449,51 +449,16 @@ function displayThree({
                     }
                 }];
             }
-            console.log(data);
 
             var link = svgGroup.selectAll("path.templink").data(data)
             link.enter().append("path").attr("class", "templink")
 
             link.attr("d", function(d) {
-              console.log("grgdr");
-              console.log(d);
               var s = {x: d.source.x, y: d.source.y };
               var d = {x: d.target.x, y: d.target.y };
               return diagonal(s, d);
                                    });
-            // Enter any new links at the parent's previous position.
-            // console.log(link._enter);
-            // var linkEnter = link.enter().insert("path", "g").attr("class", "templink")
-            //                                                 .attr("d", function(d) {
-            //                                                   console.log("grgdr");
-            //                                                   console.log(d);
-            //                                                   var o = {x: d.source.x0, y: d.source.y0 };
-            //                                           				return diagonal(o, o);
-            //                                                                        })
-            // Transition links to their new position.
-    				// var linkUpdate = linkEnter.merge(link);
-            // linkUpdate.transition().duration(duration).attr('d', function(d){ return diagonal(d, d.parent) });
-            // Transition exiting nodes to the parent's new position.
-            // var linkExit = link.exit().transition().duration(duration).attr("d", function(d) { var o = { x: source.x, y: source.y };
-                                                       //                                         return diagonal(o, o); })
-                                                       // .remove();
 
-
-            // var link = svgGroup.selectAll(".templink").data(data);
-            //
-            // link.enter().append("path")
-            //     .attr("class", "templink")
-            //     .attr("d", function(d){
-            //       console.log("grgdr");
-            //       console.log(d);
-            //       var o = {x: d.source.x0, y: d.source.y0 };
-    				//       return diagonal(o, o);
-            //     })
-            //     .attr('pointer-events', 'none');
-            //
-            // link.attr("d", function(d){ var o = {x: d.source.x0, y: d.source.y0 };
-    				//                             return diagonal(o, o);	});
-            //
             link.exit().remove();
         };
 
