@@ -741,6 +741,7 @@ function displayThree({
     root.y0 = 0;
     console.log(treeData);
     console.log(root);
+    console.log(lastHoover);
     updateCurrentTree(lastHoover || root)
   }
 
