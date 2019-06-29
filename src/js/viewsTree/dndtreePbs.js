@@ -166,7 +166,7 @@ function displayThree({
   function renderTreeView(treeData, target) {
         // Calculate total nodes, max label length
         var totalNodes = 0;
-        var maxLabelLength = 0;
+        var maxLabelLength = 00;
         // variables for drag/drop
         var selectedNode = null;
         var draggingNode = null;
@@ -326,7 +326,7 @@ function displayThree({
                     domNode = this;
                     initiateDrag(d, domNode);
                 }
-                console.log(domNode);
+                // console.log(domNode);
 
                 // get coords of mouseEvent relative to svg container to allow for panning
                 relCoords = d3.mouse($('svg').get(0));
@@ -356,6 +356,8 @@ function displayThree({
                 var node = d3.select(this);
                 node.attr("transform", "translate(" + d.y0 + "," + d.x0 + ")");
                 updateTempConnector();
+                console.log(d);
+                console.log(selectedNode);
             }).on("end", function(d) {
                 if (d == root) {
                     return;
@@ -431,30 +433,67 @@ function displayThree({
         // Function to update the temporary connector indicating dragging affiliation
         var updateTempConnector = function() {
             var data = [];
+            console.log("updateTempConnector");
+            console.log(draggingNode);
+            console.log(selectedNode);
             if (draggingNode !== null && selectedNode !== null) {
                 // have to flip the source coordinates since we did this for the existing connectors on the original tree
                 data = [{
                     source: {
-                        x: selectedNode.y0,
-                        y: selectedNode.x0
+                        x: draggingNode.x0,
+                        y: draggingNode.y0
                     },
                     target: {
-                        x: draggingNode.y0,
-                        y: draggingNode.x0
+                        x: selectedNode.x0,
+                        y: selectedNode.y0
                     }
                 }];
             }
-            var link = svgGroup.selectAll(".templink").data(data);
+            console.log(data);
 
-            link.enter().append("path")
-                .attr("class", "templink")
-                .attr("d", function(d){ console.log(d);;var o = {x: d.source.x0, y: d.source.y0 };
-    				                            return diagonal(o, o);	})
-                .attr('pointer-events', 'none');
+            var link = svgGroup.selectAll("path.templink").data(data)
+            link.enter().append("path").attr("class", "templink")
 
-            link.attr("d", function(d){ var o = {x: d.source.x0, y: d.source.y0 };
-    				                            return diagonal(o, o);	});
+            link.attr("d", function(d) {
+              console.log("grgdr");
+              console.log(d);
+              var s = {x: d.source.x, y: d.source.y };
+              var d = {x: d.target.x, y: d.target.y };
+              return diagonal(s, d);
+                                   });
+            // Enter any new links at the parent's previous position.
+            // console.log(link._enter);
+            // var linkEnter = link.enter().insert("path", "g").attr("class", "templink")
+            //                                                 .attr("d", function(d) {
+            //                                                   console.log("grgdr");
+            //                                                   console.log(d);
+            //                                                   var o = {x: d.source.x0, y: d.source.y0 };
+            //                                           				return diagonal(o, o);
+            //                                                                        })
+            // Transition links to their new position.
+    				// var linkUpdate = linkEnter.merge(link);
+            // linkUpdate.transition().duration(duration).attr('d', function(d){ return diagonal(d, d.parent) });
+            // Transition exiting nodes to the parent's new position.
+            // var linkExit = link.exit().transition().duration(duration).attr("d", function(d) { var o = { x: source.x, y: source.y };
+                                                       //                                         return diagonal(o, o); })
+                                                       // .remove();
 
+
+            // var link = svgGroup.selectAll(".templink").data(data);
+            //
+            // link.enter().append("path")
+            //     .attr("class", "templink")
+            //     .attr("d", function(d){
+            //       console.log("grgdr");
+            //       console.log(d);
+            //       var o = {x: d.source.x0, y: d.source.y0 };
+    				//       return diagonal(o, o);
+            //     })
+            //     .attr('pointer-events', 'none');
+            //
+            // link.attr("d", function(d){ var o = {x: d.source.x0, y: d.source.y0 };
+    				//                             return diagonal(o, o);	});
+            //
             link.exit().remove();
         };
 
@@ -530,7 +569,7 @@ function displayThree({
                 }
             };
             childCount(0, root);
-            var newHeight = d3.max(levelWidth) * 25; // 25 pixels per line
+            var newHeight = d3.max(levelWidth) * 50; // 25 pixels per line
             // Baum-Layout erzeugen und die Größen zuweisen
     		    treemap = d3.tree().size([newHeight, viewerWidth]);
     				// Berechnung x- und y-Positionen pro Knoten
@@ -541,10 +580,10 @@ function displayThree({
 
             // Set widths between levels based on maxLabelLength.
             nodes.forEach(function(d) {
-                d.y = (d.depth * (maxLabelLength * 10)); //maxLabelLength * 10px
+                // d.y = (d.depth * (maxLabelLength * 10)); //maxLabelLength * 10px
                 // alternatively to keep a fixed scale one can set a fixed depth per level
                 // Normalize for fixed-depth by commenting out below line
-                // d.y = (d.depth * 500); //500px per level.
+                d.y = (d.depth * 250); //500px per level.
             });
             // Update the nodes…
             node = svgGroup.selectAll("g.node").data(nodes, function(d) { return d.id || (d.id = ++i); });
