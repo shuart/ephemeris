@@ -353,6 +353,7 @@ function displayThree({
         .attr('r', 2)
         .style("fill", "grey")
         .on('click', clickHelper);
+    
 
     // Add labels for the nodes
     nodeEnter.append('text')

@@ -233,8 +233,6 @@ var createPbsView = function () {
       edit:true,
       onClose:(e)=>{
         renderCDC()
-        // sourceList.select.updateData(store.currentPbs.items)
-        // sourceList.select.updateLinks(store.currentPbs.links)
         sourceList.select.update()
         sourceList.select.updateData(store.currentPbs.items)
         sourceList.select.updateLinks(store.currentPbs.links)

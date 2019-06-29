@@ -62,6 +62,8 @@ function displayThree({
 
   var updateCurrentTree = undefined
 
+
+
   function init() {
 
     //prepare render area
@@ -417,6 +419,25 @@ function displayThree({
 
         // Helper functions for collapsing and expanding nodes.
 
+        function nodeClicked(d) {
+          console.log(onNodeClicked);
+          onNodeClicked({element:d,sourceTree:self, target:d3.event.target})
+          console.log(d);
+          update(root)
+        }
+
+        function removeNode(d){
+          onRemove({element:d,sourceTree:self, target:d3.event.target})
+        }
+
+        // Click on helper
+        function clickHelper(d) {
+          if (true) {
+            onAdd({element:d,sourceTree:self, target:d3.event.target})
+            console.log(store.currentPbs.items);
+          }
+        }
+
         function collapse(d) {
             if (d.children) {
                 d._children = d.children;
@@ -596,6 +617,28 @@ function displayThree({
                                       .attr('pointer-events', 'mouseover')
                                       .on("mouseover", function(node) { overCircle(node); })
                                       .on("mouseout", function(node) { outCircle(node); });
+
+            // Add plus sign for the nodes
+            nodeEnter.append('circle')
+                .attr("cy", "1em")
+                .attr('class', 'plus')
+                .attr('r', 1e-6)
+                .attr('r', 2)
+                .style("fill", "grey")
+                .style("opacity", "0.3")
+                .on('click',clickHelper );
+
+            // Add minus sign for the nodes
+            nodeEnter.append('circle')
+                .attr("cy", "1em")
+                .attr("cx", "0.5em")
+                .attr('class', 'minus')
+                .attr('r', 1e-6)
+                .attr('r', 2)
+                .style("fill", "red")
+                .style("stroke", "red")
+                .style("opacity", "0.3")
+                .on('click', removeNode);
 
             // Update the text to reflect whether node has children or not.
             node.select('text').attr("x", function(d) { return d.children || d._children ? -10 : 10; })
