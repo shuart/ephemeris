@@ -1,6 +1,6 @@
 {
   "name": "Ephemeris",
-  "version": "2.11.5",
+  "version": "2.12.0",
   "description": "System Engineering and requirements management application",
   "main": "index.html",
   "window": {

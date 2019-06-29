@@ -84,9 +84,6 @@ var createPbsView = function () {
         onClick: (ev)=>{
           showSingleItem(ev)
         },
-        onClear: (ev)=>{
-          renderCDC()
-        },
         extraActions:[
           {
             name:"Diagramme",

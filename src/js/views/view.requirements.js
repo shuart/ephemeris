@@ -118,9 +118,6 @@ var createRequirementsView = function () {
             }
           })
         },
-        onClear: (ev)=>{
-          renderCDC()
-        },
         extraActions:[
           {
             name:"Import",
