@@ -241,39 +241,11 @@ var createFunctionsView = function () {
           //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
           ev.sourceTree.setData(generateDataSource())
         },
-        onNodeClicked:(originev)=>{
-          var originItem = store.functions.items.filter(e=> e.uuid == originev.element.data.uuid)
-          ShowListMenu({
-            sourceData:store.functions.items,
-            sourceLinks:store.functions.links,
-            displayProp:"name",
-            searchable : false,
-            singleElement:originItem[0],
-            rulesToDisplaySingleElement:[
-              {prop:"name", displayAs:"Name", edit:"true"}
-            ],
-            display:[
-              {prop:"name", displayAs:"Name", edit:false}
-            ],
-            idProp:"uuid",
-            onCloseMenu: (ev)=>{
-              //console.log("fefsefse");
-              console.log(originev.sourceTree);
-              // ev.select.getParent().update()
-              originev.sourceTree.setData(generateDataSource())
-              originev.sourceTree.hardUpdate()//TODO find better way
-            },
-            onEditItem: (ev)=>{
-              console.log("Edit");
-              var newValue = prompt("Edit Item",ev.target.dataset.value)
-              if (newValue) {
-                console.log(ev.target.dataset.id);
-                console.log(ev.target.dataset.prop);
-                push(act.edit("functions",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-              }
-              //ev.select.update()
-            }
-          })
+        onLabelClicked:(originev)=>{
+          showSingleItemService.showById(originev.element.data.uuid)
+        },
+        onStoreUpdate:(originev)=>{
+          originev.sourceTree.setData(generateDataSource())
         }
       })
     }

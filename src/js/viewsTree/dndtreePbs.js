@@ -26,6 +26,7 @@ function displayThree({
   onClose = (e)=>{console.log("tree closed", e.data)},
   onEdit = (e)=>{console.log("Node Edited", e.data)},
   onLabelClicked = (e)=>{console.log("Label clicked", e.data)},
+  onStoreUpdate = (e)=>{console.log("StoreUpdated", e)},
   onMove = (e)=>{console.log("Node moved", e.data)},
   onRemove = (e)=>{console.log("Node removed", e.data)},
   onAdd = (e)=>{console.log("Node removed", e.data)}
@@ -119,10 +120,15 @@ function displayThree({
   }
 
   function connect() {
+    var updateOnStoreChange = function () {
+      onStoreUpdate({sourceTree:self})
+    }
+    document.addEventListener('storeUpdated', updateOnStoreChange, false)
 
     d3.select(".action_set_pbs_add").on("click", function(d) { mode = "add"; })
     d3.select(".action_set_pbs_remove").on("click", function(d) { mode = "remove"; })
     d3.select(".action_set_pbs_close").on("click", function(d) {
+      document.removeEventListener('storeUpdated', updateOnStoreChange, false)
       onClose({})
       sourceEl.remove()
     })
@@ -430,6 +436,7 @@ function displayThree({
         // Helper functions for collapsing and expanding nodes.
 
         function labelClicked(d) {
+          if (d3.event.defaultPrevented) return; // click suppressed
           console.log(onLabelClicked);
           onLabelClicked({element:d,sourceTree:self, target:d3.event.target})
           console.log(d);
@@ -606,11 +613,12 @@ function displayThree({
             // Enter any new nodes at the parent's previous position.
             var nodeEnter = node.enter().append("g").call(dragListener)
                                         .attr("class", "node")
-                                        .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-                                        .on('click', click);
+                                        .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; });
+
             nodeEnter.append("circle").attr('class', 'nodeCircle')
                                       //.attr("r", 0)
                                       .attr("r", 4.5)
+                                      .on('click', click)
                                       .style("fill", function(d) { return d._children ? "#00b5ad" : "#fff"; });
 
             nodeEnter.append("text").attr("x", function(d) { return d.children || d._children ? -10 : 10; })
