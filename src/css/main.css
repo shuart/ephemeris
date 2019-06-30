@@ -587,13 +587,12 @@ textarea {
   bottom: 1px;
   width: 10%;
   height: 3px;
-  background: #2dbe91;
+  background: linear-gradient(to right, #00b5ad, transparent);
   opacity: 0;
   left: 0px;
   transition: opacity .20s ease-in-out;
 }
 .flexTable .row .addMagnet:hover {
-  background: #2dbe91;
   opacity: 0.5;
 }
 .flexTable .row .addMagnet .addPopup {
