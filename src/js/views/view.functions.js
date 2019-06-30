@@ -121,6 +121,7 @@ var createFunctionsView = function () {
               // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
             }
             ev.select.updateData(store.functions.items)
+            ev.select.updateLinks(store.functions.links)
           }
         },
         onLabelClick: (ev)=>{
@@ -230,8 +231,8 @@ var createFunctionsView = function () {
         data:generateDataSource(),
         edit:true,
         onClose:(e)=>{
-          renderCDC()
-          renderCDC()
+          ev.select.updateData(store.functions.items)
+          ev.select.updateLinks(store.functions.links)
           ev.select.update() //TODO find a better way
         },
         onAdd:(ev)=>{
@@ -244,7 +245,9 @@ var createFunctionsView = function () {
         },
         onMove:(ev)=>{
           push(act.removeLink("functions",{source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
-          push(act.addLink("functions",{source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
+          if (ev.newParent.data.uuid != "placeholder") {
+            push(act.addLink("functions",{source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
+          }
           ev.sourceTree.setData(generateDataSource())
         },
         onRemove:(ev)=>{

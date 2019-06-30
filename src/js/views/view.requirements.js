@@ -94,6 +94,7 @@ var createRequirementsView = function () {
               }
             }
             ev.select.updateData(store.requirements.items)
+            ev.select.updateLinks(store.requirements.links)
           }
         },
         onLabelClick: (ev)=>{
@@ -232,7 +233,8 @@ var createRequirementsView = function () {
         data:generateDataSource(),
         edit:true,
         onClose:(e)=>{
-          renderCDC()
+          ev.select.updateData(store.requirements.items)
+          ev.select.updateLinks(store.requirements.links)
           ev.select.update() //TODO find a better way
 
         },
@@ -246,7 +248,9 @@ var createRequirementsView = function () {
         },
         onMove:(ev)=>{
           push(removeRequirementLink({source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
-          push(addRequirementLink({source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
+          if (ev.newParent.data.uuid != "placeholder") {
+            push(act.addLink("requirements",{source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
+          }
           ev.sourceTree.setData(generateDataSource())
         },
         onRemove:(ev)=>{
