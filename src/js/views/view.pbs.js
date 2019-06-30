@@ -76,7 +76,24 @@ var createPbsView = function () {
             push(addPbs({uuid:id, name:newReq}))
             push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
           }
-
+        },
+        onAddFromPopup: (ev)=>{
+          var uuid = genuuid()
+          var newReq = prompt("New Product")
+          if (newReq) {
+            push(act.add("currentPbs", {uuid:uuid,name:newReq}))
+            if (ev.target && ev.target != "undefined") {
+              push(act.move("currentPbs", {origin:uuid, target:ev.target.dataset.id}))
+              //check for parenting
+              let parent = store.currentPbs.links.find(l=>l.target == ev.target.dataset.id)
+              if (parent) {
+                push(act.addLink("currentPbs",{source:parent.source, target:uuid}))
+              }else {
+                push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+              }
+            }
+            ev.select.updateData(store.currentPbs.items)
+          }
         },
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)

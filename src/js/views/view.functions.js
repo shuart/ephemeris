@@ -103,6 +103,26 @@ var createFunctionsView = function () {
             }
           )
         },
+        onAddFromPopup: (ev)=>{
+          var uuid = genuuid()
+          var newReq = prompt("New Function")
+          if (newReq) {
+            push(act.add("functions", {uuid:uuid,name:newReq}))
+            if (ev.target && ev.target != "undefined") {
+              push(act.move("functions", {origin:uuid, target:ev.target.dataset.id}))
+              //check for parenting
+              let parent = store.functions.links.find(l=>l.target == ev.target.dataset.id)
+              console.log(parent);
+
+              if (parent) {
+                push(act.addLink("functions",{source:parent.source, target:uuid}))
+              }
+            }else {//add to main item (only pbs)
+              // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+            }
+            ev.select.updateData(store.functions.items)
+          }
+        },
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)
         },

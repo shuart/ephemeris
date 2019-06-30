@@ -16,6 +16,7 @@ function showListMenu({
   onClick = (e)=>{console.log("clik on select");},
   onLabelClick = (e)=>{console.log("clik on label");},
   onAdd = undefined,
+  onAddFromPopup = undefined,
   onRemove= undefined,
   onMove= undefined,
   onEditItem = (e)=>{console.log("edit select")},
@@ -130,6 +131,16 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_add")) {
           onAdd({selectDiv:sourceEl, select:self, target:undefined})
+          if (!editItemMode && !singleElement) {
+            refreshList()
+          }else {
+            currentSearchValue =""
+            sourceEl.remove()
+            render()
+          }
+        }
+        if (event.target.classList.contains("action_list_add_from_popup_item")) {
+          onAddFromPopup({selectDiv:sourceEl, select:self, target:event.target})
           if (!editItemMode && !singleElement) {
             refreshList()
           }else {
@@ -538,6 +549,12 @@ function showListMenu({
       }
       //define row elemet
       html += `<div ${extraStyle}' data-id='${item[idProp]}' class='searchable ${theme.nestedListClass}'>`//Start of Searchable item
+      //add list add helpers
+      if (onAddFromPopup) {
+        html += `<div data-id='${item[idProp]}' class='addMagnet'>
+          <div data-id='${item[idProp]}' class='addPopup action_list_add_from_popup_item'>+</div>
+        </div>`
+      }
       if (true) {//Display if is list
 
         var nestedHtml = ""

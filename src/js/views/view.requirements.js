@@ -77,8 +77,24 @@ var createRequirementsView = function () {
           }
         },
         onAdd: (ev)=>{
-          var newReq = prompt("Nouveau Besoin")
+          var newReq = prompt("New Need")
           push(addRequirement({name:newReq}))
+        },
+        onAddFromPopup: (ev)=>{
+          var uuid = genuuid()
+          var newReq = prompt("New Need")
+          if (newReq) {
+            push(act.add("requirements", {uuid:uuid,name:newReq}))
+            if (ev.target && ev.target != "undefined") {
+              push(act.move("requirements", {origin:uuid, target:ev.target.dataset.id}))
+              //check for parenting
+              let parent = store.requirements.links.find(l=>l.target == ev.target.dataset.id)
+              if (parent) {
+                push(act.addLink("requirements",{source:parent.source, target:uuid}))
+              }
+            }
+            ev.select.updateData(store.requirements.items)
+          }
         },
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)

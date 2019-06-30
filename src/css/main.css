@@ -569,6 +569,7 @@ textarea {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #eaeaea;
+  position: relative;
 }
 .flexTable .row:nth-child(even)  {
   background: #FCFCFC;
@@ -580,6 +581,44 @@ textarea {
   flex-basis: 100%;
   flex: 1;
   font-weight: bold;
+}
+.flexTable .row .addMagnet {
+  position: absolute;
+  bottom: 1px;
+  width: 10%;
+  height: 3px;
+  background: #2dbe91;
+  opacity: 0;
+  left: 0px;
+  transition: opacity .20s ease-in-out;
+}
+.flexTable .row .addMagnet:hover {
+  background: #2dbe91;
+  opacity: 0.5;
+}
+.flexTable .row .addMagnet .addPopup {
+	position: absolute;
+	top: -8px;
+	background: transparent;
+	color: white;
+	width: 20px;
+	height: 8px;
+	/* align-content: center; */
+	padding-left: 6px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity .20s ease-in-out;
+  transition: height .20s ease-in-out;
+  transition: top .20s ease-in-out;
+}
+.flexTable .row .addMagnet:hover .addPopup {
+	background: #2dbe91;
+	height: 20px;
+  opacity: 0.8;
+  top: -18px;
+
 }
 .flexTable .top.row {
   text-align: center;
