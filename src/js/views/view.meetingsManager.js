@@ -19,7 +19,7 @@ var createMeetingsManager = function (targetSelector) {
   }
   theme.editor = function (e) {
      html =`
-     <div class="noteAreaEditor">
+     <div style="width:80%; margin-left:10%;" class="noteAreaEditor">
         <h1 class="ui header">${e.title}
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_note_manager_rename_note">Rename</button>
           <button data-id="${e.uuid}" class="ui basic red mini button action_note_manager_remove_note">Delete Note</button>
@@ -83,10 +83,107 @@ var createMeetingsManager = function (targetSelector) {
     return html
   }
   theme.meetingContentArea= function (note) {
+
      html =`
      <h2 class="ui header">Content</h2>
      <h3 class="ui header">Chapter 1</h3>
-     <h4 class="ui header">Topic</h4>
+     ${theme.meetingTopicArea({name:"Fire Safety"})}
+     ${theme.meetingTopicArea({name:"Status des excavation"})}
+    `
+    return html
+  }
+
+  theme.meetingTopicArea= function (topic) {
+    let colType = undefined
+     html =`
+     <h4 class="ui header">${topic.name}</h4>
+
+     <div style="width:90%; margin-left:5%;" class='flexTable'>
+       <div class="table">
+
+         <div class='row'>
+
+           <div style="
+            	position: relative;
+            	left: -27px;
+            	background: #02b5ab;
+            	color: white;
+            	width: 2em;
+            	height: 2em;
+            	padding-left: 0.6em;
+            	font-size: 20px;
+            	padding-top: 0.5em;
+            	border-radius: 50%;
+           " class='meeting-type action'>
+             <i class="fas fa-clipboard-list"></i>
+           </div>
+           <div style="
+            	position: relative;
+            	left: -27px;
+            	background: grey;
+            	width: 0.5em;
+            	height: 100%;
+           " class='meeting-timeline'>
+           </div>
+
+
+           <div style="flex-grow: 0;" class='${colType||"column"}'>
+             <div style="width: 80px;" class='orange-column'>
+               12/08/19
+             </div>
+           </div>
+           <div class='${colType||"column"}'>
+             <div class='orange-column'>
+               qzfzqzqzqfqzfzqffzqzqf fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
+               zqfzqzfqzqqzzqfzqfzqf fesfesf
+               fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
+             </div>
+           </div>
+           <div class='${colType||"column"}'>
+             <div class='orange-column'>
+               zqfzqzfqzqqzzqfzqfzqf fesfesf
+
+             </div>
+           </div>
+
+         </div>
+         <div class='row'>
+
+
+         <div style="
+            position: relative;
+            left: -27px;
+            background: #02b5ab;
+            color: white;
+            width: 2em;
+            height: 2em;
+            padding-left: 0.8em;
+            font-size: 20px;
+            padding-top: 0.5em;
+            border-radius: 50%;
+         " class='meeting-type info'>
+           <i class="fas fa-info"></i>
+         </div>
+
+           <div style="flex-grow: 0;" class='${colType||"column"}'>
+             <div style="width: 80px;" class='orange-column'>
+               14/08/19
+             </div>
+           </div>
+           <div class='${colType||"column"}'>
+             <div class='orange-column'>
+               qzfzqzqzqfqzfzqffzqzqf
+             </div>
+           </div>
+           <div class='${colType||"column"}'>
+             <div class='orange-column'>
+               zqfzqzfqzqqzzqfzqfzqf
+             </div>
+           </div>
+
+         </div>
+       </div>
+     </div>
     `
     return html
   }
