@@ -104,8 +104,8 @@ var createMeetingsManager = function (targetSelector) {
          <div class='row'>
 
            <div style="
-            	position: relative;
-            	left: -27px;
+            	position: absolute;
+            	left: -33px;
             	background: #02b5ab;
             	color: white;
             	width: 2em;
@@ -114,15 +114,16 @@ var createMeetingsManager = function (targetSelector) {
             	font-size: 20px;
             	padding-top: 0.5em;
             	border-radius: 50%;
+              z-index:100;
            " class='meeting-type action'>
              <i class="fas fa-clipboard-list"></i>
            </div>
            <div style="
-            	position: relative;
-            	left: -27px;
-            	background: grey;
-            	width: 0.5em;
-            	height: 100%;
+           position: absolute;
+            left: -14px;
+            background: grey;
+            width: 3px;
+            height: 100%;
            " class='meeting-timeline'>
            </div>
 
@@ -139,10 +140,14 @@ var createMeetingsManager = function (targetSelector) {
                fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
              </div>
            </div>
-           <div class='${colType||"column"}'>
-             <div class='orange-column'>
-               zqfzqzfqzqqzzqfzqfzqf fesfesf
-
+           <div style="flex-grow: 0;" class='${colType||"column"}'>
+             <div style="width: 90px;margin:3px;" class='orange-column'>
+               Eta: <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">20/08/19</span>
+             </div>
+           </div>
+           <div style="flex-grow: 0;" class='${colType||"column"}'>
+             <div style="width: 90px;margin:3px;" class='orange-column'>
+               Concerne: <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Admin</span>
              </div>
            </div>
 
@@ -151,18 +156,27 @@ var createMeetingsManager = function (targetSelector) {
 
 
          <div style="
-            position: relative;
-            left: -27px;
-            background: #02b5ab;
-            color: white;
-            width: 2em;
-            height: 2em;
-            padding-left: 0.8em;
-            font-size: 20px;
-            padding-top: 0.5em;
-            border-radius: 50%;
+             position: absolute;
+             left: -33px;
+             background: #02b5ab;
+             color: white;
+             width: 2em;
+             height: 2em;
+             padding-left: 0.8em;
+             font-size: 20px;
+             padding-top: 0.5em;
+             border-radius: 50%;
+             z-index:100;
          " class='meeting-type info'>
            <i class="fas fa-info"></i>
+         </div>
+         <div style="
+          position: absolute;
+          left: -14px;
+          background: grey;
+          width: 3px;
+          height: 100%;
+         " class='meeting-timeline'>
          </div>
 
            <div style="flex-grow: 0;" class='${colType||"column"}'>
@@ -175,9 +189,11 @@ var createMeetingsManager = function (targetSelector) {
                qzfzqzqzqfqzfzqffzqzqf
              </div>
            </div>
-           <div class='${colType||"column"}'>
-             <div class='orange-column'>
-               zqfzqzfqzqqzzqfzqfzqf
+           <div style="flex-grow: 0;" class='${colType||"column"}'>
+             <div style="width: 90px;margin:3px;" class='orange-column'>
+               Concerne:
+               <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Admin</span>
+               <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Top Contributor </span>
              </div>
            </div>
 
@@ -207,7 +223,7 @@ var createMeetingsManager = function (targetSelector) {
   }
   theme.notePreviewTitle= function (html) {
      html =`
-        Meeetings
+        Meetings
         <span class="action_note_manager_add_note small button"> Add</span>
     `
     return html
