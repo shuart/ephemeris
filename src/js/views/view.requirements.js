@@ -242,7 +242,9 @@ var createRequirementsView = function () {
           var uuid = genuuid()
           var newName = prompt("Name?")
           push(addRequirement({uuid:uuid, name:newName}))
-          push(addRequirementLink({source:ev.element.data.uuid, target:uuid}))
+          if (ev.element.data.uuid != "placeholder") {
+            push(addRequirementLink({source:ev.element.data.uuid, target:uuid}))
+          }
           ev.sourceTree.setData(generateDataSource())
           //ev.sourceTree.updateFromRoot(ev.element)
         },

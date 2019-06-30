@@ -239,7 +239,9 @@ var createFunctionsView = function () {
           var uuid = genuuid()
           var newName = prompt("Name?")
           push(act.add("functions",{uuid:uuid, name:newName}))
-          push(act.addLink("functions",{source:ev.element.data.uuid, target:uuid}))
+          if (ev.element.data.uuid != "placeholder") {
+            push(act.addLink("functions",{source:ev.element.data.uuid, target:uuid}))
+          }
           ev.sourceTree.setData(generateDataSource())
           //ev.sourceTree.updateFromRoot(ev.element)
         },
