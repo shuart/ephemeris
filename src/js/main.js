@@ -60,6 +60,7 @@ var reparse = false;
   pageManager.addComponent({name:"externalUsersManagement",object:externalUsersManagement, haveSideBar:false})
   pageManager.addComponent({name:"exportProjectInfo",object:exportProjectInfoView, haveSideBar:false})
   pageManager.addComponent({name:"notesManager",object:notesManager, haveSideBar:false})
+  pageManager.addComponent({name:"meetingsManager",object:meetingsManager, haveSideBar:false})
   pageManager.addComponent({name:"tags",object:tagsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"workPackages",object:workPackagesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   //side menu component
@@ -120,6 +121,9 @@ var reparse = false;
   })
   connect(".action_toogle_notes_manager","click",(e)=>{
     pageManager.setActivePage("notesManager")
+  })
+  connect(".action_toogle_meetings_manager","click",(e)=>{
+    pageManager.setActivePage("meetingsManager")
   })
   connect(".action_toogle_work_packages","click",(e)=>{
     pageManager.setActivePage("workPackages")
