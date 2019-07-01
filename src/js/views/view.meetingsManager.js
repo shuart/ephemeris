@@ -19,7 +19,7 @@ var createMeetingsManager = function (targetSelector) {
   }
   theme.editor = function (e) {
      html =`
-     <div style="width:80%; margin-left:10%;" class="noteAreaEditor">
+     <div style="width:80%; margin-left:10%;" id="noteAreaEditor" class="noteAreaEditor">
         <h1 class="ui header">${e.title}
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_note_manager_rename_note">Rename</button>
           <button data-id="${e.uuid}" class="ui basic red mini button action_note_manager_remove_note">Delete Note</button>
@@ -28,6 +28,9 @@ var createMeetingsManager = function (targetSelector) {
         ${theme.meetingParticipantsArea(e)}
         ${theme.meetingContentArea(e)}
        <textarea class="inputNoteAreaEditor"></textarea>
+       <button type="button" onclick="printJS('noteAreaEditor', 'html')">
+         Print Form
+      </button>
      </div>
     `
     return html
