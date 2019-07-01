@@ -101,7 +101,8 @@ var createMeetingsManager = function (targetSelector) {
        ${topic.items.map(i=>theme.meetingItems(i)).join(" ")}
        </div>
      </div>
-     <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an item</button>
+     <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="action"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an action</button>
+     <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="info"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an info</button>
     `
     return html
   }
@@ -147,8 +148,8 @@ var createMeetingsManager = function (targetSelector) {
            12/08/19
          </div>
        </div>
-       <div class='${colType||"column"}'>
-         <div class='orange-column'>
+       <div data-id='${item.uuid}' class='${colType||"column"}  '>
+         <div class='orange-column action_meeting_manager_edit_item'>
            qzfzqzqzqfqzfzqffzqzqf fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
            zqfzqzfqzqqzzqfzqfzqf fesfesf
            fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
@@ -311,12 +312,39 @@ var createMeetingsManager = function (targetSelector) {
     })
     connect(".action_meeting_manager_add_topic_item", "click", (e)=>{
       let newName = prompt("Enter a item name")
+      let type = e.target.dataset.type
       if (newName) {//TODO This has to be removed and routes must be used
         let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         let topic = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
         if (topic) {
-          topic.items.push({uuid:uuid(),type:"action", date:new Date(), content:"un exemple"})
+          topic.items.push({uuid:uuid(),type:type, date:new Date(), content:"un exemple"})
+          update()
+          renderMeeting(meeting)
+        }
+      }
+    })
+    connect(".action_meeting_manager_edit_item", "click", (e)=>{
+      console.log(e.target);
+      e.target.parentElement.innerHTML="<textarea class='meeting_mde_input'></textarea>"
+      let easyMDE = new EasyMDE({
+        element: document.querySelector(".meeting_mde_input"),
+        autoDownloadFontAwesome:false,
+        spellChecker:false,
+        initialValue : "test"
+      });
+
+      easyMDE.codemirror.on("change", function(){
+      	console.log(easyMDE.value());
+        // e.content = easyMDE.value()//TODO use routes. UGLY
+      });
+      // let type = e.target.dataset.type
+      if (false) {//TODO This has to be removed and routes must be used
+        let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+        // let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
+        // let topic = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
+        if (topic) {
+          topic.items.push({uuid:uuid(),type:type, date:new Date(), content:"un exemple"})
           update()
           renderMeeting(meeting)
         }
