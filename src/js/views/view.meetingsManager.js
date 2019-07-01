@@ -6,7 +6,7 @@ var createMeetingsManager = function (targetSelector) {
   let nodeToDisplay = undefined
   let store=undefined
 
-  let currentOpenedNote = undefined
+  let currentOpenedMeeting = undefined
 
   let theme = {}
   theme.noMeeting = function () {
@@ -27,7 +27,6 @@ var createMeetingsManager = function (targetSelector) {
         </h1>
         ${theme.meetingTagArea(e)}
         ${theme.meetingParticipantsArea(e)}
-        <h2 class="ui header">Content</h2>
         ${theme.meetingContentArea(e)}
        <textarea class="inputmeetingAreaEditor"></textarea>
        <button type="button" onclick="printJS('meetingAreaEditor', 'html')">
@@ -79,6 +78,7 @@ var createMeetingsManager = function (targetSelector) {
      html =`
      <h2 class="ui header">Content</h2>
      ${meeting.chapters.map(i=>theme.meetingChapter(i)).join(" ")}
+     <button data-id="${currentOpenedMeeting}" class="ui basic mini button action_meeting_manager_add_chapter">Add a Chapter</button>
     `
     return html
   }
@@ -86,12 +86,13 @@ var createMeetingsManager = function (targetSelector) {
 
      html =`
      <h3 class="ui header">${chapter.name}</h3>
-     ${chapter.topics.map(i=>theme.meetingTopicArea(i)).join(" ")}
+     ${chapter.topics.map(i=>theme.meetingTopicArea(i, chapter)).join(" ")}
+     <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}"  class="ui basic mini button action_meeting_manager_add_topic">Add a Topic</button>
     `
     return html
   }
 
-  theme.meetingTopicArea= function (topic) {
+  theme.meetingTopicArea= function (topic, chapter) {
     let colType = undefined
      html =`
      <h4 class="ui header">${topic.name}</h4>
@@ -100,6 +101,7 @@ var createMeetingsManager = function (targetSelector) {
        ${topic.items.map(i=>theme.meetingItems(i)).join(" ")}
        </div>
      </div>
+     <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an item</button>
     `
     return html
   }
@@ -282,7 +284,42 @@ var createMeetingsManager = function (targetSelector) {
           update()
           renderMeeting(meeting)
         }
-
+      }
+    })
+    connect(".action_meeting_manager_add_chapter", "click", (e)=>{
+      let newName = prompt("Enter a new Chapter name", e.target.dataset.name)
+      if (newName) {//TODO This has to be removed and routes must be used
+        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.id)[0]
+        if (meeting) {
+          meeting.chapters.push({uuid:uuid(),name:newName,topics:[{uuid:uuid(),name:"Topic",items:[{uuid:uuid(),type:"action", date:new Date(), content:"un exemple"}]}]})
+          update()
+          renderMeeting(meeting)
+        }
+      }
+    })
+    connect(".action_meeting_manager_add_topic", "click", (e)=>{
+      let newName = prompt("Enter a new Topic name")
+      if (newName) {//TODO This has to be removed and routes must be used
+        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
+        if (chapter) {
+          chapter.topics.push({uuid:uuid(),name:newName,items:[{uuid:uuid(),type:"action", date:new Date(), content:"un exemple"}]})
+          update()
+          renderMeeting(meeting)
+        }
+      }
+    })
+    connect(".action_meeting_manager_add_topic_item", "click", (e)=>{
+      let newName = prompt("Enter a item name")
+      if (newName) {//TODO This has to be removed and routes must be used
+        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
+        let topic = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
+        if (topic) {
+          topic.items.push({uuid:uuid(),type:"action", date:new Date(), content:"un exemple"})
+          update()
+          renderMeeting(meeting)
+        }
       }
     })
     connect(".action_meeting_manager_add_meeting", "click", (e)=>{
@@ -475,8 +512,8 @@ var createMeetingsManager = function (targetSelector) {
   var update = function () {
     saveDB() //TODO move all to actions!
     render()
-    if (currentOpenedNote) {
-      loadMeetingByUuid(currentOpenedNote)
+    if (currentOpenedMeeting) {
+      loadMeetingByUuid(currentOpenedMeeting)
     }
   }
 
