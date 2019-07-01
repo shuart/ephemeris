@@ -4,11 +4,12 @@ var createMeetingsManager = function (targetSelector) {
   var container = document.querySelector(targetSelector)
   let easymde = undefined
   let nodeToDisplay = undefined
+  let store=undefined
 
   let currentOpenedNote = undefined
 
   let theme = {}
-  theme.noNote = function () {
+  theme.noMeeting = function () {
     return `
     <div class="ui placeholder segment">
       <div class="ui icon header">
@@ -17,15 +18,16 @@ var createMeetingsManager = function (targetSelector) {
       </div>
     </div>`
   }
-  theme.editor = function (e) {
+  theme.editor = function (e) {//editor start point
      html =`
      <div style="width:80%; margin-left:10%;" id="noteAreaEditor" class="noteAreaEditor">
         <h1 class="ui header">${e.title}
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_note_manager_rename_note">Rename</button>
           <button data-id="${e.uuid}" class="ui basic red mini button action_note_manager_remove_note">Delete Note</button>
         </h1>
-        ${theme.noteTagArea(e)}
+        ${theme.meetingTagArea(e)}
         ${theme.meetingParticipantsArea(e)}
+        <h2 class="ui header">Content</h2>
         ${theme.meetingContentArea(e)}
        <textarea class="inputNoteAreaEditor"></textarea>
        <button type="button" onclick="printJS('noteAreaEditor', 'html')">
@@ -36,46 +38,33 @@ var createMeetingsManager = function (targetSelector) {
     return html
   }
   theme.meetingParticipantsArea = function (meeting) {
+    console.log(meeting.participants.present);
     html=`
     <h2 class="ui header">Participants</h2>
     <h3 class="ui header">Present</h3>
     <div class="ui mini horizontal list">
-      <div class="item">
-        <img class="ui avatar image" src="css/vendor/font-awesome/user-solid.svg">
-        <div class="content">
-          <div class="header">Tom</div>
-          Top Contributor
-        </div>
-      </div>
-      <div class="item">
-        <img class="ui avatar image" src="css/vendor/font-awesome/user-solid.svg">
-        <div class="content">
-          <div class="header">Christian Rocha</div>
-          Admin
-        </div>
-      </div>
-      <div class="item">
-        <img class="ui avatar image" src="css/vendor/font-awesome/user-solid.svg">
-        <div class="content">
-          <div class="header">Matt</div>
-          Top Rated User
-        </div>
-      </div>
+      ${meeting.participants.present.map(i=>theme.meetingParticipant(i)).join(" ")}
     </div>
     <h3 class="ui header">Absent</h3>
     <div class="ui mini horizontal list">
-      <div class="item">
-        <img class="ui avatar image" src="css/vendor/font-awesome/user-solid.svg">
-        <div class="content">
-          <div class="header">Tom</div>
-          Top Contributor
-        </div>
-      </div>
+      ${meeting.participants.absent.map(i=>theme.meetingParticipant(i)).join(" ")}
     </div>
     `
     return html
   }
-  theme.noteTagArea= function (note) {
+  theme.meetingParticipant= function (participant) {
+     html =`
+     <div class="item">
+       <img class="ui avatar image" src="css/vendor/font-awesome/user-solid.svg">
+       <div class="content">
+         <div class="header">${participant}</div>
+         Top Contributor
+       </div>
+     </div>
+    `
+    return html
+  }
+  theme.meetingTagArea= function (note) {
      html =`
      <div class="tag_area">
        <div class="tag_list">
@@ -85,13 +74,19 @@ var createMeetingsManager = function (targetSelector) {
     `
     return html
   }
-  theme.meetingContentArea= function (note) {
+  theme.meetingContentArea= function (meeting) {
 
      html =`
      <h2 class="ui header">Content</h2>
-     <h3 class="ui header">Chapter 1</h3>
-     ${theme.meetingTopicArea({name:"Fire Safety"})}
-     ${theme.meetingTopicArea({name:"Status des excavation"})}
+     ${meeting.chapters.map(i=>theme.meetingChapter(i)).join(" ")}
+    `
+    return html
+  }
+  theme.meetingChapter= function (chapter) {
+
+     html =`
+     <h3 class="ui header">${chapter.name}</h3>
+     ${chapter.topics.map(i=>theme.meetingTopicArea(i)).join(" ")}
     `
     return html
   }
@@ -100,108 +95,124 @@ var createMeetingsManager = function (targetSelector) {
     let colType = undefined
      html =`
      <h4 class="ui header">${topic.name}</h4>
-
      <div style="width:90%; margin-left:5%;" class='flexTable'>
        <div class="table">
+       ${topic.items.map(i=>theme.meetingItems(i)).join(" ")}
+       </div>
+     </div>
+    `
+    return html
+  }
+  theme.meetingItems= function (item) {
+    if (item.type == "action") {
+      return theme.meetingItemAction(item)
+    }else if (item.type == "info") {
+      return theme.meetingItemInfo(item)
+    }
+  }
+  theme.meetingItemAction= function (item) {
+    let colType=undefined
+     html =`
+     <div class='row'>
 
-         <div class='row'>
-
-           <div style="
-            	position: absolute;
-            	left: -33px;
-            	background: #02b5ab;
-            	color: white;
-            	width: 2em;
-            	height: 2em;
-            	padding-left: 0.6em;
-            	font-size: 20px;
-            	padding-top: 0.5em;
-            	border-radius: 50%;
-              z-index:100;
-           " class='meeting-type action'>
-             <i class="fas fa-clipboard-list"></i>
-           </div>
-           <div style="
-           position: absolute;
-            left: -14px;
-            background: grey;
-            width: 3px;
-            height: 100%;
-           " class='meeting-timeline'>
-           </div>
-
-
-           <div style="flex-grow: 0;" class='${colType||"column"}'>
-             <div style="width: 80px;" class='orange-column'>
-               12/08/19
-             </div>
-           </div>
-           <div class='${colType||"column"}'>
-             <div class='orange-column'>
-               qzfzqzqzqfqzfzqffzqzqf fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
-               zqfzqzfqzqqzzqfzqfzqf fesfesf
-               fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
-             </div>
-           </div>
-           <div style="flex-grow: 0;" class='${colType||"column"}'>
-             <div style="width: 90px;margin:3px;" class='orange-column'>
-               Eta: <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">20/08/19</span>
-             </div>
-           </div>
-           <div style="flex-grow: 0;" class='${colType||"column"}'>
-             <div style="width: 90px;margin:3px;" class='orange-column'>
-               Concerne: <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Admin</span>
-             </div>
-           </div>
-
-         </div>
-         <div class='row'>
-
-
-         <div style="
-             position: absolute;
-             left: -33px;
-             background: #02b5ab;
-             color: white;
-             width: 2em;
-             height: 2em;
-             padding-left: 0.8em;
-             font-size: 20px;
-             padding-top: 0.5em;
-             border-radius: 50%;
-             z-index:100;
-         " class='meeting-type info'>
-           <i class="fas fa-info"></i>
-         </div>
-         <div style="
+       <div style="
           position: absolute;
-          left: -14px;
-          background: grey;
-          width: 3px;
-          height: 100%;
-         " class='meeting-timeline'>
-         </div>
+          left: -33px;
+          background: #02b5ab;
+          color: white;
+          width: 2em;
+          height: 2em;
+          padding-left: 0.6em;
+          font-size: 20px;
+          padding-top: 0.5em;
+          border-radius: 50%;
+          z-index:100;
+       " class='meeting-type action'>
+         <i class="fas fa-clipboard-list"></i>
+       </div>
+       <div style="
+       position: absolute;
+        left: -14px;
+        background: grey;
+        width: 3px;
+        height: 100%;
+       " class='meeting-timeline'>
+       </div>
 
-           <div style="flex-grow: 0;" class='${colType||"column"}'>
-             <div style="width: 80px;" class='orange-column'>
-               14/08/19
-             </div>
-           </div>
-           <div class='${colType||"column"}'>
-             <div class='orange-column'>
-               qzfzqzqzqfqzfzqffzqzqf
-             </div>
-           </div>
-           <div style="flex-grow: 0;" class='${colType||"column"}'>
-             <div style="width: 90px;margin:3px;" class='orange-column'>
-               Concerne:
-               <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Admin</span>
-               <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Top Contributor </span>
-             </div>
-           </div>
 
+       <div style="flex-grow: 0;" class='${colType||"column"}'>
+         <div style="width: 80px;" class='orange-column'>
+           12/08/19
          </div>
        </div>
+       <div class='${colType||"column"}'>
+         <div class='orange-column'>
+           qzfzqzqzqfqzfzqffzqzqf fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
+           zqfzqzfqzqqzzqfzqfzqf fesfesf
+           fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
+         </div>
+       </div>
+       <div style="flex-grow: 0;" class='${colType||"column"}'>
+         <div style="width: 90px;margin:3px;" class='orange-column'>
+           Eta: <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">20/08/19</span>
+         </div>
+       </div>
+       <div style="flex-grow: 0;" class='${colType||"column"}'>
+         <div style="width: 90px;margin:3px;" class='orange-column'>
+           Concerne: <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Admin</span>
+         </div>
+       </div>
+
+     </div>
+    `
+    return html
+  }
+  theme.meetingItemInfo= function (item) {
+    let colType=undefined
+     html =`
+     <div class='row'>
+     <div style="
+         position: absolute;
+         left: -33px;
+         background: #02b5ab;
+         color: white;
+         width: 2em;
+         height: 2em;
+         padding-left: 0.8em;
+         font-size: 20px;
+         padding-top: 0.5em;
+         border-radius: 50%;
+         z-index:100;
+     " class='meeting-type info'>
+       <i class="fas fa-info"></i>
+       </div>
+       <div style="
+        position: absolute;
+        left: -14px;
+        background: grey;
+        width: 3px;
+        height: 100%;
+       " class='meeting-timeline'>
+       </div>
+
+       <div style="flex-grow: 0;" class='${colType||"column"}'>
+         <div style="width: 80px;" class='orange-column'>
+           14/08/19
+         </div>
+       </div>
+       <div class='${colType||"column"}'>
+         <div class='orange-column'>
+           qzfzqzqzqfqzfzqffzqzqf
+         </div>
+       </div>
+       <div style="flex-grow: 0;" class='${colType||"column"}'>
+         <div style="width: 90px;margin:3px;" class='orange-column'>
+           Concerne:
+           <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Admin</span>
+           <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Top Contributor </span>
+         </div>
+       </div>
+
      </div>
     `
     return html
@@ -248,7 +259,7 @@ var createMeetingsManager = function (targetSelector) {
     connect(".action_note_manager_load_note", "click", (e)=>{
       console.log(e.target.dataset.id);
       let noteId = e.target.dataset.id
-      loadNoteByUuid(noteId)
+      loadMeetingByUuid(noteId)
     })
     connect(".action_note_manager_remove_note", "click", (e)=>{
       console.log(e.target.dataset.id);
@@ -268,7 +279,7 @@ var createMeetingsManager = function (targetSelector) {
         let note = app.store.userData.notes.items.filter(n=>n.uuid == noteId)[0]
         if (note) {
           note.title = newName
-          renderNote(note)
+          renderMeeting(note)
         }
         update()
       }
@@ -351,7 +362,7 @@ var createMeetingsManager = function (targetSelector) {
   }
 
   var render = function () {
-    container.innerHTML = theme.noNote()
+    container.innerHTML = theme.noMeeting()
     let treeContainer = document.querySelector(".left-menu-area")
     let noteTitleArea = document.querySelector(".left-menu-area .title")
     let notePreviewArea = treeContainer.querySelector('.left-list')
@@ -359,7 +370,7 @@ var createMeetingsManager = function (targetSelector) {
     if (notePreviewArea && searchArea) { //reuse what is already setup
       noteTitleArea.innerHTML = theme.notePreviewTitle()
       searchArea.innerHTML=theme.noteSearchArea()
-      updateNoteTree(notePreviewArea)
+      updateMeetingTree(notePreviewArea)
     //update search event
     setUpSearch(document.querySelector(".note_search_input"), app.store.userData.notes.items)
   }else {
@@ -371,36 +382,37 @@ var createMeetingsManager = function (targetSelector) {
     return theme.noteSearchArea()
   }
 
-  function renderNoteTree() {
+  function renderMeetingTree() {
+
     let html = ""
-    app.store.userData.notes.items.forEach(function (e) {//todo add proper routes
+    store.meetings.items.forEach(function (e) {//todo add proper routes
       html += theme.notePreviewItem(e)
     })
-    return theme.notePreviewList(html)
+    return theme.meetingPreviewList(html)
   }
-  function updateNoteTree(container) {
+  function updateMeetingTree(container) {
     let html = ""
-    app.store.userData.notes.items.forEach(function (e) {//todo add proper routes
+    store.meetings.items.forEach(function (e) {//todo add proper routes
       html += theme.notePreviewItem(e)
     })
     container.innerHTML = html
   }
 
-  function renderNote(e) {
+  function renderMeeting(e) {
     container.innerHTML = theme.editor(e)
-    container.querySelector(".tag_list").innerHTML= renderTagList(e)
+    // container.querySelector(".tag_list").innerHTML= renderTagList(e)
     console.log(e.content);
-    easyMDE = new EasyMDE({
-      element: document.querySelector('.inputNoteAreaEditor'),
-      autoDownloadFontAwesome:false,
-      spellChecker:false,
-      initialValue : e.content
-    });
-
-    easyMDE.codemirror.on("change", function(){
-    	console.log(easyMDE.value());
-      e.content = easyMDE.value()//TODO use routes. UGLY
-    });
+    // easyMDE = new EasyMDE({
+    //   element: document.querySelector('.inputNoteAreaEditor'),
+    //   autoDownloadFontAwesome:false,
+    //   spellChecker:false,
+    //   initialValue : e.content
+    // });
+    //
+    // easyMDE.codemirror.on("change", function(){
+    // 	console.log(easyMDE.value());
+    //   e.content = easyMDE.value()//TODO use routes. UGLY
+    // });
   }
   function renderTagList(note) {
     let linkedTag = app.store.userData.tags.items.filter((t) => {
@@ -431,11 +443,11 @@ var createMeetingsManager = function (targetSelector) {
     });
   }
 
-  function loadNoteByUuid(noteId) {
-    let note = app.store.userData.notes.items.filter(n=>n.uuid == noteId)[0]
-    if (note) {
-      currentOpenedNote = note.uuid
-      renderNote(note)
+  function loadMeetingByUuid(meetingId) {
+    let meeting = store.meetings.items.filter(n=>n.uuid == meetingId)[0]
+    if (meeting) {
+      currentOpenedMeeting = meeting.uuid
+      renderMeeting(meeting)
     }
   }
 
@@ -443,12 +455,13 @@ var createMeetingsManager = function (targetSelector) {
     saveDB() //TODO move all to actions!
     render()
     if (currentOpenedNote) {
-      loadNoteByUuid(currentOpenedNote)
+      loadMeetingByUuid(currentOpenedNote)
     }
   }
 
   var setActive =function () {
     objectIsActive = true;
+    store =  query.currentProject()
     update()
   }
 

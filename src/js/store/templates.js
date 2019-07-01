@@ -69,6 +69,54 @@ var store = {
       {uuid: uuid(), name: "Rejected", color: "#ffffff"}
     ]
   },
+  meetings:{
+    items:[{
+      uuid:uuid(),
+      title:"Meeting exemple",
+      content:"Use Markdown",
+      participants:{
+        present:["f896546e"],
+        absent:["fefiose"],
+        cc:["fefiose"]
+      },
+      chapters:[
+        {
+          uuid:uuid(),
+          name:"Chapitre",
+          topics:[
+            {
+              uuid:uuid(),
+              name:"Topic",
+              items:[
+                {uuid:uuid(),type:"action", date:new Date(), content:"un exemple"}
+              ]
+            }
+          ]
+        },
+        {
+          uuid:uuid(),
+          name:"Matériaux",
+          topics:[
+            {
+              uuid:uuid(),
+              name:"Fire Safety",
+              items:[
+                {uuid:uuid(),type:"action", date:new Date(), content:"un exemple"}
+              ]
+            },
+            {
+              uuid:uuid(),
+              name:"Rack Data",
+              items:[
+                {uuid:uuid(),type:"action", date:new Date(), content:"un exemple"},
+                {uuid:uuid(),type:"info", date:new Date(), content:"un exemple"}
+              ]
+            }
+          ]
+        }
+      ]
+    }]
+  },
   workPackages:{
     items:[
       {uuid: uuid(), name: "A work package"}
