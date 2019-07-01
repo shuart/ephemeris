@@ -20,17 +20,17 @@ var createMeetingsManager = function (targetSelector) {
   }
   theme.editor = function (e) {//editor start point
      html =`
-     <div style="width:80%; margin-left:10%;" id="noteAreaEditor" class="noteAreaEditor">
+     <div style="width:80%; margin-left:10%;" id="meetingAreaEditor" class="meetingAreaEditor">
         <h1 class="ui header">${e.title}
-          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_note_manager_rename_note">Rename</button>
-          <button data-id="${e.uuid}" class="ui basic red mini button action_note_manager_remove_note">Delete Note</button>
+          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_rename_meeting">Rename</button>
+          <button data-id="${e.uuid}" class="ui basic red mini button action_meeting_manager_remove_meeting">Delete Meeting</button>
         </h1>
         ${theme.meetingTagArea(e)}
         ${theme.meetingParticipantsArea(e)}
         <h2 class="ui header">Content</h2>
         ${theme.meetingContentArea(e)}
-       <textarea class="inputNoteAreaEditor"></textarea>
-       <button type="button" onclick="printJS('noteAreaEditor', 'html')">
+       <textarea class="inputmeetingAreaEditor"></textarea>
+       <button type="button" onclick="printJS('meetingAreaEditor', 'html')">
          Print Form
       </button>
      </div>
@@ -225,7 +225,7 @@ var createMeetingsManager = function (targetSelector) {
   }
   theme.notePreviewItem = function (i) {
      html =`
-     <div data-id="${i.uuid}" class="searchable_note list-item action_note_manager_load_note">
+     <div data-id="${i.uuid}" class="searchable_note list-item action_meeting_manager_load_meeting">
        <div class="relaxed" data-id="${i.uuid}" >
         <strong data-id="${i.uuid}" >${i.title}</strong>
         <div data-id="${i.uuid}" >${i.content.substring(0,135)+".. "}</div>
@@ -238,7 +238,7 @@ var createMeetingsManager = function (targetSelector) {
   theme.notePreviewTitle= function (html) {
      html =`
         Meetings
-        <span class="action_note_manager_add_note small button"> Add</span>
+        <span class="action_meeting_manager_add_meeting small button"> Add</span>
     `
     return html
   }
@@ -256,39 +256,60 @@ var createMeetingsManager = function (targetSelector) {
 
   }
   var connections =function () {
-    connect(".action_note_manager_load_note", "click", (e)=>{
+    connect(".action_meeting_manager_load_meeting", "click", (e)=>{
       console.log(e.target.dataset.id);
-      let noteId = e.target.dataset.id
-      loadMeetingByUuid(noteId)
+      let meetingId = e.target.dataset.id
+      loadMeetingByUuid(meetingId)
     })
-    connect(".action_note_manager_remove_note", "click", (e)=>{
+    connect(".action_meeting_manager_remove_meeting", "click", (e)=>{
       console.log(e.target.dataset.id);
-      if (confirm("This not will be deleted")) {
-        let noteId = e.target.dataset.id
+      if (confirm("This meeting will be deleted")) {
+        let meetingId = e.target.dataset.id
         //TODO This has to be removed and routes must be used
-        app.store.userData.notes.items = app.store.userData.notes.items.filter(n=>n.uuid != noteId)
+        store.meetings.items= store.meetings.items.filter(n=>n.uuid != meetingId)
         update()
       }
     })
-    connect(".action_note_manager_rename_note", "click", (e)=>{
+    connect(".action_meeting_manager_rename_meeting", "click", (e)=>{
       console.log(e.target.dataset.id);
       let newName = prompt("Enter a new name", e.target.dataset.name)
       if (newName) {
-        let noteId = e.target.dataset.id
+        let meetingId = e.target.dataset.id
         //TODO This has to be removed and routes must be used
-        let note = app.store.userData.notes.items.filter(n=>n.uuid == noteId)[0]
-        if (note) {
-          note.title = newName
-          renderMeeting(note)
+        let meeting = store.meetings.items.filter(n=>n.uuid == meetingId)[0]
+        if (meeting) {
+          meeting.title = newName
+          update()
+          renderMeeting(meeting)
         }
-        update()
+
       }
     })
-    connect(".action_note_manager_add_note", "click", (e)=>{
-      app.store.userData.notes.items.push({
-        uuid:genuuid(),
-        title:"A new Note",
-        content:"Click to edit the note"
+    connect(".action_meeting_manager_add_meeting", "click", (e)=>{
+      store.meetings.items.push({//TODO create a reducer
+        uuid:uuid(),
+        title:"Meeting exemple",
+        content:"Use Markdown",
+        participants:{
+          present:["f896546e"],
+          absent:["fefiose"],
+          cc:["fefiose"]
+        },
+        chapters:[
+          {
+            uuid:uuid(),
+            name:"Chapitre",
+            topics:[
+              {
+                uuid:uuid(),
+                name:"Topic",
+                items:[
+                  {uuid:uuid(),type:"action", date:new Date(), content:"un exemple"}
+                ]
+              }
+            ]
+          }
+        ]
       })
       update()
     })
@@ -403,7 +424,7 @@ var createMeetingsManager = function (targetSelector) {
     // container.querySelector(".tag_list").innerHTML= renderTagList(e)
     console.log(e.content);
     // easyMDE = new EasyMDE({
-    //   element: document.querySelector('.inputNoteAreaEditor'),
+    //   element: document.querySelector('.inputmeetingAreaEditor'),
     //   autoDownloadFontAwesome:false,
     //   spellChecker:false,
     //   initialValue : e.content
