@@ -155,7 +155,7 @@ var createMeetingsManager = function (targetSelector) {
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 90px;margin:3px;" class='orange-column'>
-           Eta: <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">20/08/19</span>
+           Eta:${theme.dateElement("eta", item.uuid, item.eta, true)}
          </div>
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
@@ -217,6 +217,27 @@ var createMeetingsManager = function (targetSelector) {
      </div>
     `
     return html
+  }
+  theme.dateElement= function (propName, sourceId, value, isEditable) {
+    let today
+    let propDisplay ="No due Date";
+    let labelColor = ""
+    if (value) {
+      today = new Date(value).toISOString().substr(0, 10);
+      propDisplay = moment(value).format("MMMM Do YY");
+      console.log(new Date(value));
+      if (lessThanInSomeDays(new Date(value),10 )) {
+        labelColor = "orange"
+      }
+    }else {
+      today = new Date().toISOString().substr(0, 10);
+    }
+    var mainText = `<div class="ui mini ${labelColor} label">${propDisplay}</div>`
+    var editHtml=`
+    <input data-prop="${propName}" data-id="${sourceId}" style="display:none;" type="date" class="dateinput ${sourceId} action_list_edit_time_input" name="trip-start" value="${today}">
+    <i data-prop="${propName}" data-value='${JSON.stringify(value)}' data-id="${sourceId}" class="edit icon action_meeting_manager_list_edit_time_item" style="opacity:0.2">
+    </i>`
+    return mainText + editHtml
   }
   theme.noteTag= function (tagName, tagId) {
      html =`
@@ -321,6 +342,26 @@ var createMeetingsManager = function (targetSelector) {
           renderMeeting(meeting)
         }
       }
+    })
+    connect(".action_meeting_manager_list_edit_time_item","click",(e)=>{
+      console.log(event.target.parentElement.querySelector("input"));
+      event.target.parentElement.querySelector("input").style.display ="inline-block"
+      event.target.parentElement.querySelector("input").style.borderRadius ="8px"
+      event.target.parentElement.querySelector("input").style.borderStyle ="dashed"
+      event.target.parentElement.querySelector("input").style.borderColor ="#9ed2ce"
+      event.target.parentElement.querySelector("input").style.borderColor ="#e8e8e8"
+      event.target.parentElement.querySelector("input").style.backgroundColor= "#e8e8e8"
+      event.target.parentElement.querySelector("input").previousSibling.previousSibling.remove()
+      event.target.style.display ="none"
+      event.target.parentElement.querySelector("input").onchange = function (ev) {
+        //onEditItemTime({select:self, selectDiv:sourceEl, target:ev.target})
+        let targetItem = getTopicItemByUuid(e.target.dataset.id)//TODO move to reducer
+        targetItem[ev.target.dataset.prop] = ev.target.valueAsDate
+        // push(act.edit("actions",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate, project:ev.target.dataset.project}))
+        update()
+        renderMeeting(meeting)
+      }
+      //sourceEl.remove()
     })
     connect(".action_meeting_manager_edit_item", "click", (e)=>{
       let targetItem = getTopicItemByUuid(e.target.dataset.id)
