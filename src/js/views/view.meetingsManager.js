@@ -145,7 +145,7 @@ var createMeetingsManager = function (targetSelector) {
 
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 80px;" class='orange-column'>
-           12/08/19
+           ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
          </div>
        </div>
        <div data-id='${item.uuid}' class='${colType||"column"}  '>
@@ -154,8 +154,9 @@ var createMeetingsManager = function (targetSelector) {
          </div>
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
-         <div style="width: 90px;margin:3px;" class='orange-column'>
-           Eta:${theme.dateElement("eta", item.uuid, item.eta, true)}
+         <div style="width: 100px;margin:3px;" class='orange-column'>
+           <p>Eta: </p>
+            ${theme.dateElement("eta", item.uuid, item.eta, true)}
          </div>
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
@@ -337,7 +338,7 @@ var createMeetingsManager = function (targetSelector) {
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         let topic = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
         if (topic) {
-          topic.items.push({uuid:uuid(),type:type, date:new Date(), content:"un exemple"})
+          topic.items.push({uuid:uuid(),createdOn: new Date(), type:type, date:new Date(), content:"un exemple"})
           update()
           renderMeeting(meeting)
         }
