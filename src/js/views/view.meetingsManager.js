@@ -154,8 +154,8 @@ var createMeetingsManager = function (targetSelector) {
          </div>
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
-         <div style="width: 100px;margin:3px;" class='orange-column'>
-           <p>Eta: </p>
+         <div style="width: 120px;margin:3px;" class='orange-column'>
+
             ${theme.dateElement("eta", item.uuid, item.eta, true)}
          </div>
        </div>
