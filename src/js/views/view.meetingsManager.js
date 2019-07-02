@@ -149,10 +149,8 @@ var createMeetingsManager = function (targetSelector) {
          </div>
        </div>
        <div data-id='${item.uuid}' class='${colType||"column"}  '>
-         <div class='orange-column action_meeting_manager_edit_item'>
-           qzfzqzqzqfqzfzqffzqzqf fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
-           zqfzqzfqzqqzzqfzqfzqf fesfesf
-           fes zqfzqz fqzq  qzzqfzqfzqf fesfesf
+         <div data-id='${item.uuid}' class='orange-column action_meeting_manager_edit_item'>
+           ${item.content}
          </div>
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
@@ -325,17 +323,25 @@ var createMeetingsManager = function (targetSelector) {
       }
     })
     connect(".action_meeting_manager_edit_item", "click", (e)=>{
+      let targetItem = getTopicItemByUuid(e.target.dataset.id)
+      console.log(targetItem);
       console.log(e.target);
-      e.target.parentElement.innerHTML="<textarea class='meeting_mde_input'></textarea>"
+      e.target.parentElement.innerHTML=`
+      <textarea class='meeting_mde_input'></textarea>
+      <button class="ui basic mini red button action_meeting_manager_close_edit">Close</button>
+      `
       let easyMDE = new EasyMDE({
         element: document.querySelector(".meeting_mde_input"),
         autoDownloadFontAwesome:false,
         spellChecker:false,
-        initialValue : "test"
+        initialValue : targetItem.content
       });
 
       easyMDE.codemirror.on("change", function(){
       	console.log(easyMDE.value());
+        if (targetItem) {
+          targetItem.content = easyMDE.value()//TODO use routes. UGLY
+        }
         // e.content = easyMDE.value()//TODO use routes. UGLY
       });
       // let type = e.target.dataset.type
@@ -348,6 +354,13 @@ var createMeetingsManager = function (targetSelector) {
           update()
           renderMeeting(meeting)
         }
+      }
+    })
+    connect(".action_meeting_manager_close_edit", "click", (e)=>{
+      let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+      if (meeting) {
+        update()
+        renderMeeting(meeting)
       }
     })
     connect(".action_meeting_manager_add_meeting", "click", (e)=>{
@@ -535,6 +548,24 @@ var createMeetingsManager = function (targetSelector) {
       currentOpenedMeeting = meeting.uuid
       renderMeeting(meeting)
     }
+  }
+
+  var getTopicItemByUuid = function (uuid) {
+    console.log(uuid);
+    let item = undefined
+    let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+    meeting.chapters.forEach(function (c) {
+      c.topics.forEach(function (t) {
+        if (!item) {
+          item = t.items.find(i => i.uuid== uuid)
+          console.log(item);
+        }else {
+          return item
+        }
+
+      })
+    })
+    return item
   }
 
   var update = function () {
