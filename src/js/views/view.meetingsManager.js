@@ -28,7 +28,6 @@ var createMeetingsManager = function (targetSelector) {
         ${theme.meetingTagArea(e)}
         ${theme.meetingParticipantsArea(e)}
         ${theme.meetingContentArea(e)}
-       <textarea class="inputmeetingAreaEditor"></textarea>
        <button type="button" onclick="printJS('meetingAreaEditor', 'html')">
          Print Form
       </button>
@@ -120,8 +119,11 @@ var createMeetingsManager = function (targetSelector) {
        ${topic.items.map(i=>theme.meetingItems(i)).join(" ")}
        </div>
      </div>
-     <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="action"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an action</button>
-     <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="info"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an info</button>
+     <div class="ui mini menu">
+       <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="action"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an action</button></div>
+       <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="info"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an info</button></div>
+       <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="requirement"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an info</button></div>
+     </div>
     `
     return html
   }
@@ -130,6 +132,8 @@ var createMeetingsManager = function (targetSelector) {
       return theme.meetingItemAction(item)
     }else if (item.type == "info") {
       return theme.meetingItemInfo(item)
+    }else if (item.type == "requirement") {
+      return theme.meetingItemRequirement(item)
     }
   }
   theme.meetingItemAction= function (item) {
@@ -218,19 +222,65 @@ var createMeetingsManager = function (targetSelector) {
 
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 80px;" class='orange-column'>
-           14/08/19
+         ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
          </div>
        </div>
-       <div class='${colType||"column"}'>
-         <div class='orange-column'>
-           qzfzqzqzqfqzfzqffzqzqf
+       <div data-id='${item.uuid}' class='${colType||"column"}  '>
+         <div data-id='${item.uuid}' class='orange-column action_meeting_manager_edit_item'>
+           ${item.content}
          </div>
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
-         <div style="width: 90px;margin:3px;" class='orange-column'>
-           Concerne:
-           <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Admin</span>
-           <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Top Contributor </span>
+         <div style="width: 130px;margin:3px;" class='orange-column'>
+           Cc: ${generateListeFromParticipantId(item.uuid)}
+         </div>
+       </div>
+
+     </div>
+    `
+    return html
+  }
+  theme.meetingItemRequirement= function (item) {
+    let colType=undefined
+     html =`
+     <div class='row'>
+     <div style="
+         position: absolute;
+         left: -33px;
+         background: #02b5ab;
+         color: white;
+         width: 2em;
+         height: 2em;
+         padding-left: 0.5em;
+         font-size: 20px;
+         padding-top: 0.5em;
+         border-radius: 50%;
+         z-index:100;
+     " class='meeting-type info'>
+       <i class="far fa-comment"></i>
+       </div>
+       <div style="
+        position: absolute;
+        left: -14px;
+        background: grey;
+        width: 3px;
+        height: 100%;
+       " class='meeting-timeline'>
+       </div>
+
+       <div style="flex-grow: 0;" class='${colType||"column"}'>
+         <div style="width: 80px;" class='orange-column'>
+         ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
+         </div>
+       </div>
+       <div data-id='${item.uuid}' class='${colType||"column"}  '>
+         <div data-id='${item.uuid}' class='orange-column action_meeting_manager_edit_item'>
+           ${item.content}
+         </div>
+       </div>
+       <div style="flex-grow: 0;" class='${colType||"column"}'>
+         <div style="width: 130px;margin:3px;" class='orange-column'>
+           By ${generateListeFromParticipantId(item.uuid)}
          </div>
        </div>
 
