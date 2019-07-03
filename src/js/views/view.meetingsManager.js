@@ -26,6 +26,7 @@ var createMeetingsManager = function (targetSelector) {
           <button data-id="${e.uuid}" class="ui basic red mini button action_meeting_manager_remove_meeting">Delete Meeting</button>
         </h1>
         ${theme.meetingTagArea(e)}
+        ${theme.meetingInfoArea(e)}
         ${theme.meetingParticipantsArea(e)}
         ${theme.meetingContentArea(e)}
        <button type="button" onclick="printJS('meetingAreaEditor', 'html')">
@@ -71,6 +72,21 @@ var createMeetingsManager = function (targetSelector) {
          <div class="header">${participant.name +" "+participant.lastName}</div>
          ${participant.org}
        </div>
+     </div>
+    `
+    return html
+  }
+  theme.meetingInfoArea= function (meeting) {
+    var today = new Date(meeting.createdOn).toISOString().substr(0, 10);
+     html =`
+     <div class="info_area">
+       <h2>
+       <span>${meeting.createdOn? new Date(meeting.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}</span>
+       <input data-prop="createdOn" data-id="${meeting.uuid}" style="display:none;" type="date" class="dateinput action_list_edit_time_input" name="trip-start" value="${today}">
+
+       <span style="font-size:10px;" data-id="${meeting.uuid}" class="action_meeting_manager_change_date"> <i data-id="${meeting.uuid}" class="manage_tag_button far fa-edit"></i></span>
+
+       </h2>
      </div>
     `
     return html
@@ -491,6 +507,27 @@ var createMeetingsManager = function (targetSelector) {
       }
       //sourceEl.remove()
     })
+    connect(".action_meeting_manager_change_date","click",(e)=>{
+      var baseElem = event.target.parentElement.parentElement.querySelector("input");
+      baseElem.style.display ="inline-block"
+      baseElem.style.borderRadius ="8px"
+      baseElem.style.borderStyle ="dashed"
+      baseElem.style.borderColor ="#9ed2ce"
+      baseElem.style.borderColor ="#e8e8e8"
+      baseElem.style.backgroundColor= "#e8e8e8"
+      console.log(baseElem.previousSibling);
+      baseElem.previousSibling.previousSibling.remove()
+      event.target.style.display ="none"
+      baseElem.onchange = function (ev) {
+        //onEditItemTime({select:self, selectDiv:sourceEl, target:ev.target})
+        let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]//TODO move to reducer
+        meeting.createdOn = ev.target.valueAsDate
+        // push(act.edit("actions",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate, project:ev.target.dataset.project}))
+        update()
+        renderMeeting(meeting)
+      }
+      //sourceEl.remove()
+    })
     connect(".action_meetingmanager_list_edit_chapter","click",(e)=>{
       let newName = prompt("Enter a item name",e.target.dataset.value)
       if (newName) {
@@ -559,11 +596,12 @@ var createMeetingsManager = function (targetSelector) {
       store.meetings.items.push({//TODO create a reducer
         uuid:uuid(),
         title:"Meeting exemple",
+        createdOn:new Date(),
         content:"Use Markdown",
         participants:{
-          present:["f896546e"],
-          absent:["fefiose"],
-          cc:["fefiose"]
+          present:[],
+          absent:[],
+          cc:[]
         },
         chapters:[
           {
@@ -574,7 +612,7 @@ var createMeetingsManager = function (targetSelector) {
                 uuid:uuid(),
                 name:"Topic",
                 items:[
-                  {uuid:uuid(),type:"action", date:new Date(), content:"un exemple"}
+                  {uuid:uuid(),type:"action", date:new Date(), content:"An exemple"}
                 ]
               }
             ]
