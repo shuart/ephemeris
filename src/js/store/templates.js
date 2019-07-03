@@ -88,7 +88,7 @@ var store = {
               uuid:uuid(),
               name:"Topic",
               items:[
-                {uuid:uuid(),createdOn:new Date(),type:"action", date:new Date(), content:"un exemple"}
+                {uuid:uuid(),createdOn:new Date(),type:"action",assignedTo:["f896546e"], date:new Date(), content:"un exemple"}
               ]
             }
           ]

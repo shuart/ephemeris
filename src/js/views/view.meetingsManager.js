@@ -40,13 +40,26 @@ var createMeetingsManager = function (targetSelector) {
     console.log(meeting.participants.present);
     html=`
     <h2 class="ui header">Participants</h2>
-    <h3 class="ui header">Present</h3>
+    <h3 class="ui header">
+      Present
+      <i data-meeting="${currentOpenedMeeting}" data-prop="present" data-value='${JSON.stringify(meeting.participants.present)}' class="edit icon action_meeting_manager_add_participant" style="opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+    </h3>
     <div class="ui mini horizontal list">
-      ${meeting.participants.present.map(i=>theme.meetingParticipant(i)).join(" ")}
+      ${generateParticipantHtml(meeting.participants.present)}
     </div>
-    <h3 class="ui header">Absent</h3>
+    <h3 class="ui header">
+      Absent
+      <i data-meeting="${currentOpenedMeeting}" data-prop="absent" data-value='${JSON.stringify(meeting.participants.absent)}' class="edit icon action_meeting_manager_add_participant" style="opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+    </h3>
     <div class="ui mini horizontal list">
-      ${meeting.participants.absent.map(i=>theme.meetingParticipant(i)).join(" ")}
+      ${generateParticipantHtml(meeting.participants.absent)}
+    </div>
+    <h3 class="ui header">
+      CC
+      <i data-meeting="${currentOpenedMeeting}" data-prop="cc" data-value='${JSON.stringify(meeting.participants.cc)}' class="edit icon action_meeting_manager_add_participant" style="opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+    </h3>
+    <div class="ui mini horizontal list">
+      ${generateParticipantHtml(meeting.participants.cc)}
     </div>
     `
     return html
@@ -56,8 +69,8 @@ var createMeetingsManager = function (targetSelector) {
      <div class="item">
        <img class="ui avatar image" src="css/vendor/font-awesome/user-solid.svg">
        <div class="content">
-         <div class="header">${participant}</div>
-         Top Contributor
+         <div class="header">${participant.name +" "+participant.lastName}</div>
+         ${participant.org}
        </div>
      </div>
     `
@@ -166,8 +179,8 @@ var createMeetingsManager = function (targetSelector) {
          </div>
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
-         <div style="width: 90px;margin:3px;" class='orange-column'>
-           Concerne: <span style="background: gray;color: white;border-radius: 10%;padding-left: 3px;padding-right: 3px;">Admin</span>
+         <div style="width: 130px;margin:3px;" class='orange-column'>
+           Cc: ${generateListeFromParticipantId(item.uuid)}
          </div>
        </div>
 
@@ -349,6 +362,64 @@ var createMeetingsManager = function (targetSelector) {
           renderMeeting(meeting)
         }
       }
+    })
+    connect(".action_meeting_manager_list_select_item_assigned","click",(e)=>{
+      var sourceTriggerId = e.target.dataset.id;
+      var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
+      showListMenu({
+        sourceData:store.stakeholders.items,
+        parentSelectMenu:e.select ,
+        multipleSelection:currentLinksUuidFromDS,
+        displayProp:"name",
+        searchable : true,
+        display:[
+          {prop:"name", displayAs:"Name", edit:false},
+          {prop:"desc", displayAs:"Description", edit:false}
+        ],
+        idProp:"uuid",
+        onCloseMenu: (ev)=>{
+          update()
+          // renderMeeting(currentOpenedMeeting)
+        },
+        onChangeSelect: (ev)=>{
+          getTopicItemByUuid(sourceTriggerId).assignedTo = ev.select.getSelected()
+          console.log(ev.select.getSelected());
+          update()
+        },
+        onClick: (ev)=>{
+          console.log("select");
+        }
+      })
+    })
+    connect(".action_meeting_manager_add_participant","click",(e)=>{
+      var meetingId = e.target.dataset.meeting;
+      var meetingProp = e.target.dataset.prop;
+      console.log(e.target.dataset.value);
+      var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
+      showListMenu({
+        sourceData:store.stakeholders.items,
+        parentSelectMenu:e.select ,
+        multipleSelection:currentLinksUuidFromDS,
+        displayProp:"name",
+        searchable : true,
+        display:[
+          {prop:"name", displayAs:"Name", edit:false},
+          {prop:"desc", displayAs:"Description", edit:false}
+        ],
+        idProp:"uuid",
+        onCloseMenu: (ev)=>{
+          update()
+          // renderMeeting(currentOpenedMeeting)
+        },
+        onChangeSelect: (ev)=>{
+          store.meetings.items.find(m=>m.uuid == meetingId).participants[meetingProp] = ev.select.getSelected()
+          console.log(ev.select.getSelected());
+          update()
+        },
+        onClick: (ev)=>{
+          console.log("select");
+        }
+      })
     })
     connect(".action_meeting_manager_list_edit_time_item","click",(e)=>{
       console.log(event.target.parentElement.querySelector("input"));
@@ -637,6 +708,41 @@ var createMeetingsManager = function (targetSelector) {
       })
     })
     return item
+  }
+  var generateListeFromParticipantId = function (topicItemId, isEditable) {
+
+    let names = getTopicItemByUuid(topicItemId).assignedTo
+
+    var editHtml = `<i data-item="${topicItemId}" data-value='${names? JSON.stringify(names):JSON.stringify([])}' data-id="${topicItemId}"  class="edit icon action_meeting_manager_list_select_item_assigned" style="opacity:0.2"></i>`
+
+    function reduceChoices(acc, e) {
+      console.log(e);
+      var foudItem = store.stakeholders.items.find(i=>i.uuid == e)
+      var newItem = foudItem.name + " "+ (foudItem.lastName+" " || " ")+(foudItem.org || "")+" "
+      var formatedNewItem = newItem
+      if(formatedNewItem.length > 25) {
+          formatedNewItem = newItem.substring(0,10)+".. ";
+      }
+      var htmlNewItem = `<div data-inverted="" data-tooltip="${newItem}" class="ui mini teal label">${formatedNewItem}</div>`
+      return acc += htmlNewItem
+    }
+
+    var mainText = `<div class="ui mini label">Nobody</div>`
+    if (names && names[0]) {
+      mainText = names.reduce(reduceChoices,"")
+    }
+    return mainText + editHtml
+  }
+
+  var generateParticipantHtml= function (participants) {
+    let html = ""
+    participants.forEach(function (p) {
+      let stakeholder = store.stakeholders.items.find(s=>s.uuid == p)
+      if (stakeholder) {
+        html += theme.meetingParticipant(stakeholder)
+      }
+    })
+    return html
   }
 
   var update = function () {
