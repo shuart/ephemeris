@@ -85,7 +85,10 @@ var createMeetingsManager = function (targetSelector) {
   theme.meetingChapter= function (chapter) {
 
      html =`
-     <h3 class="ui header">${chapter.name}</h3>
+     <h3 class="ui header">
+      ${chapter.name}
+      <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${chapter.name}" data-chapter="${chapter.uuid}" class="edit icon action_meetingmanager_list_edit_chapter" style="opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+     </h3>
      ${chapter.topics.map(i=>theme.meetingTopicArea(i, chapter)).join(" ")}
      <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}"  class="ui basic mini button action_meeting_manager_add_topic">Add a Topic</button>
     `
@@ -95,7 +98,10 @@ var createMeetingsManager = function (targetSelector) {
   theme.meetingTopicArea= function (topic, chapter) {
     let colType = undefined
      html =`
-     <h4 class="ui header">${topic.name}</h4>
+     <h4 class="ui header">
+     ${topic.name}
+     <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${topic.name}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="edit icon action_meetingmanager_list_edit_topic" style="opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+     </h4>
      <div style="width:90%; margin-left:5%;" class='flexTable'>
        <div class="table">
        ${topic.items.map(i=>theme.meetingItems(i)).join(" ")}
@@ -363,6 +369,29 @@ var createMeetingsManager = function (targetSelector) {
         renderMeeting(meeting)
       }
       //sourceEl.remove()
+    })
+    connect(".action_meetingmanager_list_edit_chapter","click",(e)=>{
+      let newName = prompt("Enter a item name",e.target.dataset.value)
+      if (newName) {
+        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
+        chapter.name = newName;
+        update()
+        renderMeeting(meeting)
+      }
+    })
+    connect(".action_meetingmanager_list_edit_topic","click",(e)=>{
+      let newName = prompt("Enter a item name",e.target.dataset.value)
+      if (newName) {
+        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
+        let targetItem = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
+        if (targetItem) {
+          targetItem.name = newName;
+          update()
+          renderMeeting(meeting)
+        }
+      }
     })
     connect(".action_meeting_manager_edit_item", "click", (e)=>{
       let targetItem = getTopicItemByUuid(e.target.dataset.id)
