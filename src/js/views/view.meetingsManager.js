@@ -425,7 +425,7 @@ var createMeetingsManager = function (targetSelector) {
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         let topic = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
         if (topic) {
-          topic.items.push({uuid:uuid(),createdOn: new Date(), type:type, date:new Date(), content:"un exemple"})
+          topic.items.push({uuid:uuid(),createdOn: new Date(), type:type, date:new Date(), content:newName})
           update()
           renderMeeting(meeting)
         }
