@@ -23,6 +23,7 @@ var createMeetingsManager = function (targetSelector) {
      <div style="width:80%; margin-left:10%;" id="meetingAreaEditor" class="meetingAreaEditor">
         <h1 class="ui header">${e.title}
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_rename_meeting">Rename</button>
+          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_add_meeting_follow_up">follow-up</button>
           <button data-id="${e.uuid}" class="ui basic red mini button action_meeting_manager_remove_meeting">Delete Meeting</button>
         </h1>
         ${theme.meetingTagArea(e)}
@@ -138,7 +139,7 @@ var createMeetingsManager = function (targetSelector) {
      <div class="ui mini menu">
        <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="action"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an action</button></div>
        <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="info"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an info</button></div>
-       <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="requirement"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an info</button></div>
+       <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="requirement"   class="ui basic mini button action_meeting_manager_add_topic_item">Add a requirement</button></div>
      </div>
     `
     return html
@@ -155,12 +156,12 @@ var createMeetingsManager = function (targetSelector) {
   theme.meetingItemAction= function (item) {
     let colType=undefined
      html =`
-     <div class='row'>
+     <div class='row' style="opacity: ${item.freeze? "0.5": "1"};">
 
        <div style="
           position: absolute;
           left: -33px;
-          background: #02b5ab;
+          background: ${item.freeze? "grey": "#02b5ab"};
           color: white;
           width: 2em;
           height: 2em;
@@ -211,11 +212,11 @@ var createMeetingsManager = function (targetSelector) {
   theme.meetingItemInfo= function (item) {
     let colType=undefined
      html =`
-     <div class='row'>
+     <div class='row' style="opacity: ${item.freeze? "0.5": "1"};">
      <div style="
          position: absolute;
          left: -33px;
-         background: #02b5ab;
+         background: ${item.freeze? "grey": "#02b5ab"};
          color: white;
          width: 2em;
          height: 2em;
@@ -259,11 +260,11 @@ var createMeetingsManager = function (targetSelector) {
   theme.meetingItemRequirement= function (item) {
     let colType=undefined
      html =`
-     <div class='row'>
+     <div class='row' style="opacity: ${item.freeze? "0.5": "1"};">
      <div style="
          position: absolute;
          left: -33px;
-         background: #02b5ab;
+         background: ${item.freeze? "grey": "#02b5ab"};
          color: white;
          width: 2em;
          height: 2em;
@@ -619,6 +620,24 @@ var createMeetingsManager = function (targetSelector) {
           }
         ]
       })
+      update()
+    })
+    connect(".action_meeting_manager_add_meeting_follow_up", "click", (e)=>{
+
+      let meeting = store.meetings.items.find(m=>m.uuid == currentOpenedMeeting)
+      if (meeting) {
+        let newMeeting = deepCopy(meeting)
+        newMeeting.uuid = uuid()
+        newMeeting.chapters.forEach(function (c) {
+          c.topics.forEach(function (t) {
+            t.items.forEach(function (i) {
+              i.freeze = true
+            })
+          })
+        })
+        store.meetings.items.push(newMeeting)//TODO add reducer
+        update()
+      }
       update()
     })
     connect(".action_note_manager_add_tag", "click", (e)=>{
