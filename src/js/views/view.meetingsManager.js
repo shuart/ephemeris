@@ -399,7 +399,7 @@ var createMeetingsManager = function (targetSelector) {
       if (newName) {//TODO This has to be removed and routes must be used
         let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.id)[0]
         if (meeting) {
-          meeting.chapters.push({uuid:uuid(),name:newName,topics:[{uuid:uuid(),name:"Topic",items:[{uuid:uuid(),type:"action", date:new Date(), content:"un exemple"}]}]})
+          meeting.chapters.push({uuid:uuid(),name:newName,topics:[]})
           update()
           renderMeeting(meeting)
         }
@@ -411,9 +411,9 @@ var createMeetingsManager = function (targetSelector) {
         let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         if (chapter) {
-          chapter.topics.push({uuid:uuid(),name:newName,items:[{uuid:uuid(),type:"action", date:new Date(), content:"un exemple"}]})
+          chapter.topics.push({uuid:uuid(),name:newName,items:[]})
           update()
-          renderMeeting(meeting)
+          renderMeeting   (meeting)
         }
       }
     })
