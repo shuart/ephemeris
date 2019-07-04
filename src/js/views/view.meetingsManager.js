@@ -24,6 +24,7 @@ var createMeetingsManager = function (targetSelector) {
         <h1 class="ui header">${e.title}
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_rename_meeting">Rename</button>
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_add_meeting_follow_up">follow-up</button>
+          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_create_relations_from_meeting">generate relations</button>
           <button data-id="${e.uuid}" class="ui basic red mini button action_meeting_manager_remove_meeting">Delete Meeting</button>
         </h1>
         ${theme.meetingTagArea(e)}
@@ -596,6 +597,7 @@ var createMeetingsManager = function (targetSelector) {
     connect(".action_meeting_manager_add_meeting", "click", (e)=>{
       store.meetings.items.push({//TODO create a reducer
         uuid:uuid(),
+        relations:[],
         title:"Meeting exemple",
         createdOn:new Date(),
         content:"Use Markdown",
@@ -636,6 +638,46 @@ var createMeetingsManager = function (targetSelector) {
           })
         })
         store.meetings.items.push(newMeeting)//TODO add reducer
+        update()
+      }
+      update()
+    })
+    connect(".action_meeting_manager_create_relations_from_meeting", "click", (e)=>{
+      let actionPool=[]
+      function addRelationToMeetingData(sourceTopicId, targetId,type) {
+        let actionObject = {source:sourceTopicId, target:targetId, type:type}
+        meeting.relations.push(actionObject)
+      }
+
+      let meeting = store.meetings.items.find(m=>m.uuid == currentOpenedMeeting)
+      if (meeting) {
+        meeting.chapters.forEach(function (c) {
+          c.topics.forEach(function (t) {
+            t.items.forEach(function (i) {
+              if (!i.freeze && !meeting.relations.find(r=>r.source ==i.uuid)) {//not frozen and does not exist already
+                if (i.type == "requirement") {
+                  let targetId = uuid()
+                  push(addRequirement({uuid:targetId,name:i.content}))
+                  for (newSelected of i.assignedTo) {
+                    push(act.add("metaLinks",{type:"origin", source:targetId, target:newSelected}))
+                  }
+                  confirm("Requirement "+i.content+" will be created")
+                  addRelationToMeetingData(i.uuid,targetId,i.type)
+                }else if (i.type == "action") {
+                  let targetId = uuid()
+                  confirm("action "+i.content+" will be created")
+                  var newAction ={uuid:targetId, project:store.uuid, open:true, name:i.content, des:undefined, dueDate:i.eta, created:Date.now()}
+                  push(act.add("actions",newAction))
+                  for (newSelected of i.assignedTo) {
+                    store.metaLinks.items.push({type:"assignedTo", source:targetId, target:newSelected})//TODO remove this side effect
+                  }
+                  addRelationToMeetingData(i.uuid,targetId,i.type)
+                }
+              }
+            })
+          })
+        })
+        console.log(actionPool);
         update()
       }
       update()

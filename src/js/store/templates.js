@@ -72,6 +72,7 @@ var store = {
   meetings:{
     items:[{
       uuid:uuid(),
+      relations:[],
       createdOn:new Date(),
       title:"Meeting exemple",
       content:"Use Markdown",
