@@ -31,6 +31,7 @@ var createMeetingsManager = function (targetSelector) {
         ${theme.meetingInfoArea(e)}
         ${theme.meetingParticipantsArea(e)}
         ${theme.meetingContentArea(e)}
+        ${theme.meetingArchived(e)}
        <button type="button" onclick="printJS('meetingAreaEditor', 'html')">
          Print Form
       </button>
@@ -119,7 +120,7 @@ var createMeetingsManager = function (targetSelector) {
       ${chapter.name}
       <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${chapter.name}" data-chapter="${chapter.uuid}" class="edit icon action_meetingmanager_list_edit_chapter" style="opacity:0.2;font-size: 13px;vertical-align: top;"></i>
      </h3>
-     ${chapter.topics.map(i=>theme.meetingTopicArea(i, chapter)).join(" ")}
+     ${chapter.topics.filter(t=>!t.archived).map(i=>theme.meetingTopicArea(i, chapter)).join(" ")}
      <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}"  class="ui basic mini button action_meeting_manager_add_topic">Add a Topic</button>
     `
     return html
@@ -130,7 +131,8 @@ var createMeetingsManager = function (targetSelector) {
      html =`
      <h4 class="ui header">
      ${topic.name}
-     <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${topic.name}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="edit icon action_meetingmanager_list_edit_topic" style="opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+     <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${topic.name}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="edit icon action_meetingmanager_list_edit_topic" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+     <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${topic.name}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="archive icon action_meetingmanager_list_archive_topic" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
      </h4>
      <div style="width:90%; margin-left:5%;" class='flexTable'>
        <div class="table">
@@ -142,6 +144,16 @@ var createMeetingsManager = function (targetSelector) {
        <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="info"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an info</button></div>
        <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="requirement"   class="ui basic mini button action_meeting_manager_add_topic_item">Add a requirement</button></div>
      </div>
+    `
+    return html
+  }
+  theme.meetingArchived= function (meeting) {
+  
+     html =`
+     <h3 class="ui header">
+      Archived
+     </h3>
+     ${meeting.chapters.map(c=>c.topics.filter(t=>t.archived).map(i=>theme.meetingTopicArea(i, c)).join(" ")).join(" ")}
     `
     return html
   }
@@ -541,13 +553,30 @@ var createMeetingsManager = function (targetSelector) {
       }
     })
     connect(".action_meetingmanager_list_edit_topic","click",(e)=>{
-      let newName = prompt("Enter a item name",e.target.dataset.value)
+      let newName = confirm("Enter a item name",e.target.dataset.value)
       if (newName) {
         let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         let targetItem = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
         if (targetItem) {
           targetItem.name = newName;
+          update()
+          renderMeeting(meeting)
+        }
+      }
+    })
+    connect(".action_meetingmanager_list_archive_topic","click",(e)=>{
+      let newName = confirm("Archive this topic")
+      if (newName) {
+        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
+        let targetItem = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
+        if (targetItem) {
+          if (!targetItem.archived) {//toogle the status
+            targetItem.archived = true;
+          }else if (targetItem.archived) {
+            targetItem.archived = false;
+          }
           update()
           renderMeeting(meeting)
         }
