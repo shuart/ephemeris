@@ -7,6 +7,7 @@ var createMeetingsManager = function (targetSelector) {
   let store=undefined
 
   let currentOpenedMeeting = undefined
+  let currentMeetingObject = undefined
 
   let theme = {}
   theme.noMeeting = function () {
@@ -148,7 +149,7 @@ var createMeetingsManager = function (targetSelector) {
     return html
   }
   theme.meetingArchived= function (meeting) {
-  
+
      html =`
      <h3 class="ui header">
       Archived
@@ -199,6 +200,7 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 80px;" class='orange-column'>
            ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
+           ${currentMeetingObject.relations.find(r=>r.source == item.uuid) ? "<->" : ""}
          </div>
        </div>
        <div data-id='${item.uuid}' class='${colType||"column"}  '>
@@ -301,6 +303,7 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 80px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
+         ${currentMeetingObject.relations.find(r=>r.source == item.uuid) ? "<->" : ""}
          </div>
        </div>
        <div data-id='${item.uuid}' class='${colType||"column"}  '>
@@ -866,6 +869,7 @@ var createMeetingsManager = function (targetSelector) {
     let meeting = store.meetings.items.filter(n=>n.uuid == meetingId)[0]
     if (meeting) {
       currentOpenedMeeting = meeting.uuid
+      currentMeetingObject = meeting
       renderMeeting(meeting)
     }
   }
