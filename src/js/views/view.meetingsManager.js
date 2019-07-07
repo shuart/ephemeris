@@ -286,7 +286,7 @@ var createMeetingsManager = function (targetSelector) {
          font-size: 20px;
          padding-top: 0.5em;
          border-radius: 50%;
-         z-index:100;
+         z-index:1;
      " class='meeting-type info'>
        <i class="fas fa-info"></i>
        </div>
@@ -775,8 +775,10 @@ var createMeetingsManager = function (targetSelector) {
                 if (i.type == "requirement") {
                   let targetId = uuid()
                   push(addRequirement({uuid:targetId,name:i.content}))
-                  for (newSelected of i.assignedTo) {
-                    push(act.add("metaLinks",{type:"origin", source:targetId, target:newSelected}))
+                  if (i.assignedTo) {
+                    for (newSelected of i.assignedTo) {
+                      push(act.add("metaLinks",{type:"origin", source:targetId, target:newSelected}))
+                    }
                   }
                   confirm("Requirement "+i.content+" will be created")
                   addRelationToMeetingData(i.uuid,targetId,i.type)
