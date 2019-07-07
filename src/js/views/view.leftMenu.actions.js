@@ -58,8 +58,9 @@ var createLeftMenuActions = function () {
       var actionListHtml = items.reduce((out,i)=>{
         return out + `
           <div class="list-item">
-            ${i.name}
             <i class="far fa-calendar-times"></i>
+            ${i.dueDate? new Date(i.dueDate).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 5):""} - ${i.name}
+
           </div>`
       },'')
       return acc + actionListHtml
