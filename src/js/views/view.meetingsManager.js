@@ -407,7 +407,7 @@ var createMeetingsManager = function (targetSelector) {
      <div data-id="${i.uuid}" class="searchable_note list-item action_meeting_manager_load_meeting">
        <div class="relaxed" data-id="${i.uuid}" >
         <strong data-id="${i.uuid}" >${i.title}</strong>
-        <div data-id="${i.uuid}" >${i.content.substring(0,135)+".. "}</div>
+        <div data-id="${i.uuid}" >${i.createdOn? new Date(i.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}</div>
        </div>
        <i class="far fa-file-alt"></i>
      </div>`
@@ -747,6 +747,7 @@ var createMeetingsManager = function (targetSelector) {
       if (meeting) {
         let newMeeting = deepCopy(meeting)
         newMeeting.uuid = uuid()
+        newMeeting.createdOn=new Date()
         newMeeting.chapters.forEach(function (c) {
           c.topics.forEach(function (t) {
             t.items.forEach(function (i) {
