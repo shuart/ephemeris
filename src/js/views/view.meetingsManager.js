@@ -180,8 +180,13 @@ var createMeetingsManager = function (targetSelector) {
       }
 
       html= `
-      <div class="ui mini basic circular icon button" data-tooltip="Linked to item ${elementName}">
-        <i class="linkify icon"></i>
+      <div data-id="${item.uuid}" class="ui mini basic circular icon button" data-tooltip="Linked to item ${elementName}">
+        <i data-id="${item.uuid}" class="linkify icon"></i>
+      </div>`
+    }else {
+      html= `
+      <div data-id="${item.uuid}" class="ui mini basic circular icon button action_meeting_manager_create_linked_item" data-tooltip="Click to create a linked element in database">
+        <i data-id="${item.uuid}" class="unlink icon"></i>
       </div>`
     }
 
@@ -194,7 +199,7 @@ var createMeetingsManager = function (targetSelector) {
       let linkObject = currentMeetingObject.relations.find(r=>r.source == item.uuid)
       if (linkObject && !query.items("actions", i=>i.uuid == linkObject.target)[0].open) {
         html= `
-        <div data-id="${item.uuid}" class="ui mini basic circular icon button action_meeting_manager_set_resolved_partial" data-tooltip="The linked item has been resolved. Click to resolve">
+        <div data-id="${item.uuid}" class="ui mini basic circular icon button action_meeting_manager_set_resolved_partial" data-tooltip="The linked item has been resolved. Click to mark the item resolved here">
           <i data-id="${item.uuid}" class="flag checkered icon"></i>
         </div>`
       }else {
@@ -801,6 +806,44 @@ var createMeetingsManager = function (targetSelector) {
         })
         console.log(actionPool);
         update()
+      }
+      update()
+    })
+    connect(".action_meeting_manager_create_linked_item", "click", (e)=>{
+      let actionPool=[]
+      function addRelationToMeetingData(sourceTopicId, targetId,type) {
+        let actionObject = {source:sourceTopicId, target:targetId, type:type}
+        meeting.relations.push(actionObject)
+      }
+
+      let meeting = store.meetings.items.find(m=>m.uuid == currentOpenedMeeting)
+      let targetItem = getTopicItemByUuid(e.target.dataset.id)
+      if (targetItem && meeting) {
+        let i = targetItem //todo create a function for to resolve this and previous connection
+        if (!i.freeze && !meeting.relations.find(r=>r.source ==i.uuid)) {//not frozen and does not exist already
+          if (i.type == "requirement") {
+            let targetId = uuid()
+            push(addRequirement({uuid:targetId,name:i.content}))
+            if (i.assignedTo) {
+              for (newSelected of i.assignedTo) {
+                push(act.add("metaLinks",{type:"origin", source:targetId, target:newSelected}))
+              }
+            }
+            confirm("Requirement "+i.content+" will be created")
+            addRelationToMeetingData(i.uuid,targetId,i.type)
+          }else if (i.type == "action") {
+            let targetId = uuid()
+            confirm("action "+i.content+" will be created")
+            var newAction ={uuid:targetId, project:store.uuid, open:true, name:i.content, des:undefined, dueDate:i.eta, created:Date.now()}
+            push(act.add("actions",newAction))
+            if (i.assignedTo) {
+              for (newSelected of i.assignedTo) {
+                store.metaLinks.items.push({type:"assignedTo", source:targetId, target:newSelected})//TODO remove this side effect
+              }
+            }
+            addRelationToMeetingData(i.uuid,targetId,i.type)
+          }
+        }
       }
       update()
     })
