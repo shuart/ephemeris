@@ -167,10 +167,55 @@ var createMeetingsManager = function (targetSelector) {
       return theme.meetingItemRequirement(item)
     }
   }
+  theme.meetingItemConnection=function (item) {
+
+    let html = ''
+    let linkObject = currentMeetingObject.relations.find(r=>r.source == item.uuid)
+    if (linkObject) {
+      let elementName= undefined
+      if (item.type == 'action') {
+        elementName = query.items("actions", i=>i.uuid == linkObject.target)[0].name
+      } else {
+        elementName = query.items("requirements", i=>i.uuid == linkObject.target)[0].name
+      }
+
+      html= `
+      <div class="ui mini basic circular icon button" data-tooltip="Linked to item ${elementName}">
+        <i class="linkify icon"></i>
+      </div>`
+    }
+
+
+    return html
+  }
+  theme.meetingItemResolved=function (item) {
+    let html = ''
+    if (!item.resolved) {
+      let linkObject = currentMeetingObject.relations.find(r=>r.source == item.uuid)
+      if (linkObject && !query.items("actions", i=>i.uuid == linkObject.target)[0].open) {
+        html= `
+        <div data-id="${item.uuid}" class="ui mini basic circular icon button action_meeting_manager_set_resolved_partial" data-tooltip="The linked item has been resolved. Click to resolve">
+          <i data-id="${item.uuid}" class="flag checkered icon"></i>
+        </div>`
+      }else {
+        html= `
+        <div data-id="${item.uuid}" class="ui mini basic circular icon button action_meeting_manager_set_resolved" data-tooltip="This item has note yet been resolved. Click to resolve">
+          <i data-id="${item.uuid}" class="flag outline icon"></i>
+        </div>`
+      }
+    }else if (item.resolved) {
+      html= `
+      <div data-id="${item.uuid}" class="ui mini basic circular icon button action_meeting_manager_set_unresolved" data-tooltip="Click to cancel resolution">
+        <i data-id="${item.uuid}" class="check icon"></i>
+      </div>`
+    }
+    return html
+  }
   theme.meetingItemAction= function (item) {
     let colType=undefined
+    let isEditable = !item.freeze
      html =`
-     <div class='row' style="opacity: ${item.freeze? "0.5": "1"};">
+     <div class='row' style="opacity: ${(item.freeze && item.resolved)? "0.5": "1"};">
 
        <div style="
           position: absolute;
@@ -183,7 +228,7 @@ var createMeetingsManager = function (targetSelector) {
           font-size: 20px;
           padding-top: 0.5em;
           border-radius: 50%;
-          z-index:100;
+          z-index:1;
        " class='meeting-type action'>
          <i class="fas fa-clipboard-list"></i>
        </div>
@@ -200,7 +245,8 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 80px;" class='orange-column'>
            ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
-           ${currentMeetingObject.relations.find(r=>r.source == item.uuid) ? "<->" : ""}
+           ${theme.meetingItemResolved(item)}
+           ${theme.meetingItemConnection(item)}
          </div>
        </div>
        <div data-id='${item.uuid}' class='${colType||"column"}  '>
@@ -211,12 +257,12 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 120px;margin:3px;" class='orange-column'>
 
-            ${theme.dateElement("eta", item.uuid, item.eta, true)}
+            ${theme.dateElement("eta", item.uuid, item.eta, isEditable)}
          </div>
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 130px;margin:3px;" class='orange-column'>
-           Cc: ${generateListeFromParticipantId(item.uuid)}
+           Cc: ${generateListeFromParticipantId(item.uuid, isEditable)}
          </div>
        </div>
 
@@ -226,6 +272,7 @@ var createMeetingsManager = function (targetSelector) {
   }
   theme.meetingItemInfo= function (item) {
     let colType=undefined
+    let isEditable = !item.freeze
      html =`
      <div class='row' style="opacity: ${item.freeze? "0.5": "1"};">
      <div style="
@@ -264,7 +311,7 @@ var createMeetingsManager = function (targetSelector) {
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 130px;margin:3px;" class='orange-column'>
-           Cc: ${generateListeFromParticipantId(item.uuid)}
+           Cc: ${generateListeFromParticipantId(item.uuid, isEditable)}
          </div>
        </div>
 
@@ -274,6 +321,7 @@ var createMeetingsManager = function (targetSelector) {
   }
   theme.meetingItemRequirement= function (item) {
     let colType=undefined
+    let isEditable = !item.freeze
      html =`
      <div class='row' style="opacity: ${item.freeze? "0.5": "1"};">
      <div style="
@@ -287,7 +335,7 @@ var createMeetingsManager = function (targetSelector) {
          font-size: 20px;
          padding-top: 0.5em;
          border-radius: 50%;
-         z-index:100;
+         z-index:1;
      " class='meeting-type info'>
        <i class="far fa-comment"></i>
        </div>
@@ -303,7 +351,7 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 80px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
-         ${currentMeetingObject.relations.find(r=>r.source == item.uuid) ? "<->" : ""}
+         ${theme.meetingItemConnection(item)}
          </div>
        </div>
        <div data-id='${item.uuid}' class='${colType||"column"}  '>
@@ -313,7 +361,7 @@ var createMeetingsManager = function (targetSelector) {
        </div>
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 130px;margin:3px;" class='orange-column'>
-           By ${generateListeFromParticipantId(item.uuid)}
+           By ${generateListeFromParticipantId(item.uuid, isEditable)}
          </div>
        </div>
 
@@ -340,7 +388,13 @@ var createMeetingsManager = function (targetSelector) {
     <input data-prop="${propName}" data-id="${sourceId}" style="display:none;" type="date" class="dateinput ${sourceId} action_list_edit_time_input" name="trip-start" value="${today}">
     <i data-prop="${propName}" data-value='${JSON.stringify(value)}' data-id="${sourceId}" class="edit icon action_meeting_manager_list_edit_time_item" style="opacity:0.2">
     </i>`
-    return mainText + editHtml
+
+    if (isEditable) {
+      return mainText + editHtml
+    }else {
+      return mainText
+    }
+
   }
   theme.noteTag= function (tagName, tagId) {
      html =`
@@ -619,6 +673,37 @@ var createMeetingsManager = function (targetSelector) {
         }
       }
     })
+    connect(".action_meeting_manager_set_resolved", "click", (e)=>{
+      let targetItem = getTopicItemByUuid(e.target.dataset.id)
+      console.log(targetItem);
+      targetItem.resolved = true
+      let linkObject = currentMeetingObject.relations.find(r=>r.source == targetItem.uuid)
+      if (linkObject) {//see if there is a linked action
+        if (targetItem.type == 'action' && confirm('Close related action in database?')) {
+          push(act.edit("actions",{uuid:linkObject.target,prop:"open", value:false, project:store.uuid}))
+          push(act.edit("actions",{uuid:linkObject.target,prop:"closedOn", value:Date.now(), project:store.uuid}))
+        }
+      }
+      update()
+    })
+    connect(".action_meeting_manager_set_resolved_partial", "click", (e)=>{
+      let targetItem = getTopicItemByUuid(e.target.dataset.id)
+      targetItem.resolved = true
+      update()
+    })
+    connect(".action_meeting_manager_set_unresolved", "click", (e)=>{
+      let targetItem = getTopicItemByUuid(e.target.dataset.id)
+      console.log(targetItem);
+      targetItem.resolved = false
+      let linkObject = currentMeetingObject.relations.find(r=>r.source == targetItem.uuid)
+      if (linkObject) {//see if there is a linked action
+        if (targetItem.type == 'action' && confirm('Re-Open related action in database?')) {
+          push(act.edit("actions",{uuid:linkObject.target,prop:"open", value:true, project:store.uuid}))
+          push(act.edit("actions",{uuid:linkObject.target,prop:"closedOn", value:"", project:store.uuid}))
+        }
+      }
+      update()
+    })
     connect(".action_meeting_manager_close_edit", "click", (e)=>{
       let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
       if (meeting) {
@@ -700,8 +785,10 @@ var createMeetingsManager = function (targetSelector) {
                   confirm("action "+i.content+" will be created")
                   var newAction ={uuid:targetId, project:store.uuid, open:true, name:i.content, des:undefined, dueDate:i.eta, created:Date.now()}
                   push(act.add("actions",newAction))
-                  for (newSelected of i.assignedTo) {
-                    store.metaLinks.items.push({type:"assignedTo", source:targetId, target:newSelected})//TODO remove this side effect
+                  if (i.assignedTo) {
+                    for (newSelected of i.assignedTo) {
+                      store.metaLinks.items.push({type:"assignedTo", source:targetId, target:newSelected})//TODO remove this side effect
+                    }
                   }
                   addRelationToMeetingData(i.uuid,targetId,i.type)
                 }
@@ -913,7 +1000,11 @@ var createMeetingsManager = function (targetSelector) {
     if (names && names[0]) {
       mainText = names.reduce(reduceChoices,"")
     }
-    return mainText + editHtml
+    if (isEditable) {
+      return mainText + editHtml
+    }else {
+      return mainText
+    }
   }
 
   var generateParticipantHtml= function (participants) {
