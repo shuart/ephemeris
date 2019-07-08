@@ -26,6 +26,7 @@ var createMeetingsManager = function (targetSelector) {
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_rename_meeting">Rename</button>
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_add_meeting_follow_up">follow-up</button>
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_create_relations_from_meeting">generate relations</button>
+          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_create_print_view">Prepare for Print</button>
           <button data-id="${e.uuid}" class="ui basic red mini button action_meeting_manager_remove_meeting">Delete Meeting</button>
         </h1>
         ${theme.meetingTagArea(e)}
@@ -33,9 +34,6 @@ var createMeetingsManager = function (targetSelector) {
         ${theme.meetingParticipantsArea(e)}
         ${theme.meetingContentArea(e)}
         ${theme.meetingArchived(e)}
-       <button type="button" onclick="printJS('meetingAreaEditor', 'html')">
-         Print Form
-      </button>
      </div>
     `
     return html
@@ -119,7 +117,8 @@ var createMeetingsManager = function (targetSelector) {
      html =`
      <h3 class="ui header">
       ${chapter.name}
-      <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${chapter.name}" data-chapter="${chapter.uuid}" class="edit icon action_meetingmanager_list_edit_chapter" style="opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+      <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${chapter.name}" data-chapter="${chapter.uuid}" class="edit icon action_meetingmanager_list_edit_chapter" style="display:inline-block; opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+      <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${chapter.name}" data-chapter="${chapter.uuid}" class="times icon action_meetingmanager_list_delete_chapter" style="display:inline-block; opacity:0.2;font-size: 13px;vertical-align: top;"></i>
      </h3>
      ${chapter.topics.filter(t=>!t.archived).map(i=>theme.meetingTopicArea(i, chapter)).join(" ")}
      <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}"  class="ui basic mini button action_meeting_manager_add_topic">Add a Topic</button>
@@ -134,17 +133,24 @@ var createMeetingsManager = function (targetSelector) {
      ${topic.name}
      <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${topic.name}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="edit icon action_meetingmanager_list_edit_topic" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
      <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${topic.name}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="archive icon action_meetingmanager_list_archive_topic" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+     <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${topic.name}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="times icon action_meetingmanager_list_delete_topic" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
      </h4>
      <div style="width:90%; margin-left:5%;" class='flexTable'>
        <div class="table">
        ${topic.items.map(i=>theme.meetingItems(i)).join(" ")}
        </div>
      </div>
-     <div class="ui mini menu">
-       <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="action"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an action</button></div>
-       <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="info"   class="ui basic mini button action_meeting_manager_add_topic_item">Add an info</button></div>
-       <div class="item"><button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" data-type="requirement"   class="ui basic mini button action_meeting_manager_add_topic_item">Add a requirement</button></div>
-     </div>
+     <div style='margin-left: 16px;opacity: 0.5;margin-bottom: 9px;margin-top: 8px;' class="topic-menu">
+       <div data-id="" data-type="action" data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="ui mini basic circular icon button action_meeting_manager_add_topic_item" data-tooltip="Add an action">
+         <i data-id="" data-type="action" data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="clipboard icon"></i>
+       </div>
+       <div data-id="" data-type="info" data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="ui mini basic circular icon button action_meeting_manager_add_topic_item" data-tooltip="Add an Info">
+         <i data-id="" data-type="info" data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="info icon"></i>
+       </div>
+       <div data-id="" data-type="requirement" data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="ui mini basic circular icon button action_meeting_manager_add_topic_item" data-tooltip="Add a requirement">
+         <i data-id="" data-type="requirement" data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="comment icon"></i>
+        </div>
+    </div>
     `
     return html
   }
@@ -614,6 +620,15 @@ var createMeetingsManager = function (targetSelector) {
         renderMeeting(meeting)
       }
     })
+    connect(".action_meetingmanager_list_delete_chapter","click",(e)=>{
+        let newName = confirm("Delete this chapter definitely")
+        if (newName) {
+          let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+          meeting.chapters = meeting.chapters.filter(n=>n.uuid != e.target.dataset.chapter)
+          update()
+          renderMeeting(meeting)
+        }
+      })
     connect(".action_meetingmanager_list_edit_topic","click",(e)=>{
       let newName = confirm("Enter a item name",e.target.dataset.value)
       if (newName) {
@@ -643,6 +658,17 @@ var createMeetingsManager = function (targetSelector) {
           renderMeeting(meeting)
         }
       }
+    })
+    connect(".action_meetingmanager_list_delete_topic","click",(e)=>{
+      let newName = confirm("This topic will be deleted definitely!")
+      if (newName) {
+        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
+        chapter.topics = chapter.topics.filter(n=>n.uuid != e.target.dataset.topic) //TODO use reducer
+
+      }
+      update()
+      renderMeeting(meeting)
     })
     connect(".action_meeting_manager_edit_item", "click", (e)=>{
       let targetItem = getTopicItemByUuid(e.target.dataset.id)
@@ -764,6 +790,58 @@ var createMeetingsManager = function (targetSelector) {
         update()
       }
       update()
+    })
+    connect(".action_meeting_manager_create_print_view", "click", (e)=>{
+          // remove unused elements
+          document.querySelector('.side-left-menu').style.display = "none"
+          document.querySelector('.main-menu').style.display = "none"
+          document.querySelector('.center-container').style.height = "auto"
+          document.querySelector('.main-container').style.height = "auto"
+          document.querySelector('.main-container').style.paddingLeft= "0px"
+          document.querySelector('.meetingAreaEditor').style.width= "100%"
+          document.querySelector('.meetingAreaEditor').style.marginLeft="26px"
+
+          //clean for prints
+          let meetingContainer = document.querySelector('.meetingAreaEditor')
+          meetingContainer.querySelectorAll('.button').forEach(function(a){
+          a.remove()
+          })
+          meetingContainer.querySelectorAll('.edit').forEach(function(a){
+          a.remove()
+          })
+          meetingContainer.querySelectorAll('.manage_tag_button').forEach(function(a){
+          a.remove()
+          })
+          meetingContainer.querySelectorAll('.action_meetingmanager_list_delete_chapter').forEach(function(a){
+          a.remove()
+          })
+          meetingContainer.querySelectorAll('.action_meetingmanager_list_archive_topic').forEach(function(a){
+          a.remove()
+          })
+          meetingContainer.querySelectorAll('.action_meetingmanager_list_delete_topic').forEach(function(a){
+          a.remove()
+          })
+
+          setTimeout(function () {
+            window.print();
+          }, 1000);
+
+          document.querySelector('.meetingAreaEditor').addEventListener('click',function (e) {
+            document.querySelector('.side-left-menu').style.display = "block"
+            document.querySelector('.main-menu').style.display = "block"
+            document.querySelector('.center-container').style.height = "100%"
+            document.querySelector('.main-container').style.height = "100%"
+            document.querySelector('.main-container').style.paddingLeft= "50px"
+
+            let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+            if (meeting) {
+              update()
+              renderMeeting(meeting)
+            }
+          })
+
+
+
     })
     connect(".action_meeting_manager_create_relations_from_meeting", "click", (e)=>{
       let actionPool=[]
