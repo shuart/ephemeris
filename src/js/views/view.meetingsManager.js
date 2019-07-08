@@ -254,7 +254,7 @@ var createMeetingsManager = function (targetSelector) {
 
 
        <div style="flex-grow: 0;" class='${colType||"column"}'>
-         <div style="width: 80px;" class='orange-column'>
+         <div style="width: 90px;" class='orange-column'>
            ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
            ${theme.meetingItemResolved(item)}
            ${theme.meetingItemConnection(item)}
@@ -311,7 +311,7 @@ var createMeetingsManager = function (targetSelector) {
        </div>
 
        <div style="flex-grow: 0;" class='${colType||"column"}'>
-         <div style="width: 80px;" class='orange-column'>
+         <div style="width: 90px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
          </div>
        </div>
@@ -360,7 +360,7 @@ var createMeetingsManager = function (targetSelector) {
        </div>
 
        <div style="flex-grow: 0;" class='${colType||"column"}'>
-         <div style="width: 80px;" class='orange-column'>
+         <div style="width: 90px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
          ${theme.meetingItemConnection(item)}
          </div>
