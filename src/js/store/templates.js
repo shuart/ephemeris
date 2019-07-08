@@ -74,7 +74,7 @@ var store = {
       uuid:uuid(),
       relations:[],
       createdOn:new Date(),
-      title:"Meeting exemple",
+      title:"Meeting example",
       content:"Use Markdown",
       participants:{
         present:["f896546e"],
@@ -84,34 +84,13 @@ var store = {
       chapters:[
         {
           uuid:uuid(),
-          name:"Chapitre",
+          name:"Meeting chapter",
           topics:[
             {
               uuid:uuid(),
               name:"Topic",
               items:[
-                {uuid:uuid(),createdOn:new Date(),type:"action",assignedTo:["f896546e"], date:new Date(), content:"un exemple"}
-              ]
-            }
-          ]
-        },
-        {
-          uuid:uuid(),
-          name:"Matériaux",
-          topics:[
-            {
-              uuid:uuid(),
-              name:"Fire Safety",
-              items:[
-                {uuid:uuid(),type:"action", date:new Date(), content:"un exemple"}
-              ]
-            },
-            {
-              uuid:uuid(),
-              name:"Rack Data",
-              items:[
-                {uuid:uuid(),type:"action", date:new Date(), content:"un exemple"},
-                {uuid:uuid(),type:"info", date:new Date(), content:"un exemple"}
+                {uuid:uuid(),createdOn:new Date(),type:"action",assignedTo:["f896546e"], date:new Date(), content:"An example item"}
               ]
             }
           ]
