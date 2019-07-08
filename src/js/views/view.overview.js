@@ -116,7 +116,26 @@ var createOverview = function (targetSelector) {
       }
       alertAboutUpdate()
     }
+    if (!store.meetings) {
+      store.meetings = {
+        items:[{uuid:uuid(),relations:[],  createdOn:new Date(),title:"Meeting exemple",content:"Use Markdown",
+          participants:{
+            present:["f896546e"],
+            absent:["fefiose"],
+            cc:["fefiose"]
+          },
+          chapters:[{
+            uuid:uuid(),
+            name:"Chapitre",
+            topics:[
+            ]
+          }]
+        }]
+      },
+      alertAboutUpdate()
+    }
   }
+
 
   var update = function () {
     if (objectIsActive) {

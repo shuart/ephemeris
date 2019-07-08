@@ -69,6 +69,35 @@ var store = {
       {uuid: uuid(), name: "Rejected", color: "#ffffff"}
     ]
   },
+  meetings:{
+    items:[{
+      uuid:uuid(),
+      relations:[],
+      createdOn:new Date(),
+      title:"Meeting example",
+      content:"Use Markdown",
+      participants:{
+        present:["f896546e"],
+        absent:["fefiose"],
+        cc:["fefiose"]
+      },
+      chapters:[
+        {
+          uuid:uuid(),
+          name:"Meeting chapter",
+          topics:[
+            {
+              uuid:uuid(),
+              name:"Topic",
+              items:[
+                {uuid:uuid(),createdOn:new Date(),type:"action",assignedTo:["f896546e"], date:new Date(), content:"An example item"}
+              ]
+            }
+          ]
+        }
+      ]
+    }]
+  },
   workPackages:{
     items:[
       {uuid: uuid(), name: "A work package"}
