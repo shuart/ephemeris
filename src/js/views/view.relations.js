@@ -605,14 +605,15 @@ var createRelationsView = function () {
           compose : true
         }
         objectIsActive = true;
-        update()//update first to poulate elements
-
+        if (!itemsToDisplay[0]) {
+          update()//update first to poulate elements
+        }
         isolateSelectedNodes([{uuid:options.param.uuid}], true)
       }
+    }else {
+      objectIsActive = true;
+      update()
     }
-
-    objectIsActive = true;
-    update()
   }
 
   var setInactive = function () {
