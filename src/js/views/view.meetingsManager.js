@@ -24,12 +24,12 @@ var createMeetingsManager = function (targetSelector) {
      <div style="width:80%; margin-left:10%;" id="meetingAreaEditor" class="meetingAreaEditor">
         <h1 class="ui header">${e.title}
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_rename_meeting">Rename</button>
-          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_add_meeting_follow_up">follow-up</button>
-          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_create_relations_from_meeting">generate relations</button>
-          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_create_print_view">Prepare for Print</button>
+          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_add_meeting_follow_up">Follow-up</button>
+          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_create_relations_from_meeting">Generate relations</button>
+          <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_create_print_view">Print</button>
           <button data-id="${e.uuid}" class="ui basic red mini button action_meeting_manager_remove_meeting">Delete Meeting</button>
         </h1>
-        ${theme.meetingTagArea(e)}
+
         ${theme.meetingInfoArea(e)}
         ${theme.meetingParticipantsArea(e)}
         ${theme.meetingContentArea(e)}
@@ -434,7 +434,7 @@ var createMeetingsManager = function (targetSelector) {
   }
   theme.noteSearchArea= function () {
      html =`
-        <input class="note_search_input search_input" type="text" placeholder="Search..">
+        <input class="meeting_search_input search_input" type="text" placeholder="Search..">
         <span class=""> <i class="fas fa-search"></i></span>
     `
     return html
@@ -1005,7 +1005,7 @@ var createMeetingsManager = function (targetSelector) {
       searchArea.innerHTML=theme.noteSearchArea()
       updateMeetingTree(notePreviewArea)
     //update search event
-    setUpSearch(document.querySelector(".note_search_input"), app.store.userData.notes.items)
+    setUpSearch(document.querySelector(".meeting_search_input"), store.meetings.items)
   }else {
     alert("elemet missing")
   }
@@ -1059,7 +1059,7 @@ var createMeetingsManager = function (targetSelector) {
   function setUpSearch(searchElement, sourceData) {
     searchElement.addEventListener('keyup', function(e){
       //e.stopPropagation()
-      var value = document.querySelector(".note_search_input").value
+      var value = document.querySelector(".meeting_search_input").value
       console.log("fefsefsef");
       console.log(sourceData);
       var filteredData = sourceData.filter((item) => {
