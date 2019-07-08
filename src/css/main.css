@@ -230,6 +230,7 @@ textarea {
      font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
      flex: 1 1 auto;
      overflow: auto;
+     overflow-x: hidden;
  }
  .side-left-menu .left-list .list-item:first-of-type{
      border-top-color: #e6e6e6;

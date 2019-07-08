@@ -63,18 +63,21 @@ var createRelationsView = function () {
 
   var theme={
     viewListItem:(item) => {
+      let cardHtml = `
+      <img style="width: 170px;" class="ui tiny image" src="${item.preview? item.preview:""}">
+       `
      let html = `
       <div style="margin: 1px;" class="ui mini basic icon buttons">
         <button style="width:95px;" data-id="${item.uuid}" class="ui mini basic button action_relations_load_view">
-          <i class="icon camera"></i>
-          ${item.name? item.name.substring(1, 8)+"..": item.name}
+          <i data-id="${item.uuid}" class="icon camera"></i>
+          ${item.name? item.name.substring(0, 8)+"..": item.name}
         </button>
         <button data-id="${item.uuid}" class="ui button action_relations_update_snapshot"><i data-id="${item.uuid}" class="save icon "></i></button>
         <button data-id="${item.uuid}" class="ui button action_relations_remove_snapshot"><i data-id="${item.uuid}" class="times circle outline icon "></i></button>
       </div>
       `
 
-    return html
+    return cardHtml+html
     },
     viewListOptions:() => {
      let html = `
@@ -279,10 +282,23 @@ var createRelationsView = function () {
     }, container)
     bind(".action_relations_add_snap_view","click",(e)=>{
       let snapshotName = prompt("Add a Snapshot")
-      let graphItem = {uuid:genuuid(), view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
-      push(act.add("graphs", graphItem))
-      update()
+      let useImages = true // create a snsphot when saving graph
+      if (useImages) {
+        svgAsPngUri(container.querySelector('.stellae-graph'),{scale: 0.1}).then(function (uri) {
+          console.log(uri);
+          resizeCropImage(uri, function (uri) {
+            let graphItem = {uuid:genuuid(), preview:uri, view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+            push(act.add("graphs", graphItem))
+            update();
+          })
+        })
+      }else {
+        let graphItem = {uuid:genuuid(), view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+        push(act.add("graphs", graphItem))
+        update()
+      }
     }, container)
+
     bind(".action_relations_remove_snapshot","click",(e)=>{
       if (confirm("Delete this snapshot")) {
         push(act.remove("graphs", {uuid:e.target.dataset.id}))
@@ -291,11 +307,25 @@ var createRelationsView = function () {
     }, container)
     bind(".action_relations_update_snapshot","click",(e)=>{
       if (confirm("Update this snapshot")) {
+        let useImages = true // create a snsphot when saving graph
+
         let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
-        let newGraphItem = {uuid:genuuid(),view:activeMode, name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
-        push(act.remove("graphs", {uuid:e.target.dataset.id}))
-        push(act.add("graphs", newGraphItem))
-        update()
+
+        if (useImages) {
+          svgAsPngUri(container.querySelector('.stellae-graph'),{scale: 0.1}).then(function (uri) {
+            resizeCropImage(uri, function (uri) {
+              let newGraphItem = {uuid:genuuid(),preview:uri, view:activeMode, name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+              push(act.remove("graphs", {uuid:e.target.dataset.id}))
+              push(act.add("graphs", newGraphItem))
+              update()
+            })
+          })
+        }else {
+          let newGraphItem = {uuid:genuuid(),view:activeMode, name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+          push(act.remove("graphs", {uuid:e.target.dataset.id}))
+          push(act.add("graphs", newGraphItem))
+          update()
+        }
       }
     }, container)
     bind(".action_fade_other_node_toogle_network","change",(e)=>{
@@ -353,7 +383,7 @@ var createRelationsView = function () {
       <div style="height: calc(100% - 45px); position: relative" class='graphArea'>
         <div style="height: 100%" class="interfaceGraph"></div>
         <div style="opacity: 0.85;height: 99%;width: 250px;position: absolute;right:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenu ? '':'hidden'} menuGraph"></div>
-        <div style="opacity: 0.85;height: 99%;width: 250px;position: absolute;left:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenuSnapshot ? '':'hidden'} menuSnapshotGraph"></div>
+        <div style="opacity: 0.85;height: 99%;width: 210px;position: absolute;left:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenuSnapshot ? '':'hidden'} menuSnapshotGraph"></div>
       </div>`
 
     renderMenu(container)
@@ -1156,6 +1186,40 @@ var createRelationsView = function () {
       push(act.add('stakeholders',{uuid:uuid, name:initValue}))
     }else if (type = 'functions') {
       push(act.add('functions',{uuid:uuid, name:initValue}))
+    }
+  }
+  var resizeCropImage = function (uri, callback) {//TODO move to helpers
+
+    var canvas=document.createElement("canvas");
+    var ctx=canvas.getContext("2d");
+    var cw=canvas.width;
+    var ch=canvas.height;
+    var maxW=290;
+    var maxH=1290;
+
+    handleFiles()
+
+    function handleFiles() {
+      var img = new Image;
+      img.onload = function() {
+        var iw=img.width;
+        var ih=img.height;
+        var scale=Math.min((maxW/iw),(maxH/ih));
+        var iwScaled=iw*scale;
+        var ihScaled=ih*scale;
+        canvas.width=iwScaled;
+        canvas.height=ihScaled;
+        canvas.width=250;
+        canvas.height=100;
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img,(0-ih/5),(0-ih/2),iwScaled,ihScaled);
+        let dataUrl = canvas.toDataURL("image/jpeg",0.9);
+        if (callback) {
+          callback(dataUrl)
+        }
+      }
+      img.src = uri;
     }
   }
 
