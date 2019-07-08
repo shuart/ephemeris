@@ -7,7 +7,7 @@ var createRelationsView = function () {
   var displayType = "network";
   var activeGraph = undefined;
   var fixedValues = undefined;
-  var fadeOtherNodesOnHoover =true;
+  var fadeOtherNodesOnHoover =false;
   var lastSelectedNode = undefined;
   var previousSelectedNode = undefined;
   var addLinkMode = false;
@@ -19,6 +19,7 @@ var createRelationsView = function () {
   //What to show
   var hiddenItemsFromSideView = [];
   var showVisibilityMenu = false;
+  var showVisibilityMenuSnapshot = true;
 
   var elementVisibility = {
     functions : true,
@@ -63,10 +64,10 @@ var createRelationsView = function () {
   var theme={
     viewListItem:(item) => {
      let html = `
-      <div class="ui mini basic icon buttons">
-        <button data-id="${item.uuid}" class="ui mini basic button action_relations_load_view">
+      <div style="margin: 1px;" class="ui mini basic icon buttons">
+        <button style="width:95px;" data-id="${item.uuid}" class="ui mini basic button action_relations_load_view">
           <i class="icon camera"></i>
-          ${item.name}
+          ${item.name? item.name.substring(1, 8)+"..": item.name}
         </button>
         <button data-id="${item.uuid}" class="ui button action_relations_update_snapshot"><i data-id="${item.uuid}" class="save icon "></i></button>
         <button data-id="${item.uuid}" class="ui button action_relations_remove_snapshot"><i data-id="${item.uuid}" class="times circle outline icon "></i></button>
@@ -181,6 +182,17 @@ var createRelationsView = function () {
         showVisibilityMenu = false
       }
     }, container)
+    bind(".action_relations_toogle_show_graph_snapshot_menu","click",(e)=>{
+      var elem = queryDOM('.menuSnapshotGraph')
+      console.log(elem);
+      if (elem.classList.contains('hidden')) {
+        elem.classList.remove('hidden')
+        showVisibilityMenuSnapshot = true
+      }else{
+        elem.classList.add('hidden')
+        showVisibilityMenuSnapshot = false
+      }
+    }, container)
     bind(".action_interface_add_requirement","click",(e)=>{
       addItemMode = 'requirements'
       console.log(document.querySelectorAll(".add_relations_nodes"));
@@ -252,13 +264,22 @@ var createRelationsView = function () {
         currentSnapshot = undefined
         update()
       }
+      function setResetInterfaces() {
+        fixedValues = false
+        update()
+      }
       setTimeout(function () {
-        setReset()
+        if (activeMode == "interfaces") {
+          setResetInterfaces()
+        }else {
+          setReset()
+        }
+
       }, 1);
     }, container)
     bind(".action_relations_add_snap_view","click",(e)=>{
       let snapshotName = prompt("Add a Snapshot")
-      let graphItem = {uuid:genuuid(), name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+      let graphItem = {uuid:genuuid(), view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
       push(act.add("graphs", graphItem))
       update()
     }, container)
@@ -271,7 +292,7 @@ var createRelationsView = function () {
     bind(".action_relations_update_snapshot","click",(e)=>{
       if (confirm("Update this snapshot")) {
         let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
-        let newGraphItem = {uuid:genuuid(), name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+        let newGraphItem = {uuid:genuuid(),view:activeMode, name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
         push(act.remove("graphs", {uuid:e.target.dataset.id}))
         push(act.add("graphs", newGraphItem))
         update()
@@ -332,6 +353,7 @@ var createRelationsView = function () {
       <div style="height: calc(100% - 45px); position: relative" class='graphArea'>
         <div style="height: 100%" class="interfaceGraph"></div>
         <div style="opacity: 0.85;height: 99%;width: 250px;position: absolute;right:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenu ? '':'hidden'} menuGraph"></div>
+        <div style="opacity: 0.85;height: 99%;width: 250px;position: absolute;left:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenuSnapshot ? '':'hidden'} menuSnapshotGraph"></div>
       </div>`
 
     renderMenu(container)
@@ -581,6 +603,11 @@ var createRelationsView = function () {
   var renderMenu=function (container) {
     let commonMenuHTML = `
     <div class="ui item">
+      <button class="ui basic icon button action_relations_toogle_show_graph_snapshot_menu">
+        <i class="camera icon action_relations_toogle_show_graph_snapshot_menu"></i>
+      </button>
+    </div>
+    <div class="ui item">
       <div class="ui toggle checkbox">
         <input ${fixedValues ? 'checked':''} class="action_restore_last_interface_toogle_network" type="checkbox" name="public">
         <label>Fixed Graph</label>
@@ -707,6 +734,11 @@ var createRelationsView = function () {
           <div class="ui mini button action_relations_isolate_nodes_and_children">Selected and relations</div>
         </div>
       </div>
+    </div>
+    `
+    container.querySelector('.menuSnapshotGraph').innerHTML=`
+    <div style="right: 9px;position: absolute;" class="ui item action_relations_toogle_show_graph_snapshot_menu"><i class="close icon"></i></div>
+    <div class="ui secondary pointing vertical menu">
       <div class="item">
         <div class="header">Snapshots</div>
         <div style="max-height=150px; overflow=auto;" class="target_relations_view_list">
@@ -720,7 +752,11 @@ var createRelationsView = function () {
     //   relationViews = query.currentProject().graphs.items[0] //check if graph is in DB
     //   // fixedValuesList = query.currentProject().graphs.items[0] //check if graph is in DB
     // }
-    let viewMenuHtml =relationViews.slice()
+    let viewMenuObjects =relationViews.slice()
+    if (activeMode=="interfaces") {
+      viewMenuObjects=viewMenuObjects.filter(v=>v.view == activeMode)
+    }
+    let viewMenuHtml = viewMenuObjects
       .sort(function(a, b) {
         if (a.name && b.name) {
           var nameA = a.name.toUpperCase(); // ignore upper and lowercase
