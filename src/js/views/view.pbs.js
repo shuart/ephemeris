@@ -109,7 +109,7 @@ var createPbsView = function () {
                 let startImport = confirm(results.data.length+" Products will be imported")
                 if (startImport) {
                   for (importedElement of results.data) {
-                    push(act.add("currentPbs", {uuid:uuid,name:importedElement[0],desc:importedElement[1]}))
+                    push(act.add("currentPbs", {name:importedElement[0],desc:importedElement[1]}))
                   }
                   alert("Close and re-open the view to complete the import")
                 }
