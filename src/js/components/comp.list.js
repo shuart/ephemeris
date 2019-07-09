@@ -111,6 +111,7 @@ function showListMenu({
   //LOCAL VARS
   var data = undefined
   var ismoving = false
+  var ismovingExtraItems = []
   var mainFragment = document.createDocumentFragment()
   var sourceEl = undefined
   var mainEl = undefined
@@ -177,8 +178,22 @@ function showListMenu({
         if (event.target.classList.contains("action_list_move_item")) {
           if (ismoving) {
             ismoving = false
+            ismovingExtraItems = []
           }else {
             ismoving = event.target
+          }
+          refreshList()
+
+        }
+        if (event.target.classList.contains("action_list_end_add_to_move_item_toogle")) {
+          if (ismoving) {
+            if (ismovingExtraItems.find(i=>i.dataset.id == event.target.dataset.id )) {
+              console.log("remove from selection");
+              ismovingExtraItems = ismovingExtraItems.filter(i=>!(i.dataset.id==event.target.dataset.id))
+            }else {
+              ismovingExtraItems.push(event.target)
+            }
+            console.log(ismovingExtraItems);
           }
           refreshList()
 
@@ -188,6 +203,13 @@ function showListMenu({
             console.log(event.target.dataset.id,ismoving.dataset.id, event.target.dataset.parentid);
             onMove({select:self,selectDiv:sourceEl, originTarget:ismoving, target:event.target, targetParentId:event.target.dataset.parentid})
             ismoving = false
+          }
+          if (ismovingExtraItems[0]) {//if other items are selected
+            for (var i = 0; i < ismovingExtraItems.length; i++) {
+              ismovingExtraItems[i]
+              onMove({select:self,selectDiv:sourceEl, originTarget:ismovingExtraItems[i], target:event.target, targetParentId:event.target.dataset.parentid})
+            }
+            ismovingExtraItems=[]
           }
           refreshList()
 
@@ -489,7 +511,7 @@ function showListMenu({
       var move =""
       var multipleSelect =""
       var extraButtonsHtml =""
-      if (onRemove && !singleItem) {
+      if (onRemove && !singleItem && !ismoving) {
         remove = `<div class="right floated content">
             <div data-id="${item[idProp]}" class="ui mini basic red button action_list_remove_item">remove</div>
           </div>`
@@ -516,14 +538,22 @@ function showListMenu({
         move = `<div class="right floated content">
             <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui mini basic blue button action_list_move_item">move</div>
           </div>`
-        if (ismoving && ismoving.dataset.id != item[idProp] && sourceLinks) {
+        if (ismoving && ismoving.dataset.id != item[idProp] && sourceLinks && !ismovingExtraItems.find(i=>i.dataset.id == item[idProp] )) {
           move =`
             <div class="right floated content">
               <div class="ui mini buttons">
+                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_add_to_move_item_toogle">select</button>
                 <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Move next</button>
                 <div class="ou"></div>
                 <button data-id="${item[idProp]}" data-grandparentid="${parentId}" data-parentid="${item[idProp]}" class="ui positive button action_list_end_move_item">Link</button>
               </div>
+            </div>
+          `
+        }else if (ismoving && ismovingExtraItems.find(i=>i.dataset.id == item[idProp] )) {
+          move =`
+            <div class="right floated content">
+              <div class="ui mini buttons">
+                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button basic green action_list_end_add_to_move_item_toogle">selected</button>              </div>
             </div>
           `
         }else if (ismoving && ismoving.dataset.id != item[idProp]) {
@@ -542,7 +572,7 @@ function showListMenu({
       }
       var extraStyle =""
       if (greyed || (ismoving && ismoving.dataset.id == item[idProp])) {
-        extraStyle = "background-color: lightgrey; opacity: 0.5;"
+        extraStyle = 'style="background-color= lightgrey; opacity= 0.5;"'
       }
       if (multipleSelection &&  multipleSelection.includes(item[idProp])) {
         extraStyle = "background-color: #DAF7A6; opacity: 0.8;"
@@ -678,7 +708,7 @@ function showListMenu({
           //first get all the children from the links
           var isGreyed =false; //check if childrens are greyed
           if (!greyed) {
-            isGreyed = ismoving && ismoving.dataset.id == item[idProp]
+            isGreyed = (ismoving && ismoving.dataset.id == item[idProp]) || (ismoving && ismovingExtraItems.find(i=>i.dataset.id == item[idProp] ))//check if the current object is the one moving
           }else {
             isGreyed = true; //propagate to all childrend
           }
