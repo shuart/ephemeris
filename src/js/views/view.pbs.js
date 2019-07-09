@@ -103,6 +103,21 @@ var createPbsView = function () {
         },
         extraActions:[
           {
+            name:"Import",
+            action:(ev)=>{
+              importCSVfromFileSelector(function (results) {
+                let startImport = confirm(results.data.length+" Products will be imported")
+                if (startImport) {
+                  for (importedElement of results.data) {
+                    push(act.add("currentPbs", {uuid:uuid,name:importedElement[0],desc:importedElement[1]}))
+                  }
+                  alert("Close and re-open the view to complete the import")
+                }
+              })
+
+            }
+          },
+          {
             name:"Diagramme",
             action:(ev)=>{
               showPbsTree(ev)
