@@ -95,10 +95,6 @@ var createExternalUsersManagement = function (targetSelector) {
           console.log(store.stakeholders.items);
         }
       },
-      onAdd: (ev)=>{
-        var newReq = prompt("Nouveau Participant")
-        store.stakeholders.items.push({uuid:genuuid(), name:newReq})
-      },
       onClick: (ev)=>{
         setActive()
         //mutations
@@ -107,12 +103,6 @@ var createExternalUsersManagement = function (targetSelector) {
         // store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
         // ev.selectDiv.remove()
         // renderCDC(store.db, searchFilter)
-      },
-      onClear: (ev)=>{
-        //mutations
-        //store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
-        //ev.selectDiv.remove()
-        renderCDC()
       }
     })
   }
