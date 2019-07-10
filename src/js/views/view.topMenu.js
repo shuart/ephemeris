@@ -69,6 +69,7 @@ var createTopMenu = function (containerSelector) {
       <a class="item action_toogle_tags_view"><i class="tags icon"></i>Tags</a>
       <a class="item action_toogle_metalinks_view"><i class="exchange icon"></i>Project links</a>
       <a class="item action_toogle_work_packages"><i class="briefcase icon"></i>Work packages</a>
+      <a class="item action_toogle_import_users_from_projects"><i class="users icon"></i>Import users</a>
       `
     }else{
       container.innerHTML=`
