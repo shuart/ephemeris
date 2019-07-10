@@ -3,6 +3,49 @@ var createOverview = function (targetSelector) {
   var objectIsActive = false;
   var container = document.querySelector(targetSelector)
 
+  var theme = {}
+  theme.startSection=function() {
+    return `
+      <div class="ui horizontal segments">
+        <div class="ui segment">
+          <p></p>
+        </div>
+        <div class="ui segment">
+        </div>
+      </div>
+    `
+  }
+  theme.quickstart=function() {
+    return `
+    <h4>Quickstart guide</h4>
+
+      <div class="ui small steps">
+        <div class="link step action_toogle_stakeholders">
+          <i class="address book icon"></i>
+          <div class="content">
+            <div class="title">Add a stakeholder</div>
+            <div class="description">To start capturing needs</div>
+          </div>
+        </div>
+        <div class="link step action_toogle_requirements_view">
+          <i class="comment icon"></i>
+          <div class="content">
+            <div class="title">Add a requirement</div>
+            <div class="description">To record a user need</div>
+          </div>
+        </div>
+        <div class="link step action_toogle_tree_pbs">
+          <i class="dolly icon"></i>
+          <div class="content">
+            <div class="title">Add a product</div>
+            <div class="description">And link it to a requirement</div>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+
   var init = function () {
     connections()
     update()
@@ -68,6 +111,11 @@ var createOverview = function (targetSelector) {
             </div>
           </div>
         </div>
+
+        <div class="ui center aligned basic segment">
+          ${theme.quickstart()}
+        </div>
+
       </div>
       `
       // <div class="statistic">
