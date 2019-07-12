@@ -158,6 +158,7 @@ var reparse = false;
         {prop:"mail", displayAs:"E-mail", edit:"true"}
       ],
       idProp:"uuid",
+      showColoredIcons: (e)=>{return e.name[0]+e.lastName[0];},
       onEditItem: (ev)=>{
         console.log("Edit");
         console.log(ev.target.dataset.id);
