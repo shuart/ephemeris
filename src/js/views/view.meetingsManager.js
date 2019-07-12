@@ -630,7 +630,7 @@ var createMeetingsManager = function (targetSelector) {
         }
       })
     connect(".action_meetingmanager_list_edit_topic","click",(e)=>{
-      let newName = confirm("Enter a item name",e.target.dataset.value)
+      let newName = prompt("Enter a item name",e.target.dataset.value)
       if (newName) {
         let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
