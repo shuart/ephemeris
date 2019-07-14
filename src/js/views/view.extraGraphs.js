@@ -40,7 +40,9 @@ var createExtraGraphsView = function (targetSelector) {
       // `
       mermaidTarget.innerHTML=createGraphEDR()
 
-      mermaid.init(undefined, $(".mermaid"));
+      // mermaid.init({theme: "forest"}, $(".mermaid"));
+      mermaid.initialize({theme: "neutral"})
+      mermaid.init({theme: "forest"}, $(".mermaid"));
     }
   }
 
@@ -90,7 +92,7 @@ var createExtraGraphsView = function (targetSelector) {
     for (var i = 0; i < store.currentPbs.items.length; i++) {
       let p = store.currentPbs.items[i]
 
-      let relatedReq = getRelatedItems(p, "requirements", {metalinksType:"originNeed"}).map(l=>l[0] ? cleanName(p.name)+": "+l[0].name :"")
+      let relatedReq = getRelatedItems(p, "requirements", {metalinksType:"originNeed"}).map(l=>l[0] ? cleanName(p.name)+": -"+l[0].name :"")
       definitions = definitions.concat(relatedReq)
     }
     console.log(definitions);
