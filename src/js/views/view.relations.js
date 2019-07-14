@@ -238,7 +238,17 @@ var createRelationsView = function () {
       }
       if (objectIsActive) {
         setTimeout(function () {
-          toggleFixedGraph()
+          if (!fixedValues) {
+            let snapId = "wipgraph"+store.uuid
+            let newGraphItem = {uuid:snapId,view:activeMode, name:"0-Current WIP", groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+            push(act.remove("graphs", {uuid:snapId}))
+            push(act.add("graphs", newGraphItem))
+            setSnapshot(snapId)
+          }else {
+            fixedValues = false
+            update()
+          }
+
         }, 1);
       }
     }, container)
