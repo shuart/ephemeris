@@ -16,7 +16,6 @@ var createExportProjectInfoView = function () {
       `,
     item:(itemName,id,description, links)=>`
       <h3 class="ui header">${itemName}</h3>
-      <div class="sub header">ID:${id}</div>
       ${ (links && links !="") ? "<h4 class='ui header'>Linked To</h4><p><strong>"+links+"</strong></p> ": ""}
       <h4 class="ui header">Description</h4>
       <p>${description || "No Description"}</p>
@@ -26,7 +25,6 @@ var createExportProjectInfoView = function () {
       `,
     itemRelation:(itemName,id,description)=>`
       <h5 class="ui header">${itemName}</h5>
-      <div class="sub header">ID:${id}</div>
       <h4 class="ui header">Description</h4>
       <p>${description || "No Description"}</p>
       `,
@@ -36,7 +34,6 @@ var createExportProjectInfoView = function () {
      html =`
      <div class="tree_leaf">
        <h${level} class="ui header">${i.name}</h${level}>
-       <div class="sub header"><strong>ID: </strong>${i.uuid}</div>
        <div><strong>Relations: </strong>${links ? links : "None" }</div>
        <div data-id="${i[identifier]}" ><strong>Description: </strong>${i.desc ? i.desc : "None" }</div>
      </div>
@@ -73,7 +70,7 @@ var createExportProjectInfoView = function () {
       for (stakeholder of store.stakeholders.items) {
         let name = stakeholder.name +" "+ stakeholder.lastName
         let uuid = stakeholder.uuid
-        let desc = stakeholder.role +"  "+ stakeholder.org + "  " + stakeholder.mail
+        let desc = stakeholder.role||"" +"  "+ stakeholder.org||"" + "  " + stakeholder.mail||""
         appendHtml(container, theme.item(name,uuid, desc))
       }
       appendHtml(container, theme.section("Products","All project products"))
@@ -86,7 +83,7 @@ var createExportProjectInfoView = function () {
       }else {
         for (product of store.currentPbs.items) {
           let linkToText = getRelatedItems(i, patate, {metalinksType:"originFunction"}).map(s=> s[0]? s[0].name : "").join(",")
-          + getRelatedItems(i, "requirements", {metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : "").join(",")
+          + "," +getRelatedItems(i, "requirements", {metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : "").join(",")
           appendHtml(container, theme.item(product.name,product.uuid, product.desc, linkToText))
         }
       }
@@ -163,7 +160,7 @@ var createExportProjectInfoView = function () {
       let linkToTextFunc = getRelatedItems(t.leaf, "functions", {metalinksType:"originFunction"}).map(l=>l[0] ? l[0].name :"").join(", ")
       let linkToTextReq = getRelatedItems(t.leaf, "requirements", {metalinksType:"originNeed"}).map(l=>l[0] ? l[0].name :"").join(", ")
 
-      let leafHTML = theme.itemLeaf(t.leaf, branchesHTML, currentLevel, linkToTextFunc + linkToTextReq)
+      let leafHTML = theme.itemLeaf(t.leaf, branchesHTML, currentLevel, linkToTextFunc + ", "+ linkToTextReq)
       return leafHTML
     }).join("")
   }
