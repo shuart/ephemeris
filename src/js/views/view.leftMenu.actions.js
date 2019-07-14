@@ -13,6 +13,14 @@ var createLeftMenuActions = function () {
         update()
       }
     })
+
+    connect(".action_left_menu_action_list_close_action","click",function (e) {
+      if (confirm("Close this action?")) {
+        push(act.edit("actions",{uuid:e.target.dataset.id,prop:"open", value:false, project:e.target.dataset.project}))
+        push(act.edit("actions",{uuid:e.target.dataset.id,prop:"closedOn", value:Date.now(), project:e.target.dataset.project}))
+
+      }
+    })
     //component connection
     //None
   }
@@ -57,8 +65,8 @@ var createLeftMenuActions = function () {
       //acc += generateTasksHTML(items.reverse() , i.uuid)
       var actionListHtml = items.reduce((out,i)=>{
         return out + `
-          <div class="list-item">
-            <i class="far fa-calendar-times"></i>
+          <div  class="list-item ">
+            <i data-project="${i.project}" data-id="${i.uuid}" class="far fa-calendar-times action_left_menu_action_list_close_action"></i>
             ${i.dueDate? new Date(i.dueDate).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 5):""} - ${i.name}
 
           </div>`
