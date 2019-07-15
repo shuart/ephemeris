@@ -332,7 +332,7 @@ var createPbsView = function () {
   function generateExtraFieldsList() {
     if (isExtraFieldsVisible) {
       var store = query.currentProject()
-      let extras = store.extraFields.items.filter(i=>(i.type == "currentPbs" && i.hidden != false)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+      let extras = store.extraFields.items.filter(i=>(i.type == "currentPbs" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
         addCustomField()
         setTimeout(function () {

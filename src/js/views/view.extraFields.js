@@ -22,12 +22,23 @@ var createExtraFieldsView = function () {
   var readifyExtraLinks = function () {
     var originalLinks = query.currentProject().extraFields.items
     let data = originalLinks.map(function (l) {
+      let visibility = "Visible"
+      // alert(l.hidden)
+      if (!l.hidden) {
+        visibility = "Visible"
+      }else if (l.hidden === false) {
+        visibility = "Visible"
+      }else if (l.hidden === true) {
+        visibility = "Hidden"
+      }
+      // alert(visibility)
 
       let newItem = {uuid:l.uuid,
         name: l.name,
         prop:l.prop,
         type:l.type,
-        hidden:l.hidden
+        hidden:l.hidden,//(l.hidden? "Hidden":"Visible")
+        fakevisibility:visibility
       };
       return newItem
     })
@@ -52,7 +63,7 @@ var createExtraFieldsView = function () {
         {prop:"type", displayAs:"Type", edit:false},
         {prop:"name", displayAs:"Name", edit:true},
         {prop:"prop", displayAs:"Registered Property", edit:false},
-        {prop:"hidden", displayAs:"Hidden?", edit:false}
+        {prop:"fakevisibility", displayAs:"Status", edit:false}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{
@@ -74,11 +85,14 @@ var createExtraFieldsView = function () {
           // generateUsersFusionList(owners, orev.dataset.id, orev.dataset.extra )
           console.log(orev);
           if (orev) {
-            let currentVisibility = true
-            if (orev.dataset.extra == "undefined" || orev.dataset.extra =="false") {
-              currentVisibility = false
+            let isHidden = false
+            if (orev.dataset.extra =="true") {
+              isHidden = true
             }
-            push(act.edit("extraFields",{uuid:orev.dataset.id, prop:"hidden",value:!currentVisibility}))
+            if (orev.dataset.extra =="undefined") {
+              isHidden = false
+            }
+            push(act.edit("extraFields",{uuid:orev.dataset.id, prop:"hidden",value:!isHidden}))
             // orev.select.updateData(readifyExtraLinks())
             update()//TODO close first view
 
