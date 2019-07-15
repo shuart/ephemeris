@@ -229,6 +229,7 @@ var createFunctionsView = function () {
 
   var setActive =function () {
     objectIsActive = true;
+    isExtraFieldsVisible =false; //rest to avoid extra alert TODO find a better way
     update()
   }
 
@@ -314,7 +315,7 @@ var createFunctionsView = function () {
   function generateExtraFieldsList() {
     if (isExtraFieldsVisible) {
       var store = query.currentProject()
-      let extras = store.extraFields.items.filter(i=>(i.type == "requirements" && i.hidden != false)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+      let extras = store.extraFields.items.filter(i=>(i.type == "functions" && i.hidden != false)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
         addCustomField()
         setTimeout(function () {
@@ -339,7 +340,7 @@ var createFunctionsView = function () {
       }
       if (true) {
         console.log('adding');
-        push(act.add("extraFields",{name: newReq, prop:clearedName, type: "requirements"}))
+        push(act.add("extraFields",{name: newReq, prop:clearedName, type: "functions"}))
       }else {//add to main item (only pbs)
         // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
       }

@@ -170,6 +170,7 @@ var createPbsView = function () {
 
   var setActive =function () {
     objectIsActive = true;
+    isExtraFieldsVisible =false; //rest to avoid extra alert TODO find a better way
     update()
   }
 
@@ -364,7 +365,6 @@ var createPbsView = function () {
     if (callback) {
       callback()
     }
-
   }
 
   self.setActive = setActive

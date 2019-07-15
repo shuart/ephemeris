@@ -2,6 +2,7 @@ var createRequirementsView = function () {
   var self ={};
   var objectIsActive = false;
   var simpleView = true;
+  var isExtraFieldsVisible =false;
 
   var init = function () {
     connections()
@@ -39,6 +40,7 @@ var createRequirementsView = function () {
         fullScreen:true,
         displayProp:"name",
         display:displayRules,
+        extraFields: generateExtraFieldsList(),
         idProp:"uuid",
         onEditItem: (ev)=>{
           createInputPopup({
@@ -97,6 +99,12 @@ var createRequirementsView = function () {
             ev.select.updateLinks(store.requirements.links)
           }
         },
+        onAddFromExtraField: (ev)=>{
+          addCustomField(function () {
+            document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+            update()
+          })
+        },
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)
         },
@@ -137,6 +145,23 @@ var createRequirementsView = function () {
         },
         extraActions:[
           {
+            name:"CustomFields",
+            action:(ev)=>{
+              isExtraFieldsVisible = !isExtraFieldsVisible;
+              setTimeout(function () {
+                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+                update()
+              }, 100);
+              // ev.select.remove();
+            }
+          },
+          {
+            name:"Export",
+            action:(ev)=>{
+              exportToCSV()
+            }
+          },
+          {
             name:"Import",
             action:(ev)=>{
               importCSVfromFileSelector(function (results) {
@@ -167,12 +192,6 @@ var createRequirementsView = function () {
             action:(ev)=>{
               renderRequirementsTree(ev)
             }
-          },
-          {
-            name:"CSV",
-            action:(ev)=>{
-              exportToCSV()
-            }
           }
         ]
       })
@@ -196,6 +215,7 @@ var createRequirementsView = function () {
 
   var setActive =function () {
     objectIsActive = true;
+    isExtraFieldsVisible =false; //rest to avoid extra alert TODO find a better way
     update()
   }
 
@@ -341,6 +361,43 @@ var createRequirementsView = function () {
         console.log("select");
       }
     })
+  }
+
+  function generateExtraFieldsList() {
+    if (isExtraFieldsVisible) {
+      var store = query.currentProject()
+      let extras = store.extraFields.items.filter(i=>(i.type == "requirements" && i.hidden != false)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+      if (!extras[0]) {
+        addCustomField()
+        setTimeout(function () {
+          document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
+          update()
+        }, 400);
+      }else {
+        return extras
+      }
+    }else {
+      return undefined
+    }
+  }
+  function addCustomField(callback){
+    var uuid = genuuid()
+    var newReq = prompt("add a new Field?")
+    if (newReq) {
+      let clearedName = "_"+slugify(newReq)+"_"+(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
+      if (store.extraFields.items.filter(i=>i.prop == clearedName)[0]) {
+        console.log(store.extraFields.items.filter(i=>i.prop == clearedName)[0]);
+        alert("This field has already been registered")//in rare case where an identical field would be generated
+      }
+      if (true) {
+        push(act.add("extraFields",{name: newReq, prop:clearedName, type: "requirements"}))
+      }else {//add to main item (only pbs)
+        // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+      }
+    }
+    if (callback) {
+      callback()
+    }
   }
 
   self.setActive = setActive
