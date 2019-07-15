@@ -76,10 +76,27 @@ var createExtraFieldsView = function () {
       },
       onRemove: (ev)=>{
         if (confirm("remove item definitively?")) {
-          push(act.remove("extraFields",{uuid:ev.target.dataset.id}))
+          let itemToRemove = store.extraFields.items.find(i=>i.uuid == ev.target.dataset.id)
+          if (itemToRemove) {
+            let type = itemToRemove.type
+            let prop = itemToRemove.prop
+            //clean all items from this property TODO do in reducer
+            store[type].items.forEach(function (i) {
+              if (i[prop]) {
+                console.log(i);
+                console.log(i[prop]);
+                delete i[prop]
+                console.log("Deleted");
+                console.log(i[prop]);
+              }
+            })
+            push(act.remove("extraFields",{uuid:ev.target.dataset.id}))
+          }
+
           ev.select.updateData(readifyExtraLinks())
         }
       },
+
       extraButtons : [
         {name:"show/hide", class:"iufp_hide", prop:"hidden", closeAfter:true, action: (orev)=>{
           // generateUsersFusionList(owners, orev.dataset.id, orev.dataset.extra )
