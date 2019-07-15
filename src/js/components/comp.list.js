@@ -4,6 +4,10 @@ function showListMenu({
   parentSelectMenu = undefined,
   targetDomContainer = undefined,
   display = undefined,
+  extraValues =[
+    {prop:"_nbr", displayAs:"Nombre", edit:"true"},
+    {prop:"_quality", displayAs:"Qualité", edit:"true"}
+  ],
   focusSearchOnRender = true,
   singleElement =undefined,
   rulesToDisplaySingleElement = undefined,
