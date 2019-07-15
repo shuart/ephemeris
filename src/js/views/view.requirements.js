@@ -215,7 +215,7 @@ var createRequirementsView = function () {
 
   var setActive =function () {
     objectIsActive = true;
-    isExtraFieldsVisible =false; //rest to avoid extra alert TODO find a better way
+    isExtraFieldsVisible = false; //rest to avoid extra alert TODO find a better way
     update()
   }
 
@@ -368,11 +368,15 @@ var createRequirementsView = function () {
       var store = query.currentProject()
       let extras = store.extraFields.items.filter(i=>(i.type == "requirements" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
-        addCustomField()
-        setTimeout(function () {
-          document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
-          update()
-        }, 400);
+        if (confirm("No custom Fields yet. Add one?")) {
+          addCustomField()
+          setTimeout(function () {
+            document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
+            update()
+          }, 400);
+        }else {
+          isExtraFieldsVisible = false
+        }
       }else {
         return extras
       }

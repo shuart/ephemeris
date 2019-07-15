@@ -334,11 +334,15 @@ var createPbsView = function () {
       var store = query.currentProject()
       let extras = store.extraFields.items.filter(i=>(i.type == "currentPbs" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
-        addCustomField()
-        setTimeout(function () {
-          document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
-          update()
-        }, 400);
+        if (confirm("No custom Fields yet. Add one?")) {
+          addCustomField()
+          setTimeout(function () {
+            document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
+            update()
+          }, 400);
+        }else {
+          isExtraFieldsVisible = !isExtraFieldsVisible
+        }
       }else {
         return extras
       }

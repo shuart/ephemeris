@@ -71,7 +71,7 @@ var store = {
   },
   extraFields:{
     items:[
-      {uuid: uuid(), name: "A custom Field", prop:"_acustomfield", type: "requirements"}
+      // {uuid: uuid(), name: "A custom Field", prop:"_acustomfield", type: "requirements"}
     ]
   },
   meetings:{
