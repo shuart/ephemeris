@@ -402,7 +402,7 @@ function showListMenu({
 
         let target = mainEl.querySelector(".target_menu_left_buttons")
         target.insertBefore(
-           toNode(theme.button(action.name, 'grey', "action_extra_"+actionClass)),
+           toNode(theme.button(action.name, 'basic', "action_extra_"+actionClass)),
            target.firstChild
          )
          //add events
