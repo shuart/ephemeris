@@ -173,6 +173,23 @@ var createFunctionsView = function () {
         },
         extraActions:[
           {
+            name:"CustomFields",
+            action:(ev)=>{
+              isExtraFieldsVisible = !isExtraFieldsVisible;
+              setTimeout(function () {
+                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+                update()
+              }, 100);
+              // ev.select.remove();
+            }
+          },
+          {
+            name:"Export",
+            action:(ev)=>{
+              exportToCSV()
+            }
+          },
+          {
             name:"Import",
             action:(ev)=>{
               importCSVfromFileSelector(function (results) {
@@ -188,26 +205,9 @@ var createFunctionsView = function () {
             }
           },
           {
-            name:"All",
-            action:(ev)=>{
-              isExtraFieldsVisible = !isExtraFieldsVisible;
-              setTimeout(function () {
-                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
-                update()
-              }, 500);
-              // ev.select.remove();
-            }
-          },
-          {
             name:"Diagramme",
             action:(ev)=>{
               renderGraph(ev)
-            }
-          },
-          {
-            name:"CSV",
-            action:(ev)=>{
-              exportToCSV()
             }
           }
         ]
@@ -317,8 +317,10 @@ var createFunctionsView = function () {
       let extras = store.extraFields.items.filter(i=>(i.type == "requirements" && i.hidden != false)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
         addCustomField()
-        //document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
-        //update()
+        setTimeout(function () {
+          document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
+          update()
+        }, 400);
       }else {
         return extras
       }
@@ -342,7 +344,9 @@ var createFunctionsView = function () {
         // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
       }
     }
-    callback()
+    if (callback) {
+      callback()
+    }
   }
 
   self.setActive = setActive
