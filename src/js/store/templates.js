@@ -69,6 +69,11 @@ var store = {
       {uuid: uuid(), name: "Rejected", color: "#ffffff"}
     ]
   },
+  extraFields:{
+    items:[
+      {uuid: uuid(), name: "A custom Field", prop:"_acustomfield", type: "requirements"}
+    ]
+  },
   meetings:{
     items:[{
       uuid:uuid(),
