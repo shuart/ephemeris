@@ -127,18 +127,11 @@ var createFunctionsView = function () {
           }
         },
         onAddFromExtraField: (ev)=>{
-          var uuid = genuuid()
-          var newReq = prompt("New Field")
-          alert("new field")
-          if (newReq) {
-            if (ev.target && ev.target != "undefined") {
+          addCustomField(function () {
+            document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+            update()
+          })
 
-            }else {//add to main item (only pbs)
-              // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
-            }
-            ev.select.updateData(store.functions.items)
-            ev.select.updateLinks(store.functions.links)
-          }
         },
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)
@@ -320,13 +313,36 @@ var createFunctionsView = function () {
 
   function generateExtraFieldsList() {
     if (isExtraFieldsVisible) {
-      return [
-        {prop:"_nbr", displayAs:"Nombre", edit:"true"},
-        {prop:"_quality", displayAs:"Qualité", edit:"true"}
-      ]
+      var store = query.currentProject()
+      let extras = store.extraFields.items.filter(i=>i.type == "requirements").map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+      if (!extras[0]) {
+        addCustomField()
+        //document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
+        //update()
+      }else {
+        return extras
+      }
     }else {
       return undefined
     }
+  }
+  function addCustomField(callback){
+    var uuid = genuuid()
+    var newReq = prompt("add a new Fieldss?")
+    if (newReq) {
+      let clearedName = "_"+slugify(newReq)+"_"+(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
+      if (store.extraFields.items.filter(i=>i.prop == clearedName)[0]) {
+        console.log(store.extraFields.items.filter(i=>i.prop == clearedName)[0]);
+        alert("This field has already been registered")//in rare case where an identical field would be generated
+      }
+      if (true) {
+        console.log('adding');
+        push(act.add("extraFields",{name: newReq, prop:clearedName, type: "requirements"}))
+      }else {//add to main item (only pbs)
+        // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+      }
+    }
+    callback()
   }
 
   self.setActive = setActive

@@ -183,9 +183,8 @@ var createOverview = function (targetSelector) {
       alertAboutUpdate()
     }
     if (!store.extraFields) {
-      store.extraFields:{
-        items:[
-        ]
+      store.extraFields={
+        items:[]
       }
       alertAboutUpdate()
     }
