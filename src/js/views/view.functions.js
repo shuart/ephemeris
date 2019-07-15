@@ -314,7 +314,7 @@ var createFunctionsView = function () {
   function generateExtraFieldsList() {
     if (isExtraFieldsVisible) {
       var store = query.currentProject()
-      let extras = store.extraFields.items.filter(i=>i.type == "requirements").map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+      let extras = store.extraFields.items.filter(i=>(i.type == "requirements" && i.hidden != false)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
         addCustomField()
         //document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
