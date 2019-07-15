@@ -311,6 +311,9 @@ function showListMenu({
           if (event.target.classList.contains("action_extra_"+action.class)) {
             action.action(event.target)
             refreshList()
+            if (action.closeAfter) {
+              sourceEl.remove()//TODO find a beter way, very hacky
+            }
           }
         }, false)
       }

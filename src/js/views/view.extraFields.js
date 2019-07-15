@@ -69,7 +69,7 @@ var createExtraFieldsView = function () {
         }
       },
       extraButtons : [
-        {name:"show/hide", class:"iufp_hide", prop:"hidden", action: (orev)=>{
+        {name:"show/hide", class:"iufp_hide", prop:"hidden", closeAfter:true, action: (orev)=>{
           // generateUsersFusionList(owners, orev.dataset.id, orev.dataset.extra )
           console.log(orev);
           if (orev) {
