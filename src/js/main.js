@@ -64,6 +64,7 @@ var reparse = false;
   pageManager.addComponent({name:"meetingsManager",object:meetingsManager, haveSideBar:false})
   pageManager.addComponent({name:"tags",object:tagsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"workPackages",object:workPackagesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"extraGraphsView",object:extraGraphsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   //side menu component
   pageManager.addComponent({name:"leftMenu",object:leftMenu})
   pageManager.addComponent({name:"leftMenuActions",object:leftMenuActions})
@@ -131,6 +132,9 @@ var reparse = false;
   })
   connect(".action_toogle_work_packages","click",(e)=>{
     pageManager.setActivePage("workPackages")
+  })
+  connect(".action_toogle_extra_graphs","click",(e)=>{
+    pageManager.setActivePage("extraGraphsView")
   })
 
 
