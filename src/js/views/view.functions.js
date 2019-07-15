@@ -1,6 +1,7 @@
 var createFunctionsView = function () {
   var self ={};
   var objectIsActive = false;
+  var isExtraFieldsVisible = false
 
   var init = function () {
     connections()
@@ -25,6 +26,7 @@ var createFunctionsView = function () {
           {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
           {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"}
         ],
+        extraFields: generateExtraFieldsList(),
         idProp:"uuid",
         onEditItem: (ev)=>{
           console.log("Edit");
@@ -124,6 +126,20 @@ var createFunctionsView = function () {
             ev.select.updateLinks(store.functions.links)
           }
         },
+        onAddFromExtraField: (ev)=>{
+          var uuid = genuuid()
+          var newReq = prompt("New Field")
+          alert("new field")
+          if (newReq) {
+            if (ev.target && ev.target != "undefined") {
+
+            }else {//add to main item (only pbs)
+              // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+            }
+            ev.select.updateData(store.functions.items)
+            ev.select.updateLinks(store.functions.links)
+          }
+        },
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)
         },
@@ -176,6 +192,17 @@ var createFunctionsView = function () {
                 }
               })
 
+            }
+          },
+          {
+            name:"All",
+            action:(ev)=>{
+              isExtraFieldsVisible = !isExtraFieldsVisible;
+              setTimeout(function () {
+                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+                update()
+              }, 500);
+              // ev.select.remove();
             }
           },
           {
@@ -288,6 +315,17 @@ var createFunctionsView = function () {
           originev.sourceTree.setData(generateDataSource())
         }
       })
+    }
+  }
+
+  function generateExtraFieldsList() {
+    if (isExtraFieldsVisible) {
+      return [
+        {prop:"_nbr", displayAs:"Nombre", edit:"true"},
+        {prop:"_quality", displayAs:"Qualité", edit:"true"}
+      ]
+    }else {
+      return undefined
     }
   }
 

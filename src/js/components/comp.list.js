@@ -4,10 +4,7 @@ function showListMenu({
   parentSelectMenu = undefined,
   targetDomContainer = undefined,
   display = undefined,
-  extraValues =[
-    {prop:"_nbr", displayAs:"Nombre", edit:"true"},
-    {prop:"_quality", displayAs:"Qualité", edit:"true"}
-  ],
+  extraFields =undefined,
   focusSearchOnRender = true,
   singleElement =undefined,
   rulesToDisplaySingleElement = undefined,
@@ -22,6 +19,7 @@ function showListMenu({
   onLabelClick = (e)=>{console.log("clik on label");},
   onAdd = undefined,
   onAddFromPopup = undefined,
+  onAddFromExtraField = undefined,
   onRemove= undefined,
   onMove= undefined,
   onEditItem = (e)=>{console.log("edit select")},
@@ -40,6 +38,7 @@ function showListMenu({
   currentSearchValue =""
   }={}) {
 
+    var extraValuesAdded =false;
     //utility to parse html
     function toNode(html) {
       var tpl = document.createElement('template');
@@ -119,6 +118,20 @@ function showListMenu({
       </div>
       `
     },
+    listItemExtraField:(content, colType) => {
+      let style = "color: #00b5ad;"
+      return `
+      <div style="${style}" class='${colType||"column"}'>
+
+        <div class='orange-column'>
+          ${content}
+        </div>
+        <div style="height:0px;position:relative" data-id='' class='extraFieldaddMagnet'>
+          <div style="color:white;right: 0px;top: -21px;position: absolute;background: #00b5ad;width: 20px;height: 20px;opacity: 0.2;cursor:pointer" data-id='' class='action_list_add_from_extra_field'>+</div>
+        </div>
+      </div>
+      `
+    }
   }
 
   //LOCAL VARS
@@ -155,6 +168,18 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_add_from_popup_item")) {
           onAddFromPopup({selectDiv:sourceEl, select:self, target:event.target})
+          if (!editItemMode && !singleElement) {
+            refreshList()
+          }else {
+            currentSearchValue =""
+            sourceEl.remove()
+            render()
+          }
+        }
+        if (event.target.classList.contains("action_list_add_from_extra_field")) {
+          if (onAddFromExtraField) {
+            onAddFromExtraField({selectDiv:sourceEl, select:self, target:event.target})
+          }
           if (!editItemMode && !singleElement) {
             refreshList()
           }else {
@@ -470,7 +495,13 @@ function showListMenu({
     if (onMove || onRemove || onChangeSelect ||  extraButtons[0]) {
       props = rules.concat([{displayAs:"Actions"}])
     }
-    let items = props.map( p => theme.listItem(p.displayAs)).join("")
+    let items = props.map( p => {
+      if (p.extraField) {
+        return theme.listItemExtraField(p.displayAs)
+      }else{
+        return theme.listItem(p.displayAs)
+      }
+    }).join("")
 
     if (showColoredIcons) {
       items = theme.listItemIcon() + items //add a pading when icon is used
@@ -775,6 +806,17 @@ function showListMenu({
     connect() //add events
     createMenu()//create the inside of the list
     //createAddTemplate()//create a placeholder area to add items
+
+    if (extraFields && !extraValuesAdded) {
+      extraFields.forEach(r=> r.extraField = true)//mark extra field to render the title row correctly
+
+      if (rulesToDisplaySingleElement) {
+        rulesToDisplaySingleElement = rulesToDisplaySingleElement.concat(extraFields)
+      }else {
+        display = display.concat(extraFields)
+      }
+      extraValuesAdded = true
+    }
 
     //add area between menu and list
     var containerTopArea = document.createElement('div');
