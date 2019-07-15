@@ -6,6 +6,18 @@ var createExtraGraphsView = function (targetSelector) {
   var theme = {}
   theme.startSection=function() {
     return `
+      <div style="height:90%;" class="ui horizontal segments">
+        <div style="height:100%;" class="ui segment mermaid">
+
+        </div>
+      </div>
+      <button class="ui button action_extra_graphs_download">
+        Download
+      </button>
+    `
+  }
+  theme.startSectionOld=function() {
+    return `
       <div class="ui horizontal segments">
         <div class="ui segment mermaid">
 
@@ -24,7 +36,14 @@ var createExtraGraphsView = function (targetSelector) {
 
   }
   var connections =function () {
+    connect(".action_extra_graphs_download", "click",function (event) {
+      saveSvgAsPng(container.querySelector(".mermaid svg"), "graph.png", {scale: 5})
 
+      // saveSvg(container.querySelector(".mermaid svg"), "graph")
+
+      // event.target.href = `data:image/svg+xml;base64,${btoa(container.querySelector(".mermaid svg"))}`
+      // event.target.download = `mermaid-diagram-${moment().format('YYYYMMDDHHmmss')}.svg`
+    })
   }
 
   var render = function () {
@@ -43,8 +62,24 @@ var createExtraGraphsView = function (targetSelector) {
       // mermaid.init({theme: "forest"}, $(".mermaid"));
       mermaid.initialize({theme: "neutral"})
       mermaid.init({theme: "forest"}, $(".mermaid"));
+
+      var svgPanZoom= $(".mermaid svg").svgPanZoom()
     }
   }
+
+  function saveSvg(svgEl, name) {
+    svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    var svgData = svgEl.outerHTML;
+    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+    var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+    var svgUrl = URL.createObjectURL(svgBlob);
+    var downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = name;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
 
   function createGraphEDROld() {
     var store = query.currentProject()
@@ -106,7 +141,7 @@ var createExtraGraphsView = function (targetSelector) {
   function cleanName(name) {
     let cleared = name.replace(/-/g,'')
     cleared = cleared.replace(/\./g,'')
-    // cleared = cleared.replace(/ /g,'_')
+    cleared = cleared.replace(/ /g,'')
     console.log(cleared);
     return cleared
   }
