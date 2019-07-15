@@ -50,17 +50,18 @@ var createExtraFieldsView = function () {
       // fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"type", displayAs:"Type", edit:false},
-        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"name", displayAs:"Name", edit:true},
         {prop:"prop", displayAs:"Registered Property", edit:false},
         {prop:"hidden", displayAs:"Hidden?", edit:false}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{
-        // console.log("Edit");
-        // var newValue = prompt("Edit Item",ev.target.dataset.value)
-        // if (newValue) {
-        //   push(act.edit("tags", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-        // }
+        console.log("Edit");
+        var newValue = prompt("Edit Item",ev.target.dataset.value)
+        if (newValue) {
+          push(act.edit("extraFields", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          ev.select.updateData(readifyExtraLinks())
+        }
       },
       onRemove: (ev)=>{
         if (confirm("remove item definitively?")) {
