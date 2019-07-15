@@ -1,6 +1,7 @@
 var createPbsView = function () {
   var self ={};
   var objectIsActive = false;
+  var isExtraFieldsVisible =false;
 
   var init = function () {
     connections()
@@ -27,6 +28,7 @@ var createPbsView = function () {
           {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
           {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"}
         ],
+        extraFields: generateExtraFieldsList(),
         idProp:"uuid",
         onEditItem: (ev)=>{
           createInputPopup({
@@ -95,6 +97,12 @@ var createPbsView = function () {
             ev.select.updateData(store.currentPbs.items)
           }
         },
+        onAddFromExtraField: (ev)=>{
+          addCustomField(function () {
+            document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+            update()
+          })
+        },
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)
         },
@@ -102,6 +110,23 @@ var createPbsView = function () {
           showSingleItem(ev)
         },
         extraActions:[
+          {
+            name:"CustomFields",
+            action:(ev)=>{
+              isExtraFieldsVisible = !isExtraFieldsVisible;
+              setTimeout(function () {
+                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+                update()
+              }, 100);
+              // ev.select.remove();
+            }
+          },
+          {
+            name:"Export",
+            action:(ev)=>{
+              exportToCSV()
+            }
+          },
           {
             name:"Import",
             action:(ev)=>{
@@ -124,12 +149,6 @@ var createPbsView = function () {
             action:(ev)=>{
               showPbsTree(ev)
             }
-          },
-          {
-            name:"CSV",
-            action:(ev)=>{
-              exportToCSV()
-            }
           }
         ]
       })
@@ -151,6 +170,7 @@ var createPbsView = function () {
 
   var setActive =function () {
     objectIsActive = true;
+    isExtraFieldsVisible =false; //rest to avoid extra alert TODO find a better way
     update()
   }
 
@@ -307,6 +327,48 @@ var createPbsView = function () {
         originev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
       }
     })
+  }
+
+  function generateExtraFieldsList() {
+    if (isExtraFieldsVisible) {
+      var store = query.currentProject()
+      let extras = store.extraFields.items.filter(i=>(i.type == "currentPbs" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+      if (!extras[0]) {
+        if (confirm("No custom Fields yet. Add one?")) {
+          addCustomField()
+          setTimeout(function () {
+            document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
+            update()
+          }, 400);
+        }else {
+          isExtraFieldsVisible = !isExtraFieldsVisible
+        }
+      }else {
+        return extras
+      }
+    }else {
+      return undefined
+    }
+  }
+  function addCustomField(callback){
+    var uuid = genuuid()
+    var newReq = prompt("add a new Field?")
+    if (newReq) {
+      let clearedName = "_"+slugify(newReq)+"_"+(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
+      if (store.extraFields.items.filter(i=>i.prop == clearedName)[0]) {
+        console.log(store.extraFields.items.filter(i=>i.prop == clearedName)[0]);
+        alert("This field has already been registered")//in rare case where an identical field would be generated
+      }
+      if (true) {
+        console.log('adding');
+        push(act.add("extraFields",{name: newReq, prop:clearedName, type: "currentPbs"}))
+      }else {//add to main item (only pbs)
+        // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+      }
+    }
+    if (callback) {
+      callback()
+    }
   }
 
   self.setActive = setActive
