@@ -109,38 +109,10 @@ var createRequirementsView = function () {
           showSingleItemService.showById(ev.target.dataset.id)
         },
         onClick: (ev)=>{
-          var originItem = store.requirements.items.filter(e=> e.uuid == ev.target.dataset.id)
-          showListMenu({
-            sourceData:store.requirements.items,
-            sourceLinks:store.requirements.links,
-            metaLinks:store.metaLinks.items,
-            parentSelectMenu:ev.select ,
-            displayProp:"name",
-            searchable : false,
-            singleElement:originItem[0],
-            rulesToDisplaySingleElement:[
-              {prop:"name", displayAs:"Name", edit:"true"},
-              {prop:"desc", displayAs:"Description", edit:"true"},
-              {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:false}
-            ],
-            display:[
-              {prop:"name", displayAs:"Name", edit:false},
-              {prop:"desc", displayAs:"Description", edit:false},
-              {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:false}
-            ],
-            idProp:"uuid",
-            onCloseMenu: (ev)=>{
-              //console.log("fefsefse");
-              console.log(ev.select);
-              ev.select.getParent().refreshList()
-            },
-            onEditItem: (ev)=>{
-              console.log("Edit");
-              var newValue = prompt("Edit Item",ev.target.dataset.value)
-              if (newValue) {
-                push(editRequirement({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-              }
-            }
+          showSingleItemService.showById(ev.target.dataset.id, function (e) {
+            ev.select.updateData(store.requirements.items)
+            ev.select.updateLinks(store.requirements.links)
+            ev.select.refreshList()
           })
         },
         extraActions:[

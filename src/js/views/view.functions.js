@@ -105,38 +105,10 @@ var createFunctionsView = function () {
           showSingleItemService.showById(ev.target.dataset.id)
         },
         onClick: (ev)=>{
-          var originItem = store.functions.items.filter(e=> e.uuid == ev.target.dataset.id)
-          showListMenu({
-            sourceData:store.functions.items,
-            sourceLinks:store.functions.links,
-            metaLinks:store.metaLinks.items,
-            parentSelectMenu:ev.select ,
-            displayProp:"name",
-            searchable : false,
-            singleElement:originItem[0],
-            rulesToDisplaySingleElement:[
-              {prop:"name", displayAs:"Name", edit:"true"},
-              {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-              {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
-            ],
-            display:[
-              {prop:"name", displayAs:"Name", edit:false},
-              {prop:"desc", displayAs:"Description", fullText:true, edit:false},
-              {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
-            ],
-            idProp:"uuid",
-            onCloseMenu: (ev)=>{
-              //console.log("fefsefse");
-              console.log(ev.select);
-              ev.select.getParent().update()
-            },
-            onEditItem: (ev)=>{
-              console.log("Edit");
-              var newValue = prompt("Edit Item",ev.target.dataset.value)
-              if (newValue) {
-                push(act.edit("functions",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-              }
-            }
+          showSingleItemService.showById(ev.target.dataset.id, function (e) {
+            ev.select.updateData(store.functions.items)
+            ev.select.updateLinks(store.functions.links)
+            ev.select.refreshList()
           })
         },
         extraActions:[

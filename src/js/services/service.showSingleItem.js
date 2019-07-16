@@ -10,10 +10,10 @@ var createShowSingleItemService = function () {
 
   }
 
-  var render = function (uuid) {
-    showEditMenu(uuid)
+  var render = function (uuid, callback) {
+    showEditMenu(uuid, callback)
   }
-  var showEditMenu = function (uuid) {
+  var showEditMenu = function (uuid, callback) {
     var store = query.currentProject()
 
 
@@ -41,7 +41,9 @@ var createShowSingleItemService = function () {
       ],
       idProp:"uuid",
       onCloseMenu: (ev)=>{
-
+        if (callback) {
+          callback(ev)
+        }
       },
       onEditChoiceItem: (ev)=>{
         startSelectionFromParametersView(ev)
@@ -161,7 +163,8 @@ var createShowSingleItemService = function () {
     if (type == "Functions") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
-        {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
+        {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
+        {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false}
       ]
     }else if (type =="Requirements") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
@@ -186,8 +189,8 @@ var createShowSingleItemService = function () {
   var update = function () {
     render()
   }
-  var showById = function (id) {
-    render(id)
+  var showById = function (id, callback) {
+    render(id, callback)
   }
 
 

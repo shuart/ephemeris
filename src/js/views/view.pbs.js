@@ -107,7 +107,11 @@ var createPbsView = function () {
           showSingleItemService.showById(ev.target.dataset.id)
         },
         onClick: (ev)=>{
-          showSingleItem(ev)
+          showSingleItemService.showById(ev.target.dataset.id, function (e) {
+            ev.select.updateData(store.currentPbs.items)
+            ev.select.updateLinks(store.currentPbs.links)
+            ev.select.refreshList()
+          })
         },
         extraActions:[
           {
@@ -176,54 +180,6 @@ var createPbsView = function () {
 
   var setInactive = function () {
     objectIsActive = false;
-  }
-
-  function showSingleItem(ev) {
-    var store = query.currentProject()
-    var originItem = store.currentPbs.items.filter(e=> e.uuid == ev.target.dataset.id)
-    showListMenu({
-      sourceData:store.currentPbs.items,
-      sourceLinks:store.currentPbs.links,
-      metaLinks:store.metaLinks.items,
-      parentSelectMenu:ev.select ,
-      displayProp:"name",
-      searchable : false,
-      singleElement:originItem[0],
-      rulesToDisplaySingleElement:[
-        {prop:"name", displayAs:"Name", edit:"true"},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-        {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
-        {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
-      ],
-      display:[
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true,edit:false},
-        {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
-        {prop:"originFunction", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:false}
-      ],
-      idProp:"uuid",
-      onCloseMenu: (ev)=>{
-        //console.log("fefsefse");
-        console.log(ev.select);
-        ev.select.getParent().updateMetaLinks(store.metaLinks.items)
-        ev.select.getParent().updateData(store.currentPbs.items)
-        ev.select.getParent().updateLinks(store.currentPbs.links)
-        ev.select.getParent().refreshList()
-      },
-      onEditItem: (ev)=>{
-        console.log("Edit");
-        var newValue = prompt("Edit Item",ev.target.dataset.value)
-        if (newValue) {
-          push(editPbs({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-        }
-      },
-      onEditTextItem: (ev)=>{
-        push(editPbs({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.value}))
-      },
-      onEditChoiceItem: (ev)=>{
-        startSelection(ev)
-      }
-    })
   }
 
   function startSelection(ev) {
