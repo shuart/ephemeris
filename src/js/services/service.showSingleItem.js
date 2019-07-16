@@ -164,13 +164,14 @@ var createShowSingleItemService = function () {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
         {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
-        {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false}
+        {prop:"originFunction",isTarget:true, displayAs:"linked to products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false}
       ]
     }else if (type =="Requirements") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
         {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
-        {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
+        {prop:"originNeed",isTarget:true, displayAs:"linked to products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
+        {prop:"originNeed",isTarget:true, displayAs:"linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:false},
         {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
       ]
     }else if (type =="Pbs") {
@@ -180,8 +181,14 @@ var createShowSingleItemService = function () {
         {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
       ]
     }else {
-      return [{prop:"name", displayAs:"First name", edit:"true"},
-              {prop:"lastName", displayAs:"Last name", edit:"true"}
+      return [{prop:"name", displayAs:"First name", edit:true},
+              {prop:"lastName", displayAs:"Last name", edit:true},
+              {prop:"org", displayAs:"Organisation", edit:true},
+              {prop:"role", displayAs:"Role", edit:true},
+              {prop:"mail", displayAs:"E-mail", edit:true},
+              {prop:"origin",isTarget:true, displayAs:"linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
+
+
       ]
     }
   }
