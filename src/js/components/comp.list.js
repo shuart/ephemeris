@@ -764,7 +764,7 @@ function showListMenu({
             nestedHtml +=`
             <div data-id="${item[idProp]}" class="column">
               <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
-                ${propDisplay}
+                ${propDisplay||""}
                 ${editHtml}
               </div>
             </div>
@@ -776,7 +776,7 @@ function showListMenu({
                 <span class="">${dispName}</span>
               </h3>
               <div data-id="${item[idProp]}" class="">
-                ${propDisplay}
+                ${propDisplay||""}
                 ${editHtml}
               </div>
             </div>
