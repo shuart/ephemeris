@@ -35,7 +35,8 @@ function showListMenu({
   cancelButtonValue = "Cancel",
   extraActions = undefined,
   extraButtons = [],
-  currentSearchValue =""
+  currentSearchValue ="",
+  currentSortProp = undefined
   }={}) {
 
     var extraValuesAdded =false;
@@ -109,10 +110,11 @@ function showListMenu({
       </div>
       `
     },
-    listItem:(content, colType) => {
+    listItem:(content, prop, colType) => {
+      let currentProp = prop;
       return `
-      <div class='${colType||"column"}'>
-        <div class='orange-column'>
+      <div  class='${colType||"column"}'>
+        <div data-prop="${currentProp}" class='orange-column ${currentProp?"action_list_toogle_sort_by_prop":""}' ${currentProp?"style='cursor:pointer;'":""}>
           ${content}
         </div>
       </div>
@@ -174,6 +176,19 @@ function showListMenu({
             currentSearchValue =""
             sourceEl.remove()
             render()
+          }
+        }
+        if (event.target.classList.contains("action_list_toogle_sort_by_prop")) {
+          if (event.target.dataset.prop) {
+            //check if the current prop is the same to reset
+            if (currentSortProp ==event.target.dataset.prop) {
+              currentSortProp = undefined; //Then reset
+              refreshList()
+            }else {
+              currentSortProp =event.target.dataset.prop
+              refreshList()
+            }
+
           }
         }
         if (event.target.classList.contains("action_list_add_from_extra_field")) {
@@ -502,7 +517,11 @@ function showListMenu({
       if (p.extraField) {
         return theme.listItemExtraField(p.displayAs)
       }else{
-        return theme.listItem(p.displayAs)
+        if (p.sortable || p.prop == "name") {
+          return theme.listItem(p.displayAs, p.prop)
+        }else {
+          return theme.listItem(p.displayAs)
+        }
       }
     }).join("")
 
@@ -516,10 +535,11 @@ function showListMenu({
     return wrapper
   }
 
+  //MAIN function to build list
   function buildSingle(sourceData, sourceLinks, rootNodes, level, parentId, greyed) {
     var source = undefined
     var targets = undefined
-    var rootNodes = rootNodes || sourceData
+    var rootNodes = rootNodes || deepCopy(sourceData)
     var level = level || 0
     var data = undefined
     var links = sourceLinks
@@ -531,6 +551,7 @@ function showListMenu({
       source = links.map(item => item.source)
       targets = links.map(item => item.target)
     }
+
     //define what is the data source
     if (sourceLinks && !singleItem) {
       rules = display
@@ -540,7 +561,19 @@ function showListMenu({
       data = [rootNodes]
     }else {
       rules = display
-      data = sourceData
+      data = deepCopy(sourceData)
+    }
+
+    //Check if sorting is necessary
+    if (currentSortProp) {
+      data = data.sort(function(a, b) {
+        if (a[currentSortProp] && b[currentSortProp]) {
+          var nameA = a[currentSortProp].toUpperCase(); // ignore upper and lowercase
+          var nameB = b[currentSortProp].toUpperCase(); // ignore upper and lowercase
+          if (nameA < nameB) {return -1;}
+          if (nameA > nameB) {return 1;}
+        }
+        return 0;})
     }
 
     var html = ""
