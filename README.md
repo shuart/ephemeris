@@ -4,6 +4,14 @@ System Engineering and requirements management application
 
 ![Screenshot](./images/screenshot.png)
 
+## Features
+
+-   Manage Stakeholders, Requirements, Functions and Products in one place and link them together
+-   Record Requirements and Actions trough the "meeting" panel
+-   Build the project breakdown structure
+-   Generate overview diagrams, ERD and mindmaps from the project relations
+-   Produce text specifications based on your model
+
 ## Getting Started
 
 Download the latest version from the [Release](https://github.com/shuart/ephemeris/releases) page.
