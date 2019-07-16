@@ -24,7 +24,8 @@ var createFunctionsView = function () {
         display:[
           {prop:"name", displayAs:"Name", edit:"true"},
           {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-          {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"}
+          {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
+          {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
         ],
         extraFields: generateExtraFieldsList(),
         idProp:"uuid",
@@ -36,40 +37,7 @@ var createFunctionsView = function () {
           }
         },
         onEditChoiceItem: (ev)=>{
-          var metalinkType = ev.target.dataset.prop;
-          var sourceTriggerId = ev.target.dataset.id;
-          var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-          showListMenu({
-            sourceData:store.requirements.items,
-            sourceLinks:store.requirements.links,
-            parentSelectMenu:ev.select ,
-            multipleSelection:currentLinksUuidFromDS,
-            displayProp:"name",
-            searchable : true,
-            display:[
-              {prop:"name", displayAs:"Name", edit:false},
-              {prop:"desc", displayAs:"Description",fullText:true, edit:false}
-            ],
-            idProp:"uuid",
-            onCloseMenu: (ev)=>{
-              console.log(ev.select);
-              ev.select.getParent().refreshList()
-            },
-            onChangeSelect: (ev)=>{
-              console.log(ev.select.getSelected());
-              console.log(store.metaLinks.items);
-              store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
-              console.log(store.metaLinks.items);
-              for (newSelected of ev.select.getSelected()) {
-                push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
-              }
-              ev.select.getParent().updateMetaLinks(store.metaLinks.items)
-              ev.select.getParent().refreshList()
-            },
-            onClick: (ev)=>{
-              console.log("select");
-            }
-          })
+          startSelection(ev)
         },
         onRemove: (ev)=>{
           console.log("remove");
@@ -212,6 +180,71 @@ var createFunctionsView = function () {
           }
         ]
       })
+  }
+
+  function startSelection(ev) {
+    var store = query.currentProject()
+    var metalinkType = ev.target.dataset.prop;
+    var sourceTriggerId = ev.target.dataset.id;
+    var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+    var sourceData = undefined
+    var invert = false
+    var source = "source"
+    var target = "target"
+    var sourceLinks= undefined
+    var displayRules= undefined
+    if (metalinkType == "originNeed") {
+      sourceData=store.requirements.items
+      sourceLinks=store.requirements.links
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description",fullText:true, edit:false}
+      ]
+    }else if (metalinkType == "originFunction") {
+      invert = true;
+      sourceData=store.currentPbs.items
+      source = "target"//invert link order for after
+      target = "source"
+      sourceLinks=store.currentPbs.links
+      displayRules = [
+        {prop:"name", displayAs:"First name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
+    }else if (metalinkType == "tags") {
+      sourceData=store.tags.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }
+    showListMenu({
+      sourceData:sourceData,
+      sourceLinks:sourceLinks,
+      parentSelectMenu:ev.select ,
+      multipleSelection:currentLinksUuidFromDS,
+      displayProp:"name",
+      searchable : true,
+      display:displayRules,
+      idProp:"uuid",
+      onCloseMenu: (ev)=>{
+        console.log(ev.select);
+        ev.select.getParent().refreshList()
+      },
+      onChangeSelect: (ev)=>{
+        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
+        for (newSelected of ev.select.getSelected()) {
+          if (!invert) {
+            push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+          }else {
+            push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+          }
+        }
+        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+        ev.select.getParent().refreshList()
+      },
+      onClick: (ev)=>{
+        console.log("select");
+      }
+    })
   }
 
   var exportToCSV = function () {
