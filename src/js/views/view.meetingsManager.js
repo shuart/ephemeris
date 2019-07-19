@@ -522,9 +522,11 @@ var createMeetingsManager = function (targetSelector) {
         searchable : true,
         display:[
           {prop:"name", displayAs:"Name", edit:false},
-          {prop:"desc", displayAs:"Description", edit:false}
+          {prop:"lastName", displayAs:"Last Name", edit:false},
+          {prop:"org", displayAs:"Organisation", edit:false}
         ],
         idProp:"uuid",
+        showColoredIcons: (e)=>{return e.name[0]+e.lastName[0];},
         onCloseMenu: (ev)=>{
           update()
           // renderMeeting(currentOpenedMeeting)
