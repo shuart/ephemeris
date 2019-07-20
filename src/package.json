@@ -1,12 +1,12 @@
 {
   "name": "Ephemeris",
-  "version": "4.6.0",
+  "version": "4.6.1",
   "description": "System Engineering and requirements management application",
   "main": "index.html",
   "window": {
     "icon": "img/app.png",
     "width": 1280,
-    "height": 1024
+    "height": 800
 
   }
 }
