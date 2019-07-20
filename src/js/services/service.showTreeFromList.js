@@ -63,11 +63,20 @@ var createShowTreeFromListService = function () {
           //ev.sourceTree.updateFromRoot(ev.element)
         },
         onMove:(ev)=>{
-          push(act.removeLink(storeGroup,{source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
-          if (ev.newParent.data.uuid != "placeholder") {
-            push(act.addLink(storeGroup,{source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
+          let sourceUuid= ev.element.data.uuid
+          let targetUuid = ev.newParent.data.uuid
+
+          if (checkIfSourceIsParent(sourceUuid,targetUuid, storeGroup)) { //check if the target is a child of the source
+            alert("The node you are moving is a parent of your target")
+            ev.sourceTree.setData(generateDataSource(storeGroup))
+          }else {
+            push(act.removeLink(storeGroup,{source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
+
+            if (ev.newParent.data.uuid != "placeholder") {
+              push(act.addLink(storeGroup,{source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
+            }
+            ev.sourceTree.setData(generateDataSource(storeGroup))
           }
-          ev.sourceTree.setData(generateDataSource(storeGroup))
         },
         onRemove:(ev)=>{
           if (confirm("Keep Childs?")) {
@@ -91,6 +100,40 @@ var createShowTreeFromListService = function () {
         }
       })
     }
+  }
+
+
+  function checkIfSourceIsParent(sourceUuid,targetUuid, storeGroup){
+    var store = query.currentProject()
+    var storeLinks = store[storeGroup].links
+    function getParentUuid(uuid, storeLinks) {
+      let parentLink = storeLinks.find(l=>l.target == uuid)
+      console.log(parentLink);
+      if (parentLink) {
+        return parentLink.source
+      }else {
+        return undefined
+      }
+    }
+
+    let haveParents = true
+    let currentTarget = targetUuid
+
+    while (haveParents) {
+      let parentUuid = getParentUuid(currentTarget, storeLinks)
+      if (!parentUuid) {
+        haveParents = false //not needed
+        return false
+      }else {
+        if (parentUuid == sourceUuid) {
+          return true
+        }else {
+          currentTarget = parentUuid
+        }
+      }
+
+    }
+
   }
 
 
