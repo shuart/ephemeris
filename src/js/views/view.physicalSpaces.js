@@ -272,6 +272,16 @@ var createWorkPhysicalSpacesView = function () {
     }
   }
 
+  var exportToCSV = function () {
+    let store = query.currentProject()
+    let data = store.physicalSpaces.items.map(i=>{
+      let linkToTextPbs = getRelatedItems(i, "currentPbs", {metalinksType:"contains"}).map(s=> s[0]? s[0].name : "").join(",")
+      return {id:i.uuid, name:i.name, description:i.desc, products:linkToTextPbs}
+    })
+    JSONToCSVConvertor(data, 'PhysicalSpaces', true)
+
+  }
+
   var update = function () {
     render()
   }
