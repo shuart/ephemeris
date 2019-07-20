@@ -72,6 +72,11 @@ var createWorkPhysicalSpacesView = function () {
         // ev.selectDiv.remove()
         // renderCDC(store.db, searchFilter)
       },
+      extraButtons : [
+        {name:"Relations", class:"fuse", prop:"projectId", action: (orev)=>{
+          pageManager.setActivePage("relations", {param:{context:"extract", uuid:orev.dataset.id}})//TODO should not call page ma,ager directly
+        }}
+      ],
       extraActions:[
         {
           name:"Export",
