@@ -210,10 +210,12 @@ var createRequirementsView = function () {
     var target = "target"
     var sourceLinks= undefined
     var displayRules= undefined
+    var showColoredIconsRule = undefined
     if (metalinkType == "origin") {
       sourceData=store.stakeholders.items
+      showColoredIconsRule= (e)=>{return e.name[0]+e.lastName[0];},
       displayRules = [
-        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"name", displayAs:"First Name", edit:false},
         {prop:"lastName", displayAs:"Last name", edit:false}
       ]
     }else if (metalinkType == "originNeed") {
@@ -223,7 +225,7 @@ var createRequirementsView = function () {
       target = "source"
       sourceLinks=store.currentPbs.links
       displayRules = [
-        {prop:"name", displayAs:"First name", edit:false},
+        {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "tags") {
@@ -240,6 +242,7 @@ var createRequirementsView = function () {
       displayProp:"name",
       searchable : true,
       display:displayRules,
+      showColoredIcons:showColoredIconsRule,
       idProp:"uuid",
       onCloseMenu: (ev)=>{
         console.log(ev.select);

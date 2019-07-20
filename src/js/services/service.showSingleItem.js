@@ -84,12 +84,14 @@ var createShowSingleItemService = function () {
       {prop:"name", displayAs:"Name", edit:false},
       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
     ];
+    var showColoredIconsRule = undefined
     if (metalinkType == "originNeed") {
       sourceGroup="requirements"
     }else if (metalinkType == "originFunction") {
       sourceGroup="functions"
     }else if (metalinkType == "origin") {
       sourceGroup="stakeholders";
+      showColoredIconsRule= (e)=>{return e.name[0]+e.lastName[0];},
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"lastName", displayAs:"Last name", fullText:true, edit:false}
@@ -116,6 +118,7 @@ var createShowSingleItemService = function () {
       searchable : true,
       display:displayRules,
       idProp:"uuid",
+      showColoredIcons:showColoredIconsRule,
       onAdd:(ev)=>{
         var uuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
