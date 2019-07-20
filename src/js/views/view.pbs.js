@@ -151,7 +151,12 @@ var createPbsView = function () {
           {
             name:"Diagramme",
             action:(ev)=>{
-              showPbsTree(ev)
+              // showPbsTree(ev)
+              showTreeFromListService.showByStoreGroup("currentPbs", function (e) {
+                ev.select.updateData(store.currentPbs.items)
+                ev.select.updateLinks(store.currentPbs.links)
+                ev.select.update() //TODO find a better way
+              })
             }
           }
         ]
@@ -229,61 +234,61 @@ var createPbsView = function () {
     })
   }
 
-  function showPbsTree(sourceList) {
-    var store = query.currentProject()
-    var tree = renderDTree(store.db)
-    console.log(tree);
-    var data =undefined
-    if (store.currentPbs.items[0]) {
-      data = hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0]
-      console.log(data);
-    }
-    displayThree({
-      data:data,
-      edit:true,
-      onClose:(e)=>{
-        renderCDC()
-        sourceList.select.update()
-        sourceList.select.updateData(store.currentPbs.items)
-        sourceList.select.updateLinks(store.currentPbs.links)
-        sourceList.select.refreshList()
-      },
-      onAdd:(ev)=>{
-        var uuid = genuuid()
-        var newName = prompt("Name?")
-        push(addPbs({uuid:uuid, name:newName}))
-        push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-        ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-        //ev.sourceTree.updateFromRoot(ev.element)
-      },
-      onMove:(ev)=>{
-        push(removePbsLink({source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
-        push(addPbsLink({source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
-        ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-
-      },
-      onRemove:(ev)=>{
-        if (confirm("Keep Childs?")) {
-          var originalLinks = store.currentPbs.links.filter(e=>e.source == ev.element.data.uuid)
-          for (link of originalLinks) {
-            push(addPbsLink({source:ev.element.parent.data.uuid, target:link.target}))
-          }
-        }
-        //remove all links
-        push(removePbsLink({source:ev.element.data.uuid}))
-        //addNewLinks
-        push(removePbs({uuid:ev.element.data.uuid}))
-        //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-        ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-      },
-      onLabelClicked:(originev)=>{
-        showSingleItemService.showById(originev.element.data.uuid)
-      },
-      onStoreUpdate:(originev)=>{
-        originev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-      }
-    })
-  }
+  // function showPbsTree(sourceList) {
+  //   var store = query.currentProject()
+  //   var tree = renderDTree(store.db)
+  //   console.log(tree);
+  //   var data =undefined
+  //   if (store.currentPbs.items[0]) {
+  //     data = hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0]
+  //     console.log(data);
+  //   }
+  //   displayThree({
+  //     data:data,
+  //     edit:true,
+  //     onClose:(e)=>{
+  //       renderCDC()
+  //       sourceList.select.update()
+  //       sourceList.select.updateData(store.currentPbs.items)
+  //       sourceList.select.updateLinks(store.currentPbs.links)
+  //       sourceList.select.refreshList()
+  //     },
+  //     onAdd:(ev)=>{
+  //       var uuid = genuuid()
+  //       var newName = prompt("Name?")
+  //       push(addPbs({uuid:uuid, name:newName}))
+  //       push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
+  //       ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
+  //       //ev.sourceTree.updateFromRoot(ev.element)
+  //     },
+  //     onMove:(ev)=>{
+  //       push(removePbsLink({source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
+  //       push(addPbsLink({source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
+  //       ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
+  //
+  //     },
+  //     onRemove:(ev)=>{
+  //       if (confirm("Keep Childs?")) {
+  //         var originalLinks = store.currentPbs.links.filter(e=>e.source == ev.element.data.uuid)
+  //         for (link of originalLinks) {
+  //           push(addPbsLink({source:ev.element.parent.data.uuid, target:link.target}))
+  //         }
+  //       }
+  //       //remove all links
+  //       push(removePbsLink({source:ev.element.data.uuid}))
+  //       //addNewLinks
+  //       push(removePbs({uuid:ev.element.data.uuid}))
+  //       //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
+  //       ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
+  //     },
+  //     onLabelClicked:(originev)=>{
+  //       showSingleItemService.showById(originev.element.data.uuid)
+  //     },
+  //     onStoreUpdate:(originev)=>{
+  //       originev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
+  //     }
+  //   })
+  // }
 
   function generateExtraFieldsList() {
     if (isExtraFieldsVisible) {

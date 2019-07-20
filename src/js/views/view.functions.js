@@ -147,7 +147,11 @@ var createFunctionsView = function () {
           {
             name:"Diagramme",
             action:(ev)=>{
-              renderGraph(ev)
+              showTreeFromListService.showByStoreGroup("functions", function (e) {
+                ev.select.updateData(store.functions.items)
+                ev.select.updateLinks(store.functions.links)
+                ev.select.update() //TODO find a better way
+              })
             }
           }
         ]
@@ -240,81 +244,6 @@ var createFunctionsView = function () {
 
   var setInactive = function () {
     objectIsActive = false;
-  }
-
-  var renderGraph = function (ev) {
-    var store = query.currentProject()
-    if (true) {
-      function generateDataSource() {
-        var placeholder = false
-        var data =undefined
-        if (store.functions.items[0]) {
-          var targets = store.functions.links.map(item => item.target)
-          var roots = store.functions.items.filter(item => !targets.includes(item.uuid))
-          if (roots && roots[1]) {//if more than one root node
-            placeholder = true
-            var newData = store.functions.items.slice()
-            var newLinks = store.functions.links.slice()
-            newData.push({uuid:"placeholder", name:"placeholder"})
-            for (root of roots) {
-              newLinks.push({source:"placeholder", target:root.uuid})
-            }
-            data = hierarchiesList(newData, newLinks)[0]
-          }else {
-            data = hierarchiesList(store.functions.items, store.functions.links)[0]
-          }
-          console.log(data);
-        }
-        return data
-      }
-
-      displayThree({
-        data:generateDataSource(),
-        edit:true,
-        onClose:(e)=>{
-          ev.select.updateData(store.functions.items)
-          ev.select.updateLinks(store.functions.links)
-          ev.select.update() //TODO find a better way
-        },
-        onAdd:(ev)=>{
-          var uuid = genuuid()
-          var newName = prompt("Name?")
-          push(act.add("functions",{uuid:uuid, name:newName}))
-          if (ev.element.data.uuid != "placeholder") {
-            push(act.addLink("functions",{source:ev.element.data.uuid, target:uuid}))
-          }
-          ev.sourceTree.setData(generateDataSource())
-          //ev.sourceTree.updateFromRoot(ev.element)
-        },
-        onMove:(ev)=>{
-          push(act.removeLink("functions",{source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
-          if (ev.newParent.data.uuid != "placeholder") {
-            push(act.addLink("functions",{source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
-          }
-          ev.sourceTree.setData(generateDataSource())
-        },
-        onRemove:(ev)=>{
-          if (confirm("Keep Childs?")) {
-            var originalLinks = store.functions.links.filter(e=>e.source == ev.element.data.uuid)
-            for (link of originalLinks) {
-              push(act.addLink({source:ev.element.parent.data.uuid, target:link.target}))
-            }
-          }
-          //remove all links
-          push(act.removeLink("functions",{source:ev.element.data.uuid}))
-          //addNewLinks
-          push(act.remove("functions",{uuid:ev.element.data.uuid}))
-          //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-          ev.sourceTree.setData(generateDataSource())
-        },
-        onLabelClicked:(originev)=>{
-          showSingleItemService.showById(originev.element.data.uuid)
-        },
-        onStoreUpdate:(originev)=>{
-          originev.sourceTree.setData(generateDataSource())
-        }
-      })
-    }
   }
 
   function generateExtraFieldsList() {
