@@ -141,8 +141,8 @@ var createOverview = function (targetSelector) {
   }
 
   function updateFileForRetroCompatibility() {
-    function alertAboutUpdate() {
-      alert("This project was created with an earlier version and was updated")
+    function alertAboutUpdate(extraInfos) {
+      alert("This project was created with an earlier version and was updated. " +extraInfos)
     }
     //Tags from 1.7.2
     var store = query.currentProject()
@@ -187,6 +187,15 @@ var createOverview = function (targetSelector) {
         items:[]
       }
       alertAboutUpdate()
+    }
+    if (!store.physicalSpaces) {
+      store.physicalSpaces={
+        items:[
+          {uuid: uuid(), name: "A physical space"}
+        ],
+        links:[]
+      }
+      alertAboutUpdate("Physical Spaces feature has been added")
     }
   }
 

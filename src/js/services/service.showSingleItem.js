@@ -23,6 +23,7 @@ var createShowSingleItemService = function () {
     else if (store.requirements.items.find(i=>i.uuid == uuid)) { storeGroup = "requirements"; label='Requirements'}
     else if (store.functions.items.find(i=>i.uuid == uuid)) { storeGroup = "functions"; label='Functions'}
     else if (store.stakeholders.items.find(i=>i.uuid == uuid)) { storeGroup = "stakeholders"; label='Users'}
+    else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) { storeGroup = "physicalSpaces"; label='physicalSpaces'}
 
     if (!store[storeGroup]) {
       console.log("no group available");
@@ -93,6 +94,12 @@ var createShowSingleItemService = function () {
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"lastName", displayAs:"Last name", fullText:true, edit:false}
       ];
+    }else if (metalinkType == "contains") {
+      sourceGroup="currentPbs";
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
     }else if (metalinkType == "tags") {
       sourceGroup="tags";
       displayRules = [
@@ -180,7 +187,12 @@ var createShowSingleItemService = function () {
         {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
         {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
       ]
-    }else {
+    }else if (type =="physicalSpaces") {
+      return [{prop:"name", displayAs:"Name", edit:true},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:true},
+        {prop:"contains", displayAs:"Products contained", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+      ]
+    }else if (type =="Users"){
       return [{prop:"name", displayAs:"First name", edit:true},
               {prop:"lastName", displayAs:"Last name", edit:true},
               {prop:"org", displayAs:"Organisation", edit:true},

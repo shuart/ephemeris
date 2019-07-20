@@ -108,6 +108,12 @@ var store = {
       {uuid: uuid(), name: "A work package"}
     ]
   },
+  physicalSpaces:{
+    items:[
+      {uuid: uuid(), name: "A physical space"}
+    ],
+    links:[]
+  },
   graphs:{
     items:[
       [{uuid: "f896546e", fx: 303.3567591326126, fy: 456.92026148965726},
