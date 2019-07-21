@@ -154,7 +154,7 @@ var createOverview = function (targetSelector) {
           {uuid: uuid(), name: "Rejected", color: "#ffffff"}
         ]
       }
-      alertAboutUpdate()
+      alertAboutUpdate("Tags feature has been added.")
     }
     if (!store.workPackages) {
       store.workPackages = {
@@ -162,7 +162,7 @@ var createOverview = function (targetSelector) {
           {uuid: uuid(), name: "A work package"}
         ]
       }
-      alertAboutUpdate()
+      alertAboutUpdate("Work Packages feature has been added.")
     }
     if (!store.meetings) {
       store.meetings = {
@@ -180,13 +180,13 @@ var createOverview = function (targetSelector) {
           }]
         }]
       },
-      alertAboutUpdate()
+      alertAboutUpdate("Meetings feature has been added.")
     }
     if (!store.extraFields) {
       store.extraFields={
         items:[]
       }
-      alertAboutUpdate()
+      alertAboutUpdate("Extra Fields feature has been added.")
     }
     if (!store.physicalSpaces) {
       store.physicalSpaces={
@@ -195,7 +195,7 @@ var createOverview = function (targetSelector) {
         ],
         links:[]
       }
-      alertAboutUpdate("Physical Spaces feature has been added")
+      alertAboutUpdate("Physical Spaces feature has been added.")
     }
   }
 
