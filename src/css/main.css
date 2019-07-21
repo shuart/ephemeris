@@ -564,8 +564,15 @@ textarea {
   flex-direction: row;
   flex-wrap: wrap;
   width: 100%;
-  padding-top: 10px;
+  /* padding-top: 10px;
   padding-bottom: 10px;
+  padding: 10px;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-bottom-color: #eaeaea;
+  position: relative; */
+}
+.flexTable .row .column{
   padding: 10px;
   border-bottom-style: solid;
   border-bottom-width: 1px;
@@ -633,6 +640,47 @@ textarea {
 .flexTable .column.extra {
   flex: 0 0;
 }
+
+.flexTable .table-first-col {
+  display: none ;
+}
+
+/* expanded part */
+.flexTable.expanded .row {
+  flex-wrap: nowrap;
+  /* height:  60px; */
+}
+.flexTable.expanded .table-first-col {
+  width: 250px;
+  height: 0px;
+  overflow: visible;
+  position: sticky;
+  left: 0px;
+  z-index: 2;
+  display: block;
+}
+.flexTable.expanded .table-first-col .row {
+  width: 250px;
+  /* height:  60px; */
+  overflow: hidden;
+}
+.flexTable.expanded .table-first-col .spreaded_titles {
+  display: block;
+  background: white;
+}
+.flexTable.expanded:hover .table-first-col .spreaded_titles {
+  box-shadow: 17px 0px 8px -13px rgba(0,0,0,0.13);
+}
+
+.flexTable.expanded .column {
+  flex-shrink: 0;
+  flex-basis: 250px;
+
+}
+.flexTable.expanded .row:nth-child(2n) .column {
+    background: #FCFCFC;
+}
+/* end expanded part */
 
 .flexTable.spreaded .table{
   overflow-x: auto;

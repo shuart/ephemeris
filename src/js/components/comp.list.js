@@ -36,7 +36,8 @@ function showListMenu({
   extraActions = undefined,
   extraButtons = [],
   currentSearchValue ="",
-  currentSortProp = undefined
+  currentSortProp = undefined,
+  listIsExpanded = false
   }={}) {
 
     var extraValuesAdded =false;
@@ -80,12 +81,21 @@ function showListMenu({
       </div>
       `
     },
+    listExpander:( ) => {
+      return /*html*/`
+      <div style="cursor:pointer;cursor: pointer;width: 50px;position: absolute;right: 0px;top: 82px;" class="action_list_toogle_expand item">
+          < >
+      </div>
+      `
+    },
     listWrapper:(rows, firstCol) => {
       return /*html*/`
-      <div class='flexTable'>
-        <div class="spreaded_titles shadowed">${firstCol}</div>
-        <div class="table">${rows}</div>
-      </div>
+        ${rows}
+      `
+    },
+    listFirstColWrapper:(rows) => {
+      return /*html*/`
+        <div class="spreaded_titles shadowed">${rows}</div>
       `
     },
     listRow:(items) => {
@@ -145,6 +155,8 @@ function showListMenu({
   var mainEl = undefined
   var editItemMode = undefined
   var listContainer =undefined;
+  var listContainerFirstCol =undefined;
+
 
   var self={}
 
@@ -316,6 +328,11 @@ function showListMenu({
         if (event.target.classList.contains("action_list_close")) {
           onCloseMenu({select:self, selectDiv:sourceEl, target:event.target})
           sourceEl.remove()
+        }
+        if (event.target.classList.contains("action_list_toogle_expand")) {
+          listIsExpanded = !listIsExpanded
+          sourceEl.remove()
+          render()
         }
     }
 
@@ -536,7 +553,7 @@ function showListMenu({
   }
 
   //MAIN function to build list
-  function buildSingle(sourceData, sourceLinks, rootNodes, level, parentId, greyed) {
+  function buildSingle(sourceData, sourceLinks, rootNodes, level, parentId, greyed, firstOnly) {
     var source = undefined
     var targets = undefined
     var rootNodes = rootNodes || deepCopy(sourceData)
@@ -562,6 +579,10 @@ function showListMenu({
     }else {
       rules = display
       data = deepCopy(sourceData)
+    }
+    //only treat the first col
+    if (firstOnly) {
+      rules = [rules[0]]
     }
 
     //Check if sorting is necessary
@@ -860,23 +881,59 @@ function showListMenu({
     containerTopArea.style.flexShrink = "0"
     //item list (global var)
     listContainer = document.createElement('div');
-    listContainer.style.overflow = "auto"
+    listContainer.classList = "table"
+
+    listContainerFirstCol = document.createElement('div');
+    listContainerFirstCol.classList = "table-first-col"
+    // listContainer.style.overflow = "auto"
+    //item list (global var)
+    let globalContainer = document.createElement('div');
+    globalContainer.style.overflow = "auto"
+    globalContainer.classList = "flexTable"
+
+    if (listIsExpanded) {
+      globalContainer.classList.add("expanded")
+    }
 
     //build contente
     if (singleElement) {
       listContainer.innerHTML =theme.listWrapper("<div class='"+ theme.singleElementsListClass + "'>"+ buildSingle(sourceData, sourceLinks, singleElement)+"</div>")
+      globalContainer.appendChild(listContainer)
     }else if (editItemMode){
       listContainer.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks, editItemMode.item))
+      globalContainer.appendChild(listContainer)
     }else {
       //build top row
       let titleLineHtml = buildTitleLine(display, extraButtons)
-      containerTopArea.appendChild(toNode(titleLineHtml));
       //build all list
-      listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
-    }
 
-    mainEl.appendChild(containerTopArea)
-    mainEl.appendChild(listContainer)
+      let listContainerTop = document.createElement('div');
+      listContainerTop.classList = "top-line"
+      listContainerTop.style.position = "sticky"
+      listContainerTop.style.background = "white"
+      listContainerTop.style.opacity = "0.9"
+      listContainerTop.style.zIndex = "5"
+      listContainerTop.style.top = "0"
+
+      listContainerTop.appendChild(toNode(titleLineHtml));
+
+      if (listIsExpanded) {
+        // let firstColData = buildSingle(sourceData, sourceLinks, undefined, undefined, undefined, undefined, true)
+        listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
+        listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
+      }else {
+        listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
+      }
+
+      globalContainer.appendChild(listContainerTop)
+      globalContainer.appendChild(listContainerFirstCol)
+      globalContainer.appendChild(listContainer)
+
+      mainEl.appendChild(toNode(theme.listExpander()))//add expander only in big lists
+    }
+    // mainEl.appendChild(containerTopArea)
+    mainEl.appendChild(globalContainer)
+
 
     //inject document framgent in DOM
     if (!targetDomContainer) {
@@ -950,6 +1007,9 @@ function showListMenu({
     editItemMode = {item:data.item, onLeave:data.onLeave}
   }
   function refreshList() {
+    if (listIsExpanded) {
+      listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
+    }
     listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
     //focus on search
     if (focusSearchOnRender) {
