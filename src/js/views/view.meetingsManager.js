@@ -273,6 +273,8 @@ var createMeetingsManager = function (targetSelector) {
            ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
            ${theme.meetingItemResolved(item)}
            ${theme.meetingItemConnection(item)}
+           <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+
          </div>
        </div>
        <div data-id='${item.uuid}' class='${colType||"column"}  '>
@@ -328,6 +330,8 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 90px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
+         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+
          </div>
        </div>
        <div data-id='${item.uuid}' class='${colType||"column"}  '>
@@ -378,6 +382,8 @@ var createMeetingsManager = function (targetSelector) {
          <div style="width: 90px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
          ${theme.meetingItemConnection(item)}
+         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+
          </div>
        </div>
        <div data-id='${item.uuid}' class='${colType||"column"}  '>
@@ -753,6 +759,17 @@ var createMeetingsManager = function (targetSelector) {
           renderMeeting(meeting)
         }
       }
+    })
+    connect(".action_meetingmanager_list_delete_item", "click", (e)=>{
+      let targetItem = getTopicItemByUuid(e.target.dataset.id)
+      console.log(e.target.dataset.id);
+      console.log(getTopicItemParentsByUuid(e.target.dataset.id));
+      let topic = getTopicItemParentsByUuid(e.target.dataset.id).topic
+      if (confirm(targetItem.content+" will be removed")) {
+        topic.items = topic.items.filter(n=>n.uuid != e.target.dataset.id) //TODO use reducer
+        update()
+      }
+
     })
     connect(".action_meeting_manager_set_resolved", "click", (e)=>{
       let targetItem = getTopicItemByUuid(e.target.dataset.id)
@@ -1156,6 +1173,27 @@ var createMeetingsManager = function (targetSelector) {
       })
     })
     return item
+  }
+  var getTopicItemParentsByUuid = function (uuid) {
+    console.log(uuid);
+    let item = undefined
+    let info = {}
+    let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+    info.meeting=meeting
+    meeting.chapters.forEach(function (c) {
+      c.topics.forEach(function (t) {
+        if (!item) {
+          item = t.items.find(i => i.uuid== uuid)
+          if (item) {
+            info.topic=t
+          }
+          console.log(item);
+        }else {
+        }
+
+      })
+    })
+    return info
   }
   var generateListeFromParticipantId = function (topicItemId, isEditable) {
 
