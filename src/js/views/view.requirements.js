@@ -177,9 +177,10 @@ var createRequirementsView = function () {
     let store = query.currentProject()
     let data = store.requirements.items.map(i=>{
       let linkToText = getRelatedItems(i, "stakeholders", {metalinksType:"origin"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
+      let linkToTextPbs = getRelatedItems(i, "currentPbs",{objectIs:"target", metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : '').join(",")
       let linkToTextTags = getRelatedItems(i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
       let linkToTextWorkpackages = getRelatedItems(i, "workPackages",{objectIs:"target", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
-      return {id:i.uuid, name:i.name, description:i.desc, stakeholders:linkToText, tags:linkToTextTags, workPackages:linkToTextWorkpackages}
+      return {id:i.uuid, name:i.name, description:i.desc, stakeholders:linkToText, products:linkToTextPbs, tags:linkToTextTags, workPackages:linkToTextWorkpackages}
     })
     JSONToCSVConvertor(data, 'Requirements', true)
 
