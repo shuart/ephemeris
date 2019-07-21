@@ -966,7 +966,7 @@ var createMeetingsManager = function (targetSelector) {
       if (targetItem && meeting) {
         let i = targetItem //todo create a function for to resolve this and previous connection
         if (!i.freeze && !meeting.relations.find(r=>r.source ==i.uuid)) {//not frozen and does not exist already
-          if (i.type == "requirement") {
+          if (i.type == "requirement" && confirm("Requirement "+i.content+" will be created")) {
             let targetId = uuid()
             push(addRequirement({uuid:targetId,name:i.content}))
             if (i.assignedTo) {
@@ -979,11 +979,9 @@ var createMeetingsManager = function (targetSelector) {
                 push(act.add("metaLinks",{type:"originNeed", source:newSelected, target:targetId}))
               }
             }
-            confirm("Requirement "+i.content+" will be created")
             addRelationToMeetingData(i.uuid,targetId,i.type)
-          }else if (i.type == "action") {
+          }else if (i.type == "action" && confirm("Action "+i.content+" will be created")) {
             let targetId = uuid()
-            confirm("action "+i.content+" will be created")
             var newAction ={uuid:targetId, project:store.uuid, open:true, name:i.content, des:undefined, dueDate:i.eta, created:Date.now()}
             push(act.add("actions",newAction))
             if (i.assignedTo) {
