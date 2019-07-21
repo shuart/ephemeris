@@ -55,7 +55,7 @@ var createTopMenu = function (containerSelector) {
         </a>
         <a class="button top_button_notesManager action_toogle_meetings_manager"><i class="file alternate outline icon"></i><div class="content">Meetings</div></a>
         <a class="button top_button_stakeholders action_toogle_stakeholders"><i class="address book icon"></i><div class="content">Stakeholders</div></a>
-        <a class="button top_button_pbs action_toogle_physical_spaces"><i class="building icon"></i><div class="content">Physical Spaces</div></a>
+        <a class="button top_button_physicalSpaces action_toogle_physical_spaces"><i class="building icon"></i><div class="content">Physical Spaces</div></a>
 
         <a class="button top_button_relations action_toogle_diag_relations"><i class="sitemap icon"></i><div class="content">Relations</div></a>
         <a class="button top_button_interfaces action_toogle_diag_interfaces"><i class="sync icon"></i><div class="content">Interfaces</div></a>
