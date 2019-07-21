@@ -216,7 +216,7 @@ var createRequirementsView = function () {
     if (metalinkType == "origin") {
       sourceGroup="stakeholders";
       sourceData=store.stakeholders.items
-      showColoredIconsRule= (e)=>{return e.name[0]+e.lastName[0];},
+      showColoredIconsRule= lettersFromNames,
       displayRules = [
         {prop:"name", displayAs:"First Name", edit:false},
         {prop:"lastName", displayAs:"Last name", edit:false}
