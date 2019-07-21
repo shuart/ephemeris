@@ -651,7 +651,7 @@ textarea {
   /* height:  60px; */
 }
 .flexTable.expanded .table-first-col {
-  width: 250px;
+  width: 400px;
   height: 0px;
   overflow: visible;
   position: sticky;
@@ -659,8 +659,17 @@ textarea {
   z-index: 2;
   display: block;
 }
+/* .flexTable.expanded .table-first-col .row  .column {
+  visibility: hidden
+}
+.flexTable.expanded .table-first-col .row .column:first-child{
+  visibility: visible;
+}
+.flexTable.expanded .table-first-col .row div:nth-child(2){
+  visibility: visible;
+} */
 .flexTable.expanded .table-first-col .row {
-  width: 250px;
+  width: 400px;
   /* height:  60px; */
   overflow: hidden;
 }
@@ -674,8 +683,12 @@ textarea {
 
 .flexTable.expanded .column {
   flex-shrink: 0;
-  flex-basis: 250px;
+  flex-grow: 0;
+  flex-basis: 400px;
 
+}
+.flexTable.expanded .top-line .column {
+  background: white;
 }
 .flexTable.expanded .row:nth-child(2n) .column {
     background: #FCFCFC;

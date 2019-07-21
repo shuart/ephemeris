@@ -934,6 +934,13 @@ function showListMenu({
     // mainEl.appendChild(containerTopArea)
     mainEl.appendChild(globalContainer)
 
+    //adapt if needed
+    if (listIsExpanded) {
+      registerExpandedEvent()
+      adaptOverlayTitles()
+    }
+
+
 
     //inject document framgent in DOM
     if (!targetDomContainer) {
@@ -982,6 +989,36 @@ function showListMenu({
     // let color = veryDifferentColors[colorNbr]
     let color = "hsl("+colorNbr+", 34%, 50%)"
     return color
+  }
+
+  function registerExpandedEvent(){
+    setTimeout(function () {
+      let eventTarget = document.querySelector(".flexTable.expanded .table")
+      eventTarget.addEventListener("mouseenter",function () {
+        adaptOverlayTitles()
+      })
+    }, 100);
+
+  }
+
+  function adaptOverlayTitles() {
+    let targetHeights=[]
+    setTimeout(function () {
+      let targets= document.querySelectorAll(".table .row")
+      for (var i = 0; i < targets.length; i++) {
+        let item = targets[i]
+        targetHeights.push(item.offsetHeight);
+      }
+
+      let overlays = document.querySelectorAll(".spreaded_titles .row")
+      for (var i = 0; i < overlays.length; i++) {
+        let item = overlays[i]
+        console.log(targetHeights[i]+"px")
+        item.style.height = targetHeights[i]+"px"
+      }
+    }, 20);
+
+
   }
 
   //PUBLIC FUNC
