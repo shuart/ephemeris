@@ -302,3 +302,14 @@ function slugify (str) {
 
     return str;
 };
+
+//generate two letters from names
+function lettersFromNames(e) {
+  if (e.name && e.lastName) {
+    return e.name[0]+e.lastName[0];
+  }else if (e.name) {
+    return e.name[0]+" "
+  }else {
+    return " "+" "
+  }
+}
