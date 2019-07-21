@@ -222,6 +222,7 @@ var createPbsView = function () {
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+    var sourceGroup = undefined
     var invert = false
     var source = "source"
     var target = "target"
@@ -232,17 +233,21 @@ var createPbsView = function () {
       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
     ]
     if (metalinkType == "originNeed") {
+      sourceGroup="requirements"
       sourceData=store.requirements.items
       sourceLinks= store.requirements.links
     }else if (metalinkType == "originFunction") {
+      sourceGroup="functions"
       sourceData=store.functions.items
       sourceLinks=store.functions.links
     }else if (metalinkType == "tags") {
+      sourceGroup="tags"
       sourceData=store.tags.items
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "contains") {
+      sourceGroup="physicalSpaces"
       invert = true;
       sourceData=store.currentPbs.items
       source = "target"//invert link order for after
@@ -262,6 +267,23 @@ var createPbsView = function () {
       searchable : true,
       display:displayRules,
       idProp:"uuid",
+      onAdd:(ev)=>{//TODO experimental, replace with common service
+        var uuid = genuuid()
+        push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+        ev.select.setEditItemMode({
+          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+          onLeave: (ev)=>{
+            push(act.remove(sourceGroup,{uuid:uuid}))
+            ev.select.updateData(store[sourceGroup].items)
+          }
+        })
+      },
+      onEditItem: (ev)=>{
+        var newValue = prompt("Edit Item",ev.target.dataset.value)
+        if (newValue) {
+          push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+        }
+      },
       onCloseMenu: (ev)=>{
         console.log(ev.select);
         ev.select.getParent().refreshList()
