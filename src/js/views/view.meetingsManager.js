@@ -273,7 +273,7 @@ var createMeetingsManager = function (targetSelector) {
            ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
            ${theme.meetingItemResolved(item)}
            ${theme.meetingItemConnection(item)}
-           <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+           <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
 
          </div>
        </div>
@@ -330,7 +330,7 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 90px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
-         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
 
          </div>
        </div>
@@ -382,7 +382,7 @@ var createMeetingsManager = function (targetSelector) {
          <div style="width: 90px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
          ${theme.meetingItemConnection(item)}
-         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
+         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
 
          </div>
        </div>
