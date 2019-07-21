@@ -79,6 +79,8 @@ function reducer(action, store) {
   function isItemAlreadyThere(pl, array) {
     if (pl.type && !pl.prop) {
       if (array.find(e => e.type == pl.type && e.source == pl.source && e.target == pl.target)) {
+        console.log(pl);
+        console.log(array.find(e => e.type == pl.type && e.source == pl.source && e.target == pl.target));
         return true
       }
     }

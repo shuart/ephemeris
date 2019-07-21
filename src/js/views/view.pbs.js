@@ -1,6 +1,7 @@
 var createPbsView = function () {
   var self ={};
   var objectIsActive = false;
+  var simpleView = true;
   var isExtraFieldsVisible =false;
 
   var init = function () {
@@ -13,6 +14,25 @@ var createPbsView = function () {
   }
 
   var render = function () {
+
+    var displayRules = [
+      {prop:"name", displayAs:"name", edit:"true"},
+      {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
+      {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
+      {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"}
+    ]
+    if (!simpleView) {
+      displayRules = [
+        {prop:"name", displayAs:"name", edit:"true"},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
+        {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
+        {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"},
+        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+        {prop:"contains",isTarget:true, displayAs:"Physical Spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:true}
+      ]
+    }
+
+
     var store = query.currentProject()
     console.log(store.currentPbs.items);
       showListMenu({
@@ -22,12 +42,7 @@ var createPbsView = function () {
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
-        display:[
-          {prop:"name", displayAs:"name", edit:"true"},
-          {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-          {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
-          {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"}
-        ],
+        display:displayRules,
         extraFields: generateExtraFieldsList(),
         idProp:"uuid",
         onEditItem: (ev)=>{
@@ -126,6 +141,17 @@ var createPbsView = function () {
             }
           },
           {
+            name:"Extras",
+            action:(ev)=>{
+              simpleView = !simpleView;
+              setTimeout(function () {
+                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+                update()
+              }, 200);
+              // ev.select.remove();
+            }
+          },
+          {
             name:"Export",
             action:(ev)=>{
               exportToCSV()
@@ -196,14 +222,36 @@ var createPbsView = function () {
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+    var invert = false
+    var source = "source"
+    var target = "target"
     var sourceData = undefined
     var sourceLinks= undefined
+    var displayRules=[
+      {prop:"name", displayAs:"Name", edit:false},
+      {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+    ]
     if (metalinkType == "originNeed") {
       sourceData=store.requirements.items
       sourceLinks= store.requirements.links
     }else if (metalinkType == "originFunction") {
       sourceData=store.functions.items
       sourceLinks=store.functions.links
+    }else if (metalinkType == "tags") {
+      sourceData=store.tags.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "contains") {
+      invert = true;
+      sourceData=store.currentPbs.items
+      source = "target"//invert link order for after
+      target = "source"
+      sourceLinks=store.physicalSpaces.links
+      sourceData=store.physicalSpaces.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
     }
     showListMenu({
       sourceData:sourceData,
@@ -212,10 +260,7 @@ var createPbsView = function () {
       multipleSelection:currentLinksUuidFromDS,
       displayProp:"name",
       searchable : true,
-      display:[
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-      ],
+      display:displayRules,
       idProp:"uuid",
       onCloseMenu: (ev)=>{
         console.log(ev.select);
@@ -224,10 +269,15 @@ var createPbsView = function () {
       onChangeSelect: (ev)=>{
         console.log(ev.select.getSelected());
         console.log(store.metaLinks.items);
-        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
+        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
         console.log(store.metaLinks.items);
         for (newSelected of ev.select.getSelected()) {
-          push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+          if (!invert) {
+            push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+          }else {
+            push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+          }
+          // push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
         }
         ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
         ev.select.getParent().refreshList()

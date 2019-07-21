@@ -128,6 +128,17 @@ var createRequirementsView = function () {
             }
           },
           {
+            name:"Tags",
+            action:(ev)=>{
+              simpleView = !simpleView;
+              setTimeout(function () {
+                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+                update()
+              }, 200);
+              // ev.select.remove();
+            }
+          },
+          {
             name:"Export",
             action:(ev)=>{
               exportToCSV()
@@ -146,17 +157,6 @@ var createRequirementsView = function () {
                 }
               })
 
-            }
-          },
-          {
-            name:"Tags",
-            action:(ev)=>{
-              simpleView = !simpleView;
-              setTimeout(function () {
-                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
-                update()
-              }, 1000);
-              // ev.select.remove();
             }
           },
           {
