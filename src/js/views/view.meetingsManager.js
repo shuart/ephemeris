@@ -176,12 +176,27 @@ var createMeetingsManager = function (targetSelector) {
   theme.meetingItemConnection=function (item) {
 
     let html = ''
+    var isObjectMissing = false
     let linkObject = currentMeetingObject.relations.find(r=>r.source == item.uuid)
-    if (linkObject) {
+    if (linkObject) { //check if taget still exist first
+      isObjectMissing = !checkIfTargetIsReachable(linkObject.target)
+      if (isObjectMissing) {
+        if (confirm("One or more items related to this meeting are missing. Remove missing link?")) {
+          console.log(currentMeetingObject.relations);
+          console.log(item.uuid);
+          currentMeetingObject.relations= currentMeetingObject.relations.filter(r=>r.source != item.uuid)
+          console.log(currentMeetingObject.relations);
+        }
+      }
+    }
+
+    if (linkObject && !isObjectMissing) {
       let elementName= undefined
       if (item.type == 'action') {
         elementName = query.items("actions", i=>i.uuid == linkObject.target)[0].name
       } else {
+        console.log(isObjectMissing);
+        console.log(linkObject.target);
         elementName = query.items("requirements", i=>i.uuid == linkObject.target)[0].name
       }
 
@@ -226,7 +241,7 @@ var createMeetingsManager = function (targetSelector) {
     let colType=undefined
     let isEditable = !item.freeze
      html =`
-     <div class='row' style="opacity: ${(item.freeze && item.resolved)? "0.5": "1"};">
+     <div class='row' style="position: relative; opacity: ${(item.freeze && item.resolved)? "0.5": "1"};">
 
        <div style="
           position: absolute;
@@ -285,7 +300,7 @@ var createMeetingsManager = function (targetSelector) {
     let colType=undefined
     let isEditable = !item.freeze
      html =`
-     <div class='row' style="opacity: ${item.freeze? "0.5": "1"};">
+     <div class='row' style="position: relative; opacity: ${item.freeze? "0.5": "1"};">
      <div style="
          position: absolute;
          left: -33px;
@@ -334,7 +349,7 @@ var createMeetingsManager = function (targetSelector) {
     let colType=undefined
     let isEditable = !item.freeze
      html =`
-     <div class='row' style="opacity: ${item.freeze? "0.5": "1"};">
+     <div class='row' style="position: relative;opacity: ${item.freeze? "0.5": "1"};">
      <div style="
          position: absolute;
          left: -33px;
@@ -373,6 +388,11 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 130px;margin:3px;" class='orange-column'>
            By ${generateListeFromParticipantId(item.uuid, isEditable)}
+         </div>
+       </div>
+       <div style="flex-grow: 0;" class='${colType||"column"}'>
+         <div style="width: 130px;margin:3px;" class='orange-column'>
+           Re: ${generateListeFromProductsId(item.uuid, isEditable)}
          </div>
        </div>
 
@@ -526,13 +546,41 @@ var createMeetingsManager = function (targetSelector) {
           {prop:"org", displayAs:"Organisation", edit:false}
         ],
         idProp:"uuid",
-        showColoredIcons: (e)=>{return e.name[0]+e.lastName[0];},
+        showColoredIcons: lettersFromNames,
         onCloseMenu: (ev)=>{
           update()
           // renderMeeting(currentOpenedMeeting)
         },
         onChangeSelect: (ev)=>{
           getTopicItemByUuid(sourceTriggerId).assignedTo = ev.select.getSelected()
+          console.log(ev.select.getSelected());
+          update()
+        },
+        onClick: (ev)=>{
+          console.log("select");
+        }
+      })
+    })
+    connect(".action_meeting_manager_list_select_pbs_related","click",(e)=>{
+      var sourceTriggerId = e.target.dataset.id;
+      var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
+      showListMenu({
+        sourceData:store.currentPbs.items,
+        parentSelectMenu:e.select ,
+        multipleSelection:currentLinksUuidFromDS,
+        displayProp:"name",
+        searchable : true,
+        display:[
+          {prop:"name", displayAs:"Name", edit:false},
+          {prop:"desc", displayAs:"Description", edit:false}
+        ],
+        idProp:"uuid",
+        onCloseMenu: (ev)=>{
+          update()
+          // renderMeeting(currentOpenedMeeting)
+        },
+        onChangeSelect: (ev)=>{
+          getTopicItemByUuid(sourceTriggerId).relatedTo = ev.select.getSelected()
           console.log(ev.select.getSelected());
           update()
         },
@@ -909,6 +957,11 @@ var createMeetingsManager = function (targetSelector) {
                 push(act.add("metaLinks",{type:"origin", source:targetId, target:newSelected}))
               }
             }
+            if (i.relatedTo) {
+              for (newSelected of i.relatedTo) {
+                push(act.add("metaLinks",{type:"originNeed", source:newSelected, target:targetId}))
+              }
+            }
             confirm("Requirement "+i.content+" will be created")
             addRelationToMeetingData(i.uuid,targetId,i.type)
           }else if (i.type == "action") {
@@ -1132,6 +1185,34 @@ var createMeetingsManager = function (targetSelector) {
       return mainText
     }
   }
+  var generateListeFromProductsId = function (topicItemId, isEditable) {
+
+    let names = getTopicItemByUuid(topicItemId).relatedTo
+
+    var editHtml = `<i data-item="${topicItemId}" data-value='${names? JSON.stringify(names):JSON.stringify([])}' data-id="${topicItemId}"  class="edit icon action_meeting_manager_list_select_pbs_related" style="opacity:0.2"></i>`
+
+    function reduceChoices(acc, e) {
+      console.log(e);
+      var foudItem = store.currentPbs.items.find(i=>i.uuid == e)
+      var newItem = foudItem.name
+      var formatedNewItem = newItem
+      if(formatedNewItem.length > 25) {
+          formatedNewItem = newItem.substring(0,10)+".. ";
+      }
+      var htmlNewItem = `<div data-inverted="" data-tooltip="${newItem}" class="ui mini teal label">${formatedNewItem}</div>`
+      return acc += htmlNewItem
+    }
+
+    var mainText = `<div class="ui mini label">None</div>`
+    if (names && names[0]) {
+      mainText = names.reduce(reduceChoices,"")
+    }
+    if (isEditable) {
+      return mainText + editHtml
+    }else {
+      return mainText
+    }
+  }
 
   var generateParticipantHtml= function (participants) {
     let html = ""
@@ -1142,6 +1223,18 @@ var createMeetingsManager = function (targetSelector) {
       }
     })
     return html
+  }
+
+  function checkIfTargetIsReachable(uuid){
+    var store = query.currentProject()
+    if (store.actions.items.find(i=>i.uuid == uuid)) {return true }
+    else if (store.requirements.items.find(i=>i.uuid == uuid)) {return true }
+    // else if (store.functions.items.find(i=>i.uuid == uuid)) { return true}
+    // else if (store.stakeholders.items.find(i=>i.uuid == uuid)) {return true }
+    // else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) {return true }
+    else {
+      return false
+    }
   }
 
   var update = function () {
