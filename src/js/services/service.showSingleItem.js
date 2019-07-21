@@ -163,6 +163,7 @@ var createShowSingleItemService = function () {
     else if (store.requirements.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.functions.items.find(i=>i.uuid == uuid)) { return true}
     else if (store.stakeholders.items.find(i=>i.uuid == uuid)) {return true }
+    else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) {return true }
     else {
       return false
     }
@@ -188,7 +189,8 @@ var createShowSingleItemService = function () {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
         {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
-        {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true}
+        {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true},
+        {prop:"contains",isTarget:true, displayAs:"Linked to physical spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:false}
       ]
     }else if (type =="physicalSpaces") {
       return [{prop:"name", displayAs:"Name", edit:true},
