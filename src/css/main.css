@@ -581,7 +581,7 @@ textarea {
   position: relative;
 }
 .flexTable .row .right.floated.content{
-  padding-left:1px; 
+  padding-left:1px;
   padding-top: 5px;
 }
 .flexTable .row:nth-child(even)  {
@@ -642,6 +642,23 @@ textarea {
   flex-direction: column;
   flex-basis: 100%;
   flex: 1;
+}
+.flexTable .column {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+}
+.flexTable .column .edit.icon{
+  opacity: 0.1;
+}
+.flexTable .row .edit.icon{
+  opacity: 0.2;
+  cursor:pointer;
+}
+.flexTable .column:hover .edit.icon{
+  opacity: 0.4;
+  cursor:pointer;
 }
 .flexTable .column.extra {
   flex: 0 0;
