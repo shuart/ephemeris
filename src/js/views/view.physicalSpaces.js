@@ -53,6 +53,23 @@ var createWorkPhysicalSpacesView = function () {
         let physicalSpaces = prompt("New Physical Space")
         push(act.add("physicalSpaces",{uuid:genuuid(), name:physicalSpaces}))
       },
+      onAddFromPopup: (ev)=>{
+        var uuid = genuuid()
+        var newPhysicalSpaces = prompt("New Physical Space")
+        if (newPhysicalSpaces) {
+          push(act.add("physicalSpaces", {uuid:uuid,name:newPhysicalSpaces}))
+          if (ev.target && ev.target != "undefined") {
+            push(act.move("physicalSpaces", {origin:uuid, target:ev.target.dataset.id}))
+            //check for parenting
+            let parent = store.physicalSpaces.links.find(l=>l.target == ev.target.dataset.id)
+            if (parent) {
+              push(act.addLink("physicalSpaces",{source:parent.source, target:uuid}))
+            }
+          }
+          ev.select.updateData(store.physicalSpaces.items)
+          ev.select.updateLinks(store.physicalSpaces.links)
+        }
+      },
       onEditChoiceItem: (ev)=>{
         startSelection(ev)
       },
