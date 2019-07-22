@@ -130,6 +130,15 @@ function showListMenu({
       </div>
       `
     },
+    listItemFixedSize:(content, size, colType) => {
+      return `
+      <div  style="flex-basis: ${size};flex-grow: 0;" class='${colType||"column"}'>
+        <div class='orange-column'>
+          ${content}
+        </div>
+      </div>
+      `
+    },
     listItemExtraField:(content, colType) => {
       let style = "color: #00b5ad;"
       return `
@@ -528,13 +537,15 @@ function showListMenu({
   function buildTitleLine(rules,extraButtons) {
     let props = rules
     if (onMove || onRemove || onChangeSelect ||  extraButtons[0]) {
-      props = rules.concat([{displayAs:"Actions"}])
+      props = rules.concat([{size:"35px",displayAs:"Actions"}])
     }
     let items = props.map( p => {
       if (p.extraField) {
         return theme.listItemExtraField(p.displayAs)
       }else{
-        if (p.sortable || p.prop == "name") {
+        if(p.size){
+          return theme.listItemFixedSize(p.displayAs, p.size)
+        }else if (p.sortable || p.prop == "name") {
           return theme.listItem(p.displayAs, p.prop)
         }else {
           return theme.listItem(p.displayAs)
