@@ -84,6 +84,7 @@ var createWorkPackagesView = function () {
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+    var sourceGroup = undefined
     var sourceData = undefined
     var invert = false
     var source = "source"
@@ -97,6 +98,7 @@ var createWorkPackagesView = function () {
         {prop:"lastName", displayAs:"Last name", edit:false}
       ]
     }else if (metalinkType == "WpOwn") {
+      sourceGroup="currentPbs"
       sourceData=store.currentPbs.items
       sourceLinks=store.currentPbs.links
       displayRules = [
@@ -104,6 +106,7 @@ var createWorkPackagesView = function () {
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "WpOwnNeed") {
+      sourceGroup="requirements"
       sourceData=store.requirements.items
       sourceLinks=store.requirements.links
       displayRules = [
@@ -111,6 +114,7 @@ var createWorkPackagesView = function () {
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "originNeed") {
+      sourceGroup="currentPbs"
       invert = true;
       sourceData=store.currentPbs.items
       source = "target"//invert link order for after
@@ -135,6 +139,23 @@ var createWorkPackagesView = function () {
       searchable : true,
       display:displayRules,
       idProp:"uuid",
+      onAdd:(ev)=>{//TODO experimental, replace with common service
+        var uuid = genuuid()
+        push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+        ev.select.setEditItemMode({
+          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+          onLeave: (ev)=>{
+            push(act.remove(sourceGroup,{uuid:uuid}))
+            ev.select.updateData(store[sourceGroup].items)
+          }
+        })
+      },
+      onEditItem: (ev)=>{
+        var newValue = prompt("Edit Item",ev.target.dataset.value)
+        if (newValue) {
+          push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+        }
+      },
       onCloseMenu: (ev)=>{
         console.log(ev.select);
         ev.select.getParent().refreshList()
