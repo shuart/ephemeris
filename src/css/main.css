@@ -568,6 +568,12 @@ textarea {
   width: 100%;
   position: relative;
 }
+.flexTable .table{
+  overflow: hidden;
+}
+.flexTable.expanded .table{
+  overflow: visible;
+}
 .flexTable .spreaded_titles{
   display: none;
 }
