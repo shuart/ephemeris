@@ -570,7 +570,8 @@ textarea {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #eaeaea;
-  position: relative; */
+   */
+   position: relative;
 }
 .flexTable .row .column{
   padding: 10px;
@@ -599,6 +600,7 @@ textarea {
   opacity: 0;
   left: 0px;
   transition: opacity .20s ease-in-out;
+  z-index: 5;
 }
 .flexTable .row .addMagnet:hover {
   opacity: 0.5;
