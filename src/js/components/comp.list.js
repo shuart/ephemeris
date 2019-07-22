@@ -419,22 +419,6 @@ function showListMenu({
   function createMenu() {
     mainEl.appendChild(toNode(theme.topMenu()));
 
-    // clear button
-    if (onClear) {
-     let target = mainEl.querySelector(".target_menu_left_buttons")
-     target.insertBefore(
-        toNode(theme.button(clearButtonValue, 'black', 'action_list_clear')),
-        target.firstChild
-      )
-    }
-    //add button
-    if (onAdd) {
-      let target = mainEl.querySelector(".target_menu_left_buttons")
-      target.insertBefore(
-         toNode(theme.button(addButtonValue, 'teal', 'action_list_add')),
-         target.firstChild
-       )
-    }
     //display extra action buttons
     if (extraActions) {
       for (action of extraActions) {
@@ -461,6 +445,22 @@ function showListMenu({
         }
         actionTarget.addEventListener('click', addEventL(action),false);
       }
+    }
+    // clear button
+    if (onClear) {
+     let target = mainEl.querySelector(".target_menu_left_buttons")
+     target.insertBefore(
+        toNode(theme.button(clearButtonValue, 'black', 'action_list_clear')),
+        target.firstChild
+      )
+    }
+    //add button
+    if (onAdd) {
+      let target = mainEl.querySelector(".target_menu_left_buttons")
+      target.insertBefore(
+         toNode(theme.button(addButtonValue, 'teal', 'action_list_add')),
+         target.firstChild
+       )
     }
 
     //search menu
