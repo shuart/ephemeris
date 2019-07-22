@@ -618,11 +618,7 @@ function showListMenu({
       var move =""
       var multipleSelect =""
       var extraButtonsHtml =""
-      if (onRemove && !singleItem && !ismoving) {
-        remove = `<div class="right floated content">
-            <div data-id="${item[idProp]}" class="ui mini basic red button action_list_remove_item">remove</div>
-          </div>`
-      }
+
       if (extraButtons && !singleItem) {
         for (action of extraButtons) {
           extraButtonsHtml = `<div class="right floated content">
@@ -642,8 +638,8 @@ function showListMenu({
         }
       }
       if (onMove && !greyed && !singleItem) {
-        move = `<div class="right floated content">
-            <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui mini basic blue button action_list_move_item">move</div>
+        move = `<div style="opacity:0.9;" class="right floated content">
+            <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui mini basic circular icon button action_list_move_item"><i data-parentid="${parentId}" data-id="${item[idProp]}" class="sort icon action_list_move_item"></i></div>
           </div>`
         if (ismoving && ismoving.dataset.id != item[idProp] && sourceLinks && !ismovingExtraItems.find(i=>i.dataset.id == item[idProp] )) {
           move =`
@@ -676,6 +672,11 @@ function showListMenu({
               <div data-id="${item[idProp]}" class="ui mini blue button action_list_move_item">Cancel</div>
             </div>`
         }
+      }
+      if (onRemove && !singleItem && !ismoving) {
+        remove = `<div style="opacity:0.4;" class="right floated content">
+            <div data-id="${item[idProp]}" class="ui mini basic red circular icon button action_list_remove_item"><i data-id="${item[idProp]}" class="close icon action_list_remove_item"></i></div>
+          </div>`
       }
       var extraStyle =""
       if (greyed || (ismoving && ismoving.dataset.id == item[idProp])) {
@@ -816,10 +817,12 @@ function showListMenu({
         }
       }
       //add action button
-      html += remove
-      html += move
+
       html += multipleSelect
       html += extraButtonsHtml
+
+      html += move
+      html += remove
       html += "</div>"//End of Searchable Item
 
       //Check if some children exist if there is a link items

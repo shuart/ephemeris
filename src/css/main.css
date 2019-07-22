@@ -580,6 +580,10 @@ textarea {
   border-bottom-color: #eaeaea;
   position: relative;
 }
+.flexTable .row .right.floated.content{
+  padding-left:1px; 
+  padding-top: 5px;
+}
 .flexTable .row:nth-child(even)  {
   background: #FCFCFC;
 }
