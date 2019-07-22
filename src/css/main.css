@@ -6,6 +6,12 @@
  * Kroc Camen, and the H5BP dev community and team.
  */
 
+
+ @font-face {
+  font-family: 'Poiret One';
+  src: url('PoiretOne-Regular.ttf')  format('truetype'); /* Safari, Android, iOS */
+}
+
 /* ==========================================================================
    Base styles: opinionated defaults
    ========================================================================== */
@@ -103,6 +109,10 @@ textarea {
      width: 100%;
      height: 100%;
      padding-left: 50px;
+   }
+
+   .app-title{
+     font-family: 'Poiret One',Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
    }
 
    .main-menu{
@@ -404,7 +414,9 @@ textarea {
 }
 
 .app-loader-cache{
-  background : linear-gradient(to bottom, #bbd2c5, #536976);
+  background: linear-gradient(#99b6c1, #4a524b);
+  /* background: linear-gradient(#bad4c4, #535f5e); */
+  /* background : linear-gradient(to bottom, #bbd2c5, #536976); */
   width: 100%;
   height:100%;
   position: fixed;
@@ -421,6 +433,9 @@ textarea {
         margin-right: -50%;
         transform: translate(-50%, -50%) }
 
+}
+.action_startup_load_user{
+    min-width: 140px !important;
 }
 
 

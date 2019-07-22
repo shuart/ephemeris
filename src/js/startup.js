@@ -120,7 +120,7 @@ function createStartUp() {
           html+= `
             <div class="item">
             <div class="ui labeled button" tabindex="0">
-              <div data-id="${user.uuid}" class="ui teal button action_startup_load_user">
+              <div data-id="${user.uuid}" style="min-width: 140px;" class="ui teal button action_startup_load_user">
                 <i class="user icon"></i> ${user.name}
               </div>
               <a data-id="${user.uuid}" class="ui basic label action_startup_remove_user">
@@ -149,22 +149,24 @@ function createStartUp() {
   function renderHTML() {
 
     sourceEl = document.createElement('div');
+    sourceEl.style.display= "flex";
+    sourceEl.style.justifyContent= "center";
     document.querySelector('body').appendChild(sourceEl);
     var dimmer = document.createElement('div');
     dimmer.classList="dimmer"
-    dimmer.style.background = "linear-gradient(to bottom, #bbd2c5, #536976)"
+    // dimmer.style.background = "linear-gradient(#b0d6be, #535f5e)"
+    // dimmer.style.background = "linear-gradient(#bad4c4, #535f5e)"
+    dimmer.style.background = "linear-gradient(#99b6c1, #4a524b)"
+    // dimmer.style.background = "linear-gradient(to bottom, #bbd2c5, #536976)"
     dimmer.style.opacity = 1;
     var mainEl = document.createElement('div');
 
     mainEl.classList ="ui raised very padded text container segment"
     mainEl.style.position = "fixed"
     mainEl.style.top = "0px"
-    mainEl.style.width = "50%"
-    //mainEl.style.height = "100%"
+    // mainEl.style.width = "50%"
     mainEl.style.zIndex = "99999"
     mainEl.style.backgroundColor = "white"
-    //mainEl.style.margin = "auto"
-    mainEl.style.left= "25%";
     // mainEl.style.top= "50%";
     // mainEl.style.transform= "translate(-50%, -50%);"
 
@@ -173,8 +175,9 @@ function createStartUp() {
     mainEl.innerHTML = `
     <div class="ui container">
       <h2 class='ui center aligned icon header'>
-        <i class="circular compass outline icon"></i>
-        <div class="ui content">
+        <img class="ui image" src="./img/app.png">
+        <!-- <i class="circular compass outline icon"></i> -->
+        <div class="ui content app-title">
         Ephemeris
         </div>
       </h2>
