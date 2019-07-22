@@ -208,13 +208,30 @@ var reparse = false;
         let lastName = prompt("Last name")
         push(act.add("stakeholders",{uuid:genuuid(), name:firstName, lastName:lastName}))
       },
+      onAddFromPopup: (ev)=>{
+        var uuid = genuuid()
+        let firstName = prompt("New stakeholder - First name")
+        let lastName = prompt("Last name")
+        if (firstName && lastName) {
+          push(act.add("stakeholders", {uuid:uuid,name:firstName, lastName:lastName}))
+          if (ev.target && ev.target != "undefined") {
+            push(act.move("stakeholders", {origin:uuid, target:ev.target.dataset.id}))
+            //check for parenting
+            let parent = store.stakeholders.links.find(l=>l.target == ev.target.dataset.id)
+            if (parent) {
+              push(act.addLink("stakeholders",{source:parent.source, target:uuid}))
+            }
+          }
+          ev.select.updateData(store.stakeholders.items)
+          ev.select.updateLinks(store.stakeholders.links)
+        }
+      },
       onClick: (ev)=>{
-        //mutations
-        // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
-        // console.log(ev.target);
-        // store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
-        // ev.selectDiv.remove()
-        // renderCDC(store.db, searchFilter)
+        showSingleItemService.showById(ev.target.dataset.id, function (e) {
+          ev.select.updateData(store.stakeholders.items)
+          ev.select.updateLinks(store.stakeholders.links)
+          ev.select.refreshList()
+        })
       },
       extraActions:[
         {
