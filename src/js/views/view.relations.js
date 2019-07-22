@@ -180,6 +180,26 @@ var createRelationsView = function () {
 
       update()
     }, listContainer)
+    bind(".action_relations_show_all_nodes_in_view","click",(e)=>{
+
+      let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
+      for (var i = 0; i < children.length; i++) {
+        let child = children[i];let linkedChildId = child.dataset.id;
+
+        let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
+        if (!isVisible) {  hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedChildId)  }
+      }
+      update()
+    }, container)
+    bind(".action_relations_hide_all_nodes_in_view","click",(e)=>{
+
+      let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
+      for (var i = 0; i < children.length; i++) {
+        let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
+        if (isVisible && child.dataset.label) {hiddenItemsFromSideView.push(linkedChildId)}
+      }
+      update()
+    }, container)
     bind(".action_relations_toogle_show_graph_menu","click",(e)=>{
       var elem = queryDOM('.menuGraph')
       if (elem.classList.contains('hidden')) {
@@ -773,6 +793,13 @@ var createRelationsView = function () {
         <a class="${groupElements.stakeholders ? 'active teal':''} ui item action_relations_toogle_group_stakeholders">Stakeholders</a>
         <a class="${groupElements.pbs ? 'active teal':''} ui item action_relations_toogle_group_pbs">Products</a>
         <a class="${groupElements.physicalSpaces ? 'active teal':''} ui item action_relations_toogle_group_physicalSpaces">Physical Spaces</a>
+        </div>
+      </div>
+      <div class="item">
+        <div class="header">Show in view</div>
+        <div class="ui mini basic buttons">
+          <div class="ui mini button action_relations_show_all_nodes_in_view">Show all</div>
+          <div class="ui mini button action_relations_hide_all_nodes_in_view">Hide all</div>
         </div>
       </div>
       <div class="item">
