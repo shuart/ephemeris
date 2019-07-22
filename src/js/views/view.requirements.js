@@ -20,7 +20,9 @@ var createRequirementsView = function () {
       {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
       {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
       {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-      {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
+      {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+      {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true}
+
     ]
     if (simpleView) {
       displayRules = [
@@ -235,6 +237,16 @@ var createRequirementsView = function () {
     }else if (metalinkType == "tags") {
       sourceGroup="tags";
       sourceData=store.tags.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "WpOwnNeed") {
+      sourceGroup="workPackages"
+      invert = true;
+      source = "target"//invert link order for after
+      target = "source"
+      sourceLinks=store.workPackages.links
+      sourceData=store.workPackages.items
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]

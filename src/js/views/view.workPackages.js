@@ -48,12 +48,11 @@ var createWorkPackagesView = function () {
         showSingleItemService.showById(ev.target.dataset.id)
       },
       onClick: (ev)=>{
-        //mutations
-        // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
-        // console.log(ev.target);
-        // store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
-        // ev.selectDiv.remove()
-        // renderCDC(store.db, searchFilter)
+        showSingleItemService.showById(ev.target.dataset.id, function (e) {
+          ev.select.updateData(store.workPackages.items)
+          ev.select.updateLinks(store.workPackages.links)
+          ev.select.refreshList()
+        })
       },
       extraActions:[
         {

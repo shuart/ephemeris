@@ -28,7 +28,8 @@ var createPbsView = function () {
         {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
         {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"},
         {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
-        {prop:"contains",isTarget:true, displayAs:"Physical Spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:true}
+        {prop:"contains",isTarget:true, displayAs:"Physical Spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:true},
+        {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true}
       ]
     }
 
@@ -249,11 +250,20 @@ var createPbsView = function () {
     }else if (metalinkType == "contains") {
       sourceGroup="physicalSpaces"
       invert = true;
-      sourceData=store.currentPbs.items
       source = "target"//invert link order for after
       target = "source"
       sourceLinks=store.physicalSpaces.links
       sourceData=store.physicalSpaces.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "WpOwn") {
+      sourceGroup="workPackages"
+      invert = true;
+      source = "target"//invert link order for after
+      target = "source"
+      sourceLinks=store.workPackages.links
+      sourceData=store.workPackages.items
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]

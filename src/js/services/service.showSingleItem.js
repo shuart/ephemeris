@@ -24,6 +24,7 @@ var createShowSingleItemService = function () {
     else if (store.functions.items.find(i=>i.uuid == uuid)) { storeGroup = "functions"; label='Functions'}
     else if (store.stakeholders.items.find(i=>i.uuid == uuid)) { storeGroup = "stakeholders"; label='Users'}
     else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) { storeGroup = "physicalSpaces"; label='physicalSpaces'}
+    else if (store.workPackages.items.find(i=>i.uuid == uuid)) { storeGroup = "workPackages"; label='workPackages'}
 
     if (!store[storeGroup]) {
       console.log("no group available");
@@ -107,6 +108,16 @@ var createShowSingleItemService = function () {
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ];
+    }else if (metalinkType == "WpOwn") {
+      sourceGroup="currentPbs";
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ];
+    }else if (metalinkType == "WpOwnNeed") {
+      sourceGroup="requirements";
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ];
     }
 
     var sourceData = store[sourceGroup].items
@@ -164,6 +175,7 @@ var createShowSingleItemService = function () {
     else if (store.functions.items.find(i=>i.uuid == uuid)) { return true}
     else if (store.stakeholders.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) {return true }
+    else if (store.workPackages.items.find(i=>i.uuid == uuid)) {return true }
     else {
       return false
     }
@@ -183,7 +195,8 @@ var createShowSingleItemService = function () {
         {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
         {prop:"originNeed",isTarget:true, displayAs:"linked to products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
         {prop:"originNeed",isTarget:true, displayAs:"linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:false},
-        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
+        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+        {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false}
       ]
     }else if (type =="Pbs") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
@@ -191,7 +204,8 @@ var createShowSingleItemService = function () {
         {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
         {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true},
         {prop:"contains",isTarget:true, displayAs:"Linked to physical spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:false},
-        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
+        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+        {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false}
       ]
     }else if (type =="physicalSpaces") {
       return [{prop:"name", displayAs:"Name", edit:true},
@@ -205,8 +219,13 @@ var createShowSingleItemService = function () {
               {prop:"role", displayAs:"Role", edit:true},
               {prop:"mail", displayAs:"E-mail", edit:true},
               {prop:"origin",isTarget:true, displayAs:"linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
-
-
+              {prop:"assignedTo",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false}
+      ]
+    }else if (type =="workPackages"){
+      return [{prop:"name", displayAs:"First name", edit:true},
+              {prop:"assignedTo", displayAs:"Assigned To", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
+              {prop:"WpOwn", displayAs:"Products Owned", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
+              {prop:"WpOwnNeed", displayAs:"Requirements Owned", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
       ]
     }
   }
