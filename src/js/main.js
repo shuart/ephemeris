@@ -160,6 +160,7 @@ var reparse = false;
     var store = query.currentProject()
     showListMenu({
       sourceData:store.stakeholders.items,
+      sourceLinks:store.stakeholders.links,
       displayProp:"name",
       display:[
         {prop:"name", displayAs:"First name", edit:"true"},
@@ -187,6 +188,19 @@ var reparse = false;
         if (confirm("remove item ?")) {
           push(act.remove("stakeholders",{uuid:ev.target.dataset.id}))
           ev.select.updateData(store.stakeholders.items)
+        }
+      },
+      onMove: (ev)=>{
+        console.log("move");
+        if (confirm("move item ?")) {
+          push(act.move("stakeholders", {origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+          //update links if needed
+          push(act.removeLink("stakeholders",{target:ev.originTarget.dataset.id}))
+          if (ev.targetParentId && ev.targetParentId != "undefined") {
+            push(act.addLink("stakeholders",{source:ev.targetParentId, target:ev.originTarget.dataset.id}))
+          }
+          ev.select.updateData(store.stakeholders.items)
+          ev.select.updateLinks(store.stakeholders.links)
         }
       },
       onAdd: (ev)=>{
@@ -218,6 +232,21 @@ var reparse = false;
               }
             })
 
+          }
+        },
+        {
+          name:"Diagramme",
+          action:(ev)=>{
+            setTimeout(function () {
+              ev.select.remove() //TODO UGLY! find a better way. Needed because the list comp wil reload after invoking
+            }, 200);
+
+            showTreeFromListService.showByStoreGroup("stakeholders", function (e) {
+              ev.select.updateData(store.stakeholders.items)
+              ev.select.updateLinks(store.stakeholders.links)
+              ev.select.update() //TODO find a better way
+
+            })
           }
         }
       ]
