@@ -165,8 +165,13 @@ function loadSavedData(data, callback) {
   }else if (jsonContent.type == "project") {
     if (app.state.currentUser) {
       if (app.store.projects.find(e=> e.uuid == jsonContent.data.uuid )) {
+
+        var projectIndex = app.store.projects.findIndex(e=> e.uuid == jsonContent.data.uuid )
+
+        checkProjectDifferences(app.store.projects[projectIndex], jsonContent.data)
+        
         if (confirm("This project exist already. Do you want to replace it?")) {
-          var projectIndex = app.store.projects.findIndex(e=> e.uuid == jsonContent.data.uuid )
+
           app.store.projects[projectIndex] = jsonContent.data
           renderCDC()
           pageManager.setActivePage("projectSelection")
@@ -180,4 +185,11 @@ function loadSavedData(data, callback) {
       }
     }else {alert("project files can only be added when logged in")}
   }
+}
+
+function checkProjectDifferences(original, target) {
+  let differences = []
+  let diffResult = DeepDiff.diff(original,target)
+  console.log(diffResult);
+
 }
