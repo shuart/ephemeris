@@ -168,8 +168,8 @@ function loadSavedData(data, callback) {
 
         var projectIndex = app.store.projects.findIndex(e=> e.uuid == jsonContent.data.uuid )
 
-        checkProjectDifferences(app.store.projects[projectIndex], jsonContent.data)
-        
+        checkProjectDifferences(JSON.parse(JSON.stringify(app.store.projects[projectIndex])), jsonContent.data)
+
         if (confirm("This project exist already. Do you want to replace it?")) {
 
           app.store.projects[projectIndex] = jsonContent.data
@@ -192,4 +192,77 @@ function checkProjectDifferences(original, target) {
   let diffResult = DeepDiff.diff(original,target)
   console.log(diffResult);
 
+  diffResult.forEach(function (d) {
+    if (d.kind= "D" && d.lhs != []) {
+      if (Array.isArray(d.lhs) && !d.lhs[0]) {
+        //case is empty array
+      }else {
+        let element = d.lhs
+        let type = "Missing or Removed"
+        let group = d.path[0]
+        let concernedProp = d.path[d.path.length-1]
+
+        differences.push("Value \'"+element +"\' "+  type + " in " + propToReadable(group) +" at property "+propToReadable(concernedProp)+"")
+      }
+    }
+  })
+
+  let changesInText = differences.join("\n")
+  alert(changesInText)
+
+
+}
+function propToReadable(p) {
+  if (p == "currentPbs") {
+    return 'Products'
+  }else if(p == "requirements") {
+    return 'Requirements'
+  }else if(p == "functions") {
+    return 'Functions'
+  }else if(p == "stakeholders") {
+    return 'Stakeholders'
+  }else if(p == "workPackages") {
+    return 'Work Packages'
+  }else if(p == "metaLinks") {
+    return 'Project Relations'
+  }else if(p == "physicalSpaces") {
+    return 'Physical Spaces'
+
+  }else if(p == "tags") {
+    return 'Tags'
+  }else if(p == "name") {
+    return 'Name'
+  }else if(p == "name") {
+    return 'Name'
+  }else if(p == "lastName") {
+    return 'Last Name'
+  }else if(p == "desc") {
+    return 'Description'
+  }else if(p == "own") {
+    return 'received from'
+  }else if(p == "desc") {
+    return 'Description'
+  }else {
+    return p
+  }
+}
+
+function conflictResolver(original, target) {
+  //check PBS
+  let groupDiff =[]
+  let groupCurrentPath =[]
+  let groupTargetObjects = target.currentPbs.items
+  let groupTargetLinks = target.currentPbs.links
+
+  for (var i = 0; i < groupTargetObjects.length; i++) {
+    let index = i
+    let reviewedObject = groupTargetObjects[i]
+
+  }
+
+  for (var items in groupTargetObjects) {
+    if (object.hasOwnProperty(variable)) {
+
+    }
+  }
 }
