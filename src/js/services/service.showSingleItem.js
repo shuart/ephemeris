@@ -118,6 +118,12 @@ var createShowSingleItemService = function () {
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ];
+    }else if (metalinkType == "assignedTo") {
+      sourceGroup="stakeholders";
+      displayRules = [
+        {prop:"name", displayAs:"First name", edit:false},
+        {prop:"lastName", displayAs:"Last name", fullText:true, edit:false}
+      ];
     }
 
     var sourceData = store[sourceGroup].items
