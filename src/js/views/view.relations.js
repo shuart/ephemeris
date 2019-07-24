@@ -422,23 +422,15 @@ var createRelationsView = function () {
     document.querySelector(".center-container").appendChild(container)
 
     //render graph
+    //reset items to display component var
 
-    var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
-    var array2 =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
-    var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
-    var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
-    var array5 = store.physicalSpaces.items.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
-
-    itemsToDisplay = []
-    itemsToDisplay = itemsToDisplay.concat(array2)
-    if (elementVisibility.requirements) { itemsToDisplay = itemsToDisplay.concat(array3) }
-    if (elementVisibility.functions) { itemsToDisplay = itemsToDisplay.concat(array1) }
-    if (elementVisibility.stakeholders) { itemsToDisplay = itemsToDisplay.concat(array4) }
-    if (elementVisibility.physicalSpaces) { itemsToDisplay = itemsToDisplay.concat(array5) }
+    updateItemsToDisplayAndRelations(elementVisibility)
 
     //remove hidden items from tree
 
     let filteredItemsToDisplay = itemsToDisplay.filter(i=> !hiddenItemsFromSideView.includes(i.uuid))
+    //copy relations
+    let relationToDisplay = relations.concat([])
 
     var groupLinks =[]
     var initIndex = 0
@@ -504,41 +496,8 @@ var createRelationsView = function () {
         }
       })
 
-      relations = []//checl what connection to display TODO store in func
-      if (elementVisibility.metaLinks) {
-        relations = relations.concat(store.metaLinks.items)
-      }
-      if (elementVisibility.interfaces) {
-        relations = relations.concat(store.interfaces.items.map((e) => {e.customColor="#6dce9e"; return e}))
-      }
-      if (elementVisibility.compose) {
-        relations = relations.concat(store.currentPbs.links.map((e) => {e.type = "Composed by"; return e}))
-        if (elementVisibility.physicalSpaces) {
-          relations = relations.concat(store.physicalSpaces.links.map((e) => {e.type = "Contains"; return e}))
-        }
-        groupLinks = []//TODO WHat is the point?
-      }
-      //check if some relation are on the same nodes;
-      var duplicates = []
-      function isOverlap(ra, rb) {
-        if (ra != rb) {
-          return ((ra.source== rb.source && ra.target== rb.target ) || (ra.target== rb.source && ra.source== rb.target ))
-        }
-      }
-      for (relation of relations) {
-        if ( relations.find(e=>isOverlap(relation, e)) ) {
-          var previouslyStored = duplicates.find(e=>isOverlap(relation, e))
-          if (!previouslyStored) {
-            duplicates.push({source:relation.source, target:relation.target, qty:1})
-            relation.displacement = 6
-          }else {//Why is it activated so much
-            previouslyStored.qty ++
-            relation.displacement = 6*previouslyStored.qty
-          }
-        }
-      }
-      //copy relations
-      let relationToDisplay = relations.concat([])
+
+
       renderforcesTree({nodes:filteredItemsToDisplay, relationships:relationToDisplay, groupLinks:groupLinks})
     }
     // console.log(sideListe);
@@ -626,6 +585,56 @@ var createRelationsView = function () {
     }
 
   }
+  var updateItemsToDisplayAndRelations= function (elementVisibility) {//only side effect TODO: find a better way?
+    var store = JSON.stringify(query.currentProject())
+    store = JSON.parse(store)// TODO used multiple time. Should do it only once
+    var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
+    var array2 =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
+    var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
+    var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
+    var array5 = store.physicalSpaces.items.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
+
+    itemsToDisplay = []
+    itemsToDisplay = itemsToDisplay.concat(array2)
+    if (elementVisibility.requirements) { itemsToDisplay = itemsToDisplay.concat(array3) }
+    if (elementVisibility.functions) { itemsToDisplay = itemsToDisplay.concat(array1) }
+    if (elementVisibility.stakeholders) { itemsToDisplay = itemsToDisplay.concat(array4) }
+    if (elementVisibility.physicalSpaces) { itemsToDisplay = itemsToDisplay.concat(array5) }
+
+    relations = []//checl what connection to display TODO store in func
+    if (elementVisibility.metaLinks) {
+      relations = relations.concat(store.metaLinks.items)
+    }
+    if (elementVisibility.interfaces) {
+      relations = relations.concat(store.interfaces.items.map((e) => {e.customColor="#6dce9e"; return e}))
+    }
+    if (elementVisibility.compose) {
+      relations = relations.concat(store.currentPbs.links.map((e) => {e.type = "Composed by"; return e}))
+      if (elementVisibility.physicalSpaces) {
+        relations = relations.concat(store.physicalSpaces.links.map((e) => {e.type = "Contains"; return e}))
+      }
+      groupLinks = []//TODO WHat is the point?
+    }
+    //check if some relation are on the same nodes;
+    var duplicates = []
+    function isOverlap(ra, rb) {
+      if (ra != rb) {
+        return ((ra.source== rb.source && ra.target== rb.target ) || (ra.target== rb.source && ra.source== rb.target ))
+      }
+    }
+    for (relation of relations) {
+      if ( relations.find(e=>isOverlap(relation, e)) ) {
+        var previouslyStored = duplicates.find(e=>isOverlap(relation, e))
+        if (!previouslyStored) {
+          duplicates.push({source:relation.source, target:relation.target, qty:1})
+          relation.displacement = 6
+        }else {//Why is it activated so much
+          previouslyStored.qty ++
+          relation.displacement = 6*previouslyStored.qty
+        }
+      }
+    }
+  }
 
 
 
@@ -648,9 +657,7 @@ var createRelationsView = function () {
           compose : true
         }
         objectIsActive = true;
-        if (!itemsToDisplay[0]) {
-          update()//update first to poulate elements
-        }
+        updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
         isolateSelectedNodes([{uuid:options.param.uuid}], true)
       }
     }else {
