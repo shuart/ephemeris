@@ -286,6 +286,10 @@ var createRelationsView = function () {
         }else {
           setReset()
         }
+        //fix graph after a few seconds
+        setTimeout(function () {
+          setGraphToFixed()
+        }, 1900);
 
       }, 1);
     }, container)
