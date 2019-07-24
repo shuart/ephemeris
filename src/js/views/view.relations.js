@@ -369,11 +369,11 @@ var createRelationsView = function () {
     //INTERFACES MENU connections
     bind(".action_interfaces_toogle_compose","click",(e)=>{
       addMode = "compose"
-      update()
+      // update()
     }, container)
     bind(".action_interfaces_toogle_physical","click",(e)=>{
       addMode = "physical"
-      update()
+      // update()
     }, container)
     bind(".action_interfaces_add_pbs","click",(e)=>{
       var id = genuuid()
