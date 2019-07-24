@@ -613,7 +613,7 @@ var createRelationsView = function () {
     if (elementVisibility.metaLinks) {
       relations = relations.concat(store.metaLinks.items)
     }
-    if (elementVisibility.interfaces) {
+    if (elementVisibility.interfaces ) {
       relations = relations.concat(store.interfaces.items.map((e) => {e.customColor="#6dce9e"; return e}))
     }
     if (elementVisibility.compose) {
@@ -1146,7 +1146,7 @@ var createRelationsView = function () {
       if (addMode == "physical") {
           let isCircularRef = store.interfaces.items.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
           if (!isCircularRef) {
-            push(act.add("interfaces",{type:"Physical connection", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+            push(act.add("interfaces",{type:"Physical connection", name:"Interface between "+lastSelectedNode.name+" and "+previousSelectedNode.name, source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
           }else {
             alert("Circular reference. Action not possible")
           }

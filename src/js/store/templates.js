@@ -124,7 +124,8 @@ var store = {
     items:[{uuid:uuid(),type:"origin", source:"555sfse", target:"f896546e"}]
   },
   interfaces:{
-    items:[{uuid:uuid(), type:"physical connection", source:"555sfse", target:"f896546e", description:"Un interface"}]
+    items:[]
+    // items:[{uuid:uuid(), name:"An exemple interface",type:"physical connection", source:"555sfse", target:"f896546e", description:"Un interface"}]
   },
   links:[] //TODO unifier links et metalinks
 }

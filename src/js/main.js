@@ -66,6 +66,7 @@ var reparse = false;
   pageManager.addComponent({name:"workPackages",object:workPackagesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"physicalSpaces",object:physicalSpacesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"extraGraphsView",object:extraGraphsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"interfacesListView",object:interfacesListView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   //side menu component
   pageManager.addComponent({name:"leftMenu",object:leftMenu})
   pageManager.addComponent({name:"leftMenuActions",object:leftMenuActions})
@@ -140,6 +141,9 @@ var reparse = false;
   connect(".action_toogle_extra_graphs","click",(e)=>{
     pageManager.setActivePage("extraGraphsView")
   })
+  connect(".action_toogle_interfaces_list_view","click",(e)=>{
+    pageManager.setActivePage("interfacesListView")
+  })
 
 
 
@@ -149,9 +153,6 @@ var reparse = false;
   })
   connect(".action_toogle_metalinks_view","click",(e)=>{
     metalinksView.update()
-  })
-  connect(".action_toogle_interfaces_list_view","click",(e)=>{
-    interfacesListView.update()
   })
   connect(".action_toogle_extraFields_view","click",(e)=>{
     extraFieldsView.update()
