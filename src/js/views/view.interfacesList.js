@@ -83,9 +83,22 @@ var createInterfacesListView = function () {
         // renderCDC(store.db, searchFilter)
       },
       extraActions:[
-
+        {
+          name:"Export",
+          action:(ev)=>{
+            exportToCSV()
+          }
+        }
       ]
     })
+  }
+  var exportToCSV = function () {
+    let store = query.currentProject()
+    let data = readifyInterfaces().map(i=>{
+      return {id:i.uuid, type:i.type, description:i.description, source:i.source, target:i.target}
+    })
+    JSONToCSVConvertor(data, 'Interfaces', true)
+
   }
 
   var update = function () {
