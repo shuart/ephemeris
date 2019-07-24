@@ -260,26 +260,7 @@ var createRelationsView = function () {
       isolateSelectedNodes(selectedNodes, true)
     }, container)
     bind(".action_restore_last_interface_toogle_network","click",(e)=>{
-      function toggleFixedGraph() {
-        fixedValues = !fixedValues
-        update()
-      }
-      if (objectIsActive) {
-        setTimeout(function () {
-
-          if (!fixedValues) {
-            let snapId = "wipgraph484622464"
-            let newGraphItem = {uuid:snapId,view:activeMode, name:"0-Current WIP", groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
-            push(act.remove("graphs", {uuid:snapId}))
-            push(act.add("graphs", newGraphItem))
-            setSnapshot(snapId)
-          }else {
-            fixedValues = false
-            update()
-          }
-
-        }, 1);
-      }
+      toggleFixedGraph()
     }, container)
     bind(".action_relations_load_view","click",(e)=>{
       setTimeout(function () {
@@ -679,6 +660,10 @@ var createRelationsView = function () {
       objectIsActive = true;
       update()
     }
+    //fix graph after a few seconds
+    setTimeout(function () {
+      setGraphToFixed()
+    }, 1900);
   }
 
   var setInactive = function () {
@@ -702,7 +687,7 @@ var createRelationsView = function () {
     <div class="ui item">
       <div class="ui toggle checkbox">
         <input ${fixedValues ? 'checked':''} class="action_restore_last_interface_toogle_network" type="checkbox" name="public">
-        <label>Fixed Graph</label>
+        <label>Pinned Nodes</label>
       </div>
     </div>
 
@@ -1169,6 +1154,27 @@ var createRelationsView = function () {
           }
 
       }
+    }
+  }
+  function toggleFixedGraph() {
+    if (objectIsActive) {
+      setTimeout(function () {
+        if (!fixedValues) {
+          setGraphToFixed()
+        }else {
+          fixedValues = false
+          update()
+        }
+      }, 1);
+    }
+  }
+  function setGraphToFixed() {
+    if (!fixedValues) {
+      let snapId = "wipgraph484622464"
+      let newGraphItem = {uuid:snapId,view:activeMode, name:"0-Current WIP", groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+      push(act.remove("graphs", {uuid:snapId}))
+      push(act.add("graphs", newGraphItem))
+      setSnapshot(snapId)
     }
   }
 
