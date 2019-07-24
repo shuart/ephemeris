@@ -97,7 +97,7 @@ var createRelationsView = function () {
       <div class="ui divider"></div>
       `
     return html
-    }
+  }
   }
 
 
@@ -210,14 +210,17 @@ var createRelationsView = function () {
         showVisibilityMenu = false
       }
     }, container)
+
     bind(".action_relations_toogle_show_graph_snapshot_menu","click",(e)=>{
       var elem = queryDOM('.menuSnapshotGraph')
       console.log(elem);
       if (elem.classList.contains('hidden')) {
         elem.classList.remove('hidden')
+        queryDOM('.action_relations_toogle_show_graph_snapshot_menu').classList.add('active')
         showVisibilityMenuSnapshot = true
       }else{
         elem.classList.add('hidden')
+        queryDOM('.action_relations_toogle_show_graph_snapshot_menu').classList.remove('active')
         showVisibilityMenuSnapshot = false
       }
     }, container)
@@ -360,10 +363,22 @@ var createRelationsView = function () {
       console.log(e.target.value);
       fadeOtherNodesOnHoover = !fadeOtherNodesOnHoover
       activeGraph.setFadeOtherNodesOnHoover(fadeOtherNodesOnHoover)
-      console.log(queryDOM('.action_fade_other_node_toogle_network'));
-      // queryDOM('.action_fade_other_node_toogle_network').checked = true;
-      // queryDOM('.action_fade_other_node_toogle_network').dispatchEvent(new Event('change'))
-      //update()
+      if (!queryDOM('.action_fade_other_node_toogle_network_button').classList.contains('active')) {
+        queryDOM('.action_fade_other_node_toogle_network_button').classList.add('active')
+      }else {
+        queryDOM('.action_fade_other_node_toogle_network_button').classList.remove('active')
+      }
+    }, container)
+    bind(".action_fade_other_node_toogle_network_button","click",(e)=>{
+      console.log(e.target.value);
+      fadeOtherNodesOnHoover = !fadeOtherNodesOnHoover
+      activeGraph.setFadeOtherNodesOnHoover(fadeOtherNodesOnHoover)
+      console.log(queryDOM('.action_fade_other_node_toogle_network_button'));
+      if (!queryDOM('.action_fade_other_node_toogle_network_button').classList.contains('active')) {
+        queryDOM('.action_fade_other_node_toogle_network_button').classList.add('active')
+      }else {
+        queryDOM('.action_fade_other_node_toogle_network_button').classList.remove('active')
+      }
     }, container)
 
     //INTERFACES MENU connections
@@ -675,34 +690,46 @@ var createRelationsView = function () {
 
   var renderMenu=function (container) {
     let commonMenuHTML = `
+    <div class="item">
+      <div class="ui mini basic icon buttons">
+        <button class="${showVisibilityMenuSnapshot ? 'active':''} ui basic icon button action_relations_toogle_show_graph_snapshot_menu" data-tooltip="Show Snapshot Tools" data-position="bottom center" >
+          <i class="camera icon action_relations_toogle_show_graph_snapshot_menu"></i>
+        </button>
+        <button class="ui mini button action_relations_show_all_nodes_in_view" data-tooltip="Show All" data-position="bottom center">
+          <i class="eye icon action_relations_show_all_nodes_in_view"></i>
+        </button>
+        <button class="ui mini button action_relations_hide_all_nodes_in_view" data-tooltip="Hide All" data-position="bottom center">
+          <i class="eye slash icon action_relations_hide_all_nodes_in_view"></i>
+        </button>
+        <button class="ui mini button action_relations_isolate_nodes_and_children" data-tooltip="Show only selected relations" data-position="bottom center">
+          <i class="eye dropper icon action_relations_isolate_nodes_and_children"></i>
+        </button>
+        <button class="${fadeOtherNodesOnHoover ? 'active':''} ui mini button action_fade_other_node_toogle_network_button" data-tooltip="Highlight connection on hover" data-position="bottom center">
+          <i class="sun outline icon action_fade_other_node_toogle_network_button"></i>
+        </button>
+      </div>
+    </div>
+
     <div class="ui item">
-      <button class="ui basic icon button action_relations_toogle_show_graph_snapshot_menu">
-        <i class="camera icon action_relations_toogle_show_graph_snapshot_menu"></i>
+      <button class="ui basic icon button">
+        <i class="download icon action_relations_export_png"></i>
       </button>
     </div>
+
     <div class="ui item">
       <div class="ui toggle checkbox">
         <input ${fixedValues ? 'checked':''} class="action_restore_last_interface_toogle_network" type="checkbox" name="public">
         <label>Fixed Graph</label>
       </div>
     </div>
-    <div class="ui item">
-      <div class="ui toggle checkbox">
-        <input ${fadeOtherNodesOnHoover ? 'checked':''} class="action_fade_other_node_toogle_network" type="checkbox" name="public">
-        <label>Highlight connections</label>
-      </div>
-    </div>
+
     <div class="ui item">
       <div class="ui icon input">
         <input class="input_relation_search_nodes" type="text" placeholder="Search...">
         <i class="search icon"></i>
       </div>
     </div>
-    <div class="ui item">
-      <button class="ui basic icon button">
-        <i class="download icon action_relations_export_png"></i>
-      </button>
-    </div>
+
     `
     let relationsMenuHTML =`
     <div class="ui item">
@@ -802,13 +829,21 @@ var createRelationsView = function () {
         <a class="${groupElements.physicalSpaces ? 'active teal':''} ui item action_relations_toogle_group_physicalSpaces">Physical Spaces</a>
         </div>
       </div>
+
       <div class="item">
-        <div class="header">Show in view</div>
-        <div class="ui mini basic buttons">
-          <div class="ui mini button action_relations_show_all_nodes_in_view">Show all</div>
-          <div class="ui mini button action_relations_hide_all_nodes_in_view">Hide all</div>
+        <div class="header">Show</div>
+          <div class="ui item">
+            <div class="ui toggle checkbox">
+              <input ${fadeOtherNodesOnHoover ? 'checked':''} class="action_fade_other_node_toogle_network" type="checkbox" name="public">
+              <label>Highlight connections</label>
+            </div>
+          </div>
+        <div class="ui mini vertical basic buttons">
+          <div class="ui mini button action_relations_isolate_nodes">Selected</div>
+          <div class="ui mini button action_relations_isolate_nodes_and_children">Selected and relations</div>
         </div>
       </div>
+
       <div class="item">
         <div class="header">Isolate</div>
         <div class="ui mini vertical basic buttons">
