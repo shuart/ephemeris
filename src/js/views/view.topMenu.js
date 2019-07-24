@@ -72,6 +72,7 @@ var createTopMenu = function (containerSelector) {
       <a class="item action_toogle_extra_graphs"><i class="sitemap icon"></i>Extra Graphs</a>
       <a class="item action_toogle_tags_view"><i class="tags icon"></i>Tags</a>
       <a class="item action_toogle_metalinks_view"><i class="exchange icon"></i>Project links</a>
+      <a class="item action_toogle_interfaces_list_view"><i class="cubes icon"></i>Project interfaces</a>
       <a class="item action_toogle_work_packages"><i class="briefcase icon"></i>Work packages</a>
       <a class="item action_toogle_physical_spaces"><i class="building icon"></i>Physical spaces</a>
       <a class="item action_toogle_import_users_from_projects"><i class="users icon"></i>Import users</a>

@@ -197,6 +197,12 @@ var createOverview = function (targetSelector) {
       }
       alertAboutUpdate("Physical Spaces feature has been added.")
     }
+    if (store.interfaces.items.find(i=>(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )) {
+
+      store.interfaces.items = store.interfaces.items.filter(i=>!(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )
+
+      alertAboutUpdate("Interfaces list feature has been added.")
+    }
   }
 
 

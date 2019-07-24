@@ -150,6 +150,9 @@ var reparse = false;
   connect(".action_toogle_metalinks_view","click",(e)=>{
     metalinksView.update()
   })
+  connect(".action_toogle_interfaces_list_view","click",(e)=>{
+    interfacesListView.update()
+  })
   connect(".action_toogle_extraFields_view","click",(e)=>{
     extraFieldsView.update()
   })

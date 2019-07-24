@@ -365,10 +365,22 @@ var createRelationsView = function () {
     //INTERFACES MENU connections
     bind(".action_interfaces_toogle_compose","click",(e)=>{
       addMode = "compose"
+      if (!queryDOM('.action_interfaces_toogle_compose').classList.contains('active')) {
+        queryDOM('.action_interfaces_toogle_compose').classList.add('active')
+        queryDOM('.action_interfaces_toogle_physical').classList.remove('active')
+      }else {
+        queryDOM('.action_interfaces_toogle_compose').classList.remove('active')
+      }
       // update()
     }, container)
     bind(".action_interfaces_toogle_physical","click",(e)=>{
       addMode = "physical"
+      if (!queryDOM('.action_interfaces_toogle_physical').classList.contains('active')) {
+        queryDOM('.action_interfaces_toogle_physical').classList.add('active')
+        queryDOM('.action_interfaces_toogle_compose').classList.remove('active')
+      }else {
+        queryDOM('.action_interfaces_toogle_physical').classList.remove('active')
+      }
       // update()
     }, container)
     bind(".action_interfaces_add_pbs","click",(e)=>{
