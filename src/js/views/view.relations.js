@@ -690,30 +690,13 @@ var createRelationsView = function () {
 
   var renderMenu=function (container) {
     let commonMenuHTML = `
-    <div class="item">
-      <div class="ui mini basic icon buttons">
-        <button class="${showVisibilityMenuSnapshot ? 'active':''} ui basic icon button action_relations_toogle_show_graph_snapshot_menu" data-tooltip="Show Snapshot Tools" data-position="bottom center" >
-          <i class="camera icon action_relations_toogle_show_graph_snapshot_menu"></i>
-        </button>
-        <button class="ui mini button action_relations_show_all_nodes_in_view" data-tooltip="Show All" data-position="bottom center">
-          <i class="eye icon action_relations_show_all_nodes_in_view"></i>
-        </button>
-        <button class="ui mini button action_relations_hide_all_nodes_in_view" data-tooltip="Hide All" data-position="bottom center">
-          <i class="eye slash icon action_relations_hide_all_nodes_in_view"></i>
-        </button>
-        <button class="ui mini button action_relations_isolate_nodes_and_children" data-tooltip="Show only selected relations" data-position="bottom center">
-          <i class="eye dropper icon action_relations_isolate_nodes_and_children"></i>
-        </button>
-        <button class="${fadeOtherNodesOnHoover ? 'active':''} ui mini button action_fade_other_node_toogle_network_button" data-tooltip="Highlight connection on hover" data-position="bottom center">
-          <i class="sun outline icon action_fade_other_node_toogle_network_button"></i>
-        </button>
-      </div>
-    </div>
+
 
     <div class="ui item">
-      <button class="ui basic icon button">
-        <i class="download icon action_relations_export_png"></i>
-      </button>
+      <div class="ui icon input">
+        <input class="input_relation_search_nodes" type="text" placeholder="Search...">
+        <i class="search icon"></i>
+      </div>
     </div>
 
     <div class="ui item">
@@ -723,25 +706,61 @@ var createRelationsView = function () {
       </div>
     </div>
 
-    <div class="ui item">
-      <div class="ui icon input">
-        <input class="input_relation_search_nodes" type="text" placeholder="Search...">
-        <i class="search icon"></i>
+    <div class="item">
+      <div class="ui mini basic icon buttons">
+        <button class="disabled ui basic icon button " >
+          Tools
+        </button>
+        <button class="${showVisibilityMenuSnapshot ? 'active':''} ui basic icon button action_relations_toogle_show_graph_snapshot_menu" data-tooltip="Show Snapshot Tools" data-position="bottom center" >
+          <i class="camera icon action_relations_toogle_show_graph_snapshot_menu"></i>
+        </button>
+        <button class="ui mini button action_relations_show_all_nodes_in_view" data-tooltip="Show All" data-position="bottom center">
+          <i class="eye icon action_relations_show_all_nodes_in_view"></i>
+        </button>
+        <button class="ui mini button action_relations_hide_all_nodes_in_view" data-tooltip="Hide All" data-position="bottom center">
+          <i class="eye slash icon action_relations_hide_all_nodes_in_view"></i>
+        </button>
+        <button class="ui mini button action_relations_isolate_nodes" data-tooltip="Crop selection" data-position="bottom center">
+          <i class="crop icon action_relations_isolate_nodes"></i>
+        </button>
+        <button class="ui mini button action_relations_isolate_nodes_and_children" data-tooltip="Show only selected relations" data-position="bottom center">
+          <i class="eye dropper icon action_relations_isolate_nodes_and_children"></i>
+        </button>
+        <button class="${fadeOtherNodesOnHoover ? 'active':''} ui mini button action_fade_other_node_toogle_network_button" data-tooltip="Highlight connection on hover" data-position="bottom center">
+          <i class="sun outline icon action_fade_other_node_toogle_network_button"></i>
+        </button>
+        <button class="ui basic icon button" data-tooltip="Export as .png" data-position="bottom center">
+          <i class="download icon action_relations_export_png"></i>
+        </button>
       </div>
     </div>
-
     `
     let relationsMenuHTML =`
-    <div class="ui item">
-      <div class="ui button basic action_relations_toogle_show_graph_menu">Toogle Visibility</div>
-    </div>
+
     <div class="right menu">
       <div class="ui item">
         <div class="ui mini basic buttons">
-          <div class="ui button add_relations_nodes action_interface_add_stakeholder">Add Stakeholders</div>
-          <div class="ui button add_relations_nodes action_interface_add_requirement">Add Requirements</div>
-          <div class="ui button add_relations_nodes action_interface_add_pbs">Add Product</div>
-          <div class="ui button add_relations_nodes action_interface_add_functions">Add Functions</div>
+          <div class="disabled ui icon button">
+            Add
+          </div>
+          <div class="${addItemMode=="stakeholders" ? 'active':''} ui icon button add_relations_nodes action_interface_add_stakeholder" data-tooltip="Stakeholder" data-position="bottom center">
+            <i class="user icon action_interface_add_stakeholder"></i>
+          </div>
+          <div class="${addItemMode=="requirements" ? 'active':''} ui icon button add_relations_nodes action_interface_add_requirement" data-tooltip="Requirement" data-position="bottom center">
+            <i class="comment icon action_interface_add_requirement"></i>
+          </div>
+          <div class="${addItemMode=="currentPbs" ? 'active':''} ui icon button add_relations_nodes action_interface_add_pbs" data-tooltip="Product" data-position="bottom center">
+            <i class="dolly icon action_interface_add_pbs"></i>
+          </div>
+          <div class="${addItemMode=="functions" ? 'active':''} ui icon button add_relations_nodes action_interface_add_functions" data-tooltip="Functions" data-position="bottom center">
+            <i class="cogs icon action_interface_add_functions"></i>
+          </div>
+        </div>
+
+        <div class="ui item">
+          <div class="ui icon button basic action_relations_toogle_show_graph_menu">
+            <i class="ellipsis horizontal icon action_relations_toogle_show_graph_menu"></i>
+          </div>
         </div>
       </div>
 
@@ -762,13 +781,23 @@ var createRelationsView = function () {
       </div>
       <div class="ui item">
         <div class="ui mini basic buttons">
-          <div class="ui button action_interfaces_add_pbs">Add Product</div>
+          <div class="ui icon button action_interfaces_add_pbs" data-tooltip="Add Product" data-position="bottom center">
+            <i class="plus  icon action_interfaces_add_pbs"></i>
+            <i class="dolly icon action_interfaces_add_pbs"></i>
+          </div>
         </div>
       </div>
       <div class="ui item">
         <div class="ui mini basic buttons">
-          <div class="${addMode=='compose' ? 'active':''} ui button action_interfaces_toogle_compose">Add Composed Connection</div>
-          <div class="${addMode=='physical' ? 'active':''} ui button action_interfaces_toogle_physical">Add Physical Connection</div>
+          <div class="ui disabled icon button">
+            Add links
+          </div>
+          <div class="${addMode=='compose' ? 'active':''} ui icon button action_interfaces_toogle_compose" data-tooltip="New links will be composition relations" data-position="bottom center">
+            <i class="object group icon action_interfaces_toogle_compose"></i>
+          </div>
+          <div class="${addMode=='physical' ? 'active':''} ui icon button action_interfaces_toogle_physical" data-tooltip="New links will be physical interfaces relations" data-position="bottom center">
+            <i class="cubes icon action_interfaces_toogle_physical"></i>
+          </div>
         </div>
       </div>
     </div>`
