@@ -509,12 +509,12 @@ var createRelationsView = function () {
         relations = relations.concat(store.metaLinks.items)
       }
       if (elementVisibility.interfaces) {
-        relations = relations.concat(store.interfaces.items)
+        relations = relations.concat(store.interfaces.items.map((e) => {e.customColor="#6dce9e"; return e}))
       }
       if (elementVisibility.compose) {
-        relations = relations.concat(store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e}))
+        relations = relations.concat(store.currentPbs.links.map((e) => {e.type = "Composed by"; return e}))
         if (elementVisibility.physicalSpaces) {
-          relations = relations.concat(store.physicalSpaces.links.map((e) => {e.customColor="#6dce9e";e.type = "Contains"; return e}))
+          relations = relations.concat(store.physicalSpaces.links.map((e) => {e.type = "Contains"; return e}))
         }
         groupLinks = []//TODO WHat is the point?
       }

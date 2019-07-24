@@ -524,7 +524,12 @@ function stellae(_selector, _options) {
                 .attr("marker-end", "url(#markerstriangle)")
                 .attr('class', 'outline')
                 .attr('fill', 'none')
-                .attr('stroke', '#a5abb6');
+                .attr('stroke', '#a5abb6')
+                .attr('stroke',function(d) {
+                    // return d.color ||'#b38b47';
+                    // return d.color ||'#02b5ab';
+                    return d.customColor ||'#a5abb6';
+                });
     }
 
     function appendOverlayToRelationship(r) {
