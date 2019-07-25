@@ -1,0 +1,140 @@
+.occ-graph{
+  overflow: auto;
+}
+.occ-graph .background{
+  fill: #eee;
+}
+
+.occ-graph .label {
+  font: 300 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+  fill: #2f2f2f;
+}
+
+.occ-graph div.tooltip {
+  position: absolute;
+  text-align: center;
+  width: 400px;
+  border-radius: 5px;
+  padding: 2px;
+  background: white;
+  border: 0px;
+  pointer-events: none;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  z-index: 99999999999999999999999999;
+}
+
+.occ-graph text.active {
+  fill: red;
+  font-weight: bold;
+}
+
+.occ-graph line {
+  stroke: #fff;
+}
+
+.occ-graph .container {
+  display: grid;
+  width: 1000px;
+  grid-template-areas: "head head"
+                        "intro intro"
+                        "graph aside";
+  grid-template-columns: auto auto;
+  justify-items: center;
+  margin: auto;
+}
+
+.occ-graph graph {
+  grid-area: graph;
+}
+
+.occ-graph aside {
+  grid-area: aside;
+  margin: 5px;
+  margin-top: 280px;
+}
+
+.occ-graph #title {
+  font-family: 'Sintony', sans-serif;
+
+  font-weight: 200;
+  font-size: 38px;
+  margin-top: 45px;
+  margin-bottom: 0px;
+}
+
+.occ-graph #subtitle {
+  font-family: 'Sintony', sans-serif;
+
+  font-weight: 300;
+  font-size: 13px;
+  margin-top: 5px;
+  margin-bottom: 55px;
+  color: #e04556;
+}
+
+.occ-graph h1 {
+    font-family: 'Sintony', sans-serif;
+    font-weight: 700;
+    line-height: 51px;
+    font-size: 46px;
+    text-transform: uppercase;
+    margin: 0 0 23px 0;
+    }
+
+    /* Reset Select */
+    .occ-graph-select select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      -ms-appearance: none;
+      appearance: none;
+      outline: 0;
+      box-shadow: none;
+      border: 0 !important;
+      background: #00b5ad;;
+      background-image: none;
+    }
+    /* Remove IE arrow */
+  .occ-graph-select   select::-ms-expand {
+      display: none;
+    }
+    /* Custom Select */
+    .occ-graph-select .select {
+      position: relative;
+      display: flex;
+      width: 10em;
+      height: 2em;
+      line-height: 3;
+      background: #00b5ad;;
+      overflow: hidden;
+      border-radius: .25em;
+    }
+    .occ-graph-select select {
+      flex: 1;
+      padding: 0 .5em;
+      color: #fff;
+      cursor: pointer;
+    }
+    /* Arrow */
+    .occ-graph-select .select::after {
+      content: '\25BC';
+      position: absolute;
+      top: -10px;
+      right: 0;
+      padding: 0 1em;
+      background: #00b5ad;
+      cursor: pointer;
+      pointer-events: none;
+      -webkit-transition: .25s all ease;
+      -o-transition: .25s all ease;
+      transition: .25s all ease;
+    }
+    /* Transition */
+    .occ-graph-select .select:hover::after {
+      color: #ffffff;
+    }
+    .occ-graph-select .rightTop {
+      position: absolute;
+      right: 32px;
+      top: 27px;
+    }

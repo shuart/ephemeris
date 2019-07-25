@@ -280,6 +280,13 @@ var clearUncompleteLinks = function () {
   }
 }
 
+//utility to parse html
+function toNode(html) {
+  var tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  return tpl.content;
+}
+
 //clean words
 function slugify (str) {
     var map = {

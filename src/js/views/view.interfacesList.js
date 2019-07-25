@@ -96,6 +96,12 @@ var createInterfacesListView = function () {
           action:(ev)=>{
             exportToCSV()
           }
+        },
+        {
+          name:"Matrix",
+          action:(ev)=>{
+            createInterfaceMatrix()
+          }
         }
       ]
     })
@@ -208,6 +214,28 @@ var createInterfacesListView = function () {
     })
     JSONToCSVConvertor(data, 'Interfaces', true)
 
+  }
+
+  var createInterfaceMatrix = function () {
+    let store  = query.currentProject()
+    let data = readifyInterfaces().map(i=>{
+      let linkToTextTags = getRelatedItems(i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
+
+      return {id:i.uuid, type:i.type, description:i.description, source:i.source, target:i.target, tags:linkToTextTags}
+    })
+    let nodes = []
+    let links = []
+    store.currentPbs.items.forEach(function (p,index) {
+      nodes.push({name:p.name, group:undefined, index:index, uuid:p.uuid})
+    })
+    store.interfaces.items.forEach(function (i) {
+      console.log(nodes.find(n=>n.uuid == i.source));
+      let source=nodes.find(n=>n.uuid == i.source).index
+      let target=nodes.find(n=>n.uuid == i.target).index
+      links.push({source: source, target: target, value: 1})
+    })
+    console.log({nodes:nodes, links:links});
+    createInputPopup({originalData:{nodes:nodes, links:links}})
   }
 
   var update = function () {
