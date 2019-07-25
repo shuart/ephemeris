@@ -1,4 +1,4 @@
-var createInputPopup = function ({
+var createOccurrenceDiagram = function ({
   onSave= undefined,
   onClose= undefined,
   originalData = ""
@@ -17,11 +17,11 @@ var createInputPopup = function ({
   }
 
   var render = function () {
-    sourceEl = document.createElement('div');
-    sourceEl.style.height = "100%"
-    sourceEl.style.width = "100%"
-    sourceEl.style.zIndex = "99999999999"
-    sourceEl.style.position = "fixed"
+    sourceOccElement = document.createElement('div');
+    sourceOccElement.style.height = "100%"
+    sourceOccElement.style.width = "100%"
+    sourceOccElement.style.zIndex = "11"
+    sourceOccElement.style.position = "fixed"
 
     var dimmer = document.createElement('div');
     dimmer.classList="dimmer occurence-dimmer"
@@ -51,17 +51,19 @@ var createInputPopup = function ({
 
       };
     });
-    var closeButton = document.createElement("button")
-    closeButton.classList ="ui mini red basic button";
-    closeButton.innerHTML ="Close"
-    closeButton.addEventListener('click', event => {
+    var closeButtonOCC = document.createElement("button")
+    closeButtonOCC.classList ="ui mini red basic button closeButtonOCC";
+    closeButtonOCC.innerHTML ="Close"
+    closeButtonOCC.addEventListener('click', event => {
       if (onClose) {
 
       }
-      sourceEl.remove()
+      console.log(sourceOccElement);
+      // alert("fefsefes")
+      sourceOccElement.remove()
     });
     // menuArea.appendChild(saveButton)
-    menuArea.appendChild(closeButton)
+    menuArea.appendChild(closeButtonOCC)
     menuArea.appendChild(toNode(`<div class='occ-graph-select'>
       <div class="select rightTop">
       <select id="order">
@@ -78,12 +80,12 @@ var createInputPopup = function ({
 
      </div>
     `
-    sourceEl.appendChild(dimmer)
-    sourceEl.appendChild(mainEl)
+    sourceOccElement.appendChild(dimmer)
+    sourceOccElement.appendChild(mainEl)
     mainEl.appendChild(menuArea)
     mainEl.appendChild(toNode(textarea))
 
-    document.body.appendChild(sourceEl)
+    document.body.appendChild(sourceOccElement)
     renderDiagram(originalData)
     var svgPanZoom= $(".occ-graph svg").svgPanZoom()
   }
@@ -174,7 +176,8 @@ var createInputPopup = function ({
                     return nodes[d.x].group == nodes[d.y].group ? colorScale(nodes[d.x].group) : "grey";
                 })
                 .on("mouseover", mouseover)
-                .on("mouseout", mouseout);
+                .on("mouseout", mouseout)
+                .on("click", click);
 
             var columns = svg.selectAll(".column")
                 .data(matrix)
@@ -265,6 +268,13 @@ var createInputPopup = function ({
                 //     .style("left", (d3.event.pageX - 200) + "px")
                 //     .style("top", (d3.event.pageY +10) + "px");
 
+            }
+            function click(p) {
+              console.log(p);
+              console.log(nodes[p.x]);
+              showSingleItemService.showById(nodes[p.x].linkUuid, function (e) {
+
+              })
             }
 
             function mouseout() {

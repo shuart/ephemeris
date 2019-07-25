@@ -733,6 +733,7 @@ function showListMenu({
           var isTime = rule.time
           var isFullText = rule.fullText
           var isMeta = rule.meta //get the metaFunction
+          var isCustom = rule.custom
           var isTarget = rule.isTarget //met is target
           var editHtml = ""
           var propDisplay = item[propName]
@@ -747,6 +748,11 @@ function showListMenu({
               item[propName] = isMeta().filter(e => (e.type == propName && e.source == item[idProp] )).map(e => e.target)
             }
           }
+
+          if (isCustom) {
+            propDisplay = isCustom(item[propName])
+          }
+
           if (isEditable && !isMeta && !isTime) {
             editHtml+=`
             <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`

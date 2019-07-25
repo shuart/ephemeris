@@ -320,3 +320,12 @@ function lettersFromNames(e) {
     return " "+" "
   }
 }
+
+var getObjectNameByUuid = function (uuid) {
+  let foundItem = query.items("all", i=> i.uuid == uuid)[0]
+  if (foundItem) {
+    return foundItem.name
+  }else {
+    return "Missing item"
+  }
+}

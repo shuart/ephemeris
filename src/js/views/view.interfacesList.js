@@ -83,12 +83,11 @@ var createInterfacesListView = function () {
       //   push(act.add("tags",{uuid:genuuid(), name:tagName, color:"#ffffff"}))
       // },
       onClick: (ev)=>{
-        //mutations
-        // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
-        // console.log(ev.target);
-        // store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
-        // ev.selectDiv.remove()
-        // renderCDC(store.db, searchFilter)
+        showSingleItemService.showById(ev.target.dataset.id, function (e) {
+          ev.select.remove()
+          ev.select.updateData(readifyInterfaces())
+          ev.select.update()//TODO Why is it necessary?
+        })
       },
       extraActions:[
         {
@@ -230,12 +229,17 @@ var createInterfacesListView = function () {
     })
     store.interfaces.items.forEach(function (i) {
       console.log(nodes.find(n=>n.uuid == i.source));
-      let source=nodes.find(n=>n.uuid == i.source).index
-      let target=nodes.find(n=>n.uuid == i.target).index
-      links.push({source: source, target: target, value: 1})
+      let sourceNode=nodes.find(n=>n.uuid == i.source)
+      let source=sourceNode.index
+      let targetNode=nodes.find(n=>n.uuid == i.target)
+      let target=targetNode.index
+
+      sourceNode.linkUuid = i.uuid
+      targetNode.linkUuid = i.uuid
+      links.push({source: source, target: target, value: 1, uuid:i.uuid})
     })
     console.log({nodes:nodes, links:links});
-    createInputPopup({originalData:{nodes:nodes, links:links}})
+    createOccurrenceDiagram({originalData:{nodes:nodes, links:links}})
   }
 
   var update = function () {

@@ -25,6 +25,7 @@ var createShowSingleItemService = function () {
     else if (store.stakeholders.items.find(i=>i.uuid == uuid)) { storeGroup = "stakeholders"; label='Users'}
     else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) { storeGroup = "physicalSpaces"; label='physicalSpaces'}
     else if (store.workPackages.items.find(i=>i.uuid == uuid)) { storeGroup = "workPackages"; label='workPackages'}
+    else if (store.interfaces.items.find(i=>i.uuid == uuid)) { storeGroup = "interfaces"; label='interfaces'}
 
     if (!store[storeGroup]) {
       console.log("no group available");
@@ -182,6 +183,7 @@ var createShowSingleItemService = function () {
     else if (store.stakeholders.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.workPackages.items.find(i=>i.uuid == uuid)) {return true }
+    else if (store.interfaces.items.find(i=>i.uuid == uuid)) {return true }
     else {
       return false
     }
@@ -232,6 +234,14 @@ var createShowSingleItemService = function () {
               {prop:"assignedTo", displayAs:"Assigned To", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
               {prop:"WpOwn", displayAs:"Products Owned", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
               {prop:"WpOwnNeed", displayAs:"Requirements Owned", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
+      ]
+    }else if (type =="interfaces"){
+      return [
+              {prop:"type", displayAs:"Type", edit:false},
+              {prop:"name", displayAs:"Name", edit:true},
+              {prop:"description", displayAs:"Description", edit:true},
+              {prop:"source", displayAs:"Source", custom:e=>getObjectNameByUuid(e), edit:false},
+              {prop:"target", displayAs:"Target", custom:e=>getObjectNameByUuid(e), edit:false}
       ]
     }
   }
