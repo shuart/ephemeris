@@ -201,6 +201,9 @@ var createOccurrenceDiagram = function ({
                 .attr("y", matrixScale.bandwidth() / 2)
                 .attr("dy", ".32em")
                 .attr("text-anchor", "start")
+                .attr("transform", function(d) {
+                  return "translate(40)rotate(45)"
+                })
                 .text((d, i) => capitalize_Words(nodes[i].name));
 
             // Precompute the orders.
