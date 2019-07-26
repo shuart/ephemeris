@@ -905,7 +905,7 @@ function stellae(_selector, _options) {
                            .force('center', d3.forceCenter(svg.node().parentElement.parentElement.clientWidth / 2, svg.node().parentElement.parentElement.clientHeight / 2))
                            .alphaDecay(options.decay)
                            .on('tick', function() {
-                               tick();
+                               render()
                            })
                            .on('end', function() {
                                if (options.zoomFit && !justLoaded) {
@@ -915,6 +915,20 @@ function stellae(_selector, _options) {
                            });
 
         return simulation;
+    }
+
+    function renderInternal() {
+        tick();
+    }
+
+    var rafId = null;
+    function render() {
+        if (rafId == null) {
+            rafId = requestAnimationFrame(function() {
+                rafId = null;
+                renderInternal();
+            });
+        }
     }
 
     function loadCustomData() {
