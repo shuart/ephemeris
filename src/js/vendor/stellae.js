@@ -898,12 +898,13 @@ function stellae(_selector, _options) {
                            .force('collide', d3.forceCollide().radius(function(d) {
                                return options.minCollision;
                            }).strength(1).iterations(1))
-                           .force('charge', d3.forceManyBody().strength(options.chargeStrength))
+                           .force('charge', d3.forceManyBody().strength(options.chargeStrength).distanceMax(800))
                            .force('link', d3.forceLink().id(function(d) {
                                return d.id;
                            }))
                            .force('center', d3.forceCenter(svg.node().parentElement.parentElement.clientWidth / 2, svg.node().parentElement.parentElement.clientHeight / 2))
                            .alphaDecay(options.decay)
+                           .alphaMin(0.05)
                            .on('tick', function() {
                                tick();
                            })
