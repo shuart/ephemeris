@@ -923,12 +923,13 @@ function stellae(_selector, _options) {
 
     var rafId = null;
     function render() {
-        if (rafId == null) {
-            rafId = requestAnimationFrame(function() {
-                rafId = null;
-                renderInternal();
-            });
-        }
+        // if (rafId == null) {
+        //     rafId = requestAnimationFrame(function() {
+        //         rafId = null;
+        //         renderInternal();
+        //     });
+        // }
+        renderInternal()
     }
 
     function loadCustomData() {
@@ -1131,9 +1132,24 @@ function stellae(_selector, _options) {
 
     function tickNodes() {
         if (node) {
-            node.attr('transform', function(d) {
-                return 'translate(' + d.x + ', ' + d.y + ')';
-            });
+          //check if update is needed
+          node.each(function (d) {
+            if (d.xFrom ) {
+              d.delta = Math.max(Math.abs(d.xFrom - d.x),Math.abs(d.yFrom - d.y));
+            }else {
+              d.xFrom = d.x
+              d.yFrom = d.y
+              d.delta=10000 //to kickstart sim at first
+            }
+          })
+          .filter(function (d) {//use only nodes that are moving
+            return d.delta > 0;
+          })
+          .attr('transform', function(d) {
+            console.log(d);
+              return 'translate(' + d.x + ', ' + d.y + ')';
+          });
+
         }
     }
 
@@ -1143,9 +1159,9 @@ function stellae(_selector, _options) {
             //     var angle = rotation(d.source, d.target);
             //     return 'translate(' + d.source.x+ + ', ' + d.source.y + ') rotate(' + angle + ')';
             // });
-            if (options.showLinksText) {
-              tickRelationshipsTexts();
-            }
+            // if (options.showLinksText) {
+            //   tickRelationshipsTexts();
+            // }
             if (options.showLinksOverlay) {
               tickRelationshipsOverlays();
             }
@@ -1153,86 +1169,121 @@ function stellae(_selector, _options) {
 
 
 
-            //TODO clean code to move elements perp.
-            relationship.attr('transform', function(d) {
-                var angle = rotation(d.source, d.target);
-                var normal = {x:0,y:0}
-                if (d.displacement) {
-                  normal = unitaryNormalVector(d.source, d.target);
-                }
-                var displacementDist = d.displacement|| 0;
-                return 'translate(' + (d.source.x+(displacementDist*normal.x))+ ', ' + (d.source.y+(displacementDist*normal.y)) + ')rotate(' + angle + ')';
-            });
+            // //TODO clean code to move elements perp.
+            // relationship.attr('transform', function(d) {
+            //     var angle = rotation(d.source, d.target);
+            //     var normal = unitaryNormalVector(d.source, d.target);
+            //     // var normal = {x:0,y:0}
+            //     // if (d.displacement) {
+            //     //   normal = unitaryNormalVector(d.source, d.target);
+            //     // }
+            //
+            //     var displacementDist = d.displacement|| 0;
+            //     return 'translate(' + (d.source.x+(displacementDist*normal.x))+ ', ' + (d.source.y+(displacementDist*normal.y)) + ')rotate(' + angle + ')';
+            // });
         }
     }
 
     function tickRelationshipsOutlines() {
-        relationship.each(function(relationship) {
+      //check if update is needed
+        relationship.each(function (d) {
+          if (d.source.xFrom &&  d.target.xFrom) {
+            d.delta = Math.max(d.source.delta,d.target.delta)
+          }else{
+            d.delta=10000 //to kickstart sim at first
+          }
+          // if (d.delta ) {
+          //   d.delta = Math.max(Math.abs(d.source.xFrom - d.source.x),Math.abs(d.source.yFrom - d.source.y),Math.abs(d.target.xFrom - d.target.x),Math.abs(d.target.yFrom - d.target.y));
+          //   console.log(d.delta);
+          // }else {
+          //   d.delta=10000 //to kickstart sim at first
+          // }
+        })
+        .filter(function (d) {//use only nodes that are moving
+          return d.delta > 0;
+
+        })
+        .each(function(d) {
+
             var rel = d3.select(this),
                 outline = rel.select('.outline'),
                 text = rel.select('.text'),
                 padding = 3;
 
-            var bbox = {width:relationship.type.length*4, height:0};// simplification considering each letter is 4px large
-            // var bbox = {width:text.node().getComputedTextLength(), height:0};
+                console.log(d);
 
-                //firfox workaround
-                //THis appens becaus text is not displayed. TODO find a way to display it
-                //Also, bbox = text.node().getBBox(); is dreadfull for performance as it force a rerender it seems
+                rel.attr('transform', function(d) {
+                    var angle = rotation(d.source, d.target);
+                    var normal = unitaryNormalVector(d.source, d.target);
+                    // var normal = {x:0,y:0}
+                    // if (d.displacement) {
+                    //   normal = unitaryNormalVector(d.source, d.target);
+                    // }
 
-            outline.attr('d', function(d) {
-                var center = { x: 0, y: 0 },
-                    angle = rotation(d.source, d.target),
-                    textBoundingBox = bbox,
-                    textPadding = 5,
-                    u = unitaryVector(d.source, d.target),
-                    textMargin = { x: (d.target.x - d.source.x - (textBoundingBox.width + textPadding) * u.x) * 0.5, y: (d.target.y - d.source.y - (textBoundingBox.width + textPadding) * u.y) * 0.5 },
-                    n = unitaryNormalVector(d.source, d.target),
-                    rotatedPointA1 = rotatePoint(center, { x: 0 + (options.nodeRadius + 1) * u.x - n.x, y: 0 + (options.nodeRadius + 1) * u.y - n.y }, angle),
+                    var displacementDist = d.displacement|| 0;
+                    return 'translate(' + (d.source.x+(displacementDist*normal.x))+ ', ' + (d.source.y+(displacementDist*normal.y)) + ')rotate(' + angle + ')';
+                });
 
-                    // rotatedPointC1 = rotatePoint(center, { x: textMargin.x, y: textMargin.y }, angle),
-                    // rotatedPointD1 = rotatePoint(center, { x: 0 + (options.nodeRadius + 1) * u.x, y: 0 + (options.nodeRadius + 1) * u.y }, angle),
-                    rotatedPointB2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - n.x - u.x * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - n.y - u.y * options.arrowSize }, angle);
-                    // rotatedPointC2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - n.x + (n.x - u.x) * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - n.y + (n.y - u.y) * options.arrowSize }, angle),
-                    // rotatedPointD2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y }, angle),
-                    // rotatedPointE2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x + (- n.x - u.x) * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y + (- n.y - u.y) * options.arrowSize }, angle),
-                    // rotatedPointF2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - u.x * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - u.y * options.arrowSize }, angle),
-                    // rotatedPointG2 = rotatePoint(center, { x: d.target.x - d.source.x - textMargin.x, y: d.target.y - d.source.y - textMargin.y }, angle);
 
-                    if (options.showLinksText) {
-                      var rotatedPointB1 = rotatePoint(center, { x: textMargin.x - n.x, y: textMargin.y - n.y }, angle);
-                      var rotatedPointA2 = rotatePoint(center, { x: d.target.x - d.source.x - textMargin.x - n.x, y: d.target.y - d.source.y - textMargin.y - n.y }, angle);
+            var bbox = {width:d.type.length*4, height:0};// simplification considering each letter is 4px large
 
-                      return 'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
-                              ' L ' + rotatedPointB1.x + ' ' + rotatedPointB1.y +
-                              ' Z M ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
-                              ' L ' + rotatedPointA2.x + ' ' + rotatedPointA2.y +
-                              ' Z';
-                    }else {
-                      return 'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
-                              ' L ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
-                              ' Z';
-                    }
+            tickRelationshipsCurrentOutline(outline, bbox)
+            if (options.showLinksText) {
+              tickRelationshipsTexts(text)
+            }
 
-                // let test =  'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
-                //        ' L ' + rotatedPointB1.x + ' ' + rotatedPointB1.y +
-                //        ' L ' + rotatedPointC1.x + ' ' + rotatedPointC1.y +
-                //        ' L ' + rotatedPointD1.x + ' ' + rotatedPointD1.y +
-                //        ' Z M ' + rotatedPointA2.x + ' ' + rotatedPointA2.y +
-                //        ' L ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
-                //        ' L ' + rotatedPointC2.x + ' ' + rotatedPointC2.y +
-                //        ' L ' + rotatedPointD2.x + ' ' + rotatedPointD2.y +
-                //        ' L ' + rotatedPointE2.x + ' ' + rotatedPointE2.y +
-                //        ' L ' + rotatedPointF2.x + ' ' + rotatedPointF2.y +
-                //        ' L ' + rotatedPointG2.x + ' ' + rotatedPointG2.y +
-                //        ' Z';
 
-            });
+
         });
+        //current functions
+        function tickRelationshipsTexts(text) {
+          text.attr('transform', function(d) {
+              var angle = (rotation(d.source, d.target) + 360) % 360,
+                  mirror = angle > 90 && angle < 270,
+                  center = { x: 0, y: 0 },
+                  n = unitaryNormalVector(d.source, d.target),
+                  nWeight = mirror ? 2 : -3,
+                  point = { x: (d.target.x - d.source.x) * 0.5 + n.x * nWeight, y: (d.target.y - d.source.y) * 0.5 + n.y * nWeight },
+                  rotatedPoint = rotatePoint(center, point, angle);
+
+              return 'translate(' + rotatedPoint.x + ', ' + rotatedPoint.y + ') rotate(' + (mirror ? 180 : 0) + ')';
+          });
+        }
+        function tickRelationshipsCurrentOutline(outline, bbox) {
+          outline.attr('d', function(d) {
+              var center = { x: 0, y: 0 },
+                  angle = rotation(d.source, d.target),
+                  textBoundingBox = bbox,
+                  textPadding = 5,
+                  u = unitaryVector(d.source, d.target),
+                  textMargin = { x: (d.target.x - d.source.x - (textBoundingBox.width + textPadding) * u.x) * 0.5, y: (d.target.y - d.source.y - (textBoundingBox.width + textPadding) * u.y) * 0.5 },
+                  n = unitaryNormalVector(d.source, d.target),
+                  rotatedPointA1 = rotatePoint(center, { x: 0 + (options.nodeRadius + 1) * u.x - n.x, y: 0 + (options.nodeRadius + 1) * u.y - n.y }, angle),
+
+                  rotatedPointB2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - n.x - u.x * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - n.y - u.y * options.arrowSize }, angle);
+                  if (options.showLinksText) {
+                    var rotatedPointB1 = rotatePoint(center, { x: textMargin.x - n.x, y: textMargin.y - n.y }, angle);
+                    var rotatedPointA2 = rotatePoint(center, { x: d.target.x - d.source.x - textMargin.x - n.x, y: d.target.y - d.source.y - textMargin.y - n.y }, angle);
+
+                    return 'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
+                            ' L ' + rotatedPointB1.x + ' ' + rotatedPointB1.y +
+                            ' Z M ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
+                            ' L ' + rotatedPointA2.x + ' ' + rotatedPointA2.y +
+                            ' Z';
+                  }else {
+                    return 'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
+                            ' L ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
+                            ' Z';
+                  }
+          });
+        }
     }
 
     function tickRelationshipsOverlays() {
         relationshipOverlay.attr('d', function(d) {
+
+          let mustUpdate = false;
+          if (mustUpdate) {
             var center = { x: 0, y: 0 },
                 angle = rotation(d.source, d.target),
                 n1 = unitaryNormalVector(d.source, d.target),
@@ -1247,21 +1298,22 @@ function stellae(_selector, _options) {
                    ' L ' + rotatedPointC.x + ' ' + rotatedPointC.y +
                    ' L ' + rotatedPointD.x + ' ' + rotatedPointD.y +
                    ' Z';
+          }
         });
     }
 
     function tickRelationshipsTexts() {
-        relationshipText.attr('transform', function(d) {
-            var angle = (rotation(d.source, d.target) + 360) % 360,
-                mirror = angle > 90 && angle < 270,
-                center = { x: 0, y: 0 },
-                n = unitaryNormalVector(d.source, d.target),
-                nWeight = mirror ? 2 : -3,
-                point = { x: (d.target.x - d.source.x) * 0.5 + n.x * nWeight, y: (d.target.y - d.source.y) * 0.5 + n.y * nWeight },
-                rotatedPoint = rotatePoint(center, point, angle);
-
-            return 'translate(' + rotatedPoint.x + ', ' + rotatedPoint.y + ') rotate(' + (mirror ? 180 : 0) + ')';
-        });
+        // relationshipText.attr('transform', function(d) {
+        //     var angle = (rotation(d.source, d.target) + 360) % 360,
+        //         mirror = angle > 90 && angle < 270,
+        //         center = { x: 0, y: 0 },
+        //         n = unitaryNormalVector(d.source, d.target),
+        //         nWeight = mirror ? 2 : -3,
+        //         point = { x: (d.target.x - d.source.x) * 0.5 + n.x * nWeight, y: (d.target.y - d.source.y) * 0.5 + n.y * nWeight },
+        //         rotatedPoint = rotatePoint(center, point, angle);
+        //
+        //     return 'translate(' + rotatedPoint.x + ', ' + rotatedPoint.y + ') rotate(' + (mirror ? 180 : 0) + ')';
+        // });
     }
 
     function toString(d) {
