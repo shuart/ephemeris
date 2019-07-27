@@ -895,6 +895,8 @@ function stellae(_selector, _options) {
 //                           .velocityDecay(0.8)
 //                           .force('x', d3.force().strength(0.002))
 //                           .force('y', d3.force().strength(0.002))
+                           //  .force('x', d3.forceX().strength(0.04).x(d => svg.node().parentElement.parentElement.clientWidth / 2))
+                           // .force('y', d3.forceY().strength(0.02).y(d => svg.node().parentElement.parentElement.clientHeight / 2))
                            .force('collide', d3.forceCollide().radius(function(d) {
                                return options.minCollision;
                            }).strength(1).iterations(1))
@@ -909,6 +911,7 @@ function stellae(_selector, _options) {
                                render()
                            })
                            .on('end', function() {
+                             simulation.force("center", null)
                                if (options.zoomFit && !justLoaded) {
                                    justLoaded = true;
                                    zoomFit(2);
