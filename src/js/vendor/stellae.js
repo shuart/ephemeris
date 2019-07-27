@@ -1146,7 +1146,6 @@ function stellae(_selector, _options) {
             return d.delta > 0;
           })
           .attr('transform', function(d) {
-            console.log(d);
               return 'translate(' + d.x + ', ' + d.y + ')';
           });
 
@@ -1155,32 +1154,11 @@ function stellae(_selector, _options) {
 
     function tickRelationships() {
         if (relationship) {
-            // relationship.attr('transform', function(d) {
-            //     var angle = rotation(d.source, d.target);
-            //     return 'translate(' + d.source.x+ + ', ' + d.source.y + ') rotate(' + angle + ')';
-            // });
-            // if (options.showLinksText) {
-            //   tickRelationshipsTexts();
-            // }
+
             if (options.showLinksOverlay) {
               tickRelationshipsOverlays();
             }
             tickRelationshipsOutlines();
-
-
-
-            // //TODO clean code to move elements perp.
-            // relationship.attr('transform', function(d) {
-            //     var angle = rotation(d.source, d.target);
-            //     var normal = unitaryNormalVector(d.source, d.target);
-            //     // var normal = {x:0,y:0}
-            //     // if (d.displacement) {
-            //     //   normal = unitaryNormalVector(d.source, d.target);
-            //     // }
-            //
-            //     var displacementDist = d.displacement|| 0;
-            //     return 'translate(' + (d.source.x+(displacementDist*normal.x))+ ', ' + (d.source.y+(displacementDist*normal.y)) + ')rotate(' + angle + ')';
-            // });
         }
     }
 
@@ -1210,11 +1188,14 @@ function stellae(_selector, _options) {
                 text = rel.select('.text'),
                 padding = 3;
 
-                console.log(d);
+                var sourceRotationAngle = rotation(d.source, d.target);
+                var sourceUnitaryNormalVector = unitaryNormalVector(d.source, d.target);
 
                 rel.attr('transform', function(d) {
-                    var angle = rotation(d.source, d.target);
-                    var normal = unitaryNormalVector(d.source, d.target);
+                    var angle = sourceRotationAngle
+
+                    var normal = sourceUnitaryNormalVector
+
                     // var normal = {x:0,y:0}
                     // if (d.displacement) {
                     //   normal = unitaryNormalVector(d.source, d.target);
@@ -1227,21 +1208,21 @@ function stellae(_selector, _options) {
 
             var bbox = {width:d.type.length*4, height:0};// simplification considering each letter is 4px large
 
-            tickRelationshipsCurrentOutline(outline, bbox)
+            tickRelationshipsCurrentOutline(outline, bbox,sourceRotationAngle , sourceUnitaryNormalVector)
             if (options.showLinksText) {
-              tickRelationshipsTexts(text)
+              tickRelationshipsTexts(text, sourceRotationAngle ,sourceUnitaryNormalVector)
             }
 
 
 
         });
         //current functions
-        function tickRelationshipsTexts(text) {
+        function tickRelationshipsTexts(text,sourceRotationAngle ,sourceUnitaryNormalVector) {
           text.attr('transform', function(d) {
-              var angle = (rotation(d.source, d.target) + 360) % 360,
+              var angle = (sourceRotationAngle + 360) % 360,
                   mirror = angle > 90 && angle < 270,
                   center = { x: 0, y: 0 },
-                  n = unitaryNormalVector(d.source, d.target),
+                  n = sourceUnitaryNormalVector,
                   nWeight = mirror ? 2 : -3,
                   point = { x: (d.target.x - d.source.x) * 0.5 + n.x * nWeight, y: (d.target.y - d.source.y) * 0.5 + n.y * nWeight },
                   rotatedPoint = rotatePoint(center, point, angle);
@@ -1249,15 +1230,15 @@ function stellae(_selector, _options) {
               return 'translate(' + rotatedPoint.x + ', ' + rotatedPoint.y + ') rotate(' + (mirror ? 180 : 0) + ')';
           });
         }
-        function tickRelationshipsCurrentOutline(outline, bbox) {
+        function tickRelationshipsCurrentOutline(outline, bbox,sourceRotationAngle , sourceUnitaryNormalVector) {
           outline.attr('d', function(d) {
               var center = { x: 0, y: 0 },
-                  angle = rotation(d.source, d.target),
+                  angle = sourceRotationAngle,
                   textBoundingBox = bbox,
                   textPadding = 5,
                   u = unitaryVector(d.source, d.target),
                   textMargin = { x: (d.target.x - d.source.x - (textBoundingBox.width + textPadding) * u.x) * 0.5, y: (d.target.y - d.source.y - (textBoundingBox.width + textPadding) * u.y) * 0.5 },
-                  n = unitaryNormalVector(d.source, d.target),
+                  n = sourceUnitaryNormalVector,
                   rotatedPointA1 = rotatePoint(center, { x: 0 + (options.nodeRadius + 1) * u.x - n.x, y: 0 + (options.nodeRadius + 1) * u.y - n.y }, angle),
 
                   rotatedPointB2 = rotatePoint(center, { x: d.target.x - d.source.x - (options.nodeRadius + 1) * u.x - n.x - u.x * options.arrowSize, y: d.target.y - d.source.y - (options.nodeRadius + 1) * u.y - n.y - u.y * options.arrowSize }, angle);
