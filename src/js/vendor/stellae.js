@@ -1156,7 +1156,10 @@ function stellae(_selector, _options) {
             //TODO clean code to move elements perp.
             relationship.attr('transform', function(d) {
                 var angle = rotation(d.source, d.target);
-                var normal = unitaryNormalVector(d.source, d.target);
+                var normal = {x:0,y:0}
+                if (d.displacement) {
+                  normal = unitaryNormalVector(d.source, d.target);
+                }
                 var displacementDist = d.displacement|| 0;
                 return 'translate(' + (d.source.x+(displacementDist*normal.x))+ ', ' + (d.source.y+(displacementDist*normal.y)) + ')rotate(' + angle + ')';
             });
