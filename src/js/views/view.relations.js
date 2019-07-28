@@ -985,10 +985,10 @@ var createRelationsView = function () {
           // 'User': 'user',
           // 'Project': 'building'
       },
-      images: {
-          'Address': 'img/twemoji/1f3e0.svg',
-          'Usedr': 'img/twemoji/1f600.svg'
-      },
+      // images: {
+      //     'Address': 'img/twemoji/1f3e0.svg',
+      //     'Usedr': 'img/twemoji/1f600.svg'
+      // },
       minCollision: 60,
       chargeStrength: -500,
       customData: {
