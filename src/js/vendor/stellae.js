@@ -23,6 +23,7 @@ function stellae(_selector, _options) {
             iconMap: fontAwesomeIcons(),
             icons: undefined,
             customPathIcons: undefined,
+            extraLabels:false,
             imageMap: {},
             images: undefined,
             infoPanel: true,
@@ -367,6 +368,9 @@ function stellae(_selector, _options) {
         if (options.customPathIcons) {
             appendCustomPathIcons(n);
         }
+        if (options.extraLabels) {
+            appendExtraLabelPathIcons(n);
+        }
 
         if (options.images) {
             appendImageToNode(n);
@@ -433,6 +437,40 @@ function stellae(_selector, _options) {
                 })
                 .attr("d", function (d) {
                   return options.customPathIcons[d.labels[0]]["path"]|| "M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"
+                } )//todo chose beter default
+    }
+    function appendExtraLabelPathIcons(node) {
+          return node.append("path")
+                //   .attr('fill', function (d) {
+                //     return options.customPathIcons[d.labels[0]]["fill"]|| '#ffffff'
+                //   })
+                // .attr("transform", function (d) {
+                //   return options.customPathIcons[d.labels[0]]["transform"]|| "scale("+0.05+") translate(-250, -250)"
+                // })
+                // .attr("d", function (d) {
+                //   return options.customPathIcons[d.labels[0]]["path"]|| "M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"
+                // } )//todo chose beter default
+              .attr('fill', function (d) {
+                if (d.customColor) {
+                  return class2darkenCustomColor(d.customColor)
+                }else {
+                  return options.nodeOutlineFillColor ? class2darkenColor(options.nodeOutlineFillColor) : class2darkenColor(d.labels[0]);
+                }
+              })
+              .attr('stroke', function (d) {
+                // if (d.customColor) {
+                //   return d.customColor
+                // }else {
+                //   return  '#ffffff';
+                // }
+                return  '#ffffff';
+              })
+              .attr('stroke-width', 25)
+              .attr("transform", function (d) {
+                  return "scale("+0.05+") translate(+200, -50)"
+                })
+                .attr("d", function (d) {
+                  return d.extraLabel || "M296 160H180.6l42.6-129.8C227.2 15 215.7 0 200 0H56C44 0 33.8 8.9 32.2 20.8l-32 240C-1.7 275.2 9.5 288 24 288h118.7L96.6 482.5c-3.6 15.2 8 29.5 23.3 29.5 8.4 0 16.4-4.4 20.8-12l176-304c9.3-15.9-2.2-36-20.7-36z"
                 } )//todo chose beter default
     }
 
