@@ -100,44 +100,13 @@ var createRelationsView = function () {
   },
       quickstartView:(cards) => {
        let html = `
-       <div  class="ui center aligned basic segment">
-          <h4>Create a new Graph</h4>
-       </div>
-
-
-         <div style="width: 80%;margin-left: 10%;" class="ui placeholder segment">
-          <div class="ui two column stackable center aligned grid">
-            <div class="ui vertical divider">Or</div>
-            <div class="middle aligned row">
-              <div class="column">
-                <div class="ui icon header">
-                  <i class="sitemap icon"></i>
-                  Start from an existing element
-                </div>
-                <div class="ui primary button action_relations_qs_show_whole_project">
-                  Whole project
-                </div>
-                or
-                <div class="ui secondary button action_relations_qs_start_from_element">
-                  Focus on an element
-                </div>
-              </div>
-              <div class="column">
-                <div class="ui icon header">
-                  <i class="file outline icon "></i>
-                  Start from an empty graph
-                </div>
-                <div class="ui primary button action_relations_qs_create_new_empty">
-                  Create
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
         <div class="ui center aligned basic segment">
-          <h4>Load a snapshot of the project</h4>
+          <h3>Create a graph of the project or show an existing one</h3>
           <div style="width: 80%;margin-left: 10%;" class="ui cards">
-           ${theme.quickStartLastViewItem()}
+           ${theme.quickStartLastViewItem("redo","Reload","Go to last WIP graph","action_relations_qs_show_last_view")}
+           ${theme.quickStartLastViewItem("sitemap","Whole Project","Create a graph of the whole project","action_relations_qs_show_whole_project")}
+           ${theme.quickStartLastViewItem("search","Focus","Create a graph focused on a product","action_relations_qs_start_from_element")}
+           ${theme.quickStartLastViewItem("file outline","New","Start from an empty graph","action_relations_qs_create_new_empty")}
            ${cards}
            </div>
         <div>
@@ -173,29 +142,26 @@ var createRelationsView = function () {
 
     return html
   },
-    quickStartLastViewItem:(item) => {
-
+    quickStartLastViewItem:(icon, button, desc, action) => {
       let html = `
-      <div class="ui raised link card action_relations_qs_show_last_view">
+      <div class="ui raised link card ${action}">
 
         <div class="content">
           <img style="width: 170px;" class="ui tiny image" src="">
           <div class="header">
-          <i class="redo icon"></i>
+          <i class="large ${icon} icon"></i>
           </div>
           <div class="meta">
-            Go to last view
+
           </div>
           <div class="description">
-
+            ${desc}
           </div>
         </div>
-        <div class="ui bottom attached button action_relations_qs_show_last_view">
-          Reload
+        <div class="ui teal bottom attached button ${action}">
+          ${button}
         </div>
       </div>`
-
-
     return html
     }
   }
