@@ -21,6 +21,8 @@ var createRelationsView = function () {
   var showVisibilityMenu = false;
   var showVisibilityMenuSnapshot = true;
 
+  var showExtraLabels = true;
+
   var elementVisibility = {
     functions : true,
     requirements : true,
@@ -432,6 +434,11 @@ var createRelationsView = function () {
         queryDOM('.action_fade_other_node_toogle_network_button').classList.remove('active')
       }
     }, container)
+    bind(".action_relations_show_extra_labels","click",(e)=>{
+      console.log(e.target.value);
+      showExtraLabels = !showExtraLabels
+      update()
+    }, container)
 
     //INTERFACES MENU connections
     bind(".action_interfaces_toogle_compose","click",(e)=>{
@@ -775,11 +782,16 @@ var createRelationsView = function () {
     }
 
   }
+  var getSvgPathFromItemId = function (uuid) {
+    let cat = getCategoryFromItemUuid(uuid)
+    if (cat) { return cat.svgPath
+    }else { return undefined}
+  }
   var updateItemsToDisplayAndRelations= function (elementVisibility) {//only side effect TODO: find a better way?
     var store = JSON.stringify(query.currentProject())
     store = JSON.parse(store)// TODO used multiple time. Should do it only once
     var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
-    var array2 =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
+    var array2 =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid); return e})
     var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
     var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
     var array5 = store.physicalSpaces.items.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
@@ -954,11 +966,22 @@ var createRelationsView = function () {
         <button class="ui mini button action_relations_isolate_nodes_and_children" data-tooltip="Show only selected relations" data-position="bottom center">
           <i class="eye dropper icon action_relations_isolate_nodes_and_children"></i>
         </button>
+        <button class="ui basic icon button" data-tooltip="Export as .png" data-position="bottom center">
+          <i class="download icon action_relations_export_png"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="ui mini basic icon buttons">
+        <button class="disabled ui basic icon button " >
+          Show
+        </button>
         <button class="${fadeOtherNodesOnHoover ? 'active':''} ui mini button action_fade_other_node_toogle_network_button" data-tooltip="Highlight connection on hover" data-position="bottom center">
           <i class="sun outline icon action_fade_other_node_toogle_network_button"></i>
         </button>
-        <button class="ui basic icon button" data-tooltip="Export as .png" data-position="bottom center">
-          <i class="download icon action_relations_export_png"></i>
+        <button class="${showExtraLabels ? 'active':''} ui mini button action_relations_show_extra_labels" data-tooltip="Extra Category labels" data-position="bottom center">
+          <i class="tag icon action_relations_show_extra_labels"></i>
         </button>
       </div>
     </div>
@@ -1189,6 +1212,7 @@ var createRelationsView = function () {
           }
       ],
       groupLabels:currentGroupedLabels,
+      extraLabels:showExtraLabels,
       rootNode:false,
       showLinksOverlay:false,
       fadeOtherNodesOnHoover:fadeOtherNodesOnHoover,

@@ -28,6 +28,7 @@ var createPbsView = function () {
         {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
         {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"},
         {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+        {prop:"category", displayAs:"Category", meta:()=>store.metaLinks.items, choices:()=>store.categories.items, edit:true},
         {prop:"contains",isTarget:true, displayAs:"Physical Spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:true},
         {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true}
       ]
@@ -244,6 +245,12 @@ var createPbsView = function () {
     }else if (metalinkType == "tags") {
       sourceGroup="tags"
       sourceData=store.tags.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "category") {
+      sourceGroup="categories"
+      sourceData=store.categories.items
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]

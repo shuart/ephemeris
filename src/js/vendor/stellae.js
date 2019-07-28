@@ -440,7 +440,10 @@ function stellae(_selector, _options) {
                 } )//todo chose beter default
     }
     function appendExtraLabelPathIcons(node) {
-          return node.append("path")
+          return node.filter(function (d) {//only add to node with the extra la bel prop
+              return d.extraLabel
+          })
+          .append("path")
                 //   .attr('fill', function (d) {
                 //     return options.customPathIcons[d.labels[0]]["fill"]|| '#ffffff'
                 //   })
@@ -465,7 +468,7 @@ function stellae(_selector, _options) {
                 // }
                 return  '#ffffff';
               })
-              .attr('stroke-width', 25)
+              .attr('stroke-width', 15)
               .attr("transform", function (d) {
                   return "scale("+0.05+") translate(+200, -50)"
                 })

@@ -266,6 +266,17 @@ function getRelatedItems(sourceItem, groupToSearch, paramOptions) {//todo limit 
   }))
   return linkToText
 }
+//get related item
+function getCategoryFromItemUuid(sourceItemId) {//todo limit metalinks type
+  var store = query.currentProject()
+  let category = undefined
+  let categoryLink = store.metaLinks.items.find(m=>m.source == sourceItemId)
+  if (categoryLink) {
+    category = store.categories.items.find(c=>c.uuid == categoryLink.target)
+  }
+  console.log(category);
+  return category
+}
 
 //clear links with missing items
 var clearUncompleteLinks = function () {

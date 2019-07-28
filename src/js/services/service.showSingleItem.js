@@ -109,6 +109,11 @@ var createShowSingleItemService = function () {
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ];
+    }else if (metalinkType == "category") {
+      sourceGroup="categories";
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ];
     }else if (metalinkType == "WpOwn") {
       sourceGroup="currentPbs";
       displayRules = [
@@ -213,6 +218,7 @@ var createShowSingleItemService = function () {
         {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true},
         {prop:"contains",isTarget:true, displayAs:"Linked to physical spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:false},
         {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+        {prop:"category", displayAs:"Category", meta:()=>store.metaLinks.items, choices:()=>store.categories.items, edit:true},
         {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false}
       ]
     }else if (type =="physicalSpaces") {
