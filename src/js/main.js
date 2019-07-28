@@ -105,6 +105,9 @@ var reparse = false;
   connect(".action_toogle_tree_pbs","click",(e)=>{
     pageManager.setActivePage("pbs")
   })
+  connect(".action_toogle_diag_interfaces_quickstart","click",(e)=>{
+    pageManager.setActivePage("interfaces", {param:{context:"quickstart"}})
+  })
   connect(".action_toogle_diag_interfaces","click",(e)=>{
     pageManager.setActivePage("interfaces")
   })
@@ -113,6 +116,9 @@ var reparse = false;
   })
   connect(".action_toogle_diag_relations_options","click",(e)=>{
     pageManager.setActivePage("relations", {param:{context:"extract", uuid:e.target.dataset.id}})
+  })
+  connect(".action_toogle_diag_relations_quickstart","click",(e)=>{
+    pageManager.setActivePage("relations", {param:{context:"quickstart"}})
   })
   connect(".action_toogle_unified","click",(e)=>{
     pageManager.setActivePage("unified")

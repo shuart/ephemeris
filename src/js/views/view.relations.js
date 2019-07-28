@@ -97,7 +97,107 @@ var createRelationsView = function () {
       <div class="ui divider"></div>
       `
     return html
-  }
+  },
+      quickstartView:(cards) => {
+       let html = `
+       <div  class="ui center aligned basic segment">
+          <h4>Create a new Graph</h4>
+       </div>
+
+
+         <div style="width: 80%;margin-left: 10%;" class="ui placeholder segment">
+          <div class="ui two column stackable center aligned grid">
+            <div class="ui vertical divider">Or</div>
+            <div class="middle aligned row">
+              <div class="column">
+                <div class="ui icon header">
+                  <i class="sitemap icon"></i>
+                  Start from an existing element
+                </div>
+                <div class="ui primary button action_relations_qs_show_whole_project">
+                  Whole project
+                </div>
+                or
+                <div class="ui secondary button action_relations_qs_start_from_element">
+                  Focus on an element
+                </div>
+              </div>
+              <div class="column">
+                <div class="ui icon header">
+                  <i class="file outline icon "></i>
+                  Start from an empty graph
+                </div>
+                <div class="ui primary button action_relations_qs_create_new_empty">
+                  Create
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ui center aligned basic segment">
+          <h4>Load a snapshot of the project</h4>
+          <div style="width: 80%;margin-left: 10%;" class="ui cards">
+           ${theme.quickStartLastViewItem()}
+           ${cards}
+           </div>
+        <div>
+        `
+      return html
+    },
+    quickStartItem:(item) => {
+
+      let html = `
+      <div class="card">
+        <div class="content">
+          <img style="width: 170px;" class="ui tiny image" src="${item.preview? item.preview:""}">
+          <div class="header">
+            ${item.name}
+          </div>
+          <div class="meta">
+            ${"Last modified "+ moment(item.addedDate).format("MMMM Do YY")}
+          </div>
+          <div class="description">
+            ${item.nodesPositions? "Showing "+item.nodesPositions.length+" items":""}
+          </div>
+        </div>
+        <div class="extra content">
+          <div class="ui two mini buttons">
+          <div data-id="${item.uuid}" class="ui basic grey button action_relations_qs_show_snapshot">
+            Load
+          </div>
+            <div data-id="${item.uuid}" class="ui basic grey red button action_relations_qs_remove_snapshot">remove</div>
+          </div>
+        </div>
+      </div>`
+
+
+    return html
+  },
+    quickStartLastViewItem:(item) => {
+
+      let html = `
+      <div class="ui raised link card action_relations_qs_show_last_view">
+
+        <div class="content">
+          <img style="width: 170px;" class="ui tiny image" src="">
+          <div class="header">
+          <i class="redo icon"></i>
+          </div>
+          <div class="meta">
+            Go to last view
+          </div>
+          <div class="description">
+
+          </div>
+        </div>
+        <div class="ui bottom attached button action_relations_qs_show_last_view">
+          Reload
+        </div>
+      </div>`
+
+
+    return html
+    }
   }
 
 
@@ -106,6 +206,7 @@ var createRelationsView = function () {
     // there is multiple mode in this view. default one
     //is relation. This is modified by the init param when non-default view is triggered
     if (options && options.context && options.context == "interfaces") {
+      delfaultElementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
       elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
       activeMode = 'interfaces'
       addItemMode = "currentPbs"
@@ -406,6 +507,117 @@ var createRelationsView = function () {
 
   }
 
+  var quickstartConnections = function (container) {
+    bind(".action_relations_qs_show_snapshot","click",(e)=>{
+      setTimeout(function () {
+        setSnapshot(e.target.dataset.id)
+      }, 1);
+    }, container)
+    bind(".action_relations_qs_remove_snapshot","click",(e)=>{
+      if (confirm("Delete this snapshot")) {
+        push(act.remove("graphs", {uuid:e.target.dataset.id}))
+        renderQuickstart()
+      }
+    }, container)
+    bind(".action_relations_qs_show_last_view","click",(e)=>{
+      update()
+    }, container)
+    bind(".action_relations_qs_start_from_element","click",(e)=>{
+      let store = query.currentProject()
+      let elements = store.currentPbs.items
+      let elementsLinks = store.currentPbs.links
+      showListMenu({
+        sourceData:elements,
+        sourceLinks:elementsLinks,
+        displayProp:"name",
+        display:[
+          {prop:"name", displayAs:"Name", edit:false},
+          {prop:"desc", displayAs:"Description", fullText:true,edit:false},
+          {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:false},
+          {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false}
+
+        ],
+        idProp:"uuid",
+        extraButtons : [
+          {name:"show", class:"show", prop:"uuid", closeAfter:true, action: (orev)=>{
+            if (activeMode=="interfaces") {//TODO should use default
+              elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
+            }else {
+              elementVisibility = {
+                functions : true,
+                requirements : true,
+                stakeholders : true,
+                physicalSpaces : true,
+                metaLinks : true,
+                interfaces : false,
+                compose : true
+              }
+            }
+            fixedValues = false
+            hiddenItemsFromSideView= []
+            currentSnapshot = undefined
+            updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+            isolateSelectedNodes([{uuid:orev.dataset.extra}], true)
+
+          }}
+        ],
+        onEditItem: (ev)=>{
+        },
+        onClick: (ev)=>{
+        }
+      })
+    }, container)
+    bind(".action_relations_qs_show_whole_project","click",(e)=>{
+      function setReset() {
+        fixedValues = false
+        hiddenItemsFromSideView= []
+        groupElements= deepCopy(defaultGroupElements);//prevent memory space linking between graph and view TODO investigate why needed here and in save
+        elementVisibility= deepCopy(defaultElementVisibility);
+        currentSnapshot = undefined
+        update()
+      }
+      function setResetInterfaces() {
+        fixedValues = false
+        update()
+      }
+      setTimeout(function () {
+        if (activeMode == "interfaces") {
+          setResetInterfaces()
+        }else {
+          setReset()
+        }
+        //fix graph after a few seconds
+        setTimeout(function () {
+          setGraphToFixed()
+        }, 1900);
+      }, 1);
+    }, container)
+    bind(".action_relations_qs_create_new_empty","click",(e)=>{
+      if (activeMode=="interfaces") {//TODO should use default
+        elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
+      }else {
+        elementVisibility = {
+          functions : true,
+          requirements : true,
+          stakeholders : true,
+          physicalSpaces : true,
+          metaLinks : true,
+          interfaces : true,
+          compose : true
+        }
+      }
+
+      updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+      hiddenItemsFromSideView = itemsToDisplay.map(i=>i.uuid)
+      update()
+      setTimeout(function () {
+        if (activeGraph) {
+          setGraphToFixed()
+        }
+      }, 1900);
+    }, container)
+  }
+
   var render = function () {
 
     container = document.createElement("div")
@@ -648,6 +860,38 @@ var createRelationsView = function () {
     }
   }
 
+  var renderQuickstart = function () {
+    let quickstartContainer = document.createElement("div")
+    quickstartContainer.style.height = "100%"
+
+    //Add viewSelectionMenu
+    let relationViews = query.currentProject().graphs.items
+    console.log(relationViews);
+    let viewMenuObjects =relationViews.slice()
+    if (activeMode=="interfaces") {
+      viewMenuObjects=viewMenuObjects.filter(v=>v.view == activeMode)
+    }
+    let viewMenuHtml = viewMenuObjects
+      .sort(function(a, b) {
+        if (a.name && b.name) {
+          var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+          var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+          if (nameA < nameB) {return -1;}
+          if (nameA > nameB) {return 1;}
+        }
+        return 0;})
+      .map(v=>theme.quickStartItem(v))
+      .join('')
+
+
+    quickstartContainer.innerHTML=theme.quickstartView(viewMenuHtml)
+
+    document.querySelector(".center-container").innerHTML=""
+    document.querySelector(".center-container").appendChild(quickstartContainer)
+
+    quickstartConnections(quickstartContainer)
+  }
+
 
 
   var update = function () {
@@ -669,17 +913,34 @@ var createRelationsView = function () {
           compose : true
         }
         objectIsActive = true;
+        fixedValues = false
+        hiddenItemsFromSideView= []
+        currentSnapshot = undefined
         updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
         isolateSelectedNodes([{uuid:options.param.uuid}], true)
+        //fix graph after a few seconds
+        setTimeout(function () {
+          if (activeGraph) {
+            setGraphToFixed()
+          }
+        }, 1900);
+      }
+      if (options.param.context && options.param.context == "quickstart") {
+        objectIsActive = true;
+        updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+        renderQuickstart()
       }
     }else {
       objectIsActive = true;
       update()
+      //fix graph after a few seconds
+      setTimeout(function () {
+        if (activeGraph) {
+          setGraphToFixed()
+        }
+      }, 1900);
     }
-    //fix graph after a few seconds
-    setTimeout(function () {
-      setGraphToFixed()
-    }, 1900);
+
   }
 
   var setInactive = function () {
