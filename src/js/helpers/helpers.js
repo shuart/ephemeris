@@ -270,7 +270,9 @@ function getRelatedItems(sourceItem, groupToSearch, paramOptions) {//todo limit 
 function getCategoryFromItemUuid(sourceItemId) {//todo limit metalinks type
   var store = query.currentProject()
   let category = undefined
-  let categoryLink = store.metaLinks.items.find(m=>m.source == sourceItemId)
+  let categoryLink = store.metaLinks.items.find(m=>(m.type=="category" && m.source == sourceItemId))
+  console.log(sourceItemId);
+  console.log(categoryLink);
   if (categoryLink) {
     category = store.categories.items.find(c=>c.uuid == categoryLink.target)
   }
