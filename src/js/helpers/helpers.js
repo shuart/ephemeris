@@ -342,3 +342,19 @@ var getObjectNameByUuid = function (uuid) {
     return "Missing item"
   }
 }
+var getObjectGroupByUuid = function (uuid) {
+  var store = query.currentProject()
+  let storeGroup = undefined
+  if (store.currentPbs.items.find(i=>i.uuid == uuid)) { storeGroup = "currentPbs"; }
+  else if (store.requirements.items.find(i=>i.uuid == uuid)) { storeGroup = "requirements"; }
+  else if (store.functions.items.find(i=>i.uuid == uuid)) { storeGroup = "functions"; }
+  else if (store.stakeholders.items.find(i=>i.uuid == uuid)) { storeGroup = "stakeholders"; }
+  else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) { storeGroup = "physicalSpaces"; }
+  else if (store.workPackages.items.find(i=>i.uuid == uuid)) { storeGroup = "workPackages"; }
+  else if (store.interfaces.items.find(i=>i.uuid == uuid)) { storeGroup = "interfaces"; }
+
+  if (!storeGroup) {
+    console.log("no group available");
+  }
+  return storeGroup
+}

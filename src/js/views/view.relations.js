@@ -334,6 +334,10 @@ var createRelationsView = function () {
       let selectedNodes = activeGraph.getSelectedNodes()
       isolateSelectedNodes(selectedNodes, true)
     }, container)
+    bind(".action_relations_remove_nodes","click",(e)=>{
+      let selectedNodes = activeGraph.getSelectedNodes()
+      deleteSelectedNodes(selectedNodes, true)
+    }, container)
     bind(".action_restore_last_interface_toogle_network","click",(e)=>{
       toggleFixedGraph()
     }, container)
@@ -785,6 +789,21 @@ var createRelationsView = function () {
     })
     update()
   }
+  var deleteSelectedNodes = function (currentSelected, showChildren) {
+    var store = query.currentProject()
+    let selectedNodes = currentSelected
+
+    selectedNodes.forEach(function (n) {
+      let nodeType = getObjectGroupByUuid(n.uuid)
+      if (nodeType) {
+        let object = store[nodeType].items.find(i=>i.uuid == n.uuid)
+        if (confirm("Delete "+ object.name)) {
+          push(act.remove(nodeType, {uuid:object.uuid}))
+        }
+      }
+    })
+    update()
+  }
 
   var displaySideMenuFromSearch = function (filteredIds) {
     console.log(filteredIds);
@@ -977,6 +996,9 @@ var createRelationsView = function () {
         </button>
         <button class="ui mini button action_relations_isolate_nodes_and_children" data-tooltip="Show only selected relations" data-position="bottom center">
           <i class="eye dropper icon action_relations_isolate_nodes_and_children"></i>
+        </button>
+        <button class="ui mini button action_relations_remove_nodes" data-tooltip="Delete Selected" data-position="bottom center">
+          <i class="trash icon action_relations_remove_nodes"></i>
         </button>
         <button class="ui basic icon button" data-tooltip="Export as .png" data-position="bottom center">
           <i class="download icon action_relations_export_png"></i>
