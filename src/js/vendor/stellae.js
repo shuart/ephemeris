@@ -1297,8 +1297,8 @@ function stellae(_selector, _options) {
                             ' L ' + rotatedPointA2.x + ' ' + rotatedPointA2.y +
                             ' Z';
                   }else {
-                    return 'M ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
-                            ' L ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
+                    return 'M ' + rotatedPointB2.x + ' ' + rotatedPointB2.y +
+                            ' L ' + rotatedPointA1.x + ' ' + rotatedPointA1.y +
                             ' Z';
                   }
           });

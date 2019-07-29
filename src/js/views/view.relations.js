@@ -22,6 +22,7 @@ var createRelationsView = function () {
   var showVisibilityMenuSnapshot = true;
 
   var showExtraLabels = true;
+  var showLinksText = true;
 
   var elementVisibility = {
     functions : true,
@@ -442,6 +443,11 @@ var createRelationsView = function () {
     bind(".action_relations_show_extra_labels","click",(e)=>{
       console.log(e.target.value);
       showExtraLabels = !showExtraLabels
+      update()
+    }, container)
+    bind(".action_relations_toogle_links_text","click",(e)=>{
+      console.log(e.target.value);
+      showLinksText = !showLinksText
       update()
     }, container)
 
@@ -986,6 +992,9 @@ var createRelationsView = function () {
         <button class="${fadeOtherNodesOnHoover ? 'active':''} ui mini button action_fade_other_node_toogle_network_button" data-tooltip="Highlight connection on hover" data-position="bottom center">
           <i class="sun outline icon action_fade_other_node_toogle_network_button"></i>
         </button>
+        <button class="${showLinksText ? 'active':''} ui mini button action_relations_toogle_links_text" data-tooltip="Relations texts" data-position="bottom center">
+          <i class="underline icon action_relations_toogle_links_text"></i>
+        </button>
         <button class="${showExtraLabels ? 'active':''} ui mini button action_relations_show_extra_labels" data-tooltip="Extra Category labels" data-position="bottom center">
           <i class="tag icon action_relations_show_extra_labels"></i>
         </button>
@@ -1282,6 +1291,7 @@ var createRelationsView = function () {
           "errors": []
       },
       nodeRadius: 25,
+      showLinksText:showLinksText,
       unpinNodeOnClick:!fixedValues,//disable node unpin when fixedgraph mode
       onNodeDragEnd:function (node) {
         if (fixedValues) {
