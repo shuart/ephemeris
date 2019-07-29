@@ -1474,6 +1474,22 @@ var createRelationsView = function () {
     }
     currentSnapshot = uuid
     update()
+    //regsiter la position also TODO put in own fuction as it's used by stellae dragend
+    if (fixedValues) {
+      //TODO test to clean
+      if (!query.currentProject().graphs ) {//backward compatibility
+        query.currentProject().graphs = {}
+        query.currentProject().graphs.items =[]
+      }
+      let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
+      //append to graph DB
+      if (activeMode=="relations") {
+        query.currentProject().graphs.default = graphItem//TODO use actions
+      }else if (activeMode == "interfaces") {
+        query.currentProject().graphs.interfaces = graphItem//TODO use actions
+      }
+    }
+
   }
 
 
