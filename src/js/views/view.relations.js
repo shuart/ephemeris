@@ -70,21 +70,26 @@ var createRelationsView = function () {
 
   var theme={
     viewListItem:(item) => {
-      let cardHtml = `
-      <img style="width: 170px;" class="ui tiny image" src="${item.preview? item.preview:""}">
-       `
-     let html = `
-      <div style="margin: 1px;" class="ui mini basic icon buttons">
-        <button style="width:95px;" data-id="${item.uuid}" class="ui mini basic button action_relations_load_view">
-          <i data-id="${item.uuid}" class="icon camera"></i>
-          ${item.name? item.name.substring(0, 8)+"..": item.name}
-        </button>
-        <button data-id="${item.uuid}" class="ui button action_relations_update_snapshot"><i data-id="${item.uuid}" class="save icon "></i></button>
-        <button data-id="${item.uuid}" class="ui button action_relations_remove_snapshot"><i data-id="${item.uuid}" class="times circle outline icon "></i></button>
-      </div>
-      `
+      if (item) {
+        let cardHtml = `
+        <img style="width: 170px;" class="ui tiny image" src="${item.preview? item.preview:""}">
+         `
+       let html = `
+        <div style="margin: 1px;" class="ui mini basic icon buttons">
+          <button style="width:95px;" data-id="${item.uuid}" class="ui mini basic button action_relations_load_view">
+            <i data-id="${item.uuid}" class="icon camera"></i>
+            ${item.name? item.name.substring(0, 8)+"..": item.name}
+          </button>
+          <button data-id="${item.uuid}" class="ui button action_relations_update_snapshot"><i data-id="${item.uuid}" class="save icon "></i></button>
+          <button data-id="${item.uuid}" class="ui button action_relations_remove_snapshot"><i data-id="${item.uuid}" class="times circle outline icon "></i></button>
+        </div>
+        `
 
-    return cardHtml+html
+      return cardHtml+html
+    }else {
+      return ''
+    }
+
     },
     viewListOptions:() => {
      let html = `
@@ -450,6 +455,11 @@ var createRelationsView = function () {
       showExtraLabels = !showExtraLabels
       update()
     }, container)
+    bind(".action_relations_show_current_matrix","click",(e)=>{
+      let nodes = itemsToDisplay.filter(i=> !hiddenItemsFromSideView.includes(i.uuid))
+      showOccurrenceDiagramService.show(nodes.filter(r=>getObjectGroupByUuid(r.uuid) == "currentPbs"), relations.filter(r=>r.type=="Physical connection"))
+
+    }, container)
     bind(".action_relations_toogle_links_text","click",(e)=>{
       console.log(e.target.value);
       showLinksText = !showLinksText
@@ -704,7 +714,6 @@ var createRelationsView = function () {
               }
             }
           }
-          recentSnapshot = currentSnapshot//clear current snapshot
           currentSnapshot = undefined//clear current snapshot
 
         }else if( activeMode =="relations") {// if not go to default
@@ -1044,6 +1053,9 @@ var createRelationsView = function () {
         <button class="${showExtraLabels ? 'active':''} ui mini button action_relations_show_extra_labels" data-tooltip="Extra Category labels" data-position="bottom center">
           <i class="tag icon action_relations_show_extra_labels"></i>
         </button>
+        <button class=" ui mini button action_relations_show_current_matrix" data-tooltip="interface matrix" data-position="bottom center">
+          <i class="table icon action_relations_show_current_matrix"></i>
+        </button>
       </div>
     </div>
     `
@@ -1227,8 +1239,9 @@ var createRelationsView = function () {
       .join('')
 
     let recentSnapshotHtml =""
-    let recentSnapshotElement =viewMenuObjects.find(r=>r.uuid == currentSnapshot)
-      if (recentSnapshot) {
+    recentSnapshot = currentSnapshot || recentSnapshot //save in case no element is available next time
+    let recentSnapshotElement =viewMenuObjects.find(r=>r.uuid == currentSnapshot) ||viewMenuObjects.find(r=>r.uuid == recentSnapshot)
+      if (recentSnapshotElement) {
       recentSnapshotHtml  = "<b>Last used</b><br>" + theme.viewListItem(recentSnapshotElement)+"<br><br><b>All</b><br>"
       }
 
