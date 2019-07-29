@@ -59,6 +59,7 @@ var createRelationsView = function () {
   }
 
   var currentSnapshot=undefined
+  var recentSnapshot=undefined
 
   var itemsToDisplay = []
   var relations = []
@@ -683,7 +684,29 @@ var createRelationsView = function () {
       if (fixedValues) { //check if network is fixed or dynamic
         if (currentSnapshot) {// has a snapshot been activated
           fixedValuesList = query.currentProject().graphs.items.find(i=>i.uuid == currentSnapshot).nodesPositions
+
+          if (fixedValuesList && itemsToDisplay && filteredItemsToDisplay.length-fixedValuesList.length > 0 ) {// if element to display are note the same as the snapshot
+            if (!confirm(filteredItemsToDisplay.length-fixedValuesList.length +1 +" extra items have been added since this snapshot was created. Show them in the snapshot?")) {//TODO why is the +1 needed?
+
+              let originalFilteredItemsToDisplay = deepCopy(filteredItemsToDisplay)
+              let originalHiddenItemsFromSideView = deepCopy(hiddenItemsFromSideView)//store value before modyfing theme
+
+              let extraFilter = fixedValuesList.map(e=>e.uuid)
+              filteredItemsToDisplay= filteredItemsToDisplay.filter(f => extraFilter.includes(f.uuid)) //remove other nodes
+              hiddenItemsFromSideView = hiddenItemsFromSideView.concat(originalFilteredItemsToDisplay.filter(f => !extraFilter.includes(f.uuid)).map(o=>o.uuid))//update the hidden item prop
+
+              if (confirm('Check if new nodes are related to graph and show them?')) {
+                let childrenFilter = findChildrenUuid(fixedValuesList, itemsToDisplay, relations)
+                console.log(filteredItemsToDisplay);
+                console.log(childrenFilter);
+                filteredItemsToDisplay= originalFilteredItemsToDisplay.filter(f => childrenFilter.includes(f.uuid))
+                hiddenItemsFromSideView = originalHiddenItemsFromSideView.concat(originalFilteredItemsToDisplay.filter(f => !childrenFilter.includes(f.uuid)).map(o=>o.uuid))
+              }
+            }
+          }
+          recentSnapshot = currentSnapshot//clear current snapshot
           currentSnapshot = undefined//clear current snapshot
+
         }else if( activeMode =="relations") {// if not go to default
           if (query.currentProject().graphs && query.currentProject().graphs.default) {
             fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB backward compatibility (TODO: remove)
@@ -759,25 +782,26 @@ var createRelationsView = function () {
 
     }
   }
+  function findChildrenUuid(roots,items, links) {
+    return roots.reduce(function (acc, r) {
+      console.log(acc);
+      let rootArray = [r.uuid]
+      let itemsChildren = items.filter((i) => {//get all the children of this element
+        return links.find((l)=> {
+          if (l.source.uuid) {return l.source.uuid == r.uuid && l.target.uuid == i.uuid//check if links source is object
+          }else { return l.source == r.uuid && l.target == i.uuid}//or ID
+        })
+      })
+      //recursively trandform them in leaf and branches
+      let thisitemChildrenArray = findChildrenUuid(itemsChildren,items, links)
+      rootArray = rootArray.concat(thisitemChildrenArray)
+      console.log(acc);
+      return acc.concat(rootArray)
+    }, [])
+  }
 
   var isolateSelectedNodes = function (currentSelected, showChildren) {
-    function findChildrenUuid(roots,items, links) {
-      return roots.reduce(function (acc, r) {
-        console.log(acc);
-        let rootArray = [r.uuid]
-        let itemsChildren = items.filter((i) => {//get all the children of this element
-          return links.find((l)=> {
-            if (l.source.uuid) {return l.source.uuid == r.uuid && l.target.uuid == i.uuid//check if links source is object
-            }else { return l.source == r.uuid && l.target == i.uuid}//or ID
-          })
-        })
-        //recursively trandform them in leaf and branches
-        let thisitemChildrenArray = findChildrenUuid(itemsChildren,items, links)
-        rootArray = rootArray.concat(thisitemChildrenArray)
-        console.log(acc);
-        return acc.concat(rootArray)
-      }, [])
-    }
+
     let selectedNodes = currentSelected
     let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
     let selectedNodesAndChildrenUuid = findChildrenUuid(selectedNodes, itemsToDisplay, relations)
@@ -1201,7 +1225,14 @@ var createRelationsView = function () {
         return 0;})
       .map(v=>theme.viewListItem(v))
       .join('')
-    container.querySelector('.target_relations_view_list').innerHTML= theme.viewListOptions() + viewMenuHtml
+
+    let recentSnapshotHtml =""
+    let recentSnapshotElement =viewMenuObjects.find(r=>r.uuid == currentSnapshot)
+      if (recentSnapshot) {
+      recentSnapshotHtml  = "<b>Last used</b><br>" + theme.viewListItem(recentSnapshotElement)+"<br><br><b>All</b><br>"
+      }
+
+    container.querySelector('.target_relations_view_list').innerHTML= theme.viewListOptions() + recentSnapshotHtml+viewMenuHtml
   }
 
   var dataToD3Format = function (data) {
@@ -1479,7 +1510,9 @@ var createRelationsView = function () {
       let newGraphItem = {uuid:snapId,view:activeMode, name:"0-Current WIP", groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
       push(act.remove("graphs", {uuid:snapId}))
       push(act.add("graphs", newGraphItem))
+      let savedCurrentSnapshot = currentSnapshot
       setSnapshot(snapId)
+
     }
   }
 
