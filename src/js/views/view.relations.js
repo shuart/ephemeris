@@ -251,22 +251,27 @@ var createRelationsView = function () {
     }, listContainer)
     bind(".action_relations_show_all_nodes_in_view","click",(e)=>{
 
-      let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
-      for (var i = 0; i < children.length; i++) {
-        let child = children[i];let linkedChildId = child.dataset.id;
-
-        let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
-        if (!isVisible) {  hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedChildId)  }
-      }
+      // let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
+      // for (var i = 0; i < children.length; i++) {
+      //   let child = children[i];let linkedChildId = child.dataset.id;
+      //
+      //   let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
+      //   if (!isVisible) {  hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedChildId)  }
+      // }
+      updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+      hiddenItemsFromSideView = []
       update()
     }, container)
     bind(".action_relations_hide_all_nodes_in_view","click",(e)=>{
 
-      let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
-      for (var i = 0; i < children.length; i++) {
-        let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
-        if (isVisible && child.dataset.label) {hiddenItemsFromSideView.push(linkedChildId)}
-      }
+      // let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
+      // for (var i = 0; i < children.length; i++) {
+      //   let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
+      //   if (isVisible && child.dataset.label) {hiddenItemsFromSideView.push(linkedChildId)}
+      // }
+
+      updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+      hiddenItemsFromSideView = itemsToDisplay.map(i=>i.uuid)
       update()
     }, container)
     bind(".action_relations_toogle_show_graph_menu","click",(e)=>{
@@ -551,6 +556,7 @@ var createRelationsView = function () {
       }
       function setResetInterfaces() {
         fixedValues = false
+        hiddenItemsFromSideView= []
         update()
       }
       setTimeout(function () {
