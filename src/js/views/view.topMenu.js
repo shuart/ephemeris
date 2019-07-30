@@ -70,6 +70,7 @@ var createTopMenu = function (containerSelector) {
       document.querySelector('.target_context_settings').innerHTML=`
       <a class="item action_toogle_extraFields_view"><i class="table icon"></i>Extra Fields</a>
       <a class="item action_toogle_extra_graphs"><i class="sitemap icon"></i>Extra Graphs</a>
+      <a class="item action_toogle_categories_view"><i class="hashtag icon"></i>Categories</a>
       <a class="item action_toogle_tags_view"><i class="tags icon"></i>Tags</a>
       <a class="item action_toogle_metalinks_view"><i class="exchange icon"></i>Project links</a>
       <a class="item action_toogle_interfaces_list_view"><i class="cubes icon"></i>Project interfaces</a>
