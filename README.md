@@ -13,11 +13,13 @@ System Engineering and requirements management application
 -   Build the project breakdown structure
 -   Generate overview diagrams, ERD and mindmaps from the project relations
 -   Produce text specifications based on your model
+-   Create interfaces matrix from specific part of your project
 
 ![Lists](./images/ephemeris_lists.png)
 ![ERD](./images/ephemeris_erd.png)
 ![Meetings](./images/ephemeris_meetings.png)
 ![Meetings](./images/ephemeris_mm.png)
+![Interfaces](./images/ephemeris_interfaces.png)
 
 ## Getting Started
 
