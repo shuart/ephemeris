@@ -332,6 +332,62 @@ var createRelationsView = function () {
       document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
       queryDOM(".action_interface_add_pbs").classList.add('active')
     }, container)
+
+    bind(".action_relations_duplicate_nodes","click",(e)=>{
+      let store = query.currentProject()
+
+      let selectedNodes = activeGraph.getSelectedNodes()
+      let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+      let selectedNodesUuidConversion = selectedNodes.map(n=>[n.uuid, genuuid()])
+      let convertUuid = function (convTable) {
+        return function (id) {
+          return convTable.find(i=>i[0] == id)[1]
+        }
+      }(selectedNodesUuidConversion)//convert uuid to predictable new ones to avoid issues with relations links
+
+      //duplicate and add
+      let extraText = ""
+      if (confirm("Modify object names to mark them as copies?")) {
+        extraText = "-copy"
+      }
+      selectedNodes.forEach(function (node) {
+        if (node.uuid) {
+          let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
+          if (elementToDuplicate) {
+            var id = convertUuid(node.uuid)
+            let newElement = deepCopy(elementToDuplicate)        //first get a clean node copy
+            newElement.uuid = id
+            newElement.name = newElement.name +extraText
+            push(addPbs(newElement))
+            push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+
+            //find and duplicate links
+            // let metaLinksToSearch =query.items("metaLinks")
+            // let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+            let interfacesToSearch =query.items("interfaces")
+            let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+            // let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+
+            let localLinksToSearch =store.currentPbs.links
+            let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+            // let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+
+            deepCopy(relatedInterfaceLinks).forEach(function (il) {
+              push(act.add("interfaces",{type:il.type, name:il.name,description:il.description, source:convertUuid(il.source), target:id}))
+            })
+            deepCopy(relatedLocalLinks).forEach(function (il) {
+              push(act.addLink("currentPbs",{source:convertUuid(il.source), target:id}))
+            })
+
+            console.log(relatedInterfaceLinks, relatedLocalLinks);
+          }
+        }
+      })
+      update()
+
+      // isolateSelectedNodes(selectedNodes, false)
+    }, container)
+
     bind(".action_relations_isolate_nodes","click",(e)=>{
       let selectedNodes = activeGraph.getSelectedNodes()
       isolateSelectedNodes(selectedNodes, false)
@@ -1113,6 +1169,10 @@ var createRelationsView = function () {
           <div class="ui icon button action_interfaces_add_pbs" data-tooltip="Add Product" data-position="bottom center">
             <i class="plus  icon action_interfaces_add_pbs"></i>
             <i class="dolly icon action_interfaces_add_pbs"></i>
+          </div>
+          <div class="ui icon button action_relations_duplicate_nodes" data-tooltip="duplicate selected Product" data-position="bottom center">
+            <i class="plus  icon action_relations_duplicate_nodes"></i>
+            <i class="copy outline icon action_relations_duplicate_nodes"></i>
           </div>
         </div>
       </div>
