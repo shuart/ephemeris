@@ -63,6 +63,7 @@ var createLeftMenuActions = function () {
     query.items("projects").forEach(function (store) {
       let formatedActions = store.actions.items.map(a=>{
         a.projectName = store.name;
+        a.urgent = lessThanInSomeDays(a.dueDate,2)
         return a
       })
       allActions = allActions.concat(store.actions.items)
@@ -83,7 +84,7 @@ var createLeftMenuActions = function () {
     let html= sortedActions.map(i=>{
       return `
         <div  class="list-item ">
-          <i data-project="${i.project}" data-id="${i.uuid}" class="far fa-calendar-times action_left_menu_action_list_close_action"></i>
+          <i style="${i.urgent ? "color:#f97f7f": ""}" data-project="${i.project}" data-id="${i.uuid}" class="far fa-calendar-times action_left_menu_action_list_close_action"></i>
           <p>${i.dueDate? new Date(i.dueDate).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 5):""} - ${i.name}
           <span style ="background-color: #e6e6e6;padding: 5px;height: 20px;border-radius: 5px;display: inline-block;font-size: 9px;padding-top: 0px;">
             ${i.projectName}

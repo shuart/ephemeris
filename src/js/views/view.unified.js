@@ -420,6 +420,9 @@ var createUnifiedView = function (targetSelector) {
       if (lessThanInSomeDays(new Date(value),10 )) {
         labelColor = "orange"
       }
+      if (lessThanInSomeDays(new Date(value),2 )) {
+        labelColor = "red"//redish
+      }
     }else {
       today = new Date().toISOString().substr(0, 10);
     }
