@@ -717,7 +717,7 @@ function showListMenu({
 
           let letters = showColoredIcons(item)
           let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
-          let style = 'style="background: '+colorFromLetters(letters)+';width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 18px;color: white;"'
+          let style = 'style="background: '+colorFromLetters(letters)+';width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 15px;color: white;text-align: center;"'
           nestedHtml +=`
           <div  ${colStyle} data-id="${item[idProp]}" class="column">
             <div ${style} data-id="${item[idProp]}" class="content">
