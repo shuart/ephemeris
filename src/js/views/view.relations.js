@@ -364,6 +364,10 @@ var createRelationsView = function () {
             //find and duplicate links
             // let metaLinksToSearch =query.items("metaLinks")
             // let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+
+            let catLinksToSearch =query.items("metaLinks").filter(l=>l.type=="category")
+            let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
+
             let interfacesToSearch =query.items("interfaces")
             let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
             // let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
@@ -371,6 +375,11 @@ var createRelationsView = function () {
             let localLinksToSearch =store.currentPbs.links
             let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
             // let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+
+            console.log(relatedCatLinks);
+            deepCopy(relatedCatLinks).forEach(function (l) {
+              push(act.add("metaLinks",{type:l.type, source:convertUuid(l.source), target:l.target}))
+            })
 
             deepCopy(relatedInterfaceLinks).forEach(function (il) {
               push(act.add("interfaces",{type:il.type, name:il.name,description:il.description, source:convertUuid(il.source), target:id}))

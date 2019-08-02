@@ -342,14 +342,6 @@ var getObjectNameByUuid = function (uuid) {
     return "Missing item"
   }
 }
-var getObjectByUuid = function (uuid) {
-  let foundItem = query.items("all", i=> i.uuid == uuid)[0]
-  if (foundItem) {
-    return foundItem
-  }else {
-    return undefined
-  }
-}
 var getObjectGroupByUuid = function (uuid) {
   var store = query.currentProject()
   let storeGroup = undefined
