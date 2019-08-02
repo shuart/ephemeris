@@ -352,18 +352,25 @@ var createRelationsView = function () {
       }
       selectedNodes.forEach(function (node) {
         if (node.uuid) {
+          let storeGroup = getObjectGroupByUuid(node.uuid)
           let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
           if (elementToDuplicate) {
             var id = convertUuid(node.uuid)
             let newElement = deepCopy(elementToDuplicate)        //first get a clean node copy
             newElement.uuid = id
             newElement.name = newElement.name +extraText
-            push(addPbs(newElement))
-            push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+            push(act.add(storeGroup,newElement))
+            if (storeGroup == "currentPbs") {
+              //check if parent is copied too
+              let hasParent = store.currentPbs.links.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+              if (!hasParent) {
+                push(act.addLink(storeGroup,{source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+              }
+            }
 
             //find and duplicate links
-            // let metaLinksToSearch =query.items("metaLinks")
-            // let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+            let metaLinksToSearch =query.items("metaLinks")
+            let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
 
             let catLinksToSearch =query.items("metaLinks").filter(l=>l.type=="category")
             let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
@@ -372,11 +379,14 @@ var createRelationsView = function () {
             let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
             // let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
 
-            let localLinksToSearch =store.currentPbs.links
+            let localLinksToSearch =store[storeGroup].links
             let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
             // let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
 
             console.log(relatedCatLinks);
+            relatedLinks.forEach(function (l) {
+              push(act.add("metaLinks",{type:l.type, source:convertUuid(l.source), target:convertUuid(l.target)}))
+            })
             deepCopy(relatedCatLinks).forEach(function (l) {
               push(act.add("metaLinks",{type:l.type, source:convertUuid(l.source), target:l.target}))
             })
@@ -1095,6 +1105,9 @@ var createRelationsView = function () {
         <button class="ui mini button action_relations_isolate_nodes_and_children" data-tooltip="Show only selected relations" data-position="bottom center">
           <i class="eye dropper icon action_relations_isolate_nodes_and_children"></i>
         </button>
+        <div class="ui icon button action_relations_duplicate_nodes" data-tooltip="duplicate selected Product" data-position="bottom center">
+          <i class="copy outline icon action_relations_duplicate_nodes"></i>
+        </div>
         <button class="ui mini button action_relations_remove_nodes" data-tooltip="Delete Selected" data-position="bottom center">
           <i class="trash icon action_relations_remove_nodes"></i>
         </button>
@@ -1178,10 +1191,6 @@ var createRelationsView = function () {
           <div class="ui icon button action_interfaces_add_pbs" data-tooltip="Add Product" data-position="bottom center">
             <i class="plus  icon action_interfaces_add_pbs"></i>
             <i class="dolly icon action_interfaces_add_pbs"></i>
-          </div>
-          <div class="ui icon button action_relations_duplicate_nodes" data-tooltip="duplicate selected Product" data-position="bottom center">
-            <i class="plus  icon action_relations_duplicate_nodes"></i>
-            <i class="copy outline icon action_relations_duplicate_nodes"></i>
           </div>
         </div>
       </div>
