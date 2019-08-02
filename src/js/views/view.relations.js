@@ -1091,18 +1091,23 @@ var createRelationsView = function () {
     </div>`
     let interfacesMenuHTML =`
     <div class="right menu">
+
+
+
       <div class="ui item">
-        <div class="ui toggle checkbox">
-          <input ${elementVisibility.compose? 'checked':''} class="action_interfaces_toogle_show_compose" type="checkbox" name="public">
-          <label>Show Compositions</label>
+        <div class="ui mini basic buttons">
+          <div class="ui disabled icon button">
+            display
+          </div>
+          <button class="${elementVisibility.compose ? 'active':''} ui mini icon button action_interfaces_toogle_show_compose" data-tooltip="Show composition links" data-position="bottom center">
+            <i class="object group icon action_interfaces_toogle_show_compose"></i>
+          </button>
+          <button class="${elementVisibility.interfaces ? 'active':''} ui mini icon button action_interfaces_toogle_show_interfaces" data-tooltip="Show interfaces links" data-position="bottom center">
+            <i class="cubes icon action_interfaces_toogle_show_interfaces"></i>
+          </button>
         </div>
       </div>
-      <div class="ui item">
-        <div class="ui toggle checkbox">
-          <input ${elementVisibility.interfaces ? 'checked':''} class="action_interfaces_toogle_show_interfaces" type="checkbox" name="public">
-          <label>Show Interfaces</label>
-        </div>
-      </div>
+
       <div class="ui item">
         <div class="ui mini basic buttons">
           <div class="ui icon button action_interfaces_add_pbs" data-tooltip="Add Product" data-position="bottom center">
