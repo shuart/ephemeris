@@ -15,6 +15,7 @@ function showListMenu({
   multipleSelection = undefined,
   searchable = true,
   showColoredIcons = false,
+  allowBatchActions = false,
   onClick = (e)=>{console.log("clik on select");},
   onLabelClick = (e)=>{console.log("clik on label");},
   onAdd = undefined,
@@ -166,6 +167,9 @@ function showListMenu({
   var listContainer =undefined;
   var listContainerFirstCol =undefined;
 
+  var showBatchActions =false;
+  var currentSelectedBatch =[];
+
 
   var self={}
 
@@ -249,6 +253,26 @@ function showListMenu({
           refreshList()
           //sourceEl.remove()
         }
+        if (event.target.classList.contains("action_list_toogle_batch")) {
+          if (showBatchActions) {
+            showBatchActions = false
+            currentSelectedBatch = []
+          }else {
+            showBatchActions = true
+          }
+          refreshList()
+
+        }
+        if (event.target.classList.contains("action_toogle_in_selected_batch")) {
+          let elementId = event.target.dataset.id
+          if (currentSelectedBatch.includes(elementId)) {
+            currentSelectedBatch = currentSelectedBatch.filter(i=>i !=elementId)
+          }else {
+            currentSelectedBatch.push(elementId)
+          }
+          refreshList()
+
+        }
         if (event.target.classList.contains("action_list_move_item")) {
           if (ismoving) {
             ismoving = false
@@ -298,7 +322,7 @@ function showListMenu({
           }
         }
         if (event.target.classList.contains("action_list_edit_choice_item")) {
-          onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target})
+          onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target, batch:currentSelectedBatch})
           //TODO this should be updated here with a promise
           // console.log(event.target);
           // if (!editItemMode && !singleElement) {
@@ -453,6 +477,14 @@ function showListMenu({
         toNode(theme.button(clearButtonValue, 'black', 'action_list_clear')),
         target.firstChild
       )
+    }
+    //batch button
+    if (allowBatchActions) {
+      let target = mainEl.querySelector(".target_menu_left_buttons")
+      target.insertBefore(
+         toNode(theme.button("Select", '', 'action_list_toogle_batch')),
+         target.firstChild
+       )
     }
     //add button
     if (onAdd) {
@@ -722,6 +754,18 @@ function showListMenu({
           <div  ${colStyle} data-id="${item[idProp]}" class="column">
             <div ${style} data-id="${item[idProp]}" class="content">
               ${letters}
+            </div>
+          </div>
+          `
+        }
+        if (showBatchActions) {
+          let marked = currentSelectedBatch.includes(item[idProp])
+          let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
+          let style = 'style="background: transparent;width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 15px;color: grey;text-align: center;"'
+          nestedHtml +=`
+          <div  ${colStyle} data-id="${item[idProp]}" class="column">
+            <div ${style} data-id="${item[idProp]}" class="content">
+              <i data-id="${item[idProp]}"  class="large ${marked ? "check":""} circle outline icon action_toogle_in_selected_batch"></i>
             </div>
           </div>
           `
