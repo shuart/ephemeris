@@ -1575,7 +1575,7 @@ var createRelationsView = function () {
           let targetIsRoot = !store.currentPbs.links.find(i=> i.target == previousSelectedNode.uuid)
 
           if (!isCircularRef && !targetIsRoot) {
-            push(movePbs({origin:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+            // push(movePbs({origin:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
             push(removePbsLink({target:previousSelectedNode.uuid}))
 
             push(act.addLink("currentPbs",{ source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
