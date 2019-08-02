@@ -99,7 +99,7 @@ var createOccurrenceDiagram = function ({
           top: 100,
           right: 0,
           bottom: 0,
-          left: 100
+          left: 200
           },
           width = 700,
           height = 700;
@@ -110,7 +110,7 @@ var createOccurrenceDiagram = function ({
             .attr("width", "100%")
             .attr("height", "100%")
             .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ") scale(0.5)");
 
         svg.append("rect")
             .attr("class", "background")
