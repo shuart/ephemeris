@@ -41,8 +41,12 @@ var createSingleActionView = function ({
           <div class="metadata">
             <div class="date">${moment(comment.addedOn).fromNow() }</div>
           </div>
-          <div class="text" data-id="${comment.uuid}">
+          <div class="text " >
             ${comment.content}
+          </div>
+          <div class="actions">
+            <a class="action_single_action_modify_comment" data-id="${comment.uuid}">edit</a>
+            <a class="action_single_action_remove_comment" data-id="${comment.uuid}">delete</a>
           </div>
         </div>
       </div>
@@ -84,16 +88,66 @@ var createSingleActionView = function ({
     })
     connect(".action_single_action_add_comment","click",(e)=>{
       console.log("Add Comment");
-      var newValue = prompt("Add Comment")
-      if (newValue) {
+      let currentCommentUuid = undefined
+      createInputPopup({
+        originalData:"",
+        onSave:e =>{
+          if (!currentCommentUuid) {
+            currentCommentUuid = uuid()
+            let action = getActionObjectCopyFromUuid(currentActionUuid)
+            let currentComments = (action.comments ? action.comments:[]);
+            currentComments.push({uuid:currentCommentUuid, content:e, addedOn:Date.now()})
+            push(act.edit("actions",{project:action.projectUuid, uuid:action.uuid, prop:"comments", value:currentComments}))
+          }else {
+            let action = getActionObjectCopyFromUuid(currentActionUuid)
+            let currentComments = (action.comments ? action.comments:[]);
+            currentComments.find(c=>c.uuid == currentCommentUuid).content = e
+            push(act.edit("actions",{project:action.projectUuid, uuid:action.uuid, prop:"comments", value:currentComments}))
+          }
+          sourceOccElement.remove()
+          update()
+        },
+        onClose:e =>{
+          sourceOccElement.remove()
+          update()
+        }
+      })
+    })
+    connect(".action_single_action_modify_comment","click",(e)=>{
+      let currentCommentUuid = e.target.dataset.id
+      let action = getActionObjectCopyFromUuid(currentActionUuid)
+      let currentComments = (action.comments ? action.comments:[]);
+      let editedComment = currentComments.find(c=>c.uuid == currentCommentUuid)
+
+
+      createInputPopup({
+        originalData:editedComment.content,
+        onSave:e =>{
+          if (currentCommentUuid) {
+            currentComments.find(c=>c.uuid == currentCommentUuid).content = e
+            push(act.edit("actions",{project:action.projectUuid, uuid:action.uuid, prop:"comments", value:currentComments}))
+          }
+          sourceOccElement.remove()
+          update()
+        },
+        onClose:e =>{
+          sourceOccElement.remove()
+          update()
+        }
+      })
+    })
+    connect(".action_single_action_remove_comment","click",(e)=>{
+      if (confirm("Delete this comment?")) {
+        let currentCommentUuid = e.target.dataset.id
         let action = getActionObjectCopyFromUuid(currentActionUuid)
         let currentComments = (action.comments ? action.comments:[]);
-        currentComments.push({uuid:uuid(), content:newValue, addedOn:Date.now()})
+        currentComments = currentComments.filter(c=>c.uuid != currentCommentUuid)
         push(act.edit("actions",{project:action.projectUuid, uuid:action.uuid, prop:"comments", value:currentComments}))
+        sourceOccElement.remove()
+        update()
       }
-      sourceOccElement.remove()
-      update()
     })
+
     connect(".action_single_action_close","click",(e)=>{
       sourceOccElement.remove()
     })
@@ -183,35 +237,23 @@ var createSingleActionView = function ({
     mainEl.style.padding = "50px";
     mainEl.style.overflow = "auto";
     // mainEl.style.left= "25%";
+    var container = document.createElement('div');
+
+    container.style.position = "relative"
+    container.style.height = "90%"
+    container.style.overflow = "auto"
 
     var menuArea = document.createElement("div");
 
-    var saveButton = document.createElement("button")
-    saveButton.classList ="ui mini basic primary button";
-    saveButton.innerHTML ="Save"
-    saveButton.addEventListener('click', event => {
-      if (onSave) {
-
-      };
-    });
-    var closeButtonOCC = document.createElement("button")
-    closeButtonOCC.classList ="ui mini red basic button closeButtonOCC";
-    closeButtonOCC.innerHTML ="Close"
-    closeButtonOCC.addEventListener('click', event => {
-      if (onClose) {
-
-      }
-      console.log(sourceOccElement);
-      // alert("fefsefes")
-      sourceOccElement.remove()
-    });
     // menuArea.appendChild(saveButton)
 
     sourceOccElement.appendChild(dimmer)
     sourceOccElement.appendChild(mainEl)
     mainEl.appendChild(menuArea)
+    mainEl.appendChild(container)
 
-    mainEl.appendChild(toNode(renderAction(uuid)))
+    menuArea.appendChild(toNode(renderMenu(uuid)))
+    container.appendChild(toNode(renderAction(uuid)))
 
     document.body.appendChild(sourceOccElement)
 
@@ -249,7 +291,12 @@ var createSingleActionView = function ({
     </div>
     <div class="ui divider"></div>
     `
-    return theme.menu(i) + html
+    return html
+  }
+  var renderMenu =function (uuid){
+
+    let i = getActionObjectCopyFromUuid(uuid)
+    return theme.menu(i)
   }
 
   var renderComments = function (i) {
