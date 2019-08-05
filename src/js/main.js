@@ -166,6 +166,9 @@ var reparse = false;
   connect(".action_toogle_tags_view","click",(e)=>{
     tagsView.update()
   })
+  connect(".action_toogle_template_view","click",(e)=>{
+    templatesView.update()
+  })
   connect(".action_toogle_categories_view","click",(e)=>{
     categoriesView.update()
   })

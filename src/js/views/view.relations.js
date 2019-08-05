@@ -406,6 +406,78 @@ var createRelationsView = function () {
 
       // isolateSelectedNodes(selectedNodes, false)
     }, container)
+    bind(".action_relations_store_nodes_as_templates","click",(e)=>{
+      let store = query.currentProject()
+      let selectedNodes = activeGraph.getSelectedNodes()
+      let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+      let selectedNodesUuidConversion = selectedNodes.map(n=>[n.uuid, genuuid()])
+      let convertUuid = function (convTable) {
+        return function (id) {
+          return convTable.find(i=>i[0] == id)[1]
+        }
+      }(selectedNodesUuidConversion)//convert uuid to predictable new ones to avoid issues with relations links
+      //duplicate and add
+      let template = {
+        nodes:[],
+        links:[],
+        relatedLinks:[],
+        relatedCatLinks:[],
+        relatedInterfaceLinks:[],
+        relatedLocalLinks:[]
+      }
+      let extraText = "";
+      selectedNodes.forEach(function (node) {
+        if (node.uuid) {
+          let storeGroup = getObjectGroupByUuid(node.uuid)
+          let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
+          if (elementToDuplicate) {
+            var id = convertUuid(node.uuid)
+            let newElement = deepCopy(elementToDuplicate)        //first get a clean node copy
+            newElement.uuid = id
+            newElement.name = newElement.name +extraText
+            template.nodes.push(newElement)
+            if (storeGroup == "currentPbs") {
+              //check if parent is copied too
+              let hasParent = store.currentPbs.links.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+              if (!hasParent) {
+                template.links.push({source:query.currentProject().currentPbs.items[0].uuid, target:id})
+              }
+            }
+            //find and duplicate links
+            let metaLinksToSearch =query.items("metaLinks")
+            let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+            let catLinksToSearch =query.items("metaLinks").filter(l=>l.type=="category")
+            let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
+
+            let interfacesToSearch =query.items("interfaces")
+            let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+            let localLinksToSearch =store[storeGroup].links
+            let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+            relatedLinks.forEach(function (l) {
+              template.relatedLinks.push({type:l.type, source:convertUuid(l.source), target:convertUuid(l.target)})
+            })
+            deepCopy(relatedCatLinks).forEach(function (l) {
+              template.relatedCatLinks.push({type:l.type, source:convertUuid(l.source), target:l.target})
+            })
+
+            deepCopy(relatedInterfaceLinks).forEach(function (il) {
+              template.relatedInterfaceLinks.push({type:il.type, name:il.name,description:il.description, source:convertUuid(il.source), target:id})
+            })
+            deepCopy(relatedLocalLinks).forEach(function (il) {
+              template.relatedLocalLinks.push({source:convertUuid(il.source), target:id})
+            })
+
+          }
+        }
+      })
+
+      // isolateSelectedNodes(selectedNodes, false)
+      push(act.add("templates",{name:prompt("Add a new Template"), template:template}))
+      console.log(template);
+    }, container)
 
     bind(".action_relations_isolate_nodes","click",(e)=>{
       let selectedNodes = activeGraph.getSelectedNodes()
@@ -1107,6 +1179,9 @@ var createRelationsView = function () {
         </button>
         <div class="ui icon button action_relations_duplicate_nodes" data-tooltip="duplicate selected Product" data-position="bottom center">
           <i class="copy outline icon action_relations_duplicate_nodes"></i>
+        </div>
+        <div class="ui icon button action_relations_store_nodes_as_templates" data-tooltip="store selected as Template" data-position="bottom center">
+          <i class="paste icon action_relations_store_nodes_as_templates"></i>
         </div>
         <button class="ui mini button action_relations_remove_nodes" data-tooltip="Delete Selected" data-position="bottom center">
           <i class="trash icon action_relations_remove_nodes"></i>
