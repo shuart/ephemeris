@@ -321,6 +321,14 @@ function showListMenu({
             render()
           }
         }
+        if (event.target.classList.contains("action_list_go_to_item")) {
+          let link = event.target.dataset.value
+          if (link) {
+            window.open(link, '_blank')
+          }else {
+            console.log("no link to reach");
+          }
+        }
         if (event.target.classList.contains("action_list_edit_choice_item")) {
           onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target, batch:currentSelectedBatch})
           //TODO this should be updated here with a promise
@@ -774,12 +782,14 @@ function showListMenu({
           var propName = rule.prop
           var dispName = rule.displayAs
           var isEditable = rule.edit
+          var isLink = rule.link
           var isTime = rule.time
           var isFullText = rule.fullText
           var isMeta = rule.meta //get the metaFunction
           var isCustom = rule.custom
           var isTarget = rule.isTarget //met is target
           var editHtml = ""
+          var goToHtml = ""
           var propDisplay = item[propName]
           //force edit mode if in editItemMode
           if (editItemMode) {
@@ -795,6 +805,12 @@ function showListMenu({
 
           if (isCustom) {
             propDisplay = isCustom(item[propName])
+          }
+
+          if (isLink) {
+            goToHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_item" style="cursor:pointer; color:blue"></i>`
+
           }
 
           if (isEditable && !isMeta && !isTime) {
@@ -848,6 +864,7 @@ function showListMenu({
             <div data-id="${item[idProp]}" class="column">
               <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
                 ${propDisplay||""}
+                ${goToHtml}
                 ${editHtml}
               </div>
             </div>
@@ -860,6 +877,7 @@ function showListMenu({
               </h3>
               <div data-id="${item[idProp]}" class="">
                 ${propDisplay||""}
+                ${goToHtml}
                 ${editHtml}
               </div>
             </div>
