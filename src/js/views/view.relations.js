@@ -333,6 +333,111 @@ var createRelationsView = function () {
       queryDOM(".action_interface_add_pbs").classList.add('active')
     }, container)
 
+    bind(".action_relations_add_nodes_from_templates","click",(e)=>{
+      let store = query.currentProject()
+      showListMenu({
+        sourceData:store.templates.items,
+        displayProp:"name",
+        display:[
+          {prop:"name", displayAs:"Name", edit:"true"}
+        ],
+        onEditItem: (ev)=>{
+          console.log("Edit");
+          var newValue = prompt("Edit Item",ev.target.dataset.value)
+          if (newValue) {
+            push(act.edit("templates", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          }
+        },
+        onRemove: (ev)=>{
+          if (confirm("remove item ?")) {
+            push(act.remove("templates",{uuid:ev.target.dataset.id}))
+            ev.select.updateData(store.templates.items)
+          }
+        },
+        idProp:"uuid",
+        extraButtons : [
+          {name:"Select", class:"select", prop:"uuid", action: (orev)=>{
+
+            loadFromTemplate(orev.dataset.id)
+          }}
+        ],
+      })
+
+      function loadFromTemplate(id) {
+        let store = query.currentProject()
+        let template = store.templates.items.find(t=>t.uuid == id).template
+        let selectedNodes = template.nodes
+        let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+        let selectedNodesUuidConversion = selectedNodes.map(n=>[n.uuid, genuuid()])
+        let convertUuid = function (convTable) {
+          return function (id) {
+            return convTable.find(i=>i[0] == id)[1]
+          }
+        }(selectedNodesUuidConversion)//convert uuid to predictable new ones to avoid issues with relations links
+        //duplicate and add
+        let extraText = ""
+        if (confirm("Modify object names to mark them as copies?")) {
+          extraText = "-copy"
+        }
+        selectedNodes.forEach(function (node) {
+          if (node.uuid) {
+            let storeGroup = node.storeGroup
+            let elementToDuplicate = node
+            if (elementToDuplicate) {
+              var id = convertUuid(node.uuid)
+              let newElement = deepCopy(elementToDuplicate)        //first get a clean node copy
+              newElement.uuid = id
+              newElement.name = newElement.name +extraText
+              push(act.add(storeGroup,newElement))
+              if (storeGroup == "currentPbs") {
+                //check if parent is copied too
+                let hasParent = template.relatedLocalLinks.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+                if (!hasParent) {
+                  push(act.addLink(storeGroup,{source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+                }
+              }
+
+              //find and duplicate links
+              let metaLinksToSearch =template.relatedLinks
+              let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+              let catLinksToSearch =template.relatedCatLinks
+              let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
+
+              let interfacesToSearch =template.relatedInterfaceLinks
+              let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+              // let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+
+              let localLinksToSearch =template.relatedLocalLinks
+              let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+              // let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+
+
+              relatedLinks.forEach(function (l) {
+                push(act.add("metaLinks",{type:l.type, source:convertUuid(l.source), target:convertUuid(l.target)}))
+              })
+              deepCopy(relatedCatLinks).forEach(function (l) {
+                push(act.add("metaLinks",{type:l.type, source:convertUuid(l.source), target:l.target}))
+              })
+
+              deepCopy(relatedInterfaceLinks).forEach(function (il) {
+                push(act.add("interfaces",{type:il.type, name:il.name,description:il.description, source:convertUuid(il.source), target:id}))
+              })
+              deepCopy(relatedLocalLinks).forEach(function (il) {
+                push(act.addLink("currentPbs",{source:convertUuid(il.source), target:id}))
+              })
+
+            }
+          }
+        })
+        update()
+      }
+
+
+
+      // isolateSelectedNodes(selectedNodes, false)
+    }, container)
     bind(".action_relations_duplicate_nodes","click",(e)=>{
       let store = query.currentProject()
 
@@ -419,7 +524,6 @@ var createRelationsView = function () {
       //duplicate and add
       let template = {
         nodes:[],
-        links:[],
         relatedLinks:[],
         relatedCatLinks:[],
         relatedInterfaceLinks:[],
@@ -435,12 +539,13 @@ var createRelationsView = function () {
             let newElement = deepCopy(elementToDuplicate)        //first get a clean node copy
             newElement.uuid = id
             newElement.name = newElement.name +extraText
+            newElement.storeGroup = storeGroup
             template.nodes.push(newElement)
             if (storeGroup == "currentPbs") {
               //check if parent is copied too
               let hasParent = store.currentPbs.links.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
               if (!hasParent) {
-                template.links.push({source:query.currentProject().currentPbs.items[0].uuid, target:id})
+                // template.links.push({source:query.currentProject().currentPbs.items[0].uuid, target:id})
               }
             }
             //find and duplicate links
@@ -1181,7 +1286,10 @@ var createRelationsView = function () {
           <i class="copy outline icon action_relations_duplicate_nodes"></i>
         </div>
         <div class="ui icon button action_relations_store_nodes_as_templates" data-tooltip="store selected as Template" data-position="bottom center">
-          <i class="paste icon action_relations_store_nodes_as_templates"></i>
+          <i class="archive icon action_relations_store_nodes_as_templates"></i>
+        </div>
+        <div class="ui icon button action_relations_add_nodes_from_templates" data-tooltip="Add from template" data-position="bottom center">
+          <i class="paste icon action_relations_add_nodes_from_templates"></i>
         </div>
         <button class="ui mini button action_relations_remove_nodes" data-tooltip="Delete Selected" data-position="bottom center">
           <i class="trash icon action_relations_remove_nodes"></i>
