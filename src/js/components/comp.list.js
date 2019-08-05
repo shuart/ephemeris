@@ -323,7 +323,9 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_go_to_item")) {
           let link = event.target.dataset.value
-          if (link) {
+          if (typeof nw !== "undefined" && link) {//if using node webkit
+            nw.Shell.openExternal(link)
+          }else if (link) {//if in browser
             window.open(link, '_blank')
           }else {
             console.log("no link to reach");
