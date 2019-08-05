@@ -215,7 +215,24 @@ var createOverview = function (targetSelector) {
       },
       alertAboutUpdate("Categories feature has been added.")
     }
+    if (!store.templates) {
+      store.templates={
+        items:[],
+        links:[]
+      }
+      alertAboutUpdate("Templates management feature has been added.")
+    }
+    if (!store.documents) {
+      store.documents={
+        items:[
+          {uuid:uuid(), name:"Ephemeris Handbook",type:"html", osPath:undefined, idb:undefined, link:"https://github.com/shuart/ephemeris/blob/master/README.md", description:"Quickstart guide for Ephemeris"}
+        ],
+        links:[]
+      }
+      alertAboutUpdate("Documents management feature has been added.")
+    }
   }
+
 
 
   var update = function () {

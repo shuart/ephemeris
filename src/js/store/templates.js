@@ -129,6 +129,13 @@ var store = {
       {uuid: "fefiose", fx: 280.90578607861664, fy: 340.49053534573414}]
     ]
   },
+  templates:{
+    items:[]
+  },
+  documents:{
+    items:[{uuid:uuid(), name:"Ephemeris Handbook",type:"html", osPath:undefined, idb:undefined, link:"https://github.com/shuart/ephemeris/blob/master/README.md", description:"Quickstart guide for Ephemeris"}]
+    // items:[{uuid:uuid(), name:"An exemple document",type:"pdf", osPath:"/subdir", idb:"indexedDB id", link:"Link to another cloud place", description:"Un interface"}]
+  },
   metaLinks:{
     items:[{uuid:uuid(),type:"origin", source:"555sfse", target:"f896546e"}]
   },
