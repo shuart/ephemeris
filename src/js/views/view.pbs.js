@@ -203,6 +203,7 @@ var createPbsView = function () {
 
       return {id:i.uuid, name:i.name, description:i.desc, functions:linkToTextFunc, requirements:linkToTextReq, physicalSpaces: linkToTextSpaces, workPackages:linkToTextWorkpackages}
     })
+    console.log(data);
     JSONToCSVConvertor(data, 'Pbs', true)
   }
 
