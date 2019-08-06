@@ -24,7 +24,10 @@ var createDocumentsView = function () {
       display:[
         {prop:"name", displayAs:"Name", edit:true},
         {prop:"osPath", displayAs:"Local", fullText:true, localPath:true, edit:false},
-        {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true}
+        {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true},
+        {prop:"documents",isTarget:true, displayAs:"Products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
+        {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
+
         // {prop:"documented", displayAs:"Products documented", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
         // {prop:"documented", displayAs:"Requirements documented", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
       ],
@@ -226,6 +229,28 @@ var createDocumentsView = function () {
       sourceLinks=store.currentPbs.links
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
+    }else if (metalinkType == "documentsNeed") {
+      sourceGroup="requirements"
+      invert = true;
+      sourceData=store.requirements.items
+      source = "target"//invert link order for after
+      target = "source"
+      sourceLinks=store.requirements.links
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
+    }else if (metalinkType == "documents") {
+      sourceGroup="currentPbs"
+      invert = true;
+      sourceData=store.currentPbs.items
+      source = "target"//invert link order for after
+      target = "source"
+      sourceLinks=store.currentPbs.links
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "tags") {

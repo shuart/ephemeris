@@ -21,7 +21,8 @@ var createRequirementsView = function () {
       {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
       {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
       {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
-      {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true}
+      {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
+      {prop:"documentsNeed", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
 
     ]
     if (simpleView) {
@@ -249,6 +250,13 @@ var createRequirementsView = function () {
       target = "source"
       sourceLinks=store.workPackages.links
       sourceData=store.workPackages.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "documentsNeed") {
+      sourceGroup="documents"
+      sourceLinks=store.documents.links
+      sourceData=store.documents.items
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]

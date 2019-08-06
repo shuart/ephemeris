@@ -26,6 +26,7 @@ var createShowSingleItemService = function () {
     else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) { storeGroup = "physicalSpaces"; label='physicalSpaces'}
     else if (store.workPackages.items.find(i=>i.uuid == uuid)) { storeGroup = "workPackages"; label='workPackages'}
     else if (store.interfaces.items.find(i=>i.uuid == uuid)) { storeGroup = "interfaces"; label='interfaces'}
+    else if (store.documents.items.find(i=>i.uuid == uuid)) { storeGroup = "documents"; label='documents'}
 
     if (!store[storeGroup]) {
       console.log("no group available");
@@ -124,6 +125,16 @@ var createShowSingleItemService = function () {
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ];
+    }else if (metalinkType == "documents") {
+      sourceGroup="documents";
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ];
+    }else if (metalinkType == "documentsNeed") {
+      sourceGroup="documents";
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ];
     }else if (metalinkType == "assignedTo") {
       sourceGroup="stakeholders";
       displayRules = [
@@ -189,6 +200,7 @@ var createShowSingleItemService = function () {
     else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.workPackages.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.interfaces.items.find(i=>i.uuid == uuid)) {return true }
+    else if (store.documents.items.find(i=>i.uuid == uuid)) {return true }
     else {
       return false
     }
@@ -209,7 +221,8 @@ var createShowSingleItemService = function () {
         {prop:"originNeed",isTarget:true, displayAs:"linked to products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
         {prop:"originNeed",isTarget:true, displayAs:"linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:false},
         {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
-        {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false}
+        {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false},
+        {prop:"documentsNeed", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
       ]
     }else if (type =="Pbs") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
@@ -219,7 +232,8 @@ var createShowSingleItemService = function () {
         {prop:"contains",isTarget:true, displayAs:"Linked to physical spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:false},
         {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
         {prop:"category", displayAs:"Category", meta:()=>store.metaLinks.items, choices:()=>store.categories.items, edit:true},
-        {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false}
+        {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false},
+        {prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
       ]
     }else if (type =="physicalSpaces") {
       return [{prop:"name", displayAs:"Name", edit:true},
@@ -248,6 +262,14 @@ var createShowSingleItemService = function () {
               {prop:"description", displayAs:"Description", edit:true},
               {prop:"source", displayAs:"Source", custom:e=>getObjectNameByUuid(e), edit:false},
               {prop:"target", displayAs:"Target", custom:e=>getObjectNameByUuid(e), edit:false}
+      ]
+    }else if (type =="documents"){
+      return [
+              {prop:"name", displayAs:"Name", edit:true},
+              {prop:"osPath", displayAs:"Local", fullText:true, localPath:true, edit:false},
+              {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true},
+              {prop:"documents",isTarget:true, displayAs:"Products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
+              {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
       ]
     }
   }
