@@ -11,16 +11,20 @@ var createDocumentsView = function () {
   }
 
   var render = function () {
+    document.querySelector(".center-container").innerHTML=`
+    <div class="dropzone_container"></div>
+    <div class="doc_list"></div>
+    `
     var store = query.currentProject()
     showListMenu({
       sourceData:store.documents.items,
       displayProp:"name",
-      targetDomContainer:".center-container",
+      targetDomContainer:".doc_list",
       fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"name", displayAs:"Name", edit:true},
-        {prop:"type", displayAs:"Type", edit:false},
-        {prop:"link", displayAs:"Link", link:true, edit:true}
+        {prop:"osPath", displayAs:"Local", fullText:true, localPath:true, edit:false},
+        {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true}
         // {prop:"documented", displayAs:"Products documented", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
         // {prop:"documented", displayAs:"Requirements documented", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
       ],
@@ -34,8 +38,18 @@ var createDocumentsView = function () {
       },
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
+          let item = store.documents.items.find(i=>i.uuid == ev.target.dataset.id)
+          //delete from db or FS
+          if (item && item.osPath) {
+            if (typeof nw !== "undefined" && link) {//if using node webkit
+              deleteFromOs(item.osPath)//if nwjs
+            }
+          }
+
+          //delete from list
           push(act.remove("documents",{uuid:ev.target.dataset.id}))
           ev.select.updateData(store.documents.items)
+
         }
       },
       onAdd: (ev)=>{
@@ -65,6 +79,95 @@ var createDocumentsView = function () {
         // }
       ]
     })
+
+    if (typeof nw !== "undefined" && link) {//if using node webkit
+      connectDropZone()//if nwjs
+    }
+  }
+
+  var deleteFromOs = function (path) {
+    if (confirm('Delete file at '+path)) {
+      let fs = require('fs');
+      fs.unlink(path, (err) => {
+        if (err) throw err;
+        console.log(path+' was deleted');
+      });
+    }
+  }
+
+  var connectDropZone = function () {
+    document.querySelector(".dropzone_container").innerHTML=`
+      <div style="border: 2px dashed #ccc; width: 90%; height: 20px; margin: 5px auto;" id="holder" class=" dropzone"></div>
+    `
+    //Same as $(document).ready();
+      function ready(fn) {
+        if (document.readyState != 'loading'){
+          fn();
+        } else {
+          document.addEventListener('DOMContentLoaded', fn);
+        }
+      }
+
+      //When the page has loaded, run this code
+      ready(function(){
+        // prevent default behavior from changing page on dropped file
+        window.ondragover = function(e) { e.preventDefault(); return false };
+        // NOTE: ondrop events WILL NOT WORK if you do not "preventDefault" in the ondragover event!!
+        window.ondrop = function(e) { e.preventDefault(); return false };
+
+        const holder = document.getElementById('holder');
+        holder.ondragover = function () { this.className = 'hover'; return false; };
+        holder.ondragleave = function () { this.className = ''; return false; };
+        holder.ondrop = function (e) {
+          e.preventDefault();
+
+          for (let i = 0; i < e.dataTransfer.files.length; ++i) {
+            console.log(e.dataTransfer.files[i]);
+            console.log(e.dataTransfer.files[i].path);
+           alert(e.dataTransfer.files[i].path);
+           nwMoveFilesToAppFolder(e.dataTransfer.files[i].name,e.dataTransfer.files[i].path)
+          }
+          return false;
+        };
+      });
+  }
+
+  var nwMoveFilesToAppFolder = function (sourceName,sourcePath) {
+    const fs = require('fs');
+    const path = require('path');
+
+    let filename = sourceName;
+    let src = sourcePath;
+    let destDir = path.join(nw.App.dataPath, 'storage_'+query.currentProject().uuid);
+
+    fs.access(destDir, (err) => {
+      if(err){
+        console.log(err)
+        fs.mkdirSync(destDir);
+        }
+
+
+      copyFile(src, path.join(destDir, filename));
+    });
+
+
+    function copyFile(src, dest) {
+
+      let readStream = fs.createReadStream(src);
+
+      readStream.once('error', (err) => {
+        console.log(err);
+        alert(err);
+      });
+
+      readStream.once('end', () => {
+        alert('file Added');
+        push(act.add("documents",{uuid:genuuid(), name:filename, osPath:dest}))
+        update()
+      });
+
+      readStream.pipe(fs.createWriteStream(dest));
+    }
   }
 
   // var exportToCSV = function () {

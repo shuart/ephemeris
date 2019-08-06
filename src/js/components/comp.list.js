@@ -331,6 +331,16 @@ function showListMenu({
             console.log("no link to reach");
           }
         }
+        if (event.target.classList.contains("action_list_go_to_desktop_item")) {
+          let link = event.target.dataset.value
+          if (typeof nw !== "undefined" && link) {//if using node webkit
+            nw.Shell.openItem(link)
+          }else if (link) {//if in browser
+            alert("only available with desktop version")
+          }else {
+            console.log("no link to reach");
+          }
+        }
         if (event.target.classList.contains("action_list_edit_choice_item")) {
           onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target, batch:currentSelectedBatch})
           //TODO this should be updated here with a promise
@@ -785,6 +795,7 @@ function showListMenu({
           var dispName = rule.displayAs
           var isEditable = rule.edit
           var isLink = rule.link
+          var isOsPath = rule.localPath
           var isTime = rule.time
           var isFullText = rule.fullText
           var isMeta = rule.meta //get the metaFunction
@@ -809,9 +820,13 @@ function showListMenu({
             propDisplay = isCustom(item[propName])
           }
 
-          if (isLink) {
+          if (isLink && item[propName]) {
             goToHtml+=`
             <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_item" style="cursor:pointer; color:blue"></i>`
+          }
+          if (isOsPath && item[propName]) {
+            goToHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_desktop_item" style="cursor:pointer; color:blue"></i>`
 
           }
 
