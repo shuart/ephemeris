@@ -14,6 +14,8 @@ function showListMenu({
   metaLinks = undefined,
   multipleSelection = undefined,
   searchable = true,
+  prependContent = undefined,
+  onLoaded = undefined,
   showColoredIcons = false,
   allowBatchActions = false,
   onClick = (e)=>{console.log("clik on select");},
@@ -341,6 +343,20 @@ function showListMenu({
             console.log("no link to reach");
           }
         }
+        if (event.target.classList.contains("action_list_past")) {//TODO too early. Implement later
+          let link = event.target.dataset.value
+          navigator.clipboard.readText()
+            .then(text => {
+              console.log('Pasted content: ', text);
+            })
+            .catch(err => {
+              console.error('Failed to read clipboard contents: ', err);
+            });
+        }
+        if (event.target.classList.contains("action_list_droppable")) {//TODO too early. Implement later
+          //TODO finish implementation
+        }
+
         if (event.target.classList.contains("action_list_edit_choice_item")) {
           onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target, batch:currentSelectedBatch})
           //TODO this should be updated here with a promise
@@ -798,11 +814,15 @@ function showListMenu({
           var isOsPath = rule.localPath
           var isTime = rule.time
           var isFullText = rule.fullText
+          var isPastable = rule.pastable
+          var isDroppable = rule.droppable
           var isMeta = rule.meta //get the metaFunction
           var isCustom = rule.custom
           var isTarget = rule.isTarget //met is target
           var editHtml = ""
           var goToHtml = ""
+          var pastableHtml = ""
+          var dropHtmlClass = ""
           var propDisplay = item[propName]
           //force edit mode if in editItemMode
           if (editItemMode) {
@@ -827,7 +847,13 @@ function showListMenu({
           if (isOsPath && item[propName]) {
             goToHtml+=`
             <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_desktop_item" style="cursor:pointer; color:blue"></i>`
-
+          }
+          if (isPastable) {
+            pastableHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="paste icon action_list_past" style="cursor:pointer;opacity: 0.15;"></i>`
+          }
+          if (isDroppable) {
+            dropHtmlClass+="action_list_droppable"
           }
 
           if (isEditable && !isMeta && !isTime) {
@@ -876,12 +902,15 @@ function showListMenu({
           }else if(isFullText && !singleItem){
             if(propDisplay && propDisplay.length > 35) {propDisplay = propDisplay.substring(0,35)+".. ";}
           }
+
+
           if (!singleItem) {
             nestedHtml +=`
-            <div data-id="${item[idProp]}" class="column">
+            <div data-id="${item[idProp]}" class="column ${dropHtmlClass}">
               <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
                 ${propDisplay||""}
                 ${goToHtml}
+                ${pastableHtml}
                 ${editHtml}
               </div>
             </div>
@@ -957,9 +986,21 @@ function showListMenu({
   //   container.innerHTML ="<div class='"+ theme.singleElementsListClass + "'>"+html+"</div>"
   // }
 
+  function createPrepend() {
+    if (prependContent) {
+      mainEl.appendChild(toNode(prependContent));
+    }
+  }
+  function triggerLoadAction() {
+    if (onLoaded) {
+      onLoaded({selectDiv:sourceEl, select:self, target:undefined})
+    }
+  }
+
   function render() {
     buildHtmlContainer() //setup external container
     connect() //add events
+    createPrepend()
     createMenu()//create the inside of the list
     //createAddTemplate()//create a placeholder area to add items
 
@@ -1058,6 +1099,8 @@ function showListMenu({
     if (currentSearchValue != "") {
        filterDataWithValue(currentSearchValue)
     }
+
+    triggerLoadAction()
   }
 
   function filterDataWithValue(value) {

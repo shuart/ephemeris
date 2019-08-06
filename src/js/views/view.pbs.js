@@ -238,6 +238,8 @@ var createPbsView = function () {
       {prop:"name", displayAs:"Name", edit:false},
       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
     ]
+    var prependContent=undefined
+    var onLoaded = undefined
     if (metalinkType == "originNeed") {
       sourceGroup="requirements"
       sourceData=store.requirements.items
@@ -279,6 +281,15 @@ var createPbsView = function () {
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "documents") {
+      if (typeof nw !== "undefined") {//if using node webkit
+        prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
+        onLoaded = function (ev) {
+          dropAreaService.setDropZone(".prepend", function () {
+            ev.select.updateData(store.documents.items)
+            ev.select.refreshList()
+          })
+        }
+      }
       sourceGroup="documents"
       sourceLinks=store.documents.links
       sourceData=store.documents.items
@@ -294,6 +305,8 @@ var createPbsView = function () {
       displayProp:"name",
       searchable : true,
       display:displayRules,
+      prependContent:prependContent,
+      onLoaded:onLoaded,
       idProp:"uuid",
       onAdd:(ev)=>{//TODO experimental, replace with common service
         var uuid = genuuid()

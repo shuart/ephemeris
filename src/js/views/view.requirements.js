@@ -22,7 +22,7 @@ var createRequirementsView = function () {
       {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
       {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
       {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
-      {prop:"documentsNeed", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
+      {prop:"documentsNeed", displayAs:"Documents", droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
 
     ]
     if (simpleView) {
@@ -218,6 +218,8 @@ var createRequirementsView = function () {
     var sourceLinks= undefined
     var displayRules= undefined
     var showColoredIconsRule = undefined
+    var prependContent=undefined
+    var onLoaded = undefined
     if (metalinkType == "origin") {
       sourceGroup="stakeholders";
       sourceData=store.stakeholders.items
@@ -254,6 +256,15 @@ var createRequirementsView = function () {
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "documentsNeed") {
+      if (typeof nw !== "undefined") {//if using node webkit
+        prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
+        onLoaded = function (ev) {
+          dropAreaService.setDropZone(".prepend", function () {
+            ev.select.updateData(store.documents.items)
+            ev.select.refreshList()
+          })
+        }
+      }
       sourceGroup="documents"
       sourceLinks=store.documents.links
       sourceData=store.documents.items
@@ -270,6 +281,8 @@ var createRequirementsView = function () {
       searchable : true,
       display:displayRules,
       showColoredIcons:showColoredIconsRule,
+      prependContent:prependContent,
+      onLoaded:onLoaded,
       idProp:"uuid",
       onAdd:(ev)=>{//TODO experimental, replace with common service
         var uuid = genuuid()

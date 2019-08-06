@@ -88,6 +88,8 @@ var createShowSingleItemService = function () {
       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
     ];
     var showColoredIconsRule = undefined
+    var prependContent=undefined
+    var onLoaded = undefined
     if (metalinkType == "originNeed") {
       sourceGroup="requirements"
     }else if (metalinkType == "originFunction") {
@@ -127,11 +129,27 @@ var createShowSingleItemService = function () {
       ];
     }else if (metalinkType == "documents") {
       sourceGroup="documents";
+      if (typeof nw !== "undefined") {//if using node webkit
+        prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
+        onLoaded = function (ev) {
+          dropAreaService.setDropZone(".prepend", function () {
+            ev.select.updateData(store.documents.items)
+            ev.select.refreshList()
+          })
+        }
+      }
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ];
     }else if (metalinkType == "documentsNeed") {
       sourceGroup="documents";
+      prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`,
+      onLoaded = function (ev) {
+        dropAreaService.setDropZone(".prepend", function () {
+          ev.select.updateData(store.documents.items)
+          ev.select.refreshList()
+        })
+      },
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ];
@@ -153,6 +171,8 @@ var createShowSingleItemService = function () {
       display:displayRules,
       idProp:"uuid",
       showColoredIcons:showColoredIconsRule,
+      prependContent:prependContent,
+      onLoaded:onLoaded,
       onAdd:(ev)=>{
         var uuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
