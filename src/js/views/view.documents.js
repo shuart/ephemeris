@@ -87,15 +87,26 @@ var createDocumentsView = function () {
         //   ev.select.refreshList()
         // })
       },
-      extraActions:[
-        // {
-        //   name:"Export",
-        //   action:(ev)=>{
-        //     exportToCSV()
-        //   }
-        // }
-      ]
+      extraActions:generateExtraActions()
     })
+  }
+
+  var generateExtraActions = function () {
+    if (typeof nw !== "undefined") {//if using node webkit
+      return [{
+        name:"Folder",
+        action:(ev)=>{
+          let osDoc = query.currentProject().documents.items.find(i=>i.osPath)
+          if (osDoc) {
+            nw.Shell.showItemInFolder(osDoc.osPath);
+          }else {
+            alert("No local documents yet")
+          }
+        }
+      }]
+    }else {
+      return []
+    }
   }
 
   var deleteFromOs = function (path) {
