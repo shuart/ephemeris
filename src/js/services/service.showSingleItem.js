@@ -135,6 +135,9 @@ var createShowSingleItemService = function () {
           dropAreaService.setDropZone(".prepend", function () {
             ev.select.updateData(store.documents.items)
             ev.select.refreshList()
+            setTimeout(function () {
+              ev.select.scrollDown()
+            }, 100);
             // ev.select.scrollDown()
           })
         }
@@ -177,6 +180,9 @@ var createShowSingleItemService = function () {
       onAdd:(ev)=>{
         var uuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+        // setTimeout(function () {
+        //   ev.select.scrollDown()
+        // }, 100);
         ev.select.setEditItemMode({
           item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
           onLeave: (ev)=>{
