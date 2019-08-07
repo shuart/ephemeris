@@ -61,7 +61,17 @@ var createDropAreaService = function () {
         fs.mkdirSync(destDir);
         }
 
-      copyFile(src, path.join(destDir, filename), currentCallback);
+      //check if file exists
+       fs.exists(path.join(destDir, filename), function(exists) {
+         if (exists && confirm("File already exist. Overwrite?")) {
+           // filename = filename +" " + Date.now()
+           copyFile(src, path.join(destDir, filename), currentCallback);
+         }else {
+           alert("Operation Canceled")
+         }
+      });
+
+
     });
 
 
