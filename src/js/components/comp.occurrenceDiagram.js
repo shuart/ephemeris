@@ -193,7 +193,7 @@ var createOccurrenceDiagram = function ({
                 .attr("y", matrixScale.bandwidth() / 2)
                 .attr("dy", ".32em")
                 .attr("text-anchor", "end")
-                .attr("style", "font-size:"+(matrixScale.bandwidth() / 1.3)+"px")
+                .attr("style", "font-size:"+Math.min(40,(matrixScale.bandwidth() / 1.3))+"px")
                 .text((d, i) => capitalize_Words(nodes[i].name));
 
             columns.append("text")
@@ -202,7 +202,7 @@ var createOccurrenceDiagram = function ({
                 .attr("y", matrixScale.bandwidth() / 2)
                 .attr("dy", ".32em")
                 .attr("text-anchor", "start")
-                .attr("style", "font-size:"+(matrixScale.bandwidth() / 1.3)+"px")
+                .attr("style", "font-size:"+ Math.min(40,(matrixScale.bandwidth() / 1.3))+"px")
                 .attr("transform", function(d) {
                   return "translate(15)rotate(25)"
                 })
