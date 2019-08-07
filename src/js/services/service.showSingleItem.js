@@ -152,6 +152,9 @@ var createShowSingleItemService = function () {
         dropAreaService.setDropZone(".prepend", function () {
           ev.select.updateData(store.documents.items)
           ev.select.refreshList()
+          setTimeout(function () {
+            ev.select.scrollDown()
+          }, 100);
         })
       },
       displayRules = [
