@@ -87,7 +87,7 @@ var createOccurrenceDiagram = function ({
 
     document.body.appendChild(sourceOccElement)
     renderDiagram(originalData)
-    var svgPanZoom= $(".occ-graph svg").svgPanZoom()
+    var svgPanZoom= $(".occ-graph svg").svgPanZoom({maxZoom:11})
   }
 
   var renderDiagram = function (originalData) {
@@ -193,6 +193,7 @@ var createOccurrenceDiagram = function ({
                 .attr("y", matrixScale.bandwidth() / 2)
                 .attr("dy", ".32em")
                 .attr("text-anchor", "end")
+                .attr("style", "font-size:"+(matrixScale.bandwidth() / 1.3)+"px")
                 .text((d, i) => capitalize_Words(nodes[i].name));
 
             columns.append("text")
@@ -201,8 +202,9 @@ var createOccurrenceDiagram = function ({
                 .attr("y", matrixScale.bandwidth() / 2)
                 .attr("dy", ".32em")
                 .attr("text-anchor", "start")
+                .attr("style", "font-size:"+(matrixScale.bandwidth() / 1.3)+"px")
                 .attr("transform", function(d) {
-                  return "translate(40)rotate(45)"
+                  return "translate(15)rotate(25)"
                 })
                 .text((d, i) => capitalize_Words(nodes[i].name));
 
