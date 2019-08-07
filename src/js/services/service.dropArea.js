@@ -66,6 +66,8 @@ var createDropAreaService = function () {
          if (exists && confirm("File already exist. Overwrite?")) {
            // filename = filename +" " + Date.now()
            copyFile(src, path.join(destDir, filename), currentCallback);
+         }else if (!exists){
+           copyFile(src, path.join(destDir, filename), currentCallback);
          }else {
            alert("Operation Canceled")
          }
