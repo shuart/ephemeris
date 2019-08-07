@@ -92,7 +92,7 @@ var createPbsView = function () {
         },
         onAdd: (ev)=>{
           var id = genuuid()
-          var newReq = prompt("Nouveau Besoin")
+          var newReq = prompt("New Product")
           if (newReq) {
             push(addPbs({uuid:id, name:newReq}))
             push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
