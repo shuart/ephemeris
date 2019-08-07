@@ -141,12 +141,18 @@ var createWorkPackagesView = function () {
       onAdd:(ev)=>{//TODO experimental, replace with common service
         var uuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+        if (sourceGroup == "currentPbs") {
+          push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+        }
         ev.select.setEditItemMode({
           item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
           onLeave: (ev)=>{
             push(act.remove(sourceGroup,{uuid:uuid}))
+            if (sourceGroup == "currentPbs") {
+              push(removePbsLink({target:uuid}))
+            }
             ev.select.updateData(store[sourceGroup].items)
-          }
+            ev.select.updateLinks(store[sourceGroup].links)          }
         })
       },
       onEditItem: (ev)=>{

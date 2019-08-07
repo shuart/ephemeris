@@ -74,6 +74,7 @@ var createPbsView = function () {
           console.log("remove");
           if (confirm("remove item ?")) {
             push(removePbs({uuid:ev.target.dataset.id}))
+            push(removePbsLink({target:ev.target.dataset.id}))
             ev.select.updateData(store.currentPbs.items)
           }
         },
@@ -85,6 +86,9 @@ var createPbsView = function () {
             push(removePbsLink({target:ev.originTarget.dataset.id}))
             if (ev.targetParentId && ev.targetParentId != "undefined") {
               push(addPbsLink({source:ev.targetParentId, target:ev.originTarget.dataset.id}))
+            }else {
+              push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:ev.originTarget.dataset.id}))
+
             }
             ev.select.updateData(store.currentPbs.items)
             ev.select.updateLinks(store.currentPbs.links)
