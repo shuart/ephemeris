@@ -14,6 +14,7 @@ System Engineering and requirements management application
 -   Generate overview diagrams, ERD and mindmaps from the project relations
 -   Produce text specifications based on your model
 -   Create interfaces matrix from specific part of your project
+-   Link pictures and documents to you Products and Requirements
 
 ![Lists](./images/ephemeris_lists.png)
 ![ERD](./images/ephemeris_erd.png)
