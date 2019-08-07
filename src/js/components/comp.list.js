@@ -21,6 +21,7 @@ function showListMenu({
   onClick = (e)=>{console.log("clik on select");},
   onLabelClick = (e)=>{console.log("clik on label");},
   onAdd = undefined,
+  onAddScrollDown = true,
   onAddFromPopup = undefined,
   onAddFromExtraField = undefined,
   onRemove= undefined,
@@ -167,6 +168,7 @@ function showListMenu({
   var mainEl = undefined
   var editItemMode = undefined
   var listContainer =undefined;
+  var globalContainer =undefined;
   var listContainerFirstCol =undefined;
 
   var showBatchActions =false;
@@ -189,6 +191,9 @@ function showListMenu({
           onAdd({selectDiv:sourceEl, select:self, target:undefined})
           if (!editItemMode && !singleElement) {
             refreshList()
+            if (onAddScrollDown) {
+              globalContainer.scrollTop = globalContainer.scrollHeight;
+            }
           }else {
             currentSearchValue =""
             sourceEl.remove()
@@ -583,6 +588,9 @@ function showListMenu({
         editItemMode = undefined
         sourceEl.remove()
         render()
+        if (onAddScrollDown) {
+          globalContainer.scrollTop = globalContainer.scrollHeight;
+        }
       });
 
       target.appendChild(
@@ -1027,7 +1035,7 @@ function showListMenu({
     listContainerFirstCol.classList = "table-first-col"
     // listContainer.style.overflow = "auto"
     //item list (global var)
-    let globalContainer = document.createElement('div');
+    globalContainer = document.createElement('div');
     globalContainer.style.overflow = "auto"
     globalContainer.classList = "flexTable"
 
@@ -1215,6 +1223,9 @@ function showListMenu({
        filterDataWithValue(currentSearchValue)
     }
   }
+  function scrollDown() {
+    globalContainer.scrollTop = globalContainer.scrollHeight;
+  }
   function update() {
     if (sourceEl) {
       sourceEl.remove()
@@ -1227,6 +1238,7 @@ function showListMenu({
 
   init();
 
+  self.scrollDown = scrollDown
   self.setEditItemMode = setEditItemMode
   self.setSelected = setSelected
   self.getSelected = getSelected
