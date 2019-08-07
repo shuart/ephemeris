@@ -25,6 +25,9 @@ var createLeftMenuTopName = function () {
       <div class="content">
         Ephemeris
       </div>
+      <!-- <div style="font-family:'Poiret One',Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;" class="content">
+        Ephemeris
+      </div> -->
     </h3>
     `
   }
