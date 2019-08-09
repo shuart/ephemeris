@@ -68,6 +68,7 @@ function reducer(action, store) {
     recordChangeInStore(type, store, group, pl)
   }else if (type == "addLink") { //ADD A LINK
     storeGroup.links.push({uuid:pl.uuid, source:pl.source, target:pl.target})
+    recordChangeInStore(type, store, group, pl)
   }else if (type == "removeLink") { //REMOVE A LINK WITH SOURCE OR TARGET OR BOTH
     if (pl.source && !pl.target) {
       storeGroup.links =storeGroup.links.filter(i=> i.source != pl.source)

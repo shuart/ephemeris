@@ -73,42 +73,53 @@ var createOverview = function (targetSelector) {
       `
       var html = `
       <div class="ui very padded container">
-        <div class="ui placeholder segment">
-          <div class="ui four statistics">
-            <div class="statistic">
-              <div class="value">
-                <i class="comment icon"></i>
-                ${store.requirements.items.length}
-              </div>
-              <div class="label">
-                Requirements
+
+      <div class="ui divider"></div>
+
+        <div style="box-shadow: 0 0px 0px 0 rgba(255, 255, 255, 0.15);border-style: none;" class="ui horizontal segments">
+          <div class="ui basic segment">
+            <div class="ui placeholder segment">
+              <div class="ui four statistics">
+                <div class="statistic">
+                  <div class="value">
+                    <i class="comment icon"></i>
+                    ${store.requirements.items.length}
+                  </div>
+                  <div class="label">
+                    Requirements
+                  </div>
+                </div>
+                <div class="statistic">
+                  <div class="value">
+                    <i class="users icon"></i>
+                    ${store.stakeholders.items.length}
+                  </div>
+                  <div class="label">
+                    Stakeholders
+                  </div>
+                </div>
+                <div class="statistic">
+                  <div class="value">
+                    <i class="sitemap icon"></i> ${(store.currentPbs.items.length - 1)}
+                  </div>
+                  <div class="label">
+                    Sub-Systems
+                  </div>
+                </div>
+                <div class="statistic">
+                  <div class="value">
+                    <i class="cogs icon"></i> ${(store.functions.items.length)}
+                  </div>
+                  <div class="label">
+                    functions
+                  </div>
+                </div>
+
               </div>
             </div>
-            <div class="statistic">
-              <div class="value">
-                <i class="users icon"></i>
-                ${store.stakeholders.items.length}
-              </div>
-              <div class="label">
-                Stakeholders
-              </div>
-            </div>
-            <div class="statistic">
-              <div class="value">
-                <i class="sitemap icon"></i> ${(store.currentPbs.items.length - 1)}
-              </div>
-              <div class="label">
-                Sub-Systems
-              </div>
-            </div>
-            <div class="statistic">
-              <div class="value">
-                <i class="cogs icon"></i> ${(store.functions.items.length)}
-              </div>
-              <div class="label">
-                functions
-              </div>
-            </div>
+          </div>
+          <div style="width: 200px;overflow: auto;max-height: 300px;" class="ui basic segment">
+            <div class="ui center aligned basic segment overviewActivity"></div>
           </div>
         </div>
 
@@ -128,6 +139,12 @@ var createOverview = function (targetSelector) {
       //   </div>
       // </div> TODO readd spec when ready
       container.innerHTML = headerHtml+html;
+      createActivityFeed({
+        container:'.overviewActivity',
+        onClick:function (e) {
+          showSingleItemService.showById(e.target.dataset.id)
+        }
+      })
     }
   }
 
