@@ -231,6 +231,13 @@ var createOverview = function (targetSelector) {
       }
       alertAboutUpdate("Documents management feature has been added.")
     }
+    if (!store.history) {
+      store.history={
+        items:[],
+        links:[]
+      }
+      alertAboutUpdate("activities history feature has been added.")
+    }
   }
 
 

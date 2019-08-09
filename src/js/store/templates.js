@@ -143,6 +143,10 @@ var store = {
     items:[]
     // items:[{uuid:uuid(), name:"An exemple interface",type:"physical connection", source:"555sfse", target:"f896546e", description:"Un interface"}]
   },
+  history:{
+    items:[]
+    // items:[{uuid:uuid(), name:"An exemple interface",type:"physical connection", source:"555sfse", target:"f896546e", description:"Un interface"}]
+  },
   links:[] //TODO unifier links et metalinks
 }
 

@@ -45,6 +45,7 @@ function reducer(action, store) {
   if (type == "addItem") { //ADD ITEM
     if (!isItemAlreadyThere(pl, storeGroup.items)) {
       storeGroup.items.push(pl)
+      recordChangeInStore(type, store, group, pl)
     }else {
       alert("Item already exist")
     }
@@ -52,6 +53,7 @@ function reducer(action, store) {
     console.log(storeGroup.items);
     storeGroup.items = storeGroup.items.filter((item)=>item.uuid != pl.uuid)
     console.log(storeGroup.items);
+    recordChangeInStore(type, store, group, pl)
     //clean relative links
     if (storeGroup.links) {
       storeGroup.links = storeGroup.links.filter((item)=>item.source != pl.uuid && item.target != pl.uuid  )
@@ -63,6 +65,7 @@ function reducer(action, store) {
   }else if (type == "modifyItem") { //MODIFY ITEM
     var itemToEdit = storeGroup.items.filter((item)=>item.uuid == pl.uuid)
     itemToEdit[0][pl.prop] = pl.value
+    recordChangeInStore(type, store, group, pl)
   }else if (type == "addLink") { //ADD A LINK
     storeGroup.links.push({uuid:pl.uuid, source:pl.source, target:pl.target})
   }else if (type == "removeLink") { //REMOVE A LINK WITH SOURCE OR TARGET OR BOTH
