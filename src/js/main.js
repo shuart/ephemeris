@@ -53,7 +53,7 @@ var reparse = false;
   pageManager.addComponent({name:"functions",object:functionsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"planning",object:planningView, haveSideBar:false})
   pageManager.addComponent({name:"pbs",object:pbsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
-  pageManager.addComponent({name:"interfaces",object:interfacesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"interfaces",object:interfacesView, haveSideBar:false})
   pageManager.addComponent({name:"relations",object:relationsView, haveSideBar:false})
   pageManager.addComponent({name:"unified",object:unifiedView,linkedComponents:["leftMenuActions"], haveSideBar:false})
   pageManager.addComponent({name:"projectSelection",object:projectSelectionView,linkedComponents:["leftMenuActions"], haveSideBar:false})
@@ -63,9 +63,13 @@ var reparse = false;
   pageManager.addComponent({name:"notesManager",object:notesManager, haveSideBar:false})
   pageManager.addComponent({name:"meetingsManager",object:meetingsManager, haveSideBar:false})
   pageManager.addComponent({name:"tags",object:tagsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"categories",object:categoriesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"workPackages",object:workPackagesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"documents",object:documentsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"physicalSpaces",object:physicalSpacesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"extraGraphsView",object:extraGraphsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"interfacesListView",object:interfacesListView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"singleActionView",object:singleActionView, haveSideBar:false})
   //side menu component
   pageManager.addComponent({name:"leftMenu",object:leftMenu})
   pageManager.addComponent({name:"leftMenuActions",object:leftMenuActions})
@@ -104,6 +108,9 @@ var reparse = false;
   connect(".action_toogle_tree_pbs","click",(e)=>{
     pageManager.setActivePage("pbs")
   })
+  connect(".action_toogle_diag_interfaces_quickstart","click",(e)=>{
+    pageManager.setActivePage("interfaces", {param:{context:"quickstart"}})
+  })
   connect(".action_toogle_diag_interfaces","click",(e)=>{
     pageManager.setActivePage("interfaces")
   })
@@ -112,6 +119,9 @@ var reparse = false;
   })
   connect(".action_toogle_diag_relations_options","click",(e)=>{
     pageManager.setActivePage("relations", {param:{context:"extract", uuid:e.target.dataset.id}})
+  })
+  connect(".action_toogle_diag_relations_quickstart","click",(e)=>{
+    pageManager.setActivePage("relations", {param:{context:"quickstart"}})
   })
   connect(".action_toogle_unified","click",(e)=>{
     pageManager.setActivePage("unified")
@@ -134,18 +144,33 @@ var reparse = false;
   connect(".action_toogle_work_packages","click",(e)=>{
     pageManager.setActivePage("workPackages")
   })
+  connect(".action_toogle_documents","click",(e)=>{
+    pageManager.setActivePage("documents")
+  })
   connect(".action_toogle_physical_spaces","click",(e)=>{
     pageManager.setActivePage("physicalSpaces")
   })
   connect(".action_toogle_extra_graphs","click",(e)=>{
     pageManager.setActivePage("extraGraphsView")
   })
+  connect(".action_toogle_interfaces_list_view","click",(e)=>{
+    pageManager.setActivePage("interfacesListView")
+  })
 
 
 
 
+  connect(".action_toogle_single_action_view","click",(e)=>{
+    singleActionView.update(e.target.dataset.id)
+  })
   connect(".action_toogle_tags_view","click",(e)=>{
     tagsView.update()
+  })
+  connect(".action_toogle_template_view","click",(e)=>{
+    templatesView.update()
+  })
+  connect(".action_toogle_categories_view","click",(e)=>{
+    categoriesView.update()
   })
   connect(".action_toogle_metalinks_view","click",(e)=>{
     metalinksView.update()

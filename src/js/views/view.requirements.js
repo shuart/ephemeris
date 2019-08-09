@@ -21,7 +21,8 @@ var createRequirementsView = function () {
       {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
       {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
       {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
-      {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true}
+      {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
+      {prop:"documentsNeed", displayAs:"Documents", droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
 
     ]
     if (simpleView) {
@@ -44,6 +45,7 @@ var createRequirementsView = function () {
         display:displayRules,
         extraFields: generateExtraFieldsList(),
         idProp:"uuid",
+        allowBatchActions:true,
         onEditItem: (ev)=>{
           createInputPopup({
             originalData:ev.target.dataset.value,
@@ -206,6 +208,7 @@ var createRequirementsView = function () {
     var store = query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
+    var batch = ev.batch;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
     var sourceGroup = undefined
     var sourceData = undefined
@@ -215,6 +218,8 @@ var createRequirementsView = function () {
     var sourceLinks= undefined
     var displayRules= undefined
     var showColoredIconsRule = undefined
+    var prependContent=undefined
+    var onLoaded = undefined
     if (metalinkType == "origin") {
       sourceGroup="stakeholders";
       sourceData=store.stakeholders.items
@@ -250,6 +255,22 @@ var createRequirementsView = function () {
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
+    }else if (metalinkType == "documentsNeed") {
+      if (typeof nw !== "undefined") {//if using node webkit
+        prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
+        onLoaded = function (ev) {
+          dropAreaService.setDropZone(".prepend", function () {
+            ev.select.updateData(store.documents.items)
+            ev.select.refreshList()
+          })
+        }
+      }
+      sourceGroup="documents"
+      sourceLinks=store.documents.links
+      sourceData=store.documents.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
     }
     showListMenu({
       sourceData:sourceData,
@@ -260,15 +281,25 @@ var createRequirementsView = function () {
       searchable : true,
       display:displayRules,
       showColoredIcons:showColoredIconsRule,
+      prependContent:prependContent,
+      onLoaded:onLoaded,
       idProp:"uuid",
       onAdd:(ev)=>{//TODO experimental, replace with common service
         var uuid = genuuid()
+        var linkUuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+        if (sourceGroup == "currentPbs") {
+          push(addPbsLink({uuid:linkUuid,source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+        }
         ev.select.setEditItemMode({
           item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
           onLeave: (ev)=>{
             push(act.remove(sourceGroup,{uuid:uuid}))
+            if (sourceGroup == "currentPbs") {
+              push(removePbsLink({target:uuid}))
+            }
             ev.select.updateData(store[sourceGroup].items)
+            ev.select.updateLinks(store[sourceGroup].links)
           }
         })
       },
@@ -283,16 +314,25 @@ var createRequirementsView = function () {
         ev.select.getParent().refreshList()
       },
       onChangeSelect: (ev)=>{
-        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
-        for (newSelected of ev.select.getSelected()) {
-          if (!invert) {
-            push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
-          }else {
-            push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+        var changeProp = function (sourceTriggerId) {
+          store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
+          for (newSelected of ev.select.getSelected()) {
+            if (!invert) {
+              push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+            }else {
+              push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+            }
           }
+          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          ev.select.getParent().refreshList()
         }
-        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-        ev.select.getParent().refreshList()
+        if (batch[0]) { //check if batch action is needed
+          batch.forEach(function (sourceTriggerId) {
+            changeProp(sourceTriggerId)
+          })
+        }else {
+          changeProp(sourceTriggerId)
+        }
       },
       onClick: (ev)=>{
         console.log("select");

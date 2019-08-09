@@ -21,6 +21,9 @@ var createRelationsView = function () {
   var showVisibilityMenu = false;
   var showVisibilityMenuSnapshot = true;
 
+  var showExtraLabels = true;
+  var showLinksText = true;
+
   var elementVisibility = {
     functions : true,
     requirements : true,
@@ -56,6 +59,7 @@ var createRelationsView = function () {
   }
 
   var currentSnapshot=undefined
+  var recentSnapshot=undefined
 
   var itemsToDisplay = []
   var relations = []
@@ -66,21 +70,26 @@ var createRelationsView = function () {
 
   var theme={
     viewListItem:(item) => {
-      let cardHtml = `
-      <img style="width: 170px;" class="ui tiny image" src="${item.preview? item.preview:""}">
-       `
-     let html = `
-      <div style="margin: 1px;" class="ui mini basic icon buttons">
-        <button style="width:95px;" data-id="${item.uuid}" class="ui mini basic button action_relations_load_view">
-          <i data-id="${item.uuid}" class="icon camera"></i>
-          ${item.name? item.name.substring(0, 8)+"..": item.name}
-        </button>
-        <button data-id="${item.uuid}" class="ui button action_relations_update_snapshot"><i data-id="${item.uuid}" class="save icon "></i></button>
-        <button data-id="${item.uuid}" class="ui button action_relations_remove_snapshot"><i data-id="${item.uuid}" class="times circle outline icon "></i></button>
-      </div>
-      `
+      if (item) {
+        let cardHtml = `
+        <img style="width: 170px;" class="ui tiny image" src="${item.preview? item.preview:""}">
+         `
+       let html = `
+        <div style="margin: 1px;" class="ui mini basic icon buttons">
+          <button style="width:95px;" data-id="${item.uuid}" class="ui mini basic button action_relations_load_view"  data-tooltip="${item.name? item.name: ""}" data-position="bottom center" data-inverted="">
+            <i data-id="${item.uuid}" class="icon camera"></i>
+            ${item.name? item.name.substring(0, 8)+"..": item.name}
+          </button>
+          <button data-id="${item.uuid}" class="ui button action_relations_update_snapshot"><i data-id="${item.uuid}" class="save icon "></i></button>
+          <button data-id="${item.uuid}" class="ui button action_relations_remove_snapshot"><i data-id="${item.uuid}" class="times circle outline icon "></i></button>
+        </div>
+        `
 
-    return cardHtml+html
+      return cardHtml+html
+    }else {
+      return ''
+    }
+
     },
     viewListOptions:() => {
      let html = `
@@ -97,6 +106,72 @@ var createRelationsView = function () {
       <div class="ui divider"></div>
       `
     return html
+  },
+      quickstartView:(cards) => {
+       let html = `
+        <div class="ui center aligned basic segment">
+          <h3>Create a graph of the project or show an existing one</h3>
+          <div style="width: 80%;margin-left: 10%;" class="ui cards">
+           ${theme.quickStartLastViewItem("redo","Reload","Go to last WIP graph","action_relations_qs_show_last_view")}
+           ${theme.quickStartLastViewItem("sitemap","Whole Project","Create a graph of the whole project","action_relations_qs_show_whole_project")}
+           ${theme.quickStartLastViewItem("search","Focus","Create a graph focused on a product","action_relations_qs_start_from_element")}
+           ${theme.quickStartLastViewItem("file outline","New","Start from an empty graph","action_relations_qs_create_new_empty")}
+           ${cards}
+           </div>
+        <div>
+        `
+      return html
+    },
+    quickStartItem:(item) => {
+
+      let html = `
+      <div class="card">
+        <div class="content">
+          <img style="width: 170px;" class="ui tiny image" src="${item.preview? item.preview:""}">
+          <div class="header">
+            ${item.name}
+          </div>
+          <div class="meta">
+            ${"Last modified "+ moment(item.addedDate).format("MMMM Do YY")}
+          </div>
+          <div class="description">
+            ${item.nodesPositions? "Showing "+item.nodesPositions.length+" items":""}
+          </div>
+        </div>
+        <div class="extra content">
+          <div class="ui two mini buttons">
+          <div data-id="${item.uuid}" class="ui basic grey button action_relations_qs_show_snapshot">
+            Load
+          </div>
+            <div data-id="${item.uuid}" class="ui basic grey red button action_relations_qs_remove_snapshot">remove</div>
+          </div>
+        </div>
+      </div>`
+
+
+    return html
+  },
+    quickStartLastViewItem:(icon, button, desc, action) => {
+      let html = `
+      <div class="ui raised link card ${action}">
+
+        <div class="content">
+          <img style="width: 170px;" class="ui tiny image" src="">
+          <div class="header">
+          <i class="large ${icon} icon"></i>
+          </div>
+          <div class="meta">
+
+          </div>
+          <div class="description">
+            ${desc}
+          </div>
+        </div>
+        <div class="ui teal bottom attached button ${action}">
+          ${button}
+        </div>
+      </div>`
+    return html
     }
   }
 
@@ -106,6 +181,7 @@ var createRelationsView = function () {
     // there is multiple mode in this view. default one
     //is relation. This is modified by the init param when non-default view is triggered
     if (options && options.context && options.context == "interfaces") {
+      delfaultElementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
       elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
       activeMode = 'interfaces'
       addItemMode = "currentPbs"
@@ -182,22 +258,27 @@ var createRelationsView = function () {
     }, listContainer)
     bind(".action_relations_show_all_nodes_in_view","click",(e)=>{
 
-      let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
-      for (var i = 0; i < children.length; i++) {
-        let child = children[i];let linkedChildId = child.dataset.id;
-
-        let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
-        if (!isVisible) {  hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedChildId)  }
-      }
+      // let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
+      // for (var i = 0; i < children.length; i++) {
+      //   let child = children[i];let linkedChildId = child.dataset.id;
+      //
+      //   let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
+      //   if (!isVisible) {  hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedChildId)  }
+      // }
+      updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+      hiddenItemsFromSideView = []
       update()
     }, container)
     bind(".action_relations_hide_all_nodes_in_view","click",(e)=>{
 
-      let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
-      for (var i = 0; i < children.length; i++) {
-        let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
-        if (isVisible && child.dataset.label) {hiddenItemsFromSideView.push(linkedChildId)}
-      }
+      // let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
+      // for (var i = 0; i < children.length; i++) {
+      //   let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
+      //   if (isVisible && child.dataset.label) {hiddenItemsFromSideView.push(linkedChildId)}
+      // }
+
+      updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+      hiddenItemsFromSideView = itemsToDisplay.map(i=>i.uuid)
       update()
     }, container)
     bind(".action_relations_toogle_show_graph_menu","click",(e)=>{
@@ -210,14 +291,17 @@ var createRelationsView = function () {
         showVisibilityMenu = false
       }
     }, container)
+
     bind(".action_relations_toogle_show_graph_snapshot_menu","click",(e)=>{
       var elem = queryDOM('.menuSnapshotGraph')
       console.log(elem);
       if (elem.classList.contains('hidden')) {
         elem.classList.remove('hidden')
+        queryDOM('.action_relations_toogle_show_graph_snapshot_menu').classList.add('active')
         showVisibilityMenuSnapshot = true
       }else{
         elem.classList.add('hidden')
+        queryDOM('.action_relations_toogle_show_graph_snapshot_menu').classList.remove('active')
         showVisibilityMenuSnapshot = false
       }
     }, container)
@@ -248,6 +332,258 @@ var createRelationsView = function () {
       document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
       queryDOM(".action_interface_add_pbs").classList.add('active')
     }, container)
+
+    bind(".action_relations_add_nodes_from_templates","click",(e)=>{
+      let store = query.currentProject()
+      showListMenu({
+        sourceData:store.templates.items,
+        displayProp:"name",
+        display:[
+          {prop:"name", displayAs:"Name", edit:"true"}
+        ],
+        onEditItem: (ev)=>{
+          console.log("Edit");
+          var newValue = prompt("Edit Item",ev.target.dataset.value)
+          if (newValue) {
+            push(act.edit("templates", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          }
+        },
+        onRemove: (ev)=>{
+          if (confirm("remove item ?")) {
+            push(act.remove("templates",{uuid:ev.target.dataset.id}))
+            ev.select.updateData(store.templates.items)
+          }
+        },
+        idProp:"uuid",
+        extraButtons : [
+          {name:"Select", class:"select", prop:"uuid", action: (orev)=>{
+
+            loadFromTemplate(orev.dataset.id)
+          }}
+        ],
+      })
+
+      function loadFromTemplate(id) {
+        let store = query.currentProject()
+        let template = store.templates.items.find(t=>t.uuid == id).template
+        let selectedNodes = template.nodes
+        let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+        let selectedNodesUuidConversion = selectedNodes.map(n=>[n.uuid, genuuid()])
+        let convertUuid = function (convTable) {
+          return function (id) {
+            return convTable.find(i=>i[0] == id)[1]
+          }
+        }(selectedNodesUuidConversion)//convert uuid to predictable new ones to avoid issues with relations links
+        //duplicate and add
+        let extraText = ""
+        if (confirm("Modify object names to mark them as copies?")) {
+          extraText = "-copy"
+        }
+        selectedNodes.forEach(function (node) {
+          if (node.uuid) {
+            let storeGroup = node.storeGroup
+            let elementToDuplicate = node
+            if (elementToDuplicate) {
+              var id = convertUuid(node.uuid)
+              let newElement = deepCopy(elementToDuplicate)        //first get a clean node copy
+              newElement.uuid = id
+              newElement.name = newElement.name +extraText
+              push(act.add(storeGroup,newElement))
+              if (storeGroup == "currentPbs") {
+                //check if parent is copied too
+                let hasParent = template.relatedLocalLinks.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+                if (!hasParent) {
+                  push(act.addLink(storeGroup,{source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+                }
+              }
+
+              //find and duplicate links
+              let metaLinksToSearch =template.relatedLinks
+              let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+              let catLinksToSearch =template.relatedCatLinks
+              let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
+
+              let interfacesToSearch =template.relatedInterfaceLinks
+              let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+              // let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+
+              let localLinksToSearch =template.relatedLocalLinks
+              let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+              // let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+
+
+              relatedLinks.forEach(function (l) {
+                push(act.add("metaLinks",{type:l.type, source:convertUuid(l.source), target:convertUuid(l.target)}))
+              })
+              deepCopy(relatedCatLinks).forEach(function (l) {
+                push(act.add("metaLinks",{type:l.type, source:convertUuid(l.source), target:l.target}))
+              })
+
+              deepCopy(relatedInterfaceLinks).forEach(function (il) {
+                push(act.add("interfaces",{type:il.type, name:il.name,description:il.description, source:convertUuid(il.source), target:id}))
+              })
+              deepCopy(relatedLocalLinks).forEach(function (il) {
+                push(act.addLink("currentPbs",{source:convertUuid(il.source), target:id}))
+              })
+
+            }
+          }
+        })
+        update()
+      }
+
+
+
+      // isolateSelectedNodes(selectedNodes, false)
+    }, container)
+    bind(".action_relations_duplicate_nodes","click",(e)=>{
+      let store = query.currentProject()
+
+      let selectedNodes = activeGraph.getSelectedNodes()
+      let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+      let selectedNodesUuidConversion = selectedNodes.map(n=>[n.uuid, genuuid()])
+      let convertUuid = function (convTable) {
+        return function (id) {
+          return convTable.find(i=>i[0] == id)[1]
+        }
+      }(selectedNodesUuidConversion)//convert uuid to predictable new ones to avoid issues with relations links
+
+      //duplicate and add
+      let extraText = ""
+      if (confirm("Modify object names to mark them as copies?")) {
+        extraText = "-copy"
+      }
+      selectedNodes.forEach(function (node) {
+        if (node.uuid) {
+          let storeGroup = getObjectGroupByUuid(node.uuid)
+          let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
+          if (elementToDuplicate) {
+            var id = convertUuid(node.uuid)
+            let newElement = deepCopy(elementToDuplicate)        //first get a clean node copy
+            newElement.uuid = id
+            newElement.name = newElement.name +extraText
+            push(act.add(storeGroup,newElement))
+            if (storeGroup == "currentPbs") {
+              //check if parent is copied too
+              let hasParent = store.currentPbs.links.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+              if (!hasParent) {
+                push(act.addLink(storeGroup,{source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+              }
+            }
+
+            //find and duplicate links
+            let metaLinksToSearch =query.items("metaLinks")
+            let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+            let catLinksToSearch =query.items("metaLinks").filter(l=>l.type=="category")
+            let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
+
+            let interfacesToSearch =query.items("interfaces")
+            let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+            // let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+
+            let localLinksToSearch =store[storeGroup].links
+            let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+            // let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
+
+            console.log(relatedCatLinks);
+            relatedLinks.forEach(function (l) {
+              push(act.add("metaLinks",{type:l.type, source:convertUuid(l.source), target:convertUuid(l.target)}))
+            })
+            deepCopy(relatedCatLinks).forEach(function (l) {
+              push(act.add("metaLinks",{type:l.type, source:convertUuid(l.source), target:l.target}))
+            })
+
+            deepCopy(relatedInterfaceLinks).forEach(function (il) {
+              push(act.add("interfaces",{type:il.type, name:il.name,description:il.description, source:convertUuid(il.source), target:id}))
+            })
+            deepCopy(relatedLocalLinks).forEach(function (il) {
+              push(act.addLink("currentPbs",{source:convertUuid(il.source), target:id}))
+            })
+
+            console.log(relatedInterfaceLinks, relatedLocalLinks);
+          }
+        }
+      })
+      update()
+
+      // isolateSelectedNodes(selectedNodes, false)
+    }, container)
+    bind(".action_relations_store_nodes_as_templates","click",(e)=>{
+      let store = query.currentProject()
+      let selectedNodes = activeGraph.getSelectedNodes()
+      let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+      let selectedNodesUuidConversion = selectedNodes.map(n=>[n.uuid, genuuid()])
+      let convertUuid = function (convTable) {
+        return function (id) {
+          return convTable.find(i=>i[0] == id)[1]
+        }
+      }(selectedNodesUuidConversion)//convert uuid to predictable new ones to avoid issues with relations links
+      //duplicate and add
+      let template = {
+        nodes:[],
+        relatedLinks:[],
+        relatedCatLinks:[],
+        relatedInterfaceLinks:[],
+        relatedLocalLinks:[]
+      }
+      let extraText = "";
+      selectedNodes.forEach(function (node) {
+        if (node.uuid) {
+          let storeGroup = getObjectGroupByUuid(node.uuid)
+          let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
+          if (elementToDuplicate) {
+            var id = convertUuid(node.uuid)
+            let newElement = deepCopy(elementToDuplicate)        //first get a clean node copy
+            newElement.uuid = id
+            newElement.name = newElement.name +extraText
+            newElement.storeGroup = storeGroup
+            template.nodes.push(newElement)
+            if (storeGroup == "currentPbs") {
+              //check if parent is copied too
+              let hasParent = store.currentPbs.links.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+              if (!hasParent) {
+                // template.links.push({source:query.currentProject().currentPbs.items[0].uuid, target:id})
+              }
+            }
+            //find and duplicate links
+            let metaLinksToSearch =query.items("metaLinks")
+            let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+            let catLinksToSearch =query.items("metaLinks").filter(l=>l.type=="category")
+            let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
+
+            let interfacesToSearch =query.items("interfaces")
+            let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+            let localLinksToSearch =store[storeGroup].links
+            let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+
+            relatedLinks.forEach(function (l) {
+              template.relatedLinks.push({type:l.type, source:convertUuid(l.source), target:convertUuid(l.target)})
+            })
+            deepCopy(relatedCatLinks).forEach(function (l) {
+              template.relatedCatLinks.push({type:l.type, source:convertUuid(l.source), target:l.target})
+            })
+
+            deepCopy(relatedInterfaceLinks).forEach(function (il) {
+              template.relatedInterfaceLinks.push({type:il.type, name:il.name,description:il.description, source:convertUuid(il.source), target:id})
+            })
+            deepCopy(relatedLocalLinks).forEach(function (il) {
+              template.relatedLocalLinks.push({source:convertUuid(il.source), target:id})
+            })
+
+          }
+        }
+      })
+
+      // isolateSelectedNodes(selectedNodes, false)
+      push(act.add("templates",{name:prompt("Add a new Template"), template:template}))
+      console.log(template);
+    }, container)
+
     bind(".action_relations_isolate_nodes","click",(e)=>{
       let selectedNodes = activeGraph.getSelectedNodes()
       isolateSelectedNodes(selectedNodes, false)
@@ -256,27 +592,12 @@ var createRelationsView = function () {
       let selectedNodes = activeGraph.getSelectedNodes()
       isolateSelectedNodes(selectedNodes, true)
     }, container)
+    bind(".action_relations_remove_nodes","click",(e)=>{
+      let selectedNodes = activeGraph.getSelectedNodes()
+      deleteSelectedNodes(selectedNodes, true)
+    }, container)
     bind(".action_restore_last_interface_toogle_network","click",(e)=>{
-      function toggleFixedGraph() {
-        fixedValues = !fixedValues
-        update()
-      }
-      if (objectIsActive) {
-        setTimeout(function () {
-
-          if (!fixedValues) {
-            let snapId = "wipgraph484622464"
-            let newGraphItem = {uuid:snapId,view:activeMode, name:"0-Current WIP", groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
-            push(act.remove("graphs", {uuid:snapId}))
-            push(act.add("graphs", newGraphItem))
-            setSnapshot(snapId)
-          }else {
-            fixedValues = false
-            update()
-          }
-
-        }, 1);
-      }
+      toggleFixedGraph()
     }, container)
     bind(".action_relations_load_view","click",(e)=>{
       setTimeout(function () {
@@ -302,6 +623,10 @@ var createRelationsView = function () {
         }else {
           setReset()
         }
+        //fix graph after a few seconds
+        setTimeout(function () {
+          setGraphToFixed()
+        }, 1900);
 
       }, 1);
     }, container)
@@ -360,20 +685,59 @@ var createRelationsView = function () {
       console.log(e.target.value);
       fadeOtherNodesOnHoover = !fadeOtherNodesOnHoover
       activeGraph.setFadeOtherNodesOnHoover(fadeOtherNodesOnHoover)
-      console.log(queryDOM('.action_fade_other_node_toogle_network'));
-      // queryDOM('.action_fade_other_node_toogle_network').checked = true;
-      // queryDOM('.action_fade_other_node_toogle_network').dispatchEvent(new Event('change'))
-      //update()
+      if (!queryDOM('.action_fade_other_node_toogle_network_button').classList.contains('active')) {
+        queryDOM('.action_fade_other_node_toogle_network_button').classList.add('active')
+      }else {
+        queryDOM('.action_fade_other_node_toogle_network_button').classList.remove('active')
+      }
+    }, container)
+    bind(".action_fade_other_node_toogle_network_button","click",(e)=>{
+      console.log(e.target.value);
+      fadeOtherNodesOnHoover = !fadeOtherNodesOnHoover
+      activeGraph.setFadeOtherNodesOnHoover(fadeOtherNodesOnHoover)
+      console.log(queryDOM('.action_fade_other_node_toogle_network_button'));
+      if (!queryDOM('.action_fade_other_node_toogle_network_button').classList.contains('active')) {
+        queryDOM('.action_fade_other_node_toogle_network_button').classList.add('active')
+      }else {
+        queryDOM('.action_fade_other_node_toogle_network_button').classList.remove('active')
+      }
+    }, container)
+    bind(".action_relations_show_extra_labels","click",(e)=>{
+      console.log(e.target.value);
+      showExtraLabels = !showExtraLabels
+      update()
+    }, container)
+    bind(".action_relations_show_current_matrix","click",(e)=>{
+      let nodes = itemsToDisplay.filter(i=> !hiddenItemsFromSideView.includes(i.uuid))
+      showOccurrenceDiagramService.show(nodes.filter(r=>getObjectGroupByUuid(r.uuid) == "currentPbs"), relations.filter(r=>r.type=="Physical connection"))
+
+    }, container)
+    bind(".action_relations_toogle_links_text","click",(e)=>{
+      console.log(e.target.value);
+      showLinksText = !showLinksText
+      update()
     }, container)
 
     //INTERFACES MENU connections
     bind(".action_interfaces_toogle_compose","click",(e)=>{
       addMode = "compose"
-      update()
+      if (!queryDOM('.action_interfaces_toogle_compose').classList.contains('active')) {
+        queryDOM('.action_interfaces_toogle_compose').classList.add('active')
+        queryDOM('.action_interfaces_toogle_physical').classList.remove('active')
+      }else {
+        queryDOM('.action_interfaces_toogle_compose').classList.remove('active')
+      }
+      // update()
     }, container)
     bind(".action_interfaces_toogle_physical","click",(e)=>{
       addMode = "physical"
-      update()
+      if (!queryDOM('.action_interfaces_toogle_physical').classList.contains('active')) {
+        queryDOM('.action_interfaces_toogle_physical').classList.add('active')
+        queryDOM('.action_interfaces_toogle_compose').classList.remove('active')
+      }else {
+        queryDOM('.action_interfaces_toogle_physical').classList.remove('active')
+      }
+      // update()
     }, container)
     bind(".action_interfaces_add_pbs","click",(e)=>{
       var id = genuuid()
@@ -392,6 +756,118 @@ var createRelationsView = function () {
         update()
     }, container)
 
+  }
+
+  var quickstartConnections = function (container) {
+    bind(".action_relations_qs_show_snapshot","click",(e)=>{
+      setTimeout(function () {
+        setSnapshot(e.target.dataset.id)
+      }, 1);
+    }, container)
+    bind(".action_relations_qs_remove_snapshot","click",(e)=>{
+      if (confirm("Delete this snapshot")) {
+        push(act.remove("graphs", {uuid:e.target.dataset.id}))
+        renderQuickstart()
+      }
+    }, container)
+    bind(".action_relations_qs_show_last_view","click",(e)=>{
+      update()
+    }, container)
+    bind(".action_relations_qs_start_from_element","click",(e)=>{
+      let store = query.currentProject()
+      let elements = store.currentPbs.items
+      let elementsLinks = store.currentPbs.links
+      showListMenu({
+        sourceData:elements,
+        sourceLinks:elementsLinks,
+        displayProp:"name",
+        display:[
+          {prop:"name", displayAs:"Name", edit:false},
+          {prop:"desc", displayAs:"Description", fullText:true,edit:false},
+          {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:false},
+          {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false}
+
+        ],
+        idProp:"uuid",
+        extraButtons : [
+          {name:"show", class:"show", prop:"uuid", closeAfter:true, action: (orev)=>{
+            if (activeMode=="interfaces") {//TODO should use default
+              elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
+            }else {
+              elementVisibility = {
+                functions : true,
+                requirements : true,
+                stakeholders : true,
+                physicalSpaces : true,
+                metaLinks : true,
+                interfaces : false,
+                compose : true
+              }
+            }
+            fixedValues = false
+            hiddenItemsFromSideView= []
+            currentSnapshot = undefined
+            updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+            isolateSelectedNodes([{uuid:orev.dataset.extra}], true)
+
+          }}
+        ],
+        onEditItem: (ev)=>{
+        },
+        onClick: (ev)=>{
+        }
+      })
+    }, container)
+    bind(".action_relations_qs_show_whole_project","click",(e)=>{
+      function setReset() {
+        fixedValues = false
+        hiddenItemsFromSideView= []
+        groupElements= deepCopy(defaultGroupElements);//prevent memory space linking between graph and view TODO investigate why needed here and in save
+        elementVisibility= deepCopy(defaultElementVisibility);
+        currentSnapshot = undefined
+        update()
+      }
+      function setResetInterfaces() {
+        fixedValues = false
+        hiddenItemsFromSideView= []
+        update()
+      }
+      setTimeout(function () {
+        if (activeMode == "interfaces") {
+          setResetInterfaces()
+        }else {
+          setReset()
+        }
+        //fix graph after a few seconds
+        setTimeout(function () {
+          setGraphToFixed()
+        }, 1900);
+      }, 1);
+    }, container)
+    bind(".action_relations_qs_create_new_empty","click",(e)=>{
+      if (activeMode=="interfaces") {//TODO should use default
+        elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
+      }else {
+        elementVisibility = {
+          functions : true,
+          requirements : true,
+          stakeholders : true,
+          physicalSpaces : true,
+          metaLinks : true,
+          interfaces : true,
+          compose : true
+        }
+      }
+
+      updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+      hiddenItemsFromSideView = itemsToDisplay.map(i=>i.uuid)
+      update()
+      setTimeout(function () {
+        if (activeGraph) {
+          setGraphToFixed()
+        }
+      }, 1900);
+    }, container)
   }
 
   var render = function () {
@@ -422,23 +898,15 @@ var createRelationsView = function () {
     document.querySelector(".center-container").appendChild(container)
 
     //render graph
+    //reset items to display component var
 
-    var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
-    var array2 =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
-    var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
-    var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
-    var array5 = store.physicalSpaces.items.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
-
-    itemsToDisplay = []
-    itemsToDisplay = itemsToDisplay.concat(array2)
-    if (elementVisibility.requirements) { itemsToDisplay = itemsToDisplay.concat(array3) }
-    if (elementVisibility.functions) { itemsToDisplay = itemsToDisplay.concat(array1) }
-    if (elementVisibility.stakeholders) { itemsToDisplay = itemsToDisplay.concat(array4) }
-    if (elementVisibility.physicalSpaces) { itemsToDisplay = itemsToDisplay.concat(array5) }
+    updateItemsToDisplayAndRelations(elementVisibility)
 
     //remove hidden items from tree
 
     let filteredItemsToDisplay = itemsToDisplay.filter(i=> !hiddenItemsFromSideView.includes(i.uuid))
+    //copy relations
+    let relationToDisplay = relations.concat([])
 
     var groupLinks =[]
     var initIndex = 0
@@ -478,7 +946,28 @@ var createRelationsView = function () {
       if (fixedValues) { //check if network is fixed or dynamic
         if (currentSnapshot) {// has a snapshot been activated
           fixedValuesList = query.currentProject().graphs.items.find(i=>i.uuid == currentSnapshot).nodesPositions
+
+          if (fixedValuesList && itemsToDisplay && filteredItemsToDisplay.length-fixedValuesList.length > 0 ) {// if element to display are note the same as the snapshot
+            if (!confirm(filteredItemsToDisplay.length-fixedValuesList.length +1 +" extra items have been added since this snapshot was created. Show them in the snapshot?")) {//TODO why is the +1 needed?
+
+              let originalFilteredItemsToDisplay = deepCopy(filteredItemsToDisplay)
+              let originalHiddenItemsFromSideView = deepCopy(hiddenItemsFromSideView)//store value before modyfing theme
+
+              let extraFilter = fixedValuesList.map(e=>e.uuid)
+              filteredItemsToDisplay= filteredItemsToDisplay.filter(f => extraFilter.includes(f.uuid)) //remove other nodes
+              hiddenItemsFromSideView = hiddenItemsFromSideView.concat(originalFilteredItemsToDisplay.filter(f => !extraFilter.includes(f.uuid)).map(o=>o.uuid))//update the hidden item prop
+
+              if (confirm('Check if new nodes are related to graph and show them?')) {
+                let childrenFilter = findChildrenUuid(fixedValuesList, itemsToDisplay, relations)
+                console.log(filteredItemsToDisplay);
+                console.log(childrenFilter);
+                filteredItemsToDisplay= originalFilteredItemsToDisplay.filter(f => childrenFilter.includes(f.uuid))
+                hiddenItemsFromSideView = originalHiddenItemsFromSideView.concat(originalFilteredItemsToDisplay.filter(f => !childrenFilter.includes(f.uuid)).map(o=>o.uuid))
+              }
+            }
+          }
           currentSnapshot = undefined//clear current snapshot
+
         }else if( activeMode =="relations") {// if not go to default
           if (query.currentProject().graphs && query.currentProject().graphs.default) {
             fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB backward compatibility (TODO: remove)
@@ -504,41 +993,8 @@ var createRelationsView = function () {
         }
       })
 
-      relations = []//checl what connection to display TODO store in func
-      if (elementVisibility.metaLinks) {
-        relations = relations.concat(store.metaLinks.items)
-      }
-      if (elementVisibility.interfaces) {
-        relations = relations.concat(store.interfaces.items)
-      }
-      if (elementVisibility.compose) {
-        relations = relations.concat(store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e}))
-        if (elementVisibility.physicalSpaces) {
-          relations = relations.concat(store.physicalSpaces.links.map((e) => {e.customColor="#6dce9e";e.type = "Contains"; return e}))
-        }
-        groupLinks = []//TODO WHat is the point?
-      }
-      //check if some relation are on the same nodes;
-      var duplicates = []
-      function isOverlap(ra, rb) {
-        if (ra != rb) {
-          return ((ra.source== rb.source && ra.target== rb.target ) || (ra.target== rb.source && ra.source== rb.target ))
-        }
-      }
-      for (relation of relations) {
-        if ( relations.find(e=>isOverlap(relation, e)) ) {
-          var previouslyStored = duplicates.find(e=>isOverlap(relation, e))
-          if (!previouslyStored) {
-            duplicates.push({source:relation.source, target:relation.target, qty:1})
-            relation.displacement = 6
-          }else {//Why is it activated so much
-            previouslyStored.qty ++
-            relation.displacement = 6*previouslyStored.qty
-          }
-        }
-      }
-      //copy relations
-      let relationToDisplay = relations.concat([])
+
+
       renderforcesTree({nodes:filteredItemsToDisplay, relationships:relationToDisplay, groupLinks:groupLinks})
     }
     // console.log(sideListe);
@@ -587,25 +1043,26 @@ var createRelationsView = function () {
 
     }
   }
+  function findChildrenUuid(roots,items, links) {
+    return roots.reduce(function (acc, r) {
+      console.log(acc);
+      let rootArray = [r.uuid]
+      let itemsChildren = items.filter((i) => {//get all the children of this element
+        return links.find((l)=> {
+          if (l.source.uuid) {return l.source.uuid == r.uuid && l.target.uuid == i.uuid//check if links source is object
+          }else { return l.source == r.uuid && l.target == i.uuid}//or ID
+        })
+      })
+      //recursively trandform them in leaf and branches
+      let thisitemChildrenArray = findChildrenUuid(itemsChildren,items, links)
+      rootArray = rootArray.concat(thisitemChildrenArray)
+      console.log(acc);
+      return acc.concat(rootArray)
+    }, [])
+  }
 
   var isolateSelectedNodes = function (currentSelected, showChildren) {
-    function findChildrenUuid(roots,items, links) {
-      return roots.reduce(function (acc, r) {
-        console.log(acc);
-        let rootArray = [r.uuid]
-        let itemsChildren = items.filter((i) => {//get all the children of this element
-          return links.find((l)=> {
-            if (l.source.uuid) {return l.source.uuid == r.uuid && l.target.uuid == i.uuid//check if links source is object
-            }else { return l.source == r.uuid && l.target == i.uuid}//or ID
-          })
-        })
-        //recursively trandform them in leaf and branches
-        let thisitemChildrenArray = findChildrenUuid(itemsChildren,items, links)
-        rootArray = rootArray.concat(thisitemChildrenArray)
-        console.log(acc);
-        return acc.concat(rootArray)
-      }, [])
-    }
+
     let selectedNodes = currentSelected
     let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
     let selectedNodesAndChildrenUuid = findChildrenUuid(selectedNodes, itemsToDisplay, relations)
@@ -617,6 +1074,21 @@ var createRelationsView = function () {
     })
     update()
   }
+  var deleteSelectedNodes = function (currentSelected, showChildren) {
+    var store = query.currentProject()
+    let selectedNodes = currentSelected
+
+    selectedNodes.forEach(function (n) {
+      let nodeType = getObjectGroupByUuid(n.uuid)
+      if (nodeType) {
+        let object = store[nodeType].items.find(i=>i.uuid == n.uuid)
+        if (confirm("Delete "+ object.name)) {
+          push(act.remove(nodeType, {uuid:object.uuid}))
+        }
+      }
+    })
+    update()
+  }
 
   var displaySideMenuFromSearch = function (filteredIds) {
     console.log(filteredIds);
@@ -625,6 +1097,93 @@ var createRelationsView = function () {
       if (filteredIds.includes(item.dataset.id) || !filteredIds[0]) {item.style.display = "block"}else{item.style.display = "none"}
     }
 
+  }
+  var getSvgPathFromItemId = function (uuid) {
+    let cat = getCategoryFromItemUuid(uuid)
+    if (cat) { return cat.svgPath
+    }else { return undefined}
+  }
+  var updateItemsToDisplayAndRelations= function (elementVisibility) {//only side effect TODO: find a better way?
+    var store = JSON.stringify(query.currentProject())
+    store = JSON.parse(store)// TODO used multiple time. Should do it only once
+    var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
+    var array2 =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid); return e})
+    var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
+    var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
+    var array5 = store.physicalSpaces.items.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
+
+    itemsToDisplay = []
+    itemsToDisplay = itemsToDisplay.concat(array2)
+    if (elementVisibility.requirements) { itemsToDisplay = itemsToDisplay.concat(array3) }
+    if (elementVisibility.functions) { itemsToDisplay = itemsToDisplay.concat(array1) }
+    if (elementVisibility.stakeholders) { itemsToDisplay = itemsToDisplay.concat(array4) }
+    if (elementVisibility.physicalSpaces) { itemsToDisplay = itemsToDisplay.concat(array5) }
+
+    relations = []//checl what connection to display TODO store in func
+    if (elementVisibility.metaLinks) {
+      relations = relations.concat(store.metaLinks.items)
+    }
+    if (elementVisibility.interfaces ) {
+      relations = relations.concat(store.interfaces.items.map((e) => {e.customColor="#6dce9e"; return e}))
+    }
+    if (elementVisibility.compose) {
+      relations = relations.concat(store.currentPbs.links.map((e) => {e.type = "Composed by"; return e}))
+      if (elementVisibility.physicalSpaces) {
+        relations = relations.concat(store.physicalSpaces.links.map((e) => {e.type = "Contains"; return e}))
+      }
+      groupLinks = []//TODO WHat is the point?
+    }
+    //check if some relation are on the same nodes;
+    var duplicates = []
+    function isOverlap(ra, rb) {
+      if (ra != rb) {
+        return ((ra.source== rb.source && ra.target== rb.target ) || (ra.target== rb.source && ra.source== rb.target ))
+      }
+    }
+    for (relation of relations) {
+      if ( relations.find(e=>isOverlap(relation, e)) ) {
+        var previouslyStored = duplicates.find(e=>isOverlap(relation, e))
+        if (!previouslyStored) {
+          duplicates.push({source:relation.source, target:relation.target, qty:1})
+          relation.displacement = 6
+        }else {//Why is it activated so much
+          previouslyStored.qty ++
+          relation.displacement = 6*previouslyStored.qty
+        }
+      }
+    }
+  }
+
+  var renderQuickstart = function () {
+    let quickstartContainer = document.createElement("div")
+    quickstartContainer.style.height = "100%"
+
+    //Add viewSelectionMenu
+    let relationViews = query.currentProject().graphs.items
+    console.log(relationViews);
+    let viewMenuObjects =relationViews.slice()
+    if (activeMode=="interfaces") {
+      viewMenuObjects=viewMenuObjects.filter(v=>v.view == activeMode)
+    }
+    let viewMenuHtml = viewMenuObjects
+      .sort(function(a, b) {
+        if (a.name && b.name) {
+          var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+          var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+          if (nameA < nameB) {return -1;}
+          if (nameA > nameB) {return 1;}
+        }
+        return 0;})
+      .map(v=>theme.quickStartItem(v))
+      .join('')
+
+
+    quickstartContainer.innerHTML=theme.quickstartView(viewMenuHtml)
+
+    document.querySelector(".center-container").innerHTML=""
+    document.querySelector(".center-container").appendChild(quickstartContainer)
+
+    quickstartConnections(quickstartContainer)
   }
 
 
@@ -648,15 +1207,34 @@ var createRelationsView = function () {
           compose : true
         }
         objectIsActive = true;
-        if (!itemsToDisplay[0]) {
-          update()//update first to poulate elements
-        }
+        fixedValues = false
+        hiddenItemsFromSideView= []
+        currentSnapshot = undefined
+        updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
         isolateSelectedNodes([{uuid:options.param.uuid}], true)
+        //fix graph after a few seconds
+        setTimeout(function () {
+          if (activeGraph) {
+            setGraphToFixed()
+          }
+        }, 1900);
+      }
+      if (options.param.context && options.param.context == "quickstart") {
+        objectIsActive = true;
+        updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+        renderQuickstart()
       }
     }else {
       objectIsActive = true;
       update()
+      //fix graph after a few seconds
+      setTimeout(function () {
+        if (activeGraph) {
+          setGraphToFixed()
+        }
+      }, 1900);
     }
+
   }
 
   var setInactive = function () {
@@ -668,73 +1246,148 @@ var createRelationsView = function () {
 
   var renderMenu=function (container) {
     let commonMenuHTML = `
-    <div class="ui item">
-      <button class="ui basic icon button action_relations_toogle_show_graph_snapshot_menu">
-        <i class="camera icon action_relations_toogle_show_graph_snapshot_menu"></i>
-      </button>
-    </div>
-    <div class="ui item">
-      <div class="ui toggle checkbox">
-        <input ${fixedValues ? 'checked':''} class="action_restore_last_interface_toogle_network" type="checkbox" name="public">
-        <label>Fixed Graph</label>
-      </div>
-    </div>
-    <div class="ui item">
-      <div class="ui toggle checkbox">
-        <input ${fadeOtherNodesOnHoover ? 'checked':''} class="action_fade_other_node_toogle_network" type="checkbox" name="public">
-        <label>Highlight connections</label>
-      </div>
-    </div>
+
+
     <div class="ui item">
       <div class="ui icon input">
         <input class="input_relation_search_nodes" type="text" placeholder="Search...">
         <i class="search icon"></i>
       </div>
     </div>
+
     <div class="ui item">
-      <button class="ui basic icon button">
-        <i class="download icon action_relations_export_png"></i>
-      </button>
+      <div class="ui toggle checkbox">
+        <input ${fixedValues ? 'checked':''} class="action_restore_last_interface_toogle_network" type="checkbox" name="public">
+        <label>Pinned Nodes</label>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="ui mini basic icon buttons">
+        <button class="disabled ui basic icon button " >
+          Tools
+        </button>
+        <button class="${showVisibilityMenuSnapshot ? 'active':''} ui basic icon button action_relations_toogle_show_graph_snapshot_menu" data-tooltip="Show Snapshot Tools" data-position="bottom center" >
+          <i class="camera icon action_relations_toogle_show_graph_snapshot_menu"></i>
+        </button>
+        <button class="ui mini button action_relations_show_all_nodes_in_view" data-tooltip="Show All" data-position="bottom center">
+          <i class="eye icon action_relations_show_all_nodes_in_view"></i>
+        </button>
+        <button class="ui mini button action_relations_hide_all_nodes_in_view" data-tooltip="Hide All" data-position="bottom center">
+          <i class="eye slash icon action_relations_hide_all_nodes_in_view"></i>
+        </button>
+        <button class="ui mini button action_relations_isolate_nodes" data-tooltip="Crop selection" data-position="bottom center">
+          <i class="crop icon action_relations_isolate_nodes"></i>
+        </button>
+        <button class="ui mini button action_relations_isolate_nodes_and_children" data-tooltip="Show only selected relations" data-position="bottom center">
+          <i class="eye dropper icon action_relations_isolate_nodes_and_children"></i>
+        </button>
+        <div class="ui icon button action_relations_duplicate_nodes" data-tooltip="duplicate selected Product" data-position="bottom center">
+          <i class="copy outline icon action_relations_duplicate_nodes"></i>
+        </div>
+        <div class="ui icon button action_relations_store_nodes_as_templates" data-tooltip="store selected as Template" data-position="bottom center">
+          <i class="archive icon action_relations_store_nodes_as_templates"></i>
+        </div>
+        <div class="ui icon button action_relations_add_nodes_from_templates" data-tooltip="Add from template" data-position="bottom center">
+          <i class="paste icon action_relations_add_nodes_from_templates"></i>
+        </div>
+        <button class="ui mini button action_relations_remove_nodes" data-tooltip="Delete Selected" data-position="bottom center">
+          <i class="trash icon action_relations_remove_nodes"></i>
+        </button>
+        <button class="ui basic icon button" data-tooltip="Export as .png" data-position="bottom center">
+          <i class="download icon action_relations_export_png"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="ui mini basic icon buttons">
+        <button class="disabled ui basic icon button " >
+          Show
+        </button>
+        <button class="${fadeOtherNodesOnHoover ? 'active':''} ui mini button action_fade_other_node_toogle_network_button" data-tooltip="Highlight connection on hover" data-position="bottom center">
+          <i class="sun outline icon action_fade_other_node_toogle_network_button"></i>
+        </button>
+        <button class="${showLinksText ? 'active':''} ui mini button action_relations_toogle_links_text" data-tooltip="Relations texts" data-position="bottom center">
+          <i class="underline icon action_relations_toogle_links_text"></i>
+        </button>
+        <button class="${showExtraLabels ? 'active':''} ui mini button action_relations_show_extra_labels" data-tooltip="Extra Category labels" data-position="bottom center">
+          <i class="tag icon action_relations_show_extra_labels"></i>
+        </button>
+        <button class=" ui mini button action_relations_show_current_matrix" data-tooltip="interface matrix" data-position="bottom center">
+          <i class="table icon action_relations_show_current_matrix"></i>
+        </button>
+      </div>
     </div>
     `
     let relationsMenuHTML =`
-    <div class="ui item">
-      <div class="ui button basic action_relations_toogle_show_graph_menu">Toogle Visibility</div>
-    </div>
+
     <div class="right menu">
       <div class="ui item">
         <div class="ui mini basic buttons">
-          <div class="ui button add_relations_nodes action_interface_add_stakeholder">Add Stakeholders</div>
-          <div class="ui button add_relations_nodes action_interface_add_requirement">Add Requirements</div>
-          <div class="ui button add_relations_nodes action_interface_add_pbs">Add Product</div>
-          <div class="ui button add_relations_nodes action_interface_add_functions">Add Functions</div>
+          <div class="disabled ui icon button">
+            Add
+          </div>
+          <div class="${addItemMode=="stakeholders" ? 'active':''} ui icon button add_relations_nodes action_interface_add_stakeholder" data-tooltip="Stakeholder" data-position="bottom center">
+            <i class="user icon action_interface_add_stakeholder"></i>
+          </div>
+          <div class="${addItemMode=="requirements" ? 'active':''} ui icon button add_relations_nodes action_interface_add_requirement" data-tooltip="Requirement" data-position="bottom center">
+            <i class="comment icon action_interface_add_requirement"></i>
+          </div>
+          <div class="${addItemMode=="currentPbs" ? 'active':''} ui icon button add_relations_nodes action_interface_add_pbs" data-tooltip="Product" data-position="bottom center">
+            <i class="dolly icon action_interface_add_pbs"></i>
+          </div>
+          <div class="${addItemMode=="functions" ? 'active':''} ui icon button add_relations_nodes action_interface_add_functions" data-tooltip="Functions" data-position="bottom center">
+            <i class="cogs icon action_interface_add_functions"></i>
+          </div>
+        </div>
+
+        <div class="ui item">
+          <div class="ui icon button basic action_relations_toogle_show_graph_menu">
+            <i class="ellipsis horizontal icon action_relations_toogle_show_graph_menu"></i>
+          </div>
         </div>
       </div>
 
     </div>`
     let interfacesMenuHTML =`
     <div class="right menu">
+
+
+
       <div class="ui item">
-        <div class="ui toggle checkbox">
-          <input ${elementVisibility.compose? 'checked':''} class="action_interfaces_toogle_show_compose" type="checkbox" name="public">
-          <label>Show Compositions</label>
+        <div class="ui mini basic buttons">
+          <div class="ui disabled icon button">
+            display
+          </div>
+          <button class="${elementVisibility.compose ? 'active':''} ui mini icon button action_interfaces_toogle_show_compose" data-tooltip="Show composition links" data-position="bottom center">
+            <i class="object group icon action_interfaces_toogle_show_compose"></i>
+          </button>
+          <button class="${elementVisibility.interfaces ? 'active':''} ui mini icon button action_interfaces_toogle_show_interfaces" data-tooltip="Show interfaces links" data-position="bottom center">
+            <i class="cubes icon action_interfaces_toogle_show_interfaces"></i>
+          </button>
         </div>
       </div>
+
       <div class="ui item">
-        <div class="ui toggle checkbox">
-          <input ${elementVisibility.interfaces ? 'checked':''} class="action_interfaces_toogle_show_interfaces" type="checkbox" name="public">
-          <label>Show Interfaces</label>
+        <div class="ui mini basic buttons">
+          <div class="ui icon button action_interfaces_add_pbs" data-tooltip="Add Product" data-position="bottom center">
+            <i class="plus  icon action_interfaces_add_pbs"></i>
+            <i class="dolly icon action_interfaces_add_pbs"></i>
+          </div>
         </div>
       </div>
       <div class="ui item">
         <div class="ui mini basic buttons">
-          <div class="ui button action_interfaces_add_pbs">Add Product</div>
-        </div>
-      </div>
-      <div class="ui item">
-        <div class="ui mini basic buttons">
-          <div class="${addMode=='compose' ? 'active':''} ui button action_interfaces_toogle_compose">Add Composed Connection</div>
-          <div class="${addMode=='physical' ? 'active':''} ui button action_interfaces_toogle_physical">Add Physical Connection</div>
+          <div class="ui disabled icon button">
+            Add links
+          </div>
+          <div class="${addMode=='compose' ? 'active':''} ui icon button action_interfaces_toogle_compose" data-tooltip="New links will be composition relations" data-position="bottom center">
+            <i class="object group icon action_interfaces_toogle_compose"></i>
+          </div>
+          <div class="${addMode=='physical' ? 'active':''} ui icon button action_interfaces_toogle_physical" data-tooltip="New links will be physical interfaces relations" data-position="bottom center">
+            <i class="cubes icon action_interfaces_toogle_physical"></i>
+          </div>
         </div>
       </div>
     </div>`
@@ -795,13 +1448,21 @@ var createRelationsView = function () {
         <a class="${groupElements.physicalSpaces ? 'active teal':''} ui item action_relations_toogle_group_physicalSpaces">Physical Spaces</a>
         </div>
       </div>
+
       <div class="item">
-        <div class="header">Show in view</div>
-        <div class="ui mini basic buttons">
-          <div class="ui mini button action_relations_show_all_nodes_in_view">Show all</div>
-          <div class="ui mini button action_relations_hide_all_nodes_in_view">Hide all</div>
+        <div class="header">Show</div>
+          <div class="ui item">
+            <div class="ui toggle checkbox">
+              <input ${fadeOtherNodesOnHoover ? 'checked':''} class="action_fade_other_node_toogle_network" type="checkbox" name="public">
+              <label>Highlight connections</label>
+            </div>
+          </div>
+        <div class="ui mini vertical basic buttons">
+          <div class="ui mini button action_relations_isolate_nodes">Selected</div>
+          <div class="ui mini button action_relations_isolate_nodes_and_children">Selected and relations</div>
         </div>
       </div>
+
       <div class="item">
         <div class="header">Isolate</div>
         <div class="ui mini vertical basic buttons">
@@ -842,7 +1503,15 @@ var createRelationsView = function () {
         return 0;})
       .map(v=>theme.viewListItem(v))
       .join('')
-    container.querySelector('.target_relations_view_list').innerHTML= theme.viewListOptions() + viewMenuHtml
+
+    let recentSnapshotHtml =""
+    recentSnapshot = currentSnapshot || recentSnapshot //save in case no element is available next time
+    let recentSnapshotElement =viewMenuObjects.find(r=>r.uuid == currentSnapshot) ||viewMenuObjects.find(r=>r.uuid == recentSnapshot)
+      if (recentSnapshotElement) {
+      recentSnapshotHtml  = "<b>Last used</b><br>" + theme.viewListItem(recentSnapshotElement)+"<br><br><b>All</b><br>"
+      }
+
+    container.querySelector('.target_relations_view_list').innerHTML= theme.viewListOptions() + recentSnapshotHtml+viewMenuHtml
   }
 
   var dataToD3Format = function (data) {
@@ -890,6 +1559,7 @@ var createRelationsView = function () {
           }
       ],
       groupLabels:currentGroupedLabels,
+      extraLabels:showExtraLabels,
       rootNode:false,
       showLinksOverlay:false,
       fadeOtherNodesOnHoover:fadeOtherNodesOnHoover,
@@ -913,10 +1583,10 @@ var createRelationsView = function () {
           // 'User': 'user',
           // 'Project': 'building'
       },
-      images: {
-          'Address': 'img/twemoji/1f3e0.svg',
-          'Usedr': 'img/twemoji/1f600.svg'
-      },
+      // images: {
+      //     'Address': 'img/twemoji/1f3e0.svg',
+      //     'Usedr': 'img/twemoji/1f600.svg'
+      // },
       minCollision: 60,
       chargeStrength: -500,
       customData: {
@@ -953,6 +1623,7 @@ var createRelationsView = function () {
           "errors": []
       },
       nodeRadius: 25,
+      showLinksText:showLinksText,
       unpinNodeOnClick:!fixedValues,//disable node unpin when fixedgraph mode
       onNodeDragEnd:function (node) {
         if (fixedValues) {
@@ -1078,7 +1749,7 @@ var createRelationsView = function () {
       if (addMode == "physical") {
           let isCircularRef = store.interfaces.items.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
           if (!isCircularRef) {
-            push(act.add("interfaces",{type:"Physical connection", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+            push(act.add("interfaces",{type:"Physical connection", name:"Interface between "+lastSelectedNode.name+" and "+previousSelectedNode.name, source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
           }else {
             alert("Circular reference. Action not possible")
           }
@@ -1087,7 +1758,7 @@ var createRelationsView = function () {
           let targetIsRoot = !store.currentPbs.links.find(i=> i.target == previousSelectedNode.uuid)
 
           if (!isCircularRef && !targetIsRoot) {
-            push(movePbs({origin:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+            // push(movePbs({origin:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
             push(removePbsLink({target:previousSelectedNode.uuid}))
 
             push(act.addLink("currentPbs",{ source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
@@ -1098,6 +1769,29 @@ var createRelationsView = function () {
           }
 
       }
+    }
+  }
+  function toggleFixedGraph() {
+    if (objectIsActive) {
+      setTimeout(function () {
+        if (!fixedValues) {
+          setGraphToFixed()
+        }else {
+          fixedValues = false
+          update()
+        }
+      }, 1);
+    }
+  }
+  function setGraphToFixed() {
+    if (!fixedValues) {
+      let snapId = "wipgraph484622464"
+      let newGraphItem = {uuid:snapId,view:activeMode, name:"0-Current WIP", groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+      push(act.remove("graphs", {uuid:snapId}))
+      push(act.add("graphs", newGraphItem))
+      let savedCurrentSnapshot = currentSnapshot
+      setSnapshot(snapId)
+
     }
   }
 
@@ -1124,6 +1818,22 @@ var createRelationsView = function () {
     }
     currentSnapshot = uuid
     update()
+    //regsiter la position also TODO put in own fuction as it's used by stellae dragend
+    if (fixedValues) {
+      //TODO test to clean
+      if (!query.currentProject().graphs ) {//backward compatibility
+        query.currentProject().graphs = {}
+        query.currentProject().graphs.items =[]
+      }
+      let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
+      //append to graph DB
+      if (activeMode=="relations") {
+        query.currentProject().graphs.default = graphItem//TODO use actions
+      }else if (activeMode == "interfaces") {
+        query.currentProject().graphs.interfaces = graphItem//TODO use actions
+      }
+    }
+
   }
 
 

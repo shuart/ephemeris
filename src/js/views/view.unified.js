@@ -18,6 +18,12 @@ var createUnifiedView = function (targetSelector) {
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", function () {
+      if (objectIsActive) {
+        update()
+      }
+    })
+
     connect(".action-mark-action-done","click",(e)=>{
       console.log(e.target.dataset.id);
       console.log(e.target.dataset.project);
@@ -291,8 +297,8 @@ var createUnifiedView = function (targetSelector) {
         <div data-id="${i.uuid}" class="item">
           <i  data-value ='${i.open}' data-project="${projectUuid}" data-id="${i.uuid}" class="action-mark-action-done big ${i.open ? '':'check'} circle outline icon"></i>
           <div class="content">
-            <h5 class="header">
-              ${i.name}
+            <h5  class="header ">
+              <span data-id="${i.uuid}" class="action_toogle_single_action_view">${i.name}</span>
               <i data-project="${projectUuid}" data-prop="name" data-value="${i.name}" data-id="${i.uuid}" class="edit icon action_unified_list_edit_item" style="opacity:0.2"></i>
             </h5>
             <div class="description">
@@ -419,6 +425,9 @@ var createUnifiedView = function (targetSelector) {
       console.log(new Date(value));
       if (lessThanInSomeDays(new Date(value),10 )) {
         labelColor = "orange"
+      }
+      if (lessThanInSomeDays(new Date(value),2 )) {
+        labelColor = "red"//redish
       }
     }else {
       today = new Date().toISOString().substr(0, 10);

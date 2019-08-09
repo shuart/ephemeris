@@ -14,10 +14,14 @@ function showListMenu({
   metaLinks = undefined,
   multipleSelection = undefined,
   searchable = true,
+  prependContent = undefined,
+  onLoaded = undefined,
   showColoredIcons = false,
+  allowBatchActions = false,
   onClick = (e)=>{console.log("clik on select");},
   onLabelClick = (e)=>{console.log("clik on label");},
   onAdd = undefined,
+  onAddScrollDown = true,
   onAddFromPopup = undefined,
   onAddFromExtraField = undefined,
   onRemove= undefined,
@@ -164,7 +168,11 @@ function showListMenu({
   var mainEl = undefined
   var editItemMode = undefined
   var listContainer =undefined;
+  var globalContainer =undefined;
   var listContainerFirstCol =undefined;
+
+  var showBatchActions =false;
+  var currentSelectedBatch =[];
 
 
   var self={}
@@ -183,6 +191,9 @@ function showListMenu({
           onAdd({selectDiv:sourceEl, select:self, target:undefined})
           if (!editItemMode && !singleElement) {
             refreshList()
+            if (onAddScrollDown) {
+              globalContainer.scrollTop = globalContainer.scrollHeight;
+            }
           }else {
             currentSearchValue =""
             sourceEl.remove()
@@ -249,6 +260,26 @@ function showListMenu({
           refreshList()
           //sourceEl.remove()
         }
+        if (event.target.classList.contains("action_list_toogle_batch")) {
+          if (showBatchActions) {
+            showBatchActions = false
+            currentSelectedBatch = []
+          }else {
+            showBatchActions = true
+          }
+          refreshList()
+
+        }
+        if (event.target.classList.contains("action_toogle_in_selected_batch")) {
+          let elementId = event.target.dataset.id
+          if (currentSelectedBatch.includes(elementId)) {
+            currentSelectedBatch = currentSelectedBatch.filter(i=>i !=elementId)
+          }else {
+            currentSelectedBatch.push(elementId)
+          }
+          refreshList()
+
+        }
         if (event.target.classList.contains("action_list_move_item")) {
           if (ismoving) {
             ismoving = false
@@ -297,8 +328,42 @@ function showListMenu({
             render()
           }
         }
+        if (event.target.classList.contains("action_list_go_to_item")) {
+          let link = event.target.dataset.value
+          if (typeof nw !== "undefined" && link) {//if using node webkit
+            nw.Shell.openExternal(link)
+          }else if (link) {//if in browser
+            window.open(link, '_blank')
+          }else {
+            console.log("no link to reach");
+          }
+        }
+        if (event.target.classList.contains("action_list_go_to_desktop_item")) {
+          let link = event.target.dataset.value
+          if (typeof nw !== "undefined" && link) {//if using node webkit
+            nw.Shell.openItem(link)
+          }else if (link) {//if in browser
+            alert("only available with desktop version")
+          }else {
+            console.log("no link to reach");
+          }
+        }
+        if (event.target.classList.contains("action_list_past")) {//TODO too early. Implement later
+          let link = event.target.dataset.value
+          navigator.clipboard.readText()
+            .then(text => {
+              console.log('Pasted content: ', text);
+            })
+            .catch(err => {
+              console.error('Failed to read clipboard contents: ', err);
+            });
+        }
+        if (event.target.classList.contains("action_list_droppable")) {//TODO too early. Implement later
+          //TODO finish implementation
+        }
+
         if (event.target.classList.contains("action_list_edit_choice_item")) {
-          onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target})
+          onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target, batch:currentSelectedBatch})
           //TODO this should be updated here with a promise
           // console.log(event.target);
           // if (!editItemMode && !singleElement) {
@@ -454,6 +519,14 @@ function showListMenu({
         target.firstChild
       )
     }
+    //batch button
+    if (allowBatchActions) {
+      let target = mainEl.querySelector(".target_menu_left_buttons")
+      target.insertBefore(
+         toNode(theme.button("Select", '', 'action_list_toogle_batch')),
+         target.firstChild
+       )
+    }
     //add button
     if (onAdd) {
       let target = mainEl.querySelector(".target_menu_left_buttons")
@@ -515,6 +588,9 @@ function showListMenu({
         editItemMode = undefined
         sourceEl.remove()
         render()
+        if (onAddScrollDown) {
+          globalContainer.scrollTop = globalContainer.scrollHeight;
+        }
       });
 
       target.appendChild(
@@ -717,7 +793,7 @@ function showListMenu({
 
           let letters = showColoredIcons(item)
           let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
-          let style = 'style="background-color: '+colorFromLetters(letters)+';width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 18px;color: white;"'
+          let style = 'style="background: '+colorFromLetters(letters)+';width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 15px;color: white;text-align: center;"'
           nestedHtml +=`
           <div  ${colStyle} data-id="${item[idProp]}" class="column">
             <div ${style} data-id="${item[idProp]}" class="content">
@@ -726,15 +802,35 @@ function showListMenu({
           </div>
           `
         }
+        if (showBatchActions) {
+          let marked = currentSelectedBatch.includes(item[idProp])
+          let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
+          let style = 'style="background: transparent;width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 15px;color: grey;text-align: center;"'
+          nestedHtml +=`
+          <div  ${colStyle} data-id="${item[idProp]}" class="column">
+            <div ${style} data-id="${item[idProp]}" class="content">
+              <i data-id="${item[idProp]}"  class="large ${marked ? "check":""} circle outline icon action_toogle_in_selected_batch"></i>
+            </div>
+          </div>
+          `
+        }
         for (rule of rules) {
           var propName = rule.prop
           var dispName = rule.displayAs
           var isEditable = rule.edit
+          var isLink = rule.link
+          var isOsPath = rule.localPath
           var isTime = rule.time
           var isFullText = rule.fullText
+          var isPastable = rule.pastable
+          var isDroppable = rule.droppable
           var isMeta = rule.meta //get the metaFunction
+          var isCustom = rule.custom
           var isTarget = rule.isTarget //met is target
           var editHtml = ""
+          var goToHtml = ""
+          var pastableHtml = ""
+          var dropHtmlClass = ""
           var propDisplay = item[propName]
           //force edit mode if in editItemMode
           if (editItemMode) {
@@ -747,6 +843,27 @@ function showListMenu({
               item[propName] = isMeta().filter(e => (e.type == propName && e.source == item[idProp] )).map(e => e.target)
             }
           }
+
+          if (isCustom) {
+            propDisplay = isCustom(item[propName])
+          }
+
+          if (isLink && item[propName]) {
+            goToHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_item" style="cursor:pointer; color:blue"></i>`
+          }
+          if (isOsPath && item[propName]) {
+            goToHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_desktop_item" style="cursor:pointer; color:blue"></i>`
+          }
+          if (isPastable) {
+            pastableHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="paste icon action_list_past" style="cursor:pointer;opacity: 0.15;"></i>`
+          }
+          if (isDroppable) {
+            dropHtmlClass+="action_list_droppable"
+          }
+
           if (isEditable && !isMeta && !isTime) {
             editHtml+=`
             <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
@@ -793,11 +910,15 @@ function showListMenu({
           }else if(isFullText && !singleItem){
             if(propDisplay && propDisplay.length > 35) {propDisplay = propDisplay.substring(0,35)+".. ";}
           }
+
+
           if (!singleItem) {
             nestedHtml +=`
-            <div data-id="${item[idProp]}" class="column">
+            <div data-id="${item[idProp]}" class="column ${dropHtmlClass}">
               <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
                 ${propDisplay||""}
+                ${goToHtml}
+                ${pastableHtml}
                 ${editHtml}
               </div>
             </div>
@@ -810,6 +931,7 @@ function showListMenu({
               </h3>
               <div data-id="${item[idProp]}" class="">
                 ${propDisplay||""}
+                ${goToHtml}
                 ${editHtml}
               </div>
             </div>
@@ -872,9 +994,21 @@ function showListMenu({
   //   container.innerHTML ="<div class='"+ theme.singleElementsListClass + "'>"+html+"</div>"
   // }
 
+  function createPrepend() {
+    if (prependContent) {
+      mainEl.appendChild(toNode(prependContent));
+    }
+  }
+  function triggerLoadAction() {
+    if (onLoaded) {
+      onLoaded({selectDiv:sourceEl, select:self, target:undefined})
+    }
+  }
+
   function render() {
     buildHtmlContainer() //setup external container
     connect() //add events
+    createPrepend()
     createMenu()//create the inside of the list
     //createAddTemplate()//create a placeholder area to add items
 
@@ -901,7 +1035,7 @@ function showListMenu({
     listContainerFirstCol.classList = "table-first-col"
     // listContainer.style.overflow = "auto"
     //item list (global var)
-    let globalContainer = document.createElement('div');
+    globalContainer = document.createElement('div');
     globalContainer.style.overflow = "auto"
     globalContainer.classList = "flexTable"
 
@@ -973,6 +1107,8 @@ function showListMenu({
     if (currentSearchValue != "") {
        filterDataWithValue(currentSearchValue)
     }
+
+    triggerLoadAction()
   }
 
   function filterDataWithValue(value) {
@@ -996,7 +1132,7 @@ function showListMenu({
     }
   }
 
-  function colorFromLetters(letters) {
+  function colorFromLetters(letters, uniform) {
     // const alphaVal = (s) => s.toLowerCase().charCodeAt(0) - 97 + 1
     const alphaVal = function (s) {
       if (s) {
@@ -1006,10 +1142,15 @@ function showListMenu({
         return alt.toLowerCase().charCodeAt(0) - 97 + 1
       }
     }
-    // let veryDifferentColors = ["#000000","#00FF00","#0000FF","#FF0000","#01FFFE","#FFA6FE","#FFDB66","#006401","#010067","#95003A","#007DB5","#FF00F6","#FFEEE8","#774D00","#90FB92","#0076FF","#D5FF00","#FF937E","#6A826C","#FF029D","#FE8900","#7A4782","#7E2DD2","#85A900","#FF0056","#A42400","#00AE7E","#683D3B","#BDC6FF","#263400","#BDD393","#00B917","#9E008E","#001544","#C28C9F","#FF74A3","#01D0FF","#004754","#E56FFE","#788231","#0E4CA1","#91D0CB","#BE9970","#968AE8","#BB8800","#43002C","#DEFF74","#00FFC6","#FFE502","#620E00","#008F9C","#98FF52","#7544B1","#B500FF","#00FF78","#FF6E41","#005F39","#6B6882","#5FAD4E","#A75740","#A5FFD2","#FFB167","#009BFF","#E85EBE"];
-    let colorNbr = Math.round(( alphaVal(letters[0])+alphaVal(letters[1]) )/78*360)
-    // let color = veryDifferentColors[colorNbr]
-    let color = "hsl("+colorNbr+", 34%, 50%)"
+    let color='#ffffff'
+    if (uniform) {
+      let colorNbr = Math.round(( alphaVal(letters[0])+alphaVal(letters[1]) )/78*360)
+      color = "hsl("+colorNbr+", 34%, 50%)"
+    }else {
+      let colorNbrA = Math.round( alphaVal(letters[0]) /26*360)
+      let colorNbrB = Math.round( alphaVal(letters[1]) /26*360)
+      color = "linear-gradient(127deg, hsl("+colorNbrA+", 34%, 50%), hsl("+colorNbrB+", 34%, 50%))"
+    }
     return color
   }
 
@@ -1082,6 +1223,9 @@ function showListMenu({
        filterDataWithValue(currentSearchValue)
     }
   }
+  function scrollDown() {
+    globalContainer.scrollTop = globalContainer.scrollHeight;
+  }
   function update() {
     if (sourceEl) {
       sourceEl.remove()
@@ -1094,6 +1238,7 @@ function showListMenu({
 
   init();
 
+  self.scrollDown = scrollDown
   self.setEditItemMode = setEditItemMode
   self.setSelected = setSelected
   self.getSelected = getSelected

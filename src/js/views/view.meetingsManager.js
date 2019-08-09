@@ -136,7 +136,7 @@ var createMeetingsManager = function (targetSelector) {
      <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${topic.name}" data-chapter="${chapter.uuid}" data-topic="${topic.uuid}" class="times icon action_meetingmanager_list_delete_topic" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top;"></i>
      </h4>
      <div style="width:90%; margin-left:5%;" class='flexTable'>
-       <div class="table">
+       <div class="meeting-table">
        ${topic.items.map(i=>theme.meetingItems(i)).join(" ")}
        </div>
      </div>

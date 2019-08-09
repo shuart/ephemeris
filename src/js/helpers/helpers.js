@@ -266,6 +266,19 @@ function getRelatedItems(sourceItem, groupToSearch, paramOptions) {//todo limit 
   }))
   return linkToText
 }
+//get related item
+function getCategoryFromItemUuid(sourceItemId) {//todo limit metalinks type
+  var store = query.currentProject()
+  let category = undefined
+  let categoryLink = store.metaLinks.items.find(m=>(m.type=="category" && m.source == sourceItemId))
+  console.log(sourceItemId);
+  console.log(categoryLink);
+  if (categoryLink) {
+    category = store.categories.items.find(c=>c.uuid == categoryLink.target)
+  }
+  console.log(category);
+  return category
+}
 
 //clear links with missing items
 var clearUncompleteLinks = function () {
@@ -278,6 +291,13 @@ var clearUncompleteLinks = function () {
       push(act.remove("metaLinks",{uuid:link.uuid}))
     }
   }
+}
+
+//utility to parse html
+function toNode(html) {
+  var tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  return tpl.content;
 }
 
 //clean words
@@ -312,4 +332,29 @@ function lettersFromNames(e) {
   }else {
     return " "+" "
   }
+}
+
+var getObjectNameByUuid = function (uuid) {
+  let foundItem = query.items("all", i=> i.uuid == uuid)[0]
+  if (foundItem) {
+    return foundItem.name
+  }else {
+    return "Missing item"
+  }
+}
+var getObjectGroupByUuid = function (uuid) {
+  var store = query.currentProject()
+  let storeGroup = undefined
+  if (store.currentPbs.items.find(i=>i.uuid == uuid)) { storeGroup = "currentPbs"; }
+  else if (store.requirements.items.find(i=>i.uuid == uuid)) { storeGroup = "requirements"; }
+  else if (store.functions.items.find(i=>i.uuid == uuid)) { storeGroup = "functions"; }
+  else if (store.stakeholders.items.find(i=>i.uuid == uuid)) { storeGroup = "stakeholders"; }
+  else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) { storeGroup = "physicalSpaces"; }
+  else if (store.workPackages.items.find(i=>i.uuid == uuid)) { storeGroup = "workPackages"; }
+  else if (store.interfaces.items.find(i=>i.uuid == uuid)) { storeGroup = "interfaces"; }
+
+  if (!storeGroup) {
+    console.log("no group available");
+  }
+  return storeGroup
 }

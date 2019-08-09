@@ -28,8 +28,10 @@ var createPbsView = function () {
         {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
         {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"},
         {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+        {prop:"category", displayAs:"Category", meta:()=>store.metaLinks.items, choices:()=>store.categories.items, edit:true},
         {prop:"contains",isTarget:true, displayAs:"Physical Spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:true},
-        {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true}
+        {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
+        {prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
       ]
     }
 
@@ -46,6 +48,7 @@ var createPbsView = function () {
         display:displayRules,
         extraFields: generateExtraFieldsList(),
         idProp:"uuid",
+        allowBatchActions:true,
         onEditItem: (ev)=>{
           createInputPopup({
             originalData:ev.target.dataset.value,
@@ -71,6 +74,7 @@ var createPbsView = function () {
           console.log("remove");
           if (confirm("remove item ?")) {
             push(removePbs({uuid:ev.target.dataset.id}))
+            push(removePbsLink({target:ev.target.dataset.id}))
             ev.select.updateData(store.currentPbs.items)
           }
         },
@@ -82,6 +86,9 @@ var createPbsView = function () {
             push(removePbsLink({target:ev.originTarget.dataset.id}))
             if (ev.targetParentId && ev.targetParentId != "undefined") {
               push(addPbsLink({source:ev.targetParentId, target:ev.originTarget.dataset.id}))
+            }else {
+              push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:ev.originTarget.dataset.id}))
+
             }
             ev.select.updateData(store.currentPbs.items)
             ev.select.updateLinks(store.currentPbs.links)
@@ -89,7 +96,7 @@ var createPbsView = function () {
         },
         onAdd: (ev)=>{
           var id = genuuid()
-          var newReq = prompt("Nouveau Besoin")
+          var newReq = prompt("New Product")
           if (newReq) {
             push(addPbs({uuid:id, name:newReq}))
             push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
@@ -201,6 +208,7 @@ var createPbsView = function () {
 
       return {id:i.uuid, name:i.name, description:i.desc, functions:linkToTextFunc, requirements:linkToTextReq, physicalSpaces: linkToTextSpaces, workPackages:linkToTextWorkpackages}
     })
+    console.log(data);
     JSONToCSVConvertor(data, 'Pbs', true)
   }
 
@@ -222,6 +230,7 @@ var createPbsView = function () {
     var store = query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
+    var batch = ev.batch;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
     var sourceGroup = undefined
     var invert = false
@@ -233,6 +242,8 @@ var createPbsView = function () {
       {prop:"name", displayAs:"Name", edit:false},
       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
     ]
+    var prependContent=undefined
+    var onLoaded = undefined
     if (metalinkType == "originNeed") {
       sourceGroup="requirements"
       sourceData=store.requirements.items
@@ -244,6 +255,12 @@ var createPbsView = function () {
     }else if (metalinkType == "tags") {
       sourceGroup="tags"
       sourceData=store.tags.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "category") {
+      sourceGroup="categories"
+      sourceData=store.categories.items
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -267,6 +284,22 @@ var createPbsView = function () {
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
+    }else if (metalinkType == "documents") {
+      if (typeof nw !== "undefined") {//if using node webkit
+        prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
+        onLoaded = function (ev) {
+          dropAreaService.setDropZone(".prepend", function () {
+            ev.select.updateData(store.documents.items)
+            ev.select.refreshList()
+          })
+        }
+      }
+      sourceGroup="documents"
+      sourceLinks=store.documents.links
+      sourceData=store.documents.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
     }
     showListMenu({
       sourceData:sourceData,
@@ -276,6 +309,8 @@ var createPbsView = function () {
       displayProp:"name",
       searchable : true,
       display:displayRules,
+      prependContent:prependContent,
+      onLoaded:onLoaded,
       idProp:"uuid",
       onAdd:(ev)=>{//TODO experimental, replace with common service
         var uuid = genuuid()
@@ -299,20 +334,28 @@ var createPbsView = function () {
         ev.select.getParent().refreshList()
       },
       onChangeSelect: (ev)=>{
-        console.log(ev.select.getSelected());
-        console.log(store.metaLinks.items);
-        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
-        console.log(store.metaLinks.items);
-        for (newSelected of ev.select.getSelected()) {
-          if (!invert) {
-            push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
-          }else {
-            push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+        //prepare func to changeItems
+        var changeProp = function (sourceTriggerId) {
+          store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
+          console.log(store.metaLinks.items);
+          for (newSelected of ev.select.getSelected()) {
+            if (!invert) {
+              push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+            }else {
+              push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+            }
+            // push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
           }
-          // push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          ev.select.getParent().refreshList()
         }
-        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-        ev.select.getParent().refreshList()
+        if (batch[0]) { //check if batch action is needed
+          batch.forEach(function (sourceTriggerId) {
+            changeProp(sourceTriggerId)
+          })
+        }else {
+          changeProp(sourceTriggerId)
+        }
       },
       onClick: (ev)=>{
         console.log("select");

@@ -57,8 +57,8 @@ var createTopMenu = function (containerSelector) {
         <a class="button top_button_stakeholders action_toogle_stakeholders"><i class="address book icon"></i><div class="content">Stakeholders</div></a>
         <a class="button top_button_physicalSpaces action_toogle_physical_spaces"><i class="building icon"></i><div class="content">Physical Spaces</div></a>
 
-        <a class="button top_button_relations action_toogle_diag_relations"><i class="sitemap icon"></i><div class="content">Relations</div></a>
-        <a class="button top_button_interfaces action_toogle_diag_interfaces"><i class="sync icon"></i><div class="content">Interfaces</div></a>
+        <a class="button top_button_relations action_toogle_diag_relations_quickstart"><i class="sitemap icon"></i><div class="content">Relations</div></a>
+        <a class="button top_button_interfaces action_toogle_diag_interfaces_quickstart"><i class="sync icon"></i><div class="content">Interfaces</div></a>
         <a class="button top_button_requirements action_toogle_requirements_view"><i class="comment icon"></i><div class="content">Requirements</div></a>
         <a class="button top_button_functions action_toogle_functions_view"><i class="cogs icon"></i><div class="content">Functions</div></a>
         <a class="button top_button_pbs action_toogle_tree_pbs"><i class="dolly icon"></i><div class="content">Products</div></a>
@@ -68,10 +68,14 @@ var createTopMenu = function (containerSelector) {
       // <a class="item action_toogle_csc"><i class="clipboard outline icon"></i>CSC</a>
       // <a class="item action_toogle_requirements_view"><i class="calculator icon"></i>Borderau</a>
       document.querySelector('.target_context_settings').innerHTML=`
+      <a class="item action_toogle_documents"><i class="book icon"></i>Documents</a>
       <a class="item action_toogle_extraFields_view"><i class="table icon"></i>Extra Fields</a>
       <a class="item action_toogle_extra_graphs"><i class="sitemap icon"></i>Extra Graphs</a>
+      <a class="item action_toogle_categories_view"><i class="hashtag icon"></i>Categories</a>
       <a class="item action_toogle_tags_view"><i class="tags icon"></i>Tags</a>
       <a class="item action_toogle_metalinks_view"><i class="exchange icon"></i>Project links</a>
+      <a class="item action_toogle_interfaces_list_view"><i class="cubes icon"></i>Project interfaces</a>
+      <a class="item action_toogle_template_view"><i class="paste icon"></i>Templates</a>
       <a class="item action_toogle_work_packages"><i class="briefcase icon"></i>Work packages</a>
       <a class="item action_toogle_physical_spaces"><i class="building icon"></i>Physical spaces</a>
       <a class="item action_toogle_import_users_from_projects"><i class="users icon"></i>Import users</a>

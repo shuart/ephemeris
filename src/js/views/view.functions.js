@@ -29,6 +29,7 @@ var createFunctionsView = function () {
         ],
         extraFields: generateExtraFieldsList(),
         idProp:"uuid",
+        allowBatchActions:true,
         onEditItem: (ev)=>{
           console.log("Edit");
           var newValue = prompt("Edit Item",ev.target.dataset.value)
@@ -162,6 +163,7 @@ var createFunctionsView = function () {
     var store = query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
+    var batch = ev.batch;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
     var sourceGroup = undefined
     var sourceData = undefined
@@ -227,16 +229,25 @@ var createFunctionsView = function () {
         ev.select.getParent().refreshList()
       },
       onChangeSelect: (ev)=>{
-        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
-        for (newSelected of ev.select.getSelected()) {
-          if (!invert) {
-            push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
-          }else {
-            push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+        var changeProp = function (sourceTriggerId) {
+          store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
+          for (newSelected of ev.select.getSelected()) {
+            if (!invert) {
+              push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+            }else {
+              push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+            }
           }
+          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          ev.select.getParent().refreshList()
         }
-        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-        ev.select.getParent().refreshList()
+        if (batch[0]) { //check if batch action is needed
+          batch.forEach(function (sourceTriggerId) {
+            changeProp(sourceTriggerId)
+          })
+        }else {
+          changeProp(sourceTriggerId)
+        }
       },
       onClick: (ev)=>{
         console.log("select");

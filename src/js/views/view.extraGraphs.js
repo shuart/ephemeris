@@ -63,7 +63,7 @@ var createExtraGraphsView = function (targetSelector) {
       mermaid.initialize({theme: "neutral"})
       mermaid.init({theme: "forest"}, $(".mermaid"));
 
-      var svgPanZoom= $(".mermaid svg").svgPanZoom()
+      var svgPanZoom= $(".mermaid svg").svgPanZoom({maxZoom:15})
     }
   }
 
@@ -142,6 +142,9 @@ var createExtraGraphsView = function (targetSelector) {
     let cleared = name.replace(/-/g,'')
     cleared = cleared.replace(/\./g,'')
     cleared = cleared.replace(/ /g,'')
+    cleared = cleared.replace(/'/g,'')
+    cleared = cleared.replace(/\(/g,'')
+    cleared = cleared.replace(/\)/g,'')
     console.log(cleared);
     return cleared
   }
