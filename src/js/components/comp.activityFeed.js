@@ -1,7 +1,9 @@
 var createActivityFeed = function ({
   originalData = "",
   container=undefined,
-  onClick = undefined
+  onClick = undefined,
+  searchForAllItemsNames = false,
+  maxElements = undefined
   }={}) {
   var self ={};
   var objectIsActive = false;
@@ -21,7 +23,7 @@ var createActivityFeed = function ({
         </div>
         <div class="content">
           <div data-id="${event.id}" class="summary action_event_feed_click_content">
-            ${event.name? ("Item \'"+event.name + "\'" ): ("An item")} in ${event.storeGroupTxt} has been ${event.typeTxt}.
+            ${(event.name && event.name!= "Missing item")? ("Item \'"+event.name + "\'" ): ("An item")} ${event.prop? (", property \'"+event.prop + "\', " ): ""} in ${event.storeGroupTxt} has been ${event.typeTxt}.
             <div class="date">${moment(event.timestamp).fromNow()}</div>
           </div>
         </div>
@@ -61,13 +63,13 @@ var createActivityFeed = function ({
     render()
   }
   var connections =function () {
-    connect(".action_event_feed_click_content","click",(e)=>{
+    bind(".action_event_feed_click_content","click",(e)=>{
       console.log(e.target);
       if (onClick) {
         console.log('launchAction');
         onClick(e)
       }
-    })
+    }, document.querySelector(container))
   }
 
   var render = function () {
@@ -99,6 +101,10 @@ var createActivityFeed = function ({
       out = 'removed'
     }else if (prop == 'modifyItem') {
       out = 'modified'
+    }else if (prop == 'addLink') {
+      out = 'linked'
+    }else if (prop == 'removeLink') {
+      out = 'un-linked'
     }
     return out
   }
@@ -106,7 +112,9 @@ var createActivityFeed = function ({
   var renderFeed = function (originalData) {
     var store = query.currentProject()
     if (store.history.items[0]) {
-      let formatedData = store.history.items
+      let formatedData = deepCopy(store.history.items)
+      .reverse()
+      .slice(0, maxElements || store.history.items.length)
       .filter(i=>(i.type !='addLink' && i.type !='removeLink'))
       .map(i=>({
         uuid:i.uuid,
@@ -116,12 +124,13 @@ var createActivityFeed = function ({
         type:i.type,
         typeTxt: formatText(i.type),
         timestamp:i.timestamp,
-        name:i.change.name|| i.change.prop,
+        name:(searchForAllItemsNames ? ( getObjectNameByUuid(i.id) ): (i.change.name)),
+        prop:i.change.prop,
         change:JSON.stringify(i.change)
       }))
       let eventList = formatedData.map(function (d) {
         return theme.event(d)
-      }).reverse().join('')
+      }).join('')
       let html = theme.feed(eventList)
       return html
     }else {

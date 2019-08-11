@@ -141,6 +141,8 @@ var createOverview = function (targetSelector) {
       container.innerHTML = headerHtml+html;
       createActivityFeed({
         container:'.overviewActivity',
+        maxElements:30,
+        searchForAllItemsNames :true,
         onClick:function (e) {
           showSingleItemService.showById(e.target.dataset.id)
         }

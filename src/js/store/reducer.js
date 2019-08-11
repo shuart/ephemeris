@@ -70,6 +70,7 @@ function reducer(action, store) {
     storeGroup.links.push({uuid:pl.uuid, source:pl.source, target:pl.target})
     recordChangeInStore(type, store, group, pl)
   }else if (type == "removeLink") { //REMOVE A LINK WITH SOURCE OR TARGET OR BOTH
+    recordChangeInStore(type, store, group, pl)//record it before to working on modified arrays array
     if (pl.source && !pl.target) {
       storeGroup.links =storeGroup.links.filter(i=> i.source != pl.source)
     }else if (pl.target && !pl.source) {
