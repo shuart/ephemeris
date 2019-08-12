@@ -6,6 +6,12 @@
  * Kroc Camen, and the H5BP dev community and team.
  */
 
+
+ @font-face {
+  font-family: 'Poiret One';
+  src: url('PoiretOne-Regular.ttf')  format('truetype'); /* Safari, Android, iOS */
+}
+
 /* ==========================================================================
    Base styles: opinionated defaults
    ========================================================================== */
@@ -103,6 +109,10 @@ textarea {
      width: 100%;
      height: 100%;
      padding-left: 50px;
+   }
+
+   .app-title{
+     font-family: 'Poiret One',Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
    }
 
    .main-menu{
@@ -230,6 +240,7 @@ textarea {
      font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
      flex: 1 1 auto;
      overflow: auto;
+     overflow-x: hidden;
  }
  .side-left-menu .left-list .list-item:first-of-type{
      border-top-color: #e6e6e6;
@@ -403,7 +414,9 @@ textarea {
 }
 
 .app-loader-cache{
-  background : linear-gradient(to bottom, #bbd2c5, #536976);
+  background: linear-gradient(#99b6c1, #4a524b);
+  /* background: linear-gradient(#bad4c4, #535f5e); */
+  /* background : linear-gradient(to bottom, #bbd2c5, #536976); */
   width: 100%;
   height:100%;
   position: fixed;
@@ -421,6 +434,9 @@ textarea {
         transform: translate(-50%, -50%) }
 
 }
+.action_startup_load_user{
+    min-width: 140px !important;
+}
 
 
 
@@ -437,7 +453,7 @@ textarea {
 
 .node circle {
   fill: #fff;
-  stroke: steelblue;
+  stroke: #159892;
   stroke-width: 1.5px;
 }
 
@@ -459,7 +475,7 @@ textarea {
 
 .templink {
   fill: none;
-  stroke: red;
+  stroke: #00b5ad;
   stroke-width: 3px;
 }
 
@@ -552,6 +568,12 @@ textarea {
   width: 100%;
   position: relative;
 }
+.flexTable .table{
+  overflow: hidden;
+}
+.flexTable.expanded .table{
+  overflow: visible;
+}
 .flexTable .spreaded_titles{
   display: none;
 }
@@ -563,12 +585,25 @@ textarea {
   flex-direction: row;
   flex-wrap: wrap;
   width: 100%;
-  padding-top: 10px;
+  /* padding-top: 10px;
   padding-bottom: 10px;
   padding: 10px;
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #eaeaea;
+   */
+   position: relative;
+}
+.flexTable .row .column{
+  padding: 10px;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-bottom-color: #eaeaea;
+  position: relative;
+}
+.flexTable .row .right.floated.content{
+  padding-left:1px;
+  padding-top: 5px;
 }
 .flexTable .row:nth-child(even)  {
   background: #FCFCFC;
@@ -581,6 +616,44 @@ textarea {
   flex: 1;
   font-weight: bold;
 }
+.flexTable .row .addMagnet {
+  position: absolute;
+  bottom: 1px;
+  width: 10%;
+  height: 3px;
+  background: linear-gradient(to right, #00b5ad, transparent);
+  opacity: 0;
+  left: 0px;
+  transition: opacity .20s ease-in-out;
+  z-index: 5;
+}
+.flexTable .row .addMagnet:hover {
+  opacity: 0.5;
+}
+.flexTable .row .addMagnet .addPopup {
+	position: absolute;
+	top: -8px;
+	background: transparent;
+	color: white;
+	width: 20px;
+	height: 8px;
+	/* align-content: center; */
+	padding-left: 6px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity .20s ease-in-out;
+  transition: height .20s ease-in-out;
+  transition: top .20s ease-in-out;
+}
+.flexTable .row .addMagnet:hover .addPopup {
+	background: #2dbe91;
+	height: 20px;
+  opacity: 0.8;
+  top: -18px;
+
+}
 .flexTable .top.row {
   text-align: center;
   font-weight: bold;
@@ -591,9 +664,80 @@ textarea {
   flex-basis: 100%;
   flex: 1;
 }
+.flexTable .column {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 1;
+}
+.flexTable .column .content .edit.icon{
+  opacity: 0.1;
+}
+.flexTable .row .edit.icon{
+  opacity: 0.2;
+  cursor:pointer;
+}
+.flexTable .column:hover .edit.icon{
+  opacity: 0.4;
+  cursor:pointer;
+}
 .flexTable .column.extra {
   flex: 0 0;
 }
+
+.flexTable .table-first-col {
+  display: none ;
+}
+
+/* expanded part */
+.flexTable.expanded .row {
+  flex-wrap: nowrap;
+  /* height:  60px; */
+}
+.flexTable.expanded .table-first-col {
+  width: 400px;
+  height: 0px;
+  overflow: visible;
+  position: sticky;
+  left: 0px;
+  z-index: 2;
+  display: block;
+}
+/* .flexTable.expanded .table-first-col .row  .column {
+  visibility: hidden
+}
+.flexTable.expanded .table-first-col .row .column:first-child{
+  visibility: visible;
+}
+.flexTable.expanded .table-first-col .row div:nth-child(2){
+  visibility: visible;
+} */
+.flexTable.expanded .table-first-col .row {
+  width: 400px;
+  /* height:  60px; */
+  overflow: hidden;
+}
+.flexTable.expanded .table-first-col .spreaded_titles {
+  display: block;
+  background: white;
+}
+.flexTable.expanded:hover .table-first-col .spreaded_titles {
+  box-shadow: 17px 0px 8px -13px rgba(0,0,0,0.13);
+}
+
+.flexTable.expanded .column {
+  flex-shrink: 0;
+  flex-grow: 0;
+  flex-basis: 400px;
+
+}
+.flexTable.expanded .top-line .column {
+  background: white;
+}
+.flexTable.expanded .row:nth-child(2n) .column {
+    background: #FCFCFC;
+}
+/* end expanded part */
 
 .flexTable.spreaded .table{
   overflow-x: auto;
@@ -664,6 +808,10 @@ textarea {
   background-color: #02b5ab !important;
   color:#ffffff !important;
   border-color: #02b5ab !important;
+}
+
+.prepend.button{
+  height: 68px;
 }
 
 

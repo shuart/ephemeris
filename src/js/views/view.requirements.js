@@ -2,6 +2,7 @@ var createRequirementsView = function () {
   var self ={};
   var objectIsActive = false;
   var simpleView = true;
+  var isExtraFieldsVisible =false;
 
   var init = function () {
     connections()
@@ -19,7 +20,10 @@ var createRequirementsView = function () {
       {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
       {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
       {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-      {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
+      {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+      {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
+      {prop:"documentsNeed", displayAs:"Documents", droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
+
     ]
     if (simpleView) {
       displayRules = [
@@ -39,7 +43,9 @@ var createRequirementsView = function () {
         fullScreen:true,
         displayProp:"name",
         display:displayRules,
+        extraFields: generateExtraFieldsList(),
         idProp:"uuid",
+        allowBatchActions:true,
         onEditItem: (ev)=>{
           createInputPopup({
             originalData:ev.target.dataset.value,
@@ -77,51 +83,54 @@ var createRequirementsView = function () {
           }
         },
         onAdd: (ev)=>{
-          var newReq = prompt("Nouveau Besoin")
+          var newReq = prompt("New Need")
           push(addRequirement({name:newReq}))
+        },
+        onAddFromPopup: (ev)=>{
+          var uuid = genuuid()
+          var newReq = prompt("New Need")
+          if (newReq) {
+            push(act.add("requirements", {uuid:uuid,name:newReq}))
+            if (ev.target && ev.target != "undefined") {
+              push(act.move("requirements", {origin:uuid, target:ev.target.dataset.id}))
+              //check for parenting
+              let parent = store.requirements.links.find(l=>l.target == ev.target.dataset.id)
+              if (parent) {
+                push(act.addLink("requirements",{source:parent.source, target:uuid}))
+              }
+            }
+            ev.select.updateData(store.requirements.items)
+            ev.select.updateLinks(store.requirements.links)
+          }
+        },
+        onAddFromExtraField: (ev)=>{
+          addCustomField(function () {
+            document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+            update()
+          })
         },
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)
         },
         onClick: (ev)=>{
-          var originItem = store.requirements.items.filter(e=> e.uuid == ev.target.dataset.id)
-          showListMenu({
-            sourceData:store.requirements.items,
-            sourceLinks:store.requirements.links,
-            metaLinks:store.metaLinks.items,
-            parentSelectMenu:ev.select ,
-            displayProp:"name",
-            searchable : false,
-            singleElement:originItem[0],
-            rulesToDisplaySingleElement:[
-              {prop:"name", displayAs:"Name", edit:"true"},
-              {prop:"desc", displayAs:"Description", edit:"true"},
-              {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:false}
-            ],
-            display:[
-              {prop:"name", displayAs:"Name", edit:false},
-              {prop:"desc", displayAs:"Description", edit:false},
-              {prop:"origin", displayAs:"Reçu de", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:false}
-            ],
-            idProp:"uuid",
-            onCloseMenu: (ev)=>{
-              //console.log("fefsefse");
-              console.log(ev.select);
-              ev.select.getParent().refreshList()
-            },
-            onEditItem: (ev)=>{
-              console.log("Edit");
-              var newValue = prompt("Edit Item",ev.target.dataset.value)
-              if (newValue) {
-                push(editRequirement({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-              }
-            }
+          showSingleItemService.showById(ev.target.dataset.id, function (e) {
+            ev.select.updateData(store.requirements.items)
+            ev.select.updateLinks(store.requirements.links)
+            ev.select.refreshList()
           })
         },
-        onClear: (ev)=>{
-          renderCDC()
-        },
         extraActions:[
+          {
+            name:"CustomFields",
+            action:(ev)=>{
+              isExtraFieldsVisible = !isExtraFieldsVisible;
+              setTimeout(function () {
+                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+                update()
+              }, 100);
+              // ev.select.remove();
+            }
+          },
           {
             name:"Tags",
             action:(ev)=>{
@@ -129,20 +138,39 @@ var createRequirementsView = function () {
               setTimeout(function () {
                 document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
                 update()
-              }, 1000);
+              }, 200);
               // ev.select.remove();
+            }
+          },
+          {
+            name:"Export",
+            action:(ev)=>{
+              exportToCSV()
+            }
+          },
+          {
+            name:"Import",
+            action:(ev)=>{
+              importCSVfromFileSelector(function (results) {
+                let startImport = confirm(results.data.length+" requirements will be imported")
+                if (startImport) {
+                  for (requirement of results.data) {
+                    push(addRequirement({name:requirement[0], desc:requirement[1]}))
+                  }
+                  alert("Close and re-open the view to complete the import")
+                }
+              })
+
             }
           },
           {
             name:"Diagramme",
             action:(ev)=>{
-              renderRequirementsTree(ev)
-            }
-          },
-          {
-            name:"CSV",
-            action:(ev)=>{
-              exportToCSV()
+              showTreeFromListService.showByStoreGroup("requirements", function (e) {
+                ev.select.updateData(store.requirements.items)
+                ev.select.updateLinks(store.requirements.links)
+                ev.select.update() //TODO find a better way
+              })
             }
           }
         ]
@@ -153,9 +181,10 @@ var createRequirementsView = function () {
     let store = query.currentProject()
     let data = store.requirements.items.map(i=>{
       let linkToText = getRelatedItems(i, "stakeholders", {metalinksType:"origin"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
+      let linkToTextPbs = getRelatedItems(i, "currentPbs",{objectIs:"target", metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : '').join(",")
       let linkToTextTags = getRelatedItems(i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
       let linkToTextWorkpackages = getRelatedItems(i, "workPackages",{objectIs:"target", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
-      return {id:i.uuid, name:i.name, description:i.desc, stakeholders:linkToText, tags:linkToTextTags, workPackages:linkToTextWorkpackages}
+      return {id:i.uuid, name:i.name, description:i.desc, stakeholders:linkToText, products:linkToTextPbs, tags:linkToTextTags, workPackages:linkToTextWorkpackages}
     })
     JSONToCSVConvertor(data, 'Requirements', true)
 
@@ -167,6 +196,7 @@ var createRequirementsView = function () {
 
   var setActive =function () {
     objectIsActive = true;
+    isExtraFieldsVisible = false; //rest to avoid extra alert TODO find a better way
     update()
   }
 
@@ -174,132 +204,70 @@ var createRequirementsView = function () {
     objectIsActive = false;
   }
 
-  var renderRequirementsTree = function (ev) {
-    var store = query.currentProject()
-    if (true) {
-      function generateDataSource() {
-        var placeholder = false
-        var data =undefined
-        if (store.requirements.items[0]) {
-          var targets = store.requirements.links.map(item => item.target)
-          var roots = store.requirements.items.filter(item => !targets.includes(item.uuid))
-          if (roots && roots[1]) {//if more than one root node
-            placeholder = true
-            var newData = store.requirements.items.slice()
-            var newLinks = store.requirements.links.slice()
-            newData.push({uuid:"placeholder", name:"placeholder"})
-            for (root of roots) {
-              newLinks.push({source:"placeholder", target:root.uuid})
-            }
-            data = hierarchiesList(newData, newLinks)[0]
-          }else {
-            data = hierarchiesList(store.requirements.items, store.requirements.links)[0]
-          }
-          console.log(data);
-        }
-        return data
-      }
-
-      displayThree({
-        data:generateDataSource(),
-        edit:true,
-        onClose:(e)=>{
-          renderCDC()
-          ev.select.update() //TODO find a better way
-
-        },
-        onAdd:(ev)=>{
-          var uuid = genuuid()
-          var newName = prompt("Name?")
-          push(addRequirement({uuid:uuid, name:newName}))
-          push(addRequirementLink({source:ev.element.data.uuid, target:uuid}))
-          ev.sourceTree.setData(generateDataSource())
-          //ev.sourceTree.updateFromRoot(ev.element)
-        },
-        onMove:(ev)=>{
-          push(removeRequirementLink({source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
-          push(addRequirementLink({source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
-          ev.sourceTree.setData(generateDataSource())
-        },
-        onRemove:(ev)=>{
-          if (confirm("Keep Childs?")) {
-            var originalLinks = store.requirements.links.filter(e=>e.source == ev.element.data.uuid)
-            for (link of originalLinks) {
-              push(addRequirementLink({source:ev.element.parent.data.uuid, target:link.target}))
-            }
-          }
-          //remove all links
-          push(removeRequirementLink({source:ev.element.data.uuid}))
-          //addNewLinks
-          push(removeRequirement({uuid:ev.element.data.uuid}))
-          //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-          ev.sourceTree.setData(generateDataSource())
-        },
-        onNodeClicked:(originev)=>{
-          var originItem = store.requirements.items.filter(e=> e.uuid == originev.element.data.uuid)
-          showListMenu({
-            sourceData:store.requirements.items,
-            sourceLinks:store.requirements.links,
-            displayProp:"name",
-            searchable : false,
-            singleElement:originItem[0],
-            rulesToDisplaySingleElement:[
-              {prop:"name", displayAs:"Name", edit:"true"}
-            ],
-            display:[
-              {prop:"name", displayAs:"Name", edit:false}
-            ],
-            idProp:"uuid",
-            onCloseMenu: (ev)=>{
-              //console.log("fefsefse");
-              console.log(originev.sourceTree);
-              // ev.select.getParent().update()
-              originev.sourceTree.setData(generateDataSource())
-              originev.sourceTree.hardUpdate()//TODO find better way
-            },
-            onEditItem: (ev)=>{
-              console.log("Edit");
-              var newValue = prompt("Edit Item",ev.target.dataset.value)
-              if (newValue) {
-                push(editRequirement({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-              }
-              //ev.select.update()
-            }
-          })
-        }
-      })
-    }
-  }
-
   function startSelection(ev) {
     var store = query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
+    var batch = ev.batch;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+    var sourceGroup = undefined
     var sourceData = undefined
     var invert = false
     var source = "source"
     var target = "target"
     var sourceLinks= undefined
     var displayRules= undefined
+    var showColoredIconsRule = undefined
+    var prependContent=undefined
+    var onLoaded = undefined
     if (metalinkType == "origin") {
+      sourceGroup="stakeholders";
       sourceData=store.stakeholders.items
+      showColoredIconsRule= lettersFromNames,
       displayRules = [
-        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"name", displayAs:"First Name", edit:false},
         {prop:"lastName", displayAs:"Last name", edit:false}
       ]
     }else if (metalinkType == "originNeed") {
+      sourceGroup="currentPbs"
       invert = true;
       sourceData=store.currentPbs.items
       source = "target"//invert link order for after
       target = "source"
       sourceLinks=store.currentPbs.links
       displayRules = [
-        {prop:"name", displayAs:"First name", edit:false},
+        {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "tags") {
+      sourceGroup="tags";
       sourceData=store.tags.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "WpOwnNeed") {
+      sourceGroup="workPackages"
+      invert = true;
+      source = "target"//invert link order for after
+      target = "source"
+      sourceLinks=store.workPackages.links
+      sourceData=store.workPackages.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "documentsNeed") {
+      if (typeof nw !== "undefined") {//if using node webkit
+        prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
+        onLoaded = function (ev) {
+          dropAreaService.setDropZone(".prepend", function () {
+            ev.select.updateData(store.documents.items)
+            ev.select.refreshList()
+          })
+        }
+      }
+      sourceGroup="documents"
+      sourceLinks=store.documents.links
+      sourceData=store.documents.items
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -312,27 +280,105 @@ var createRequirementsView = function () {
       displayProp:"name",
       searchable : true,
       display:displayRules,
+      showColoredIcons:showColoredIconsRule,
+      prependContent:prependContent,
+      onLoaded:onLoaded,
       idProp:"uuid",
+      onAdd:(ev)=>{//TODO experimental, replace with common service
+        var uuid = genuuid()
+        var linkUuid = genuuid()
+        push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+        if (sourceGroup == "currentPbs") {
+          push(addPbsLink({uuid:linkUuid,source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+        }
+        ev.select.setEditItemMode({
+          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+          onLeave: (ev)=>{
+            push(act.remove(sourceGroup,{uuid:uuid}))
+            if (sourceGroup == "currentPbs") {
+              push(removePbsLink({target:uuid}))
+            }
+            ev.select.updateData(store[sourceGroup].items)
+            ev.select.updateLinks(store[sourceGroup].links)
+          }
+        })
+      },
+      onEditItem: (ev)=>{
+        var newValue = prompt("Edit Item",ev.target.dataset.value)
+        if (newValue) {
+          push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+        }
+      },
       onCloseMenu: (ev)=>{
         console.log(ev.select);
         ev.select.getParent().refreshList()
       },
       onChangeSelect: (ev)=>{
-        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
-        for (newSelected of ev.select.getSelected()) {
-          if (!invert) {
-            push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
-          }else {
-            push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+        var changeProp = function (sourceTriggerId) {
+          store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
+          for (newSelected of ev.select.getSelected()) {
+            if (!invert) {
+              push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+            }else {
+              push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+            }
           }
+          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          ev.select.getParent().refreshList()
         }
-        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-        ev.select.getParent().refreshList()
+        if (batch[0]) { //check if batch action is needed
+          batch.forEach(function (sourceTriggerId) {
+            changeProp(sourceTriggerId)
+          })
+        }else {
+          changeProp(sourceTriggerId)
+        }
       },
       onClick: (ev)=>{
         console.log("select");
       }
     })
+  }
+
+  function generateExtraFieldsList() {
+    if (isExtraFieldsVisible) {
+      var store = query.currentProject()
+      let extras = store.extraFields.items.filter(i=>(i.type == "requirements" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+      if (!extras[0]) {
+        if (confirm("No custom Fields yet. Add one?")) {
+          addCustomField()
+          setTimeout(function () {
+            document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
+            update()
+          }, 400);
+        }else {
+          isExtraFieldsVisible = false
+        }
+      }else {
+        return extras
+      }
+    }else {
+      return undefined
+    }
+  }
+  function addCustomField(callback){
+    var uuid = genuuid()
+    var newReq = prompt("add a new Field?")
+    if (newReq) {
+      let clearedName = "_"+slugify(newReq)+"_"+(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
+      if (store.extraFields.items.filter(i=>i.prop == clearedName)[0]) {
+        console.log(store.extraFields.items.filter(i=>i.prop == clearedName)[0]);
+        alert("This field has already been registered")//in rare case where an identical field would be generated
+      }
+      if (true) {
+        push(act.add("extraFields",{name: newReq, prop:clearedName, type: "requirements"}))
+      }else {//add to main item (only pbs)
+        // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+      }
+    }
+    if (callback) {
+      callback()
+    }
   }
 
   self.setActive = setActive

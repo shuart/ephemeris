@@ -18,7 +18,7 @@ function JSONToCSVConvertor(JSONData, ReportTitle) {
     fileName += ReportTitle.replace(/ /g,"_");
 
     //Initialize file format you want csv or xls
-    var uri = 'data:text/csv;charset=utf-8,' + encodeURI(CSV);
+    var uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(CSV);
 
     // Now the little tricky part.
     // you can use either>> window.open(uri);
@@ -37,4 +37,23 @@ function JSONToCSVConvertor(JSONData, ReportTitle) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+function importCSVfromFileSelector(callback) {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = e => {
+       var file = e.target.files[0];
+    }
+    input.click();
+    input.addEventListener('change', handleFiles);
+
+    function handleFiles(e) {
+      Papa.parse(e.target.files[0], {
+      	complete: function(results) {
+      		console.log(results);
+          callback(results)
+      	}
+      });
+    }
 }

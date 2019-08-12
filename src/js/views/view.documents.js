@@ -1,4 +1,4 @@
-var createWorkPackagesView = function () {
+var createDocumentsView = function () {
   var self ={};
   var objectIsActive = false;
 
@@ -12,34 +12,67 @@ var createWorkPackagesView = function () {
 
   var render = function () {
     var store = query.currentProject()
+    let prependContent =undefined;
+    let onLoaded =undefined;
+
+    if (typeof nw !== "undefined") {//if using node webkit
+      prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
+      onLoaded = function (ev) {
+        dropAreaService.setDropZone(".prepend", function () {
+          ev.select.updateData(store.documents.items)
+          ev.select.refreshList()
+          setTimeout(function () {
+            ev.select.scrollDown()
+          }, 1500);
+        })
+      }
+    }
+
     showListMenu({
-      sourceData:store.workPackages.items,
+      sourceData:store.documents.items,
       displayProp:"name",
       targetDomContainer:".center-container",
       fullScreen:true,// TODO: perhaps not full screen?
+      prependContent:prependContent,
+      onLoaded:onLoaded,
       display:[
         {prop:"name", displayAs:"Name", edit:true},
-        {prop:"assignedTo", displayAs:"Assigned to", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
-        {prop:"WpOwn", displayAs:"Products Owned", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-        {prop:"WpOwnNeed", displayAs:"Requirements Owned", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
+        {prop:"osPath", displayAs:"Local", fullText:true, localPath:true, edit:false},
+        {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true},
+        {prop:"documents",isTarget:true, displayAs:"Products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
+        {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
+
+        // {prop:"documented", displayAs:"Products documented", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
+        // {prop:"documented", displayAs:"Requirements documented", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{
         console.log("Edit");
         var newValue = prompt("Edit Item",ev.target.dataset.value)
         if (newValue) {
-          push(act.edit("workPackages", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          push(act.edit("documents", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
         }
       },
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
-          push(act.remove("workPackages",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.workPackages.items)
+          let item = store.documents.items.find(i=>i.uuid == ev.target.dataset.id)
+          //delete from db or FS
+          if (item && item.osPath) {
+            if (typeof nw !== "undefined" && link) {//if using node webkit
+              deleteFromOs(item.osPath)//if nwjs
+            }
+          }
+
+          //delete from list
+          push(act.remove("documents",{uuid:ev.target.dataset.id}))
+          ev.select.updateData(store.documents.items)
+
         }
       },
       onAdd: (ev)=>{
-        let workPackages = prompt("New Work Package")
-        push(act.add("workPackages",{uuid:genuuid(), name:workPackages}))
+        let docName = prompt("Document Name")
+        let docLink = prompt("Document Link")
+        push(act.add("documents",{uuid:genuuid(), name:docName, link:docLink}))
       },
       onEditChoiceItem: (ev)=>{
         startSelection(ev)
@@ -48,35 +81,58 @@ var createWorkPackagesView = function () {
         showSingleItemService.showById(ev.target.dataset.id)
       },
       onClick: (ev)=>{
-        showSingleItemService.showById(ev.target.dataset.id, function (e) {
-          ev.select.updateData(store.workPackages.items)
-          ev.select.updateLinks(store.workPackages.links)
-          ev.select.refreshList()
-        })
+        // showSingleItemService.showById(ev.target.dataset.id, function (e) {
+        //   ev.select.updateData(store.workPackages.items)
+        //   ev.select.updateLinks(store.workPackages.links)
+        //   ev.select.refreshList()
+        // })
       },
-      extraActions:[
-        {
-          name:"Export",
-          action:(ev)=>{
-            exportToCSV()
+      extraActions:generateExtraActions()
+    })
+  }
+
+  var generateExtraActions = function () {
+    if (typeof nw !== "undefined") {//if using node webkit
+      return [{
+        name:"Folder",
+        action:(ev)=>{
+          let osDoc = query.currentProject().documents.items.find(i=>i.osPath)
+          if (osDoc) {
+            nw.Shell.showItemInFolder(osDoc.osPath);
+          }else {
+            alert("No local documents yet")
           }
         }
-      ]
-    })
+      }]
+    }else {
+      return []
+    }
   }
 
-  var exportToCSV = function () {
-    let store = query.currentProject()
-    let data = store.workPackages.items.map(i=>{
-      let linkToTextsh = getRelatedItems(i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
-      let linkToTextPbs = getRelatedItems(i, "currentPbs",{objectIs:"source", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
-      let linkToTextReq = getRelatedItems(i, "requirements",{objectIs:"source", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
-
-
-      return {id:i.uuid, name:i.name, Owner:linkToTextsh, requirements:linkToTextReq, Products: linkToTextPbs}
-    })
-    JSONToCSVConvertor(data, 'Pbs', true)
+  var deleteFromOs = function (path) {
+    if (confirm('Delete file at '+path)) {
+      let fs = require('fs');
+      fs.unlink(path, (err) => {
+        if (err) throw err;
+        console.log(path+' was deleted');
+      });
+    }
   }
+
+
+
+  // var exportToCSV = function () {
+  //   let store = query.currentProject()
+  //   let data = store.workPackages.items.map(i=>{
+  //     let linkToTextsh = getRelatedItems(i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
+  //     let linkToTextPbs = getRelatedItems(i, "currentPbs",{objectIs:"source", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
+  //     let linkToTextReq = getRelatedItems(i, "requirements",{objectIs:"source", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
+  //
+  //
+  //     return {id:i.uuid, name:i.name, Owner:linkToTextsh, requirements:linkToTextReq, Products: linkToTextPbs}
+  //   })
+  //   JSONToCSVConvertor(data, 'Pbs', true)
+  // }
 
   function startSelection(ev) {
     var store = query.currentProject()
@@ -123,6 +179,28 @@ var createWorkPackagesView = function () {
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
+    }else if (metalinkType == "documentsNeed") {
+      sourceGroup="requirements"
+      invert = true;
+      sourceData=store.requirements.items
+      source = "target"//invert link order for after
+      target = "source"
+      sourceLinks=store.requirements.links
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
+    }else if (metalinkType == "documents") {
+      sourceGroup="currentPbs"
+      invert = true;
+      sourceData=store.currentPbs.items
+      source = "target"//invert link order for after
+      target = "source"
+      sourceLinks=store.currentPbs.links
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
     }else if (metalinkType == "tags") {
       sourceData=store.tags.items
       displayRules = [
@@ -141,18 +219,12 @@ var createWorkPackagesView = function () {
       onAdd:(ev)=>{//TODO experimental, replace with common service
         var uuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
-        if (sourceGroup == "currentPbs") {
-          push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
-        }
         ev.select.setEditItemMode({
           item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
           onLeave: (ev)=>{
             push(act.remove(sourceGroup,{uuid:uuid}))
-            if (sourceGroup == "currentPbs") {
-              push(removePbsLink({target:uuid}))
-            }
             ev.select.updateData(store[sourceGroup].items)
-            ev.select.updateLinks(store[sourceGroup].links)          }
+          }
         })
       },
       onEditItem: (ev)=>{
@@ -204,5 +276,5 @@ var createWorkPackagesView = function () {
   return self
 }
 
-var workPackagesView = createWorkPackagesView()
-workPackagesView.init()
+var documentsView = createDocumentsView()
+documentsView.init()

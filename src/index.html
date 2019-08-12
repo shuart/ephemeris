@@ -13,10 +13,12 @@
   <!-- Place favicon.ico in the root directory -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.css">
   <link rel="stylesheet" href="css/vendor/font-awesome/css/all.css">
+  <link rel="stylesheet" href="css/vendor/print.min.css">
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/d3rules.css">
   <link rel="stylesheet" href="css/vendor/stellae.css">
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/occurrence.css">
   <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
 
 </head>
@@ -185,6 +187,7 @@
   <script src="js/vendor/papaParse.min.js"></script>
   <script src="js/vendor/cvsExporter.js"></script>
   <script src="js/vendor/saveSvgToPng.js"></script>
+  <script src="js/vendor/print.min.js"></script>
 
   <!-- <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.js"></script> -->
   <script src="js/vendor/semantic.min.js"></script>
@@ -199,14 +202,16 @@
 
   <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
   <script src="js/vendor/d3.min.js"></script>
+  <script src="js/vendor/mermaid.min.js"></script>
   <script src="js/vendor/d3gantt.js"></script>
+
+  <script src="js/vendor/svgPanZoom.js"></script>
 
   <script src="js/vendor/stellae.js"></script>
 
   <!-- <script src="js/vendor/d3.v3.min.js"></script> -->
   <!-- <script src="js/extraDB/sourcedb.js"></script> removed as no extraDB for now-->
 
-  <!-- <script src="js/dndtree.js"></script> -->
   <script src="js/viewsTree/dndtreePbs.js"></script>
 
 
@@ -215,6 +220,7 @@
   <script src="js/store/templates.js"></script>
   <script src="js/store/store.js"></script>
   <script src="js/store/actions.js"></script>
+  <script src="js/store/recorder.js"></script>
   <script src="js/store/reducer.js"></script>
   <script src="js/store/routes.js"></script>
 
@@ -224,7 +230,10 @@
   <script src="js/helpers/saver.js"></script>
 
   <script src="js/services/service.showSingleItem.js"></script>
+  <script src="js/services/service.showTreeFromList.js"></script>
   <script src="js/services/service.shortcuts.js"></script>
+  <script src="js/services/service.showOccurrenceDiagram.js"></script>
+  <script src="js/services/service.dropArea.js"></script>
 
   <script src="js/components/cont.page.js"></script>
   <script src="js/components/comp.list.js"></script>
@@ -233,13 +242,18 @@
   <script src="js/components/view.gantt.js"></script>
   <script src="js/components/comp.stateDia.js"></script>
   <script src="js/components/comp.inputPopup.js"></script>
+  <script src="js/components/comp.occurrenceDiagram.js"></script>
+  <script src="js/components/comp.activityFeed.js"></script>
+
 
   <script src="js/startup.js"></script>
 
   <script src="js/views/view.cscViewer.js"></script>
   <script src="js/views/view.externalUsersManagement.js"></script>
+  <script src="js/views/view.importUsersFromProjects.js"></script>
   <script src="js/views/view.exportProjectInfo.js"></script>
   <script src="js/views/view.notesManager.js"></script>
+  <script src="js/views/view.meetingsManager.js"></script>
   <script src="js/views/view.unified.js"></script>
   <script src="js/views/view.projectSelection.js"></script>
   <script src="js/views/view.leftMenu.js"></script>
@@ -255,8 +269,17 @@
   <script src="js/views/view.planning.js"></script>
   <script src="js/views/view.pbs.js"></script>
   <script src="js/views/view.tags.js"></script>
+  <script src="js/views/view.categories.js"></script>
   <script src="js/views/view.metalinks.js"></script>
+  <script src="js/views/view.interfacesList.js"></script>
+  <script src="js/views/view.extraFields.js"></script>
   <script src="js/views/view.workPackages.js"></script>
+  <script src="js/views/view.physicalSpaces.js"></script>
+  <script src="js/views/view.extraGraphs.js"></script>
+  <script src="js/views/view.singleAction.js"></script>
+  <script src="js/views/view.documents.js"></script>
+  <script src="js/views/view.templates.js"></script>
+  <script src="js/views/view.history.js"></script>
 
   <script src="js/main.js"></script>
 

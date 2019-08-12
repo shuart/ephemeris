@@ -124,10 +124,9 @@ var createProjectSelectionView = function (targetSelector) {
       setTimeout(function () {update()}, 1000);
     })
     connect(".action_project_selection_change_image","click",(e)=>{
-      setProjectImage(e.target.dataset.id)
-      setTimeout(function () {
-        update()//todo use promise
-      }, 5000);
+      setProjectImage(e.target.dataset.id, function () {
+        update()
+      })
     })
     connect(".action_project_selection_remove_image","click",(e)=>{
       let confirmRemove = confirm("Do you want to reset the current cover image")
@@ -221,7 +220,7 @@ var createProjectSelectionView = function (targetSelector) {
     }
   }
 
-  var setProjectImage = function (uuid) {
+  var setProjectImage = function (uuid, callback) {
     var input = document.createElement('input');
     input.type = 'file';
     input.onchange = e => {
@@ -252,6 +251,9 @@ var createProjectSelectionView = function (targetSelector) {
         ctx.drawImage(img,0,0,iwScaled,ihScaled);
         let dataUrl = canvas.toDataURL("image/jpeg",0.5);
         act.setProjectData(uuid, 'coverImage',dataUrl)
+        if (callback) {
+          callback()
+        }
       }
       img.src = URL.createObjectURL(e.target.files[0]);
     }

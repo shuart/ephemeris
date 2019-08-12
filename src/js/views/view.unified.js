@@ -8,6 +8,9 @@ var createUnifiedView = function (targetSelector) {
   var displayRecentlyClosedItems = false;
   var filterClosedDaysAgo = 1;
 
+  var focusOnProject = undefined
+  var showTaskOwnership = false
+
 
   var init = function () {
     connections()
@@ -15,6 +18,12 @@ var createUnifiedView = function (targetSelector) {
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", function () {
+      if (objectIsActive) {
+        update()
+      }
+    })
+
     connect(".action-mark-action-done","click",(e)=>{
       console.log(e.target.dataset.id);
       console.log(e.target.dataset.project);
@@ -40,7 +49,16 @@ var createUnifiedView = function (targetSelector) {
       update()
     })
     connect(".action_unified_toogle_ownership","click",(e)=>{
-      renderActionRepartition(container)//TODO finish assigned sort
+      showTaskOwnership = !showTaskOwnership
+      update()
+    })
+    connect(".action_unified_toogle_all_projects","click",(e)=>{
+      if (focusOnProject) {
+        focusOnProject = undefined
+      }else {
+        focusOnProject = query.currentProject().uuid
+      }
+      update()
     })
     connect(".action_unified_load_project","click",(e)=>{
       setCurrentProject(e.target.dataset.id)
@@ -125,7 +143,7 @@ var createUnifiedView = function (targetSelector) {
   }
 
   var render = function () {
-    container.innerHTML ='<div class="ui container"><div class="umenu"></div><div class="ulist"></div></div>'
+    container.innerHTML ='<div class="ui container"><div class="umenu"></div><div class="ui divider"></div><div class="ulist"></div></div>'
     renderSearchArea(container);
     renderList(container);
 
@@ -137,8 +155,14 @@ var createUnifiedView = function (targetSelector) {
 
   var setActive =function () {
     objectIsActive = true;
-    setCurrentProject(undefined)
-    renderCDC()//TODO Ugly
+    // setCurrentProject(undefined)
+    var store = query.currentProject()
+    if (store) {
+      focusOnProject = store.uuid
+    }else {
+      focusOnProject=undefined
+    }
+    showTaskOwnership = false;//reset view
     update()
   }
 
@@ -147,9 +171,16 @@ var createUnifiedView = function (targetSelector) {
   }
 
   var renderList = function (container) {
-    let sortedProject = getOrderedProjectList(query.items("projects"), app.store.userData.preferences.projectDisplayOrder)
-    let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
-    var html = sortedVisibleProject.filter(e=> fuzzysearch(filterProject,e.name)).reduce((acc,i)=>{
+    if (!showTaskOwnership) {
+      renderOverview(container)
+    }else {
+      renderActionRepartition(container)
+    }
+  }
+  var renderOverview = function (container) {
+    let sortedVisibleSearchedProject = getProjectListForActionExtraction()
+
+    var html = sortedVisibleSearchedProject.reduce((acc,i)=>{
 
       acc += generateProjectTitleHTML(i.uuid, i.name, i.reference)
       acc += generateAddTaskArea(i.uuid)
@@ -160,11 +191,12 @@ var createUnifiedView = function (targetSelector) {
     },'')
     container.querySelector('.ulist').innerHTML = html
   }
-  var renderActionRepartition = function (container) {
-    let sortedProject = getOrderedProjectList(query.items("projects"), app.store.userData.preferences.projectDisplayOrder)
-    let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
 
-    var allActions = sortedVisibleProject.reduce((acc,i)=>{
+  var renderActionRepartition = function (container) {
+
+    let sortedVisibleSearchedProject = getProjectListForActionExtraction()
+
+    var allActions = sortedVisibleSearchedProject.reduce((acc,i)=>{
       var items = i.actions.items.filter( e => fuzzysearch(filterText, e.name))
       items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
       for (action of items.reverse()) {
@@ -184,6 +216,23 @@ var createUnifiedView = function (targetSelector) {
     var html = generateTaskOwnershipHTML(allActions.tasks, allActions.stakeholders)
     container.querySelector('.ulist').innerHTML = html
     //container.querySelector('.ulist').innerHTML = html
+  }
+
+  var getProjectListForActionExtraction = function () {
+    let sortedProject = undefined
+    let sortedVisibleProject = undefined
+    let sortedVisibleSearchedProject = undefined
+
+    if (focusOnProject) {
+      sortedVisibleProject = query.items("projects").find(p=>p.uuid == focusOnProject)
+      sortedVisibleSearchedProject= [sortedVisibleProject]
+
+    }else {
+      sortedProject = getOrderedProjectList(query.items("projects"), app.store.userData.preferences.projectDisplayOrder)
+      sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
+      sortedVisibleSearchedProject= sortedVisibleProject.filter(e=> fuzzysearch(filterProject,e.name))
+    }
+    return sortedVisibleSearchedProject
   }
 
   var generateProjectTitleHTML = function (projectId, title, reference) {
@@ -248,8 +297,8 @@ var createUnifiedView = function (targetSelector) {
         <div data-id="${i.uuid}" class="item">
           <i  data-value ='${i.open}' data-project="${projectUuid}" data-id="${i.uuid}" class="action-mark-action-done big ${i.open ? '':'check'} circle outline icon"></i>
           <div class="content">
-            <h5 class="header">
-              ${i.name}
+            <h5  class="header ">
+              <span data-id="${i.uuid}" class="action_toogle_single_action_view">${i.name}</span>
               <i data-project="${projectUuid}" data-prop="name" data-value="${i.name}" data-id="${i.uuid}" class="edit icon action_unified_list_edit_item" style="opacity:0.2"></i>
             </h5>
             <div class="description">
@@ -266,28 +315,33 @@ var createUnifiedView = function (targetSelector) {
 
   var renderSearchArea =function (container) {
     var addSearch = document.createElement('div');
-    addSearch.classList="ui item"
+    addSearch.classList="ui mini menu"
     addSearch.innerHTML =`
-      <div class="ui icon input">
-          <input class="list-search-input" type="text" placeholder="Search list...">
-          <i class="search icon"></i>
-      </div>
-      <div class="ui compact mini menu">
-        <div class="ui simple dropdown item">
-          Visibility
-          <i class="eye icon"></i>
-          <div class="menu">
-            <div class="item">
-              <div class="ui toggle checked checkbox">
-                <input ${displayRecentlyClosedItems ? 'checked':''} class="action_unified_toogle_old_items" type="checkbox" name="public">
-                <label>Display closed items older than one day</label>
-              </div>
-            </div>
-            <div class="item action_unified_toogle_ownership">Show Task Ownership</div>
-            <div class="item">Hide All closed items</div>
-          </div>
+      <div class="item">
+        <div class="ui icon input">
+            <input class="list-search-input" type="text" placeholder="Search list...">
+            <i class="search icon"></i>
         </div>
       </div>
+      ${renderSwitchBetweenProjects()}
+      <div class="item">
+        <div class="ui button action_unified_toogle_ownership">${!showTaskOwnership? "Actions ownership":"Actions overview"}</div>
+      </div>
+
+      <div class="ui simple dropdown item">
+        Visibility
+        <i class="eye icon"></i>
+        <div class="menu">
+          <div class="item">
+            <div class="ui toggle checked checkbox">
+              <input ${displayRecentlyClosedItems ? 'checked':''} class="action_unified_toogle_old_items" type="checkbox" name="public">
+              <label>Display closed items older than one day</label>
+            </div>
+          </div>
+          <div class="item">Hide All closed items</div>
+        </div>
+      </div>
+
       <div class="ui divider"></div>
       `
     container.querySelector(".umenu").appendChild(addSearch)
@@ -306,6 +360,18 @@ var createUnifiedView = function (targetSelector) {
       filterText = value;
       renderList(container)
     });
+  }
+  var renderSwitchBetweenProjects = function () {
+    let html =""
+    var store = query.currentProject()
+    if (store) {
+      html =`
+      <div class="item">
+        <div class="ui basic button action_unified_toogle_all_projects">${focusOnProject? "Show all Projects":"Show current Project"}</div>
+      </div>
+      `
+    }
+    return html
   }
   var generateAddTaskArea =function (projectId) {
     var html=`
@@ -359,6 +425,9 @@ var createUnifiedView = function (targetSelector) {
       console.log(new Date(value));
       if (lessThanInSomeDays(new Date(value),10 )) {
         labelColor = "orange"
+      }
+      if (lessThanInSomeDays(new Date(value),2 )) {
+        labelColor = "red"//redish
       }
     }else {
       today = new Date().toISOString().substr(0, 10);

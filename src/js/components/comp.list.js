@@ -4,6 +4,7 @@ function showListMenu({
   parentSelectMenu = undefined,
   targetDomContainer = undefined,
   display = undefined,
+  extraFields =undefined,
   focusSearchOnRender = true,
   singleElement =undefined,
   rulesToDisplaySingleElement = undefined,
@@ -13,9 +14,16 @@ function showListMenu({
   metaLinks = undefined,
   multipleSelection = undefined,
   searchable = true,
+  prependContent = undefined,
+  onLoaded = undefined,
+  showColoredIcons = false,
+  allowBatchActions = false,
   onClick = (e)=>{console.log("clik on select");},
   onLabelClick = (e)=>{console.log("clik on label");},
   onAdd = undefined,
+  onAddScrollDown = true,
+  onAddFromPopup = undefined,
+  onAddFromExtraField = undefined,
   onRemove= undefined,
   onMove= undefined,
   onEditItem = (e)=>{console.log("edit select")},
@@ -31,9 +39,12 @@ function showListMenu({
   cancelButtonValue = "Cancel",
   extraActions = undefined,
   extraButtons = [],
-  currentSearchValue =""
+  currentSearchValue ="",
+  currentSortProp = undefined,
+  listIsExpanded = false
   }={}) {
 
+    var extraValuesAdded =false;
     //utility to parse html
     function toNode(html) {
       var tpl = document.createElement('template');
@@ -74,12 +85,21 @@ function showListMenu({
       </div>
       `
     },
+    listExpander:( ) => {
+      return /*html*/`
+      <div style="cursor:pointer;cursor: pointer;width: 50px;position: absolute;right: 0px;top: 82px;" class="action_list_toogle_expand item">
+          < >
+      </div>
+      `
+    },
     listWrapper:(rows, firstCol) => {
       return /*html*/`
-      <div class='flexTable'>
-        <div class="spreaded_titles shadowed">${firstCol}</div>
-        <div class="table">${rows}</div>
-      </div>
+        ${rows}
+      `
+    },
+    listFirstColWrapper:(rows) => {
+      return /*html*/`
+        <div class="spreaded_titles shadowed">${rows}</div>
       `
     },
     listRow:(items) => {
@@ -96,25 +116,64 @@ function showListMenu({
       </div>
       `
     },
-    listItem:(content, colType) => {
+    listItemIcon:(content, colType) => {
       return `
-      <div class='${colType||"column"}'>
+      <div style ="flex-grow: 0;flex-basis: 50px;" class='${colType||"column"}'>
+        <div class='orange-column'>
+        </div>
+      </div>
+      `
+    },
+    listItem:(content, prop, colType) => {
+      let currentProp = prop;
+      return `
+      <div  class='${colType||"column"}'>
+        <div data-prop="${currentProp}" class='orange-column ${currentProp?"action_list_toogle_sort_by_prop":""}' ${currentProp?"style='cursor:pointer;'":""}>
+          ${content}
+        </div>
+      </div>
+      `
+    },
+    listItemFixedSize:(content, size, colType) => {
+      return `
+      <div  style="flex-basis: ${size};flex-grow: 0;" class='${colType||"column"}'>
         <div class='orange-column'>
           ${content}
         </div>
       </div>
       `
     },
+    listItemExtraField:(content, colType) => {
+      let style = "color: #00b5ad;"
+      return `
+      <div style="${style}" class='${colType||"column"}'>
+
+        <div class='orange-column'>
+          ${content}
+        </div>
+        <div style="height:0px;position:relative" data-id='' class='extraFieldaddMagnet'>
+          <div style="color:white;right: 0px;top: -21px;position: absolute;background: #00b5ad;width: 20px;height: 20px;opacity: 0.2;cursor:pointer" data-id='' class='action_list_add_from_extra_field'>+</div>
+        </div>
+      </div>
+      `
+    }
   }
 
   //LOCAL VARS
   var data = undefined
   var ismoving = false
+  var ismovingExtraItems = []
   var mainFragment = document.createDocumentFragment()
   var sourceEl = undefined
   var mainEl = undefined
   var editItemMode = undefined
   var listContainer =undefined;
+  var globalContainer =undefined;
+  var listContainerFirstCol =undefined;
+
+  var showBatchActions =false;
+  var currentSelectedBatch =[];
+
 
   var self={}
 
@@ -130,6 +189,44 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_add")) {
           onAdd({selectDiv:sourceEl, select:self, target:undefined})
+          if (!editItemMode && !singleElement) {
+            refreshList()
+            if (onAddScrollDown) {
+              globalContainer.scrollTop = globalContainer.scrollHeight;
+            }
+          }else {
+            currentSearchValue =""
+            sourceEl.remove()
+            render()
+          }
+        }
+        if (event.target.classList.contains("action_list_add_from_popup_item")) {
+          onAddFromPopup({selectDiv:sourceEl, select:self, target:event.target})
+          if (!editItemMode && !singleElement) {
+            refreshList()
+          }else {
+            currentSearchValue =""
+            sourceEl.remove()
+            render()
+          }
+        }
+        if (event.target.classList.contains("action_list_toogle_sort_by_prop")) {
+          if (event.target.dataset.prop) {
+            //check if the current prop is the same to reset
+            if (currentSortProp ==event.target.dataset.prop) {
+              currentSortProp = undefined; //Then reset
+              refreshList()
+            }else {
+              currentSortProp =event.target.dataset.prop
+              refreshList()
+            }
+
+          }
+        }
+        if (event.target.classList.contains("action_list_add_from_extra_field")) {
+          if (onAddFromExtraField) {
+            onAddFromExtraField({selectDiv:sourceEl, select:self, target:event.target})
+          }
           if (!editItemMode && !singleElement) {
             refreshList()
           }else {
@@ -163,11 +260,45 @@ function showListMenu({
           refreshList()
           //sourceEl.remove()
         }
+        if (event.target.classList.contains("action_list_toogle_batch")) {
+          if (showBatchActions) {
+            showBatchActions = false
+            currentSelectedBatch = []
+          }else {
+            showBatchActions = true
+          }
+          refreshList()
+
+        }
+        if (event.target.classList.contains("action_toogle_in_selected_batch")) {
+          let elementId = event.target.dataset.id
+          if (currentSelectedBatch.includes(elementId)) {
+            currentSelectedBatch = currentSelectedBatch.filter(i=>i !=elementId)
+          }else {
+            currentSelectedBatch.push(elementId)
+          }
+          refreshList()
+
+        }
         if (event.target.classList.contains("action_list_move_item")) {
           if (ismoving) {
             ismoving = false
+            ismovingExtraItems = []
           }else {
             ismoving = event.target
+          }
+          refreshList()
+
+        }
+        if (event.target.classList.contains("action_list_end_add_to_move_item_toogle")) {
+          if (ismoving) {
+            if (ismovingExtraItems.find(i=>i.dataset.id == event.target.dataset.id )) {
+              console.log("remove from selection");
+              ismovingExtraItems = ismovingExtraItems.filter(i=>!(i.dataset.id==event.target.dataset.id))
+            }else {
+              ismovingExtraItems.push(event.target)
+            }
+            console.log(ismovingExtraItems);
           }
           refreshList()
 
@@ -177,6 +308,13 @@ function showListMenu({
             console.log(event.target.dataset.id,ismoving.dataset.id, event.target.dataset.parentid);
             onMove({select:self,selectDiv:sourceEl, originTarget:ismoving, target:event.target, targetParentId:event.target.dataset.parentid})
             ismoving = false
+          }
+          if (ismovingExtraItems[0]) {//if other items are selected
+            for (var i = 0; i < ismovingExtraItems.length; i++) {
+              ismovingExtraItems[i]
+              onMove({select:self,selectDiv:sourceEl, originTarget:ismovingExtraItems[i], target:event.target, targetParentId:event.target.dataset.parentid})
+            }
+            ismovingExtraItems=[]
           }
           refreshList()
 
@@ -190,8 +328,42 @@ function showListMenu({
             render()
           }
         }
+        if (event.target.classList.contains("action_list_go_to_item")) {
+          let link = event.target.dataset.value
+          if (typeof nw !== "undefined" && link) {//if using node webkit
+            nw.Shell.openExternal(link)
+          }else if (link) {//if in browser
+            window.open(link, '_blank')
+          }else {
+            console.log("no link to reach");
+          }
+        }
+        if (event.target.classList.contains("action_list_go_to_desktop_item")) {
+          let link = event.target.dataset.value
+          if (typeof nw !== "undefined" && link) {//if using node webkit
+            nw.Shell.openItem(link)
+          }else if (link) {//if in browser
+            alert("only available with desktop version")
+          }else {
+            console.log("no link to reach");
+          }
+        }
+        if (event.target.classList.contains("action_list_past")) {//TODO too early. Implement later
+          let link = event.target.dataset.value
+          navigator.clipboard.readText()
+            .then(text => {
+              console.log('Pasted content: ', text);
+            })
+            .catch(err => {
+              console.error('Failed to read clipboard contents: ', err);
+            });
+        }
+        if (event.target.classList.contains("action_list_droppable")) {//TODO too early. Implement later
+          //TODO finish implementation
+        }
+
         if (event.target.classList.contains("action_list_edit_choice_item")) {
-          onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target})
+          onEditChoiceItem({select:self, selectDiv:sourceEl, target:event.target, batch:currentSelectedBatch})
           //TODO this should be updated here with a promise
           // console.log(event.target);
           // if (!editItemMode && !singleElement) {
@@ -231,6 +403,11 @@ function showListMenu({
           onCloseMenu({select:self, selectDiv:sourceEl, target:event.target})
           sourceEl.remove()
         }
+        if (event.target.classList.contains("action_list_toogle_expand")) {
+          listIsExpanded = !listIsExpanded
+          sourceEl.remove()
+          render()
+        }
     }
 
     //handle case if extra button are specified
@@ -240,6 +417,9 @@ function showListMenu({
           if (event.target.classList.contains("action_extra_"+action.class)) {
             action.action(event.target)
             refreshList()
+            if (action.closeAfter) {
+              sourceEl.remove()//TODO find a beter way, very hacky
+            }
           }
         }, false)
       }
@@ -304,22 +484,6 @@ function showListMenu({
   function createMenu() {
     mainEl.appendChild(toNode(theme.topMenu()));
 
-    // clear button
-    if (onClear) {
-     let target = mainEl.querySelector(".target_menu_left_buttons")
-     target.insertBefore(
-        toNode(theme.button(clearButtonValue, 'black', 'action_list_clear')),
-        target.firstChild
-      )
-    }
-    //add button
-    if (onAdd) {
-      let target = mainEl.querySelector(".target_menu_left_buttons")
-      target.insertBefore(
-         toNode(theme.button(addButtonValue, 'teal', 'action_list_add')),
-         target.firstChild
-       )
-    }
     //display extra action buttons
     if (extraActions) {
       for (action of extraActions) {
@@ -328,7 +492,7 @@ function showListMenu({
 
         let target = mainEl.querySelector(".target_menu_left_buttons")
         target.insertBefore(
-           toNode(theme.button(action.name, 'grey', "action_extra_"+actionClass)),
+           toNode(theme.button(action.name, 'basic', "action_extra_"+actionClass)),
            target.firstChild
          )
          //add events
@@ -346,6 +510,30 @@ function showListMenu({
         }
         actionTarget.addEventListener('click', addEventL(action),false);
       }
+    }
+    // clear button
+    if (onClear) {
+     let target = mainEl.querySelector(".target_menu_left_buttons")
+     target.insertBefore(
+        toNode(theme.button(clearButtonValue, 'black', 'action_list_clear')),
+        target.firstChild
+      )
+    }
+    //batch button
+    if (allowBatchActions) {
+      let target = mainEl.querySelector(".target_menu_left_buttons")
+      target.insertBefore(
+         toNode(theme.button("Select", '', 'action_list_toogle_batch')),
+         target.firstChild
+       )
+    }
+    //add button
+    if (onAdd) {
+      let target = mainEl.querySelector(".target_menu_left_buttons")
+      target.insertBefore(
+         toNode(theme.button(addButtonValue, 'teal', 'action_list_add')),
+         target.firstChild
+       )
     }
 
     //search menu
@@ -400,6 +588,9 @@ function showListMenu({
         editItemMode = undefined
         sourceEl.remove()
         render()
+        if (onAddScrollDown) {
+          globalContainer.scrollTop = globalContainer.scrollHeight;
+        }
       });
 
       target.appendChild(
@@ -422,18 +613,37 @@ function showListMenu({
   function buildTitleLine(rules,extraButtons) {
     let props = rules
     if (onMove || onRemove || onChangeSelect ||  extraButtons[0]) {
-      props = rules.concat([{displayAs:"Actions"}])
+      props = rules.concat([{size:"35px",displayAs:"Actions"}])
     }
-    let items = props.map( p => theme.listItem(p.displayAs)).join("")
+    let items = props.map( p => {
+      if (p.extraField) {
+        return theme.listItemExtraField(p.displayAs)
+      }else{
+        if(p.size){
+          return theme.listItemFixedSize(p.displayAs, p.size)
+        }else if (p.sortable || p.prop == "name") {
+          return theme.listItem(p.displayAs, p.prop)
+        }else {
+          return theme.listItem(p.displayAs)
+        }
+      }
+    }).join("")
+
+    if (showColoredIcons) {
+      items = theme.listItemIcon() + items //add a pading when icon is used
+    }
+
     let row = theme.topRow(items)
+
     let wrapper = theme.listWrapper(row)
     return wrapper
   }
 
-  function buildSingle(sourceData, sourceLinks, rootNodes, level, parentId, greyed) {
+  //MAIN function to build list
+  function buildSingle(sourceData, sourceLinks, rootNodes, level, parentId, greyed, firstOnly) {
     var source = undefined
     var targets = undefined
-    var rootNodes = rootNodes || sourceData
+    var rootNodes = rootNodes || deepCopy(sourceData)
     var level = level || 0
     var data = undefined
     var links = sourceLinks
@@ -445,6 +655,7 @@ function showListMenu({
       source = links.map(item => item.source)
       targets = links.map(item => item.target)
     }
+
     //define what is the data source
     if (sourceLinks && !singleItem) {
       rules = display
@@ -454,7 +665,23 @@ function showListMenu({
       data = [rootNodes]
     }else {
       rules = display
-      data = sourceData
+      data = deepCopy(sourceData)
+    }
+    //only treat the first col
+    if (firstOnly) {
+      rules = [rules[0]]
+    }
+
+    //Check if sorting is necessary
+    if (currentSortProp) {
+      data = data.sort(function(a, b) {
+        if (a[currentSortProp] && b[currentSortProp]) {
+          var nameA = a[currentSortProp].toUpperCase(); // ignore upper and lowercase
+          var nameB = b[currentSortProp].toUpperCase(); // ignore upper and lowercase
+          if (nameA < nameB) {return -1;}
+          if (nameA > nameB) {return 1;}
+        }
+        return 0;})
     }
 
     var html = ""
@@ -478,11 +705,7 @@ function showListMenu({
       var move =""
       var multipleSelect =""
       var extraButtonsHtml =""
-      if (onRemove && !singleItem) {
-        remove = `<div class="right floated content">
-            <div data-id="${item[idProp]}" class="ui mini basic red button action_list_remove_item">remove</div>
-          </div>`
-      }
+
       if (extraButtons && !singleItem) {
         for (action of extraButtons) {
           extraButtonsHtml = `<div class="right floated content">
@@ -502,17 +725,25 @@ function showListMenu({
         }
       }
       if (onMove && !greyed && !singleItem) {
-        move = `<div class="right floated content">
-            <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui mini basic blue button action_list_move_item">move</div>
+        move = `<div style="opacity:0.9;" class="right floated content">
+            <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui mini basic circular icon button action_list_move_item"><i data-parentid="${parentId}" data-id="${item[idProp]}" class="sort icon action_list_move_item"></i></div>
           </div>`
-        if (ismoving && ismoving.dataset.id != item[idProp] && sourceLinks) {
+        if (ismoving && ismoving.dataset.id != item[idProp] && sourceLinks && !ismovingExtraItems.find(i=>i.dataset.id == item[idProp] )) {
           move =`
             <div class="right floated content">
               <div class="ui mini buttons">
+                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_add_to_move_item_toogle">select</button>
                 <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Move next</button>
                 <div class="ou"></div>
                 <button data-id="${item[idProp]}" data-grandparentid="${parentId}" data-parentid="${item[idProp]}" class="ui positive button action_list_end_move_item">Link</button>
               </div>
+            </div>
+          `
+        }else if (ismoving && ismovingExtraItems.find(i=>i.dataset.id == item[idProp] )) {
+          move =`
+            <div class="right floated content">
+              <div class="ui mini buttons">
+                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button basic green action_list_end_add_to_move_item_toogle">selected</button>              </div>
             </div>
           `
         }else if (ismoving && ismoving.dataset.id != item[idProp]) {
@@ -529,15 +760,26 @@ function showListMenu({
             </div>`
         }
       }
+      if (onRemove && !singleItem && !ismoving) {
+        remove = `<div style="opacity:0.4;" class="right floated content">
+            <div data-id="${item[idProp]}" class="ui mini basic red circular icon button action_list_remove_item"><i data-id="${item[idProp]}" class="close icon action_list_remove_item"></i></div>
+          </div>`
+      }
       var extraStyle =""
       if (greyed || (ismoving && ismoving.dataset.id == item[idProp])) {
-        extraStyle = "background-color: lightgrey; opacity: 0.5;"
+        extraStyle = 'style="background-color= lightgrey; opacity= 0.5;"'
       }
       if (multipleSelection &&  multipleSelection.includes(item[idProp])) {
         extraStyle = "background-color: #DAF7A6; opacity: 0.8;"
       }
       //define row elemet
       html += `<div ${extraStyle}' data-id='${item[idProp]}' class='searchable ${theme.nestedListClass}'>`//Start of Searchable item
+      //add list add helpers
+      if (onAddFromPopup) {
+        html += `<div data-id='${item[idProp]}' class='addMagnet'>
+          <div data-id='${item[idProp]}' class='addPopup action_list_add_from_popup_item'>+</div>
+        </div>`
+      }
       if (true) {//Display if is list
 
         var nestedHtml = ""
@@ -546,15 +788,49 @@ function showListMenu({
           nestedHtml = "<div class='ui container segment'>"
         }
         let firstItemStyle = `style='padding-left: ${25*level}px;'`
+
+        if (showColoredIcons) {
+
+          let letters = showColoredIcons(item)
+          let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
+          let style = 'style="background: '+colorFromLetters(letters)+';width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 15px;color: white;text-align: center;"'
+          nestedHtml +=`
+          <div  ${colStyle} data-id="${item[idProp]}" class="column">
+            <div ${style} data-id="${item[idProp]}" class="content">
+              ${letters}
+            </div>
+          </div>
+          `
+        }
+        if (showBatchActions) {
+          let marked = currentSelectedBatch.includes(item[idProp])
+          let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
+          let style = 'style="background: transparent;width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 15px;color: grey;text-align: center;"'
+          nestedHtml +=`
+          <div  ${colStyle} data-id="${item[idProp]}" class="column">
+            <div ${style} data-id="${item[idProp]}" class="content">
+              <i data-id="${item[idProp]}"  class="large ${marked ? "check":""} circle outline icon action_toogle_in_selected_batch"></i>
+            </div>
+          </div>
+          `
+        }
         for (rule of rules) {
           var propName = rule.prop
           var dispName = rule.displayAs
           var isEditable = rule.edit
+          var isLink = rule.link
+          var isOsPath = rule.localPath
           var isTime = rule.time
           var isFullText = rule.fullText
+          var isPastable = rule.pastable
+          var isDroppable = rule.droppable
           var isMeta = rule.meta //get the metaFunction
+          var isCustom = rule.custom
           var isTarget = rule.isTarget //met is target
           var editHtml = ""
+          var goToHtml = ""
+          var pastableHtml = ""
+          var dropHtmlClass = ""
           var propDisplay = item[propName]
           //force edit mode if in editItemMode
           if (editItemMode) {
@@ -567,12 +843,33 @@ function showListMenu({
               item[propName] = isMeta().filter(e => (e.type == propName && e.source == item[idProp] )).map(e => e.target)
             }
           }
+
+          if (isCustom) {
+            propDisplay = isCustom(item[propName])
+          }
+
+          if (isLink && item[propName]) {
+            goToHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_item" style="cursor:pointer; color:blue"></i>`
+          }
+          if (isOsPath && item[propName]) {
+            goToHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_desktop_item" style="cursor:pointer; color:blue"></i>`
+          }
+          if (isPastable) {
+            pastableHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="paste icon action_list_past" style="cursor:pointer;opacity: 0.15;"></i>`
+          }
+          if (isDroppable) {
+            dropHtmlClass+="action_list_droppable"
+          }
+
           if (isEditable && !isMeta && !isTime) {
             editHtml+=`
-            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style="opacity:0.2"></i>`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
           }else if (isEditable && isMeta) {
             editHtml+=`
-            <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[idProp]}" class="edit icon action_list_edit_choice_item" style="opacity:0.2"></i>`
+            <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[idProp]}" class="edit icon action_list_edit_choice_item" style=""></i>`
 
           }else if (isEditable && isTime) {
             console.log(item);
@@ -588,7 +885,7 @@ function showListMenu({
             propDisplay = moment(item[propName]).format("MMM Do YY");
             editHtml+=`
             <input data-prop="${propName}" data-id="${item[idProp]}" style="display:none;" type="date" class="dateinput ${item[idProp]} action_list_edit_time_input" name="trip-start" value="${today}">
-            <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[idProp]}" class="edit icon action_list_edit_time_item" style="opacity:0.2">
+            <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[idProp]}" class="edit icon action_list_edit_time_item" style="">
             </i>`
           }
           if (rule.choices) {
@@ -613,11 +910,15 @@ function showListMenu({
           }else if(isFullText && !singleItem){
             if(propDisplay && propDisplay.length > 35) {propDisplay = propDisplay.substring(0,35)+".. ";}
           }
+
+
           if (!singleItem) {
             nestedHtml +=`
-            <div data-id="${item[idProp]}" class="column">
+            <div data-id="${item[idProp]}" class="column ${dropHtmlClass}">
               <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
-                ${propDisplay}
+                ${propDisplay||""}
+                ${goToHtml}
+                ${pastableHtml}
                 ${editHtml}
               </div>
             </div>
@@ -629,7 +930,8 @@ function showListMenu({
                 <span class="">${dispName}</span>
               </h3>
               <div data-id="${item[idProp]}" class="">
-                ${propDisplay}
+                ${propDisplay||""}
+                ${goToHtml}
                 ${editHtml}
               </div>
             </div>
@@ -648,10 +950,12 @@ function showListMenu({
         }
       }
       //add action button
-      html += remove
-      html += move
+
       html += multipleSelect
       html += extraButtonsHtml
+
+      html += move
+      html += remove
       html += "</div>"//End of Searchable Item
 
       //Check if some children exist if there is a link items
@@ -661,7 +965,7 @@ function showListMenu({
           //first get all the children from the links
           var isGreyed =false; //check if childrens are greyed
           if (!greyed) {
-            isGreyed = ismoving && ismoving.dataset.id == item[idProp]
+            isGreyed = (ismoving && ismoving.dataset.id == item[idProp]) || (ismoving && ismovingExtraItems.find(i=>i.dataset.id == item[idProp] ))//check if the current object is the one moving
           }else {
             isGreyed = true; //propagate to all childrend
           }
@@ -690,11 +994,34 @@ function showListMenu({
   //   container.innerHTML ="<div class='"+ theme.singleElementsListClass + "'>"+html+"</div>"
   // }
 
+  function createPrepend() {
+    if (prependContent) {
+      mainEl.appendChild(toNode(prependContent));
+    }
+  }
+  function triggerLoadAction() {
+    if (onLoaded) {
+      onLoaded({selectDiv:sourceEl, select:self, target:undefined})
+    }
+  }
+
   function render() {
     buildHtmlContainer() //setup external container
     connect() //add events
+    createPrepend()
     createMenu()//create the inside of the list
     //createAddTemplate()//create a placeholder area to add items
+
+    if (extraFields && !extraValuesAdded) {
+      extraFields.forEach(r=> r.extraField = true)//mark extra field to render the title row correctly
+
+      if (rulesToDisplaySingleElement) {
+        rulesToDisplaySingleElement = rulesToDisplaySingleElement.concat(extraFields)
+      }else {
+        display = display.concat(extraFields)
+      }
+      extraValuesAdded = true
+    }
 
     //add area between menu and list
     var containerTopArea = document.createElement('div');
@@ -702,23 +1029,66 @@ function showListMenu({
     containerTopArea.style.flexShrink = "0"
     //item list (global var)
     listContainer = document.createElement('div');
-    listContainer.style.overflow = "auto"
+    listContainer.classList = "table"
+
+    listContainerFirstCol = document.createElement('div');
+    listContainerFirstCol.classList = "table-first-col"
+    // listContainer.style.overflow = "auto"
+    //item list (global var)
+    globalContainer = document.createElement('div');
+    globalContainer.style.overflow = "auto"
+    globalContainer.classList = "flexTable"
+
+    if (listIsExpanded) {
+      globalContainer.classList.add("expanded")
+    }
 
     //build contente
     if (singleElement) {
       listContainer.innerHTML =theme.listWrapper("<div class='"+ theme.singleElementsListClass + "'>"+ buildSingle(sourceData, sourceLinks, singleElement)+"</div>")
+      globalContainer.appendChild(listContainer)
     }else if (editItemMode){
       listContainer.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks, editItemMode.item))
+      globalContainer.appendChild(listContainer)
     }else {
       //build top row
       let titleLineHtml = buildTitleLine(display, extraButtons)
-      containerTopArea.appendChild(toNode(titleLineHtml));
       //build all list
-      listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
+
+      let listContainerTop = document.createElement('div');
+      listContainerTop.classList = "top-line"
+      listContainerTop.style.position = "sticky"
+      listContainerTop.style.background = "white"
+      listContainerTop.style.opacity = "0.9"
+      listContainerTop.style.zIndex = "5"
+      listContainerTop.style.top = "0"
+
+      listContainerTop.appendChild(toNode(titleLineHtml));
+
+      if (listIsExpanded) {
+        // let firstColData = buildSingle(sourceData, sourceLinks, undefined, undefined, undefined, undefined, true)
+        listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
+        listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
+      }else {
+        listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
+      }
+
+      globalContainer.appendChild(listContainerTop)
+      globalContainer.appendChild(listContainerFirstCol)
+      globalContainer.appendChild(listContainer)
+
+      mainEl.appendChild(toNode(theme.listExpander()))//add expander only in big lists
+    }
+    // mainEl.appendChild(containerTopArea)
+    mainEl.appendChild(globalContainer)
+
+    //adapt if needed
+    if (listIsExpanded) {
+      registerExpandedEvent()
+      adaptOverlayTitles()
     }
 
-    mainEl.appendChild(containerTopArea)
-    mainEl.appendChild(listContainer)
+
 
     //inject document framgent in DOM
     if (!targetDomContainer) {
@@ -737,6 +1107,8 @@ function showListMenu({
     if (currentSearchValue != "") {
        filterDataWithValue(currentSearchValue)
     }
+
+    triggerLoadAction()
   }
 
   function filterDataWithValue(value) {
@@ -758,6 +1130,58 @@ function showListMenu({
     for (item of searchedItems) {
       if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "flex"}else{item.style.display = "none"}
     }
+  }
+
+  function colorFromLetters(letters, uniform) {
+    // const alphaVal = (s) => s.toLowerCase().charCodeAt(0) - 97 + 1
+    const alphaVal = function (s) {
+      if (s) {
+        return s.toLowerCase().charCodeAt(0) - 97 + 1
+      }else {
+        let alt = "x"
+        return alt.toLowerCase().charCodeAt(0) - 97 + 1
+      }
+    }
+    let color='#ffffff'
+    if (uniform) {
+      let colorNbr = Math.round(( alphaVal(letters[0])+alphaVal(letters[1]) )/78*360)
+      color = "hsl("+colorNbr+", 34%, 50%)"
+    }else {
+      let colorNbrA = Math.round( alphaVal(letters[0]) /26*360)
+      let colorNbrB = Math.round( alphaVal(letters[1]) /26*360)
+      color = "linear-gradient(127deg, hsl("+colorNbrA+", 34%, 50%), hsl("+colorNbrB+", 34%, 50%))"
+    }
+    return color
+  }
+
+  function registerExpandedEvent(){
+    setTimeout(function () {
+      let eventTarget = document.querySelector(".flexTable.expanded .table")
+      eventTarget.addEventListener("mouseenter",function () {
+        adaptOverlayTitles()
+      })
+    }, 100);
+
+  }
+
+  function adaptOverlayTitles() {
+    let targetHeights=[]
+    setTimeout(function () {
+      let targets= document.querySelectorAll(".table .row")
+      for (var i = 0; i < targets.length; i++) {
+        let item = targets[i]
+        targetHeights.push(item.offsetHeight);
+      }
+
+      let overlays = document.querySelectorAll(".spreaded_titles .row")
+      for (var i = 0; i < overlays.length; i++) {
+        let item = overlays[i]
+        console.log(targetHeights[i]+"px")
+        item.style.height = targetHeights[i]+"px"
+      }
+    }, 20);
+
+
   }
 
   //PUBLIC FUNC
@@ -783,6 +1207,9 @@ function showListMenu({
     editItemMode = {item:data.item, onLeave:data.onLeave}
   }
   function refreshList() {
+    if (listIsExpanded) {
+      listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
+    }
     listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
     //focus on search
     if (focusSearchOnRender) {
@@ -796,6 +1223,9 @@ function showListMenu({
        filterDataWithValue(currentSearchValue)
     }
   }
+  function scrollDown() {
+    globalContainer.scrollTop = globalContainer.scrollHeight;
+  }
   function update() {
     if (sourceEl) {
       sourceEl.remove()
@@ -808,6 +1238,7 @@ function showListMenu({
 
   init();
 
+  self.scrollDown = scrollDown
   self.setEditItemMode = setEditItemMode
   self.setSelected = setSelected
   self.getSelected = getSelected

@@ -288,6 +288,7 @@ var createNotesManager = function (targetSelector) {
 
   var setInactive = function () {
     document.querySelector('.side_searchArea').innerHTML=""
+    document.querySelector('.left-menu-area > .title').innerHTML=""
     objectIsActive = false;
   }
 

@@ -1,4 +1,4 @@
-var createExternalUsersManagement = function (targetSelector) {
+var createImportUsersFromProjects = function (targetSelector) {
   var self ={};
   var objectIsActive = false;
   var container = document.querySelector(targetSelector)
@@ -33,7 +33,9 @@ var createExternalUsersManagement = function (targetSelector) {
   }
 
   var getAllUsers = function () {
+    var store = query.currentProject()
     var ownerTable = query.items("projects")
+        .filter(p=> p.uuid!=store.uuid)
         .map(e =>{
           return e.stakeholders.items.map(i => Object.assign({projectId:e.uuid, projectName:e.name}, i)) //add project prop to all items
         } )
@@ -70,8 +72,21 @@ var createExternalUsersManagement = function (targetSelector) {
       ],
       idProp:"uuid",
       extraButtons : [
-        {name:"Fuse", class:"fuse", prop:"projectId", action: (orev)=>{
-          generateUsersFusionList(owners, orev.dataset.id, orev.dataset.extra )
+        {name:"Import", class:"iufp_import", prop:"projectId", action: (orev)=>{
+          // generateUsersFusionList(owners, orev.dataset.id, orev.dataset.extra )
+          console.log(orev);
+          var store = query.currentProject()
+          let project = query.items("projects").find(p=>p.uuid == orev.dataset.extra)
+          let userToImport= project.stakeholders.items.find(s=>s.uuid == orev.dataset.id)
+          console.log(userToImport)
+          if(store.stakeholders.items.find(s=> s.uuid == userToImport.uuid)){
+            alert("This user already exist in the current project")
+          }else if (confirm("add user"+ userToImport.name+" "+userToImport.lastName+ " from project "+ project.name+ "?")) {
+            push(act.add("stakeholders",deepCopy(userToImport)))
+            setTimeout(function () {
+              render()
+            }, 1000);
+          }
         }}
       ],
       onEditItem: (ev)=>{
@@ -155,4 +170,4 @@ var createExternalUsersManagement = function (targetSelector) {
   return self
 }
 
-var externalUsersManagement = createExternalUsersManagement(".center-container")
+var importUsersFromProjects = createImportUsersFromProjects(".center-container")
