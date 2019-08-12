@@ -317,6 +317,13 @@ var createGanttView = function ({
     }
 
     //Add the event elements
+    bars
+    .on('mousedown', function(d) {
+        console.log("dragMode ChartBand");
+        dragmode = true;
+        console.log(dragmode);
+        draggedElement = d3.select(this);
+    })
 
     bars
       .append('rect')
@@ -335,12 +342,12 @@ var createGanttView = function ({
         lastHoverElement = d3.select(this);
         console.log(lastHoverBandGroup);
       })//TODO shoudl add group first
-      .on('mousedown', function(d) {
-          console.log("dragMode ChartBand");
-          dragmode = true;
-          console.log(dragmode);
-          draggedElement = d3.select(this);
-      })
+      // .on('mousedown', function(d) {
+      //     console.log("dragMode ChartBand");
+      //     dragmode = true;
+      //     console.log(dragmode);
+      //     draggedElement = d3.select(this);
+      // })
 
     bars
       .append('text')
@@ -420,13 +427,14 @@ var createGanttView = function ({
             var currentDate = xScale.invert(d3.mouse(this)[0])
             console.log(currentDate);
 
-            // draggedElement.attr("transform", function(d) {
-            //   return "translate(" + (xScale(currentDate)) + "," + 0+ ")"
-            //   })
-            draggedElement
-            .attr('x', xScale(currentDate))
-            .attr('y', d => d.y)
-            }
+            draggedElement.attr("transform", function(d) {
+              return "translate(" + (xScale(currentDate)-d.x) + "," + 0+ ")"
+              })
+            // draggedElement
+            // .attr('x', xScale(currentDate))
+            // .attr('y', d => d.y)
+            //
+          }
         })
   };
 
