@@ -94,37 +94,39 @@ var createPlanningView = function () {
           {
             name:"Gantt",
             action:(ev)=>{
-              ganttView.show({
-                items:store.plannings.items[0].items,
-                links:store.plannings.items[0].links,
-                onConnect: (e)=>{
-                  push(addPlanningLink({source:e.origin, target:e.target}))
-                  ev.select.updateData(store.plannings.items[0].items)
-                  ev.select.updateLinks(store.plannings.items[0].links)
-                  ganttView.updateCurrentData(store.plannings.items[0].items,store.plannings.items[0].links)
-                  ev.select.update()
-                },
-                onLinkClickedAction: (e)=>{
-                  push(removePlanningLink({source:e.origin, target:e.target}))
-                  ev.select.updateData(store.plannings.items[0].items)
-                  ev.select.updateLinks(store.plannings.items[0].links)
-                  ganttView.updateCurrentData(store.plannings.items[0].items,store.plannings.items[0].links)
-                  ev.select.update()
-                },
-                onChangeLengthAction: (e)=>{
-                  var citem = store.plannings.items[0].items.filter(el=>el.uuid == e.target)
-                  var startDate = citem.startDate || moment().toDate();
-                  var a = moment(e.endDate);
-                  var b = moment(startDate);
-                  var dayDiff = a.diff(b, 'days')
-                  console.log({uuid:e.target, prop:"duration", value:dayDiff});
-                  push(editPlanning({uuid:e.target, prop:"duration", value:dayDiff}))
-                  ev.select.updateData(store.plannings.items[0].items)
-                  ev.select.updateLinks(store.plannings.items[0].links)
-                  ganttView.updateCurrentData(store.plannings.items[0].items,store.plannings.items[0].links)
-                  ev.select.update()
-                }
-              })
+
+              createGanttView({targetSelector:".center-container" })
+              // ganttView.show({
+              //   items:store.plannings.items[0].items,
+              //   links:store.plannings.items[0].links,
+              //   onConnect: (e)=>{
+              //     push(addPlanningLink({source:e.origin, target:e.target}))
+              //     ev.select.updateData(store.plannings.items[0].items)
+              //     ev.select.updateLinks(store.plannings.items[0].links)
+              //     ganttView.updateCurrentData(store.plannings.items[0].items,store.plannings.items[0].links)
+              //     ev.select.update()
+              //   },
+              //   onLinkClickedAction: (e)=>{
+              //     push(removePlanningLink({source:e.origin, target:e.target}))
+              //     ev.select.updateData(store.plannings.items[0].items)
+              //     ev.select.updateLinks(store.plannings.items[0].links)
+              //     ganttView.updateCurrentData(store.plannings.items[0].items,store.plannings.items[0].links)
+              //     ev.select.update()
+              //   },
+              //   onChangeLengthAction: (e)=>{
+              //     var citem = store.plannings.items[0].items.filter(el=>el.uuid == e.target)
+              //     var startDate = citem.startDate || moment().toDate();
+              //     var a = moment(e.endDate);
+              //     var b = moment(startDate);
+              //     var dayDiff = a.diff(b, 'days')
+              //     console.log({uuid:e.target, prop:"duration", value:dayDiff});
+              //     push(editPlanning({uuid:e.target, prop:"duration", value:dayDiff}))
+              //     ev.select.updateData(store.plannings.items[0].items)
+              //     ev.select.updateLinks(store.plannings.items[0].links)
+              //     ganttView.updateCurrentData(store.plannings.items[0].items,store.plannings.items[0].links)
+              //     ev.select.update()
+              //   }
+              // })
             }
           }
         ]

@@ -9,172 +9,460 @@ var createGanttView = function ({
   var gantt
   var tasks = []
 
+  var lastHoverBandGroup = undefined
+  var lastHoverClass = undefined
+  var lastHoverElement = undefined
+  var draggedElement = false
+  var dragMode = false
+
   var init = function () {
     connections()
+    update()
 
   }
   var connections =function () {
 
   }
 
-  var render = function (data, links, callback, onLinkClickedAction,onChangeLengthAction) {
+  var render = function (data, links) {
+    var data = [{
+      startDate: '2017-02-27',
+      endDate: '2017-03-04',
+      label: 'milestone 01',
+      id: 'm01',
+      dependsOn: []
+    }, {
+      startDate: '2017-02-23',
+      endDate: '2017-03-01',
+      label: 'milestone 06',
+      id: 'm06',
+      dependsOn: ['m01']
+    }, {
+      duration: [7, 'days'],
+      endDate: '2017-03-24',
+      label: 'milestone 02',
+      id: 'm02',
+      dependsOn: ['m04']
+    }, {
+      startDate: '2017-02-27',
+      duration: [12, 'days'],
+      label: 'milestone 03',
+      id: 'm03',
+      dependsOn: ['m01']
+    }, {
+      endDate: '2017-03-17',
+      duration: [5, 'days'],
+      label: 'milestone 04',
+      id: 'm04',
+      dependsOn: ['m01']
+    }];
 
-
-
-    tasks = [
-    {"startDate":new Date("Sun Dec 09 00:00:45 EST 2012"),"endDate":new Date("Sun Dec 09 02:36:45 EST 2012"),"taskName":"E Job","status":"RUNNING"},
-    {"startDate":new Date("Sun Dec 09 08:49:53 EST 2012"),"endDate":new Date("Sun Dec 09 06:34:04 EST 2012"),"taskName":"D Job","status":"RUNNING"},
-    {"startDate":new Date("Sun Dec 09 03:27:35 EST 2012"),"endDate":new Date("Sun Dec 09 03:58:43 EST 2012"),"taskName":"P Job","status":"SUCCEEDED"},
-    {"startDate":new Date("Sun Dec 09 03:27:35 EST 2012"),"endDate":new Date("Sun Dec 09 03:58:43 EST 2012"),"taskName":"N Job","status":"KILLED"}
-    ];
-
-    taskNames = [ "D Job", "P Job", "E Job", "A Job", "N Job" ];
-
-    if (false) {
-      console.log(data);
-      // tasks = data.map((x) => {
-      //   return {startDate}
-      // })
-      taskNames = []
-      tasks = []
-      tasksRelations = []
-      var currentStartDate =moment().toDate();
-      var currentEndDate =moment().toDate();
-      for (task of data) {
-        var StartDate
-        currentStartDate = moment(currentEndDate).add(0, 'days').toDate();
-        currentEndDate = moment(currentStartDate).add(task.duration, 'days').toDate();
-        // currentStartDate.setDate(currentEndDate.getDate() + 0);
-        // currentEndDate.setDate(currentStartDate.getDate() + task.duration);
-        var startDate = new Date(currentStartDate.getTime())
-        var endDate = new Date(currentEndDate.getTime())
-        console.log(currentStartDate, currentEndDate);
-        tasks.push({
-          "startDate":startDate,
-          "endDate":endDate,
-          "taskName":task.name,
-          "status":"RUNNING"
-        });
-        taskNames.push(task.name);
+    createGanttChart(document.querySelector(targetSelector), data, {
+      elementHeight: 20,
+      sortMode: 'date', // alternatively, 'childrenCount'
+      svgOptions: {
+        width: 1200,
+        height: 400,
+        fontSize: 12
       }
-
-    }
-    if (true) {
-      taskNames = []
-      tasks = []
-      tasksRelations = []
-      //buildTasksList(taskss, taskNames, moment().toDate(), data, links) //TODO remove this method
-      tasks = buildTasksListB(data,links,tasksRelations)
-      taskNames = tasks.map(e =>e.uuid)
-      console.log(tasksRelations);
-      console.log(tasks);
-
-    }
-
-
-      var taskStatus = {
-          "SUCCEEDED" : "bar",
-          "FAILED" : "bar-failed",
-          "RUNNING" : "bar-running",
-          "KILLED" : "bar-killed"
-      };
-
-
-
-      tasks.sort(function(a, b) {
-          return a.endDate - b.endDate;
-      });
-      var maxDate = tasks[tasks.length - 1].endDate;
-      tasks.sort(function(a, b) {
-          return a.startDate - b.startDate;
-      });
-      var minDate = tasks[0].startDate;
-
-      var format = "%H:%M";
-      var timeDomainString = "all";
-      // var timeDomainString = "1day";
-      var existingChart = container.querySelector(".ganttChartArea")
-      if (existingChart) {
-        existingChart.remove()
-        container.querySelector(".ganttChartMenuArea").remove()
-      }
-      var chartArea = document.createElement("div")
-      var menuArea = document.createElement("div")
-      var menuArea = document.createElement("div")
-
-      menuArea.classList="ganttChartMenuArea";
-      chartArea.classList="ganttChartArea";
-      chartArea.style.width="100%"
-      chartArea.style.overflow="auto"
-
-      var buttonPlus = document.createElement("button")
-      buttonPlus.innerHTML="Plus"
-      buttonPlus.addEventListener("click",function () {
-        currentWidth = currentWidth + 200
-        gantt.width(currentWidth)
-        gantt.redraw()
-        container.querySelector(".chart").style.width = currentWidth+200;
-      }, false)
-      var buttonMinus = document.createElement("button")
-      buttonMinus.innerHTML="Moins"
-      buttonMinus.addEventListener("click",function () {
-        currentWidth = currentWidth - 200
-        gantt.width(currentWidth)
-        gantt.redraw()
-        container.querySelector(".chart").style.width = currentWidth+200;
-      }, false)
-
-      menuArea.appendChild(buttonMinus)
-      menuArea.appendChild(buttonPlus)
-      container.appendChild(chartArea)
-      container.appendChild(menuArea)
-
-      //var gantt = d3.gantt(targetSelector).height(450).width(800).taskTypes(taskNames).taskStatus(taskStatus).tickFormat(format);
-      gantt = d3.gantt(".ganttChartArea").height(450).width(currentWidth).taskTypes(taskNames).taskStatus(taskStatus).tickFormat(format);
-      gantt.onConnect(function (data) {
-        callback(data)
-      })
-      gantt.onLinkClicked(function (data) {
-        onLinkClickedAction(data)
-      })
-      gantt.onChangeLength(function (data) {
-        onChangeLengthAction(data)
-      })
-
-
-      gantt.timeDomainMode("fixed");
-      gantt(tasks,tasksRelations);
-      changeTimeDomain(timeDomainString,tasks);
-      console.log("plouf",tasks);
-
-      updateCurrentData(data, links) //TODO should not be necessary but without the duration is not right the first time. Why?
-      // gantt.updateData(tasks,tasksRelations)
-      // gantt.redraw();
-      //gantt(tasks,tasksRelations);
-
-
-    function addTask() {
-
-        var lastEndDate = getEndDate();
-        var taskStatusKeys = Object.keys(taskStatus);
-        var taskStatusName = taskStatusKeys[Math.floor(Math.random() * taskStatusKeys.length)];
-        var taskName = taskNames[Math.floor(Math.random() * taskNames.length)];
-
-        tasks.push({
-    	"startDate" : d3.timeHour.offset(lastEndDate, Math.ceil(1 * Math.random())),
-    	"endDate" : d3.timeHour.offset(lastEndDate, (Math.ceil(Math.random() * 3)) + 1),
-    	"taskName" : taskName,
-    	"status" : taskStatusName
-        });
-
-        changeTimeDomain(timeDomainString,tasks);
-        gantt.redraw(tasks);
-    };
+    });
 
   }
 
-  var update = function (data, links, callback,callBack2,onChangeLengthAction) {
-    render(data,links, callback, callBack2, onChangeLengthAction)
+  const prepareDataElement = ({ id, label, startDate, endDate, duration, dependsOn }) => {
+    if ((!startDate || !endDate) && !duration) {
+      throw new Exception('Wrong element format: should contain either startDate and duration, or endDate and duration or startDate and endDate');
+    }
+
+    if (startDate) startDate = moment(startDate);
+
+    if (endDate) endDate = moment(endDate);
+
+    if (startDate && !endDate && duration) {
+      endDate = moment(startDate);
+      endDate.add(duration[0], duration[1]);
+    }
+
+    if (!startDate && endDate && duration) {
+      startDate = moment(endDate);
+      startDate.subtract(duration[0], duration[1]);
+    }
+
+    if (!dependsOn)
+      dependsOn = [];
+
+    return {
+      id,
+      label,
+      startDate,
+      endDate,
+      duration,
+      dependsOn
+    };
+  };
+
+  const findDateBoundaries = data => {
+    let minStartDate, maxEndDate;
+
+    data.forEach(({ startDate, endDate }) => {
+      if (!minStartDate || startDate.isBefore(minStartDate)) minStartDate = moment(startDate);
+
+      if (!minStartDate || endDate.isBefore(minStartDate)) minStartDate = moment(endDate);
+
+      if (!maxEndDate || endDate.isAfter(maxEndDate)) maxEndDate = moment(endDate);
+
+      if (!maxEndDate || startDate.isAfter(maxEndDate)) maxEndDate = moment(startDate);
+    });
+
+    return {
+      minStartDate,
+      maxEndDate
+    };
+  };
+
+  const createDataCacheById = data => data.reduce((cache, elt) => Object.assign(cache, { [elt.id]: elt }), {});
+
+  const createChildrenCache = data => {
+    const dataCache = createDataCacheById(data);
+
+    const fillDependenciesForElement = (eltId, dependenciesByParent) => {
+      dataCache[eltId].dependsOn.forEach(parentId => {
+        if (!dependenciesByParent[parentId])
+          dependenciesByParent[parentId] = [];
+
+        if (dependenciesByParent[parentId].indexOf(eltId) < 0)
+          dependenciesByParent[parentId].push(eltId);
+
+        fillDependenciesForElement(parentId, dependenciesByParent);
+      });
+    };
+
+    return data.reduce((cache, elt) => {
+      if (!cache[elt.id])
+        cache[elt.id] = [];
+
+      fillDependenciesForElement(elt.id, cache);
+
+      return cache;
+    }, {});
+  }
+
+  const sortElementsByChildrenCount = data => {
+    const childrenByParentId = createChildrenCache(data);
+
+    return data.sort((e1, e2) => {
+      if (childrenByParentId[e1.id] && childrenByParentId[e2.id] && childrenByParentId[e1.id].length > childrenByParentId[e2.id].length)
+        return -1;
+      else
+        return 1;
+    });
+  };
+
+  const sortElementsByEndDate = data =>
+    data.sort((e1, e2) => {
+      if (moment(e1.endDate).isBefore(moment(e2.endDate)))
+        return -1;
+      else
+        return 1;
+    });
+
+  const sortElements = (data, sortMode) => {
+    if (sortMode === 'childrenCount') {
+      return sortElementsByChildrenCount(data);
+    } else if (sortMode === 'date') {
+      return sortElementsByEndDate(data);
+    }
+  }
+
+  const parseUserData = data => data.map(prepareDataElement);
+
+  const createPolylineData = (rectangleData, elementHeight) => {
+    // prepare dependencies polyline data
+    const cachedData = createDataCacheById(rectangleData);
+
+    // used to calculate offsets between elements later
+    const storedConnections = rectangleData.reduce((acc, e) => Object.assign(acc, { [e.id]: 0 }), {});
+
+    // create data describing connections' lines
+    return rectangleData.flatMap(d =>
+      d.dependsOn
+        .map(parentId => cachedData[parentId])
+        .map(parent => {
+          const color = '#' + (Math.max(0.1, Math.min(0.9, Math.random())) * 0xFFF << 0).toString(16);
+
+          // increase the amount rows occupied by both parent and current element (d)
+          storedConnections[parent.id]++;
+          storedConnections[d.id]++;
+
+          const deltaParentConnections = storedConnections[parent.id] * (elementHeight / 4);
+          const deltaChildConnections = storedConnections[d.id] * (elementHeight / 4);
+
+          const points = [
+            d.x, (d.y + (elementHeight / 2)),
+            d.x - deltaChildConnections, (d.y + (elementHeight / 2)),
+            d.x - deltaChildConnections, (d.y - (elementHeight * 0.25)),
+            parent.xEnd + deltaParentConnections, (d.y - (elementHeight * 0.25)),
+            parent.xEnd + deltaParentConnections, (parent.y + (elementHeight / 2)),
+            parent.xEnd, (parent.y + (elementHeight / 2))
+          ];
+
+          return {
+            points: points.join(','),
+            color
+          };
+        })
+    );
+  };
+
+  const createElementData = (data, elementHeight, xScale, fontSize) =>
+    data.map((d, i) => {
+      const x = xScale(d.startDate.toDate());
+      const xEnd = xScale(d.endDate.toDate());
+      const y = i * elementHeight * 1.5;
+      const width = xEnd - x;
+      const height = elementHeight;
+
+      const charWidth = (width / fontSize);
+      const dependsOn = d.dependsOn;
+      const id = d.id;
+
+      const tooltip = d.label;
+
+      const singleCharWidth = fontSize * 0.5;
+      const singleCharHeight = fontSize * 0.45;
+
+      let label = d.label;
+
+      if (label.length > charWidth) {
+        label = label.split('').slice(0, charWidth - 3).join('') + '...';
+      }
+
+      const labelX = x + ((width / 2) - ((label.length / 2) * singleCharWidth));
+      const labelY = y + ((height / 2) + (singleCharHeight));
+
+      return {
+        x,
+        y,
+        xEnd,
+        width,
+        height,
+        id,
+        dependsOn,
+        label,
+        labelX,
+        labelY,
+        tooltip
+      };
+    });
+
+
+
+  const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight, scaleWidth, scaleHeight, fontSize, minStartDate, maxEndDate, margin, showRelations }) => {
+    // create container element for the whole chart
+    const svg = d3.select(placeholder).append('svg').attr('width', svgWidth).attr('height', svgHeight);
+
+    const xScale = d3.scaleTime()
+      .domain([minStartDate.toDate(), maxEndDate.toDate()])
+      .range([0, scaleWidth])
+
+    const make_x_gridlines = function() {
+      return d3.axisBottom(xScale)
+          .ticks(d3.timeDay.every(1))
+    }
+
+    // prepare data for every data element
+    const rectangleData = createElementData(data, elementHeight, xScale, fontSize);
+
+    // create data describing connections' lines
+    const polylineData = createPolylineData(rectangleData, elementHeight);
+
+    const xAxis = d3.axisBottom(xScale)
+      .ticks(d3.timeDay.every(1))
+      // .tickSize(200, 0, 0)
+      .tickFormat(d3.timeFormat('%d %b'));
+
+    // create container for the data
+    const g1 = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const linesContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
+    const barsContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
+
+    g1.append('g').call(xAxis);
+    g1.append("g")
+      .attr("class", "grid")
+      .attr("style", "opacity:0.1")
+      .attr("transform", "translate(0," + 500 + ")")
+      .call(make_x_gridlines()
+          .tickSize(-500)
+          .tickFormat("")
+      )
+
+    // create axes
+    const bars = barsContainer
+      .selectAll('g')
+      .data(rectangleData)
+      .enter()
+      .append('g');
+
+    // add stuff to the SVG
+    if (showRelations) {
+      linesContainer
+        .selectAll('polyline')
+        .data(polylineData)
+        .enter()
+        .append('polyline')
+        .style('fill', 'none')
+        .style('stroke', d => d.color)
+        .attr('points', d => d.points);
+    }
+
+    //Add the event elements
+
+    bars
+      .append('rect')
+      .attr("class","chartBand")
+      .attr('rx', elementHeight / 2)
+      .attr('ry', elementHeight / 2)
+      .attr('x', d => d.x)
+      .attr('y', d => d.y)
+      .attr('width', d => d.width)
+      .attr('height', d => d.height)
+      .style('fill', '#ddd')
+      .style('stroke', '#ddd')
+      .on("mouseover",function (d,i) {
+        lastHoverClass = d3.select(this).attr("class");
+        lastHoverBandGroup = this
+        lastHoverElement = d3.select(this);
+        console.log(lastHoverBandGroup);
+      })//TODO shoudl add group first
+      .on('mousedown', function(d) {
+          console.log("dragMode ChartBand");
+          dragmode = true;
+          console.log(dragmode);
+          draggedElement = d3.select(this);
+      })
+
+    bars
+      .append('text')
+      .style('fill', 'black')
+      .style('font-family', 'sans-serif')
+      .attr('x', d => d.labelX)
+      .attr('y', d => d.labelY)
+      .text(d => d.label);
+
+    bars //handles
+      .append('rect')
+      .attr("class","leftHandle")
+      .attr('rx', elementHeight / 2)
+      .attr('ry', elementHeight / 2)
+      .attr('x', d => d.x)
+      .attr('y', d => d.y + elementHeight / 4)
+      .attr('width', elementHeight / 2)
+      .attr('height', elementHeight / 2)
+      .style('fill', '#ffffff')
+      .style('stroke', '#ddd')
+      .on("mouseover",function (d,i) {
+        lastHoverClass = d3.select(this).attr("class");
+        console.log(lastHoverClass);
+      })//TODO shoudl add group first
+    bars //handles
+      .append('rect')
+      .attr("class","rightHandle")
+      .attr('rx', elementHeight / 2)
+      .attr('ry', elementHeight / 2)
+      .attr('x', d => d.x + d.width - elementHeight / 2)
+      .attr('y', d => d.y + elementHeight / 4)
+      .attr('width', elementHeight / 2)
+      .attr('height', elementHeight / 2)
+      .style('fill', '#ffffff')
+      .style('stroke', '#ddd')
+      .on("mouseover",function (d,i) {
+        lastHoverClass = d3.select(this).attr("class");
+        lastHoverElement = d3.select(this);
+        console.log(lastHoverClass);
+      })//TODO shoudl add group first
+
+    bars
+      .append('title')
+      .text(d => d.tooltip);
+
+      //interactions
+    g1
+      .on('mousedown', function(d){
+          console.log(d);
+          console.log(this);
+          console.log(lastHoverClass);
+          // if (lastHoverClass == "chartBand") {
+          //   // origin = lastHoover
+          //   dragMode = true;
+          //   console.log('dragmode started');
+          //   xy0 = d3.mouse(this);
+          //   console.log(xy0);
+          //   // path = d3.select(selector).select('.selectpath').attr("stroke-width", 2)
+          //   //   .attr("x1", xy0[0])
+          //   //   .attr("y1", xy0[1]);
+          //   // console.log(path);
+          //   console.log(this);
+          // }
+        })
+        .on('mouseup', function(){
+          console.log('mouseup');
+          dragMode = false;
+          draggedElement = undefined
+        })
+        .on('mousemove', function(){
+          console.log("dragging");
+          console.log(dragMode);
+          console.log(draggedElement);
+          if (draggedElement) {
+            xy0 = d3.mouse(this);
+            console.log(xScale.invert(d3.mouse(this)[0]));
+            var currentDate = xScale.invert(d3.mouse(this)[0])
+            console.log(currentDate);
+
+            // draggedElement.attr("transform", function(d) {
+            //   return "translate(" + (xScale(currentDate)) + "," + 0+ ")"
+            //   })
+            draggedElement
+            .attr('x', xScale(currentDate))
+            .attr('y', d => d.y)
+            }
+        })
+  };
+
+  const createGanttChart = (placeholder, data, { elementHeight, sortMode, showRelations, svgOptions }) => {
+    // prepare data
+    const margin = (svgOptions && svgOptions.margin) || {
+      top: elementHeight * 2,
+      left: elementHeight * 2
+    };
+
+    const scaleWidth = ((svgOptions && svgOptions.width) || 600) - (margin.left * 2);
+    const scaleHeight = Math.max((svgOptions && svgOptions.height) || 200, data.length * elementHeight * 2) - (margin.top * 2);
+
+    const svgWidth = scaleWidth + (margin.left * 2);
+    const svgHeight = scaleHeight + (margin.top * 2);
+
+    const fontSize = (svgOptions && svgOptions.fontSize) || 12;
+
+    if (!sortMode) sortMode = 'date';
+
+    if (typeof(showRelations) === 'undefined') showRelations = true;
+
+    data = parseUserData(data); // transform raw user data to valid values
+    data = sortElements(data, sortMode);
+
+    const { minStartDate, maxEndDate } = findDateBoundaries(data);
+
+    // add some padding to axes
+    minStartDate.subtract(2, 'days');
+    maxEndDate.add(2, 'days');
+
+    createChartSVG(data, placeholder, { svgWidth, svgHeight, scaleWidth, elementHeight, scaleHeight, fontSize, minStartDate, maxEndDate, margin, showRelations });
+  };
+
+  var update = function (data, links) {
+    render(data,links)
   }
 
   var setActive =function () {
@@ -224,39 +512,7 @@ var createGanttView = function ({
   }
 
   function changeTimeDomain(timeDomainString,tasks) {
-    this.timeDomainString = timeDomainString;
-    switch (timeDomainString) {
-    case "1hr":
-      format = "%H:%M:%S";
-      gantt.timeDomain([ d3.timeHour.offset(getEndDate(), -1), getEndDate() ]);
-      break;
-    case "3hr":
-      format = "%H:%M";
-      gantt.timeDomain([ d3.timeHour.offset(getEndDate(), -3), getEndDate() ]);
-      break;
 
-    case "6hr":
-      format = "%H:%M";
-      gantt.timeDomain([ d3.timeHour.offset(getEndDate(), -6), getEndDate() ]);
-      break;
-
-    case "1day":
-      format = "%H:%M";
-      gantt.timeDomain([ d3.timeDay.offset(getEndDate(), -1), getEndDate() ]);
-      break;
-
-    case "1week":
-      format = "%a %H:%M";
-      gantt.timeDomain([ d3.timeDay.offset(getEndDate(), -7), getEndDate() ]);
-      break;
-    case "all":
-      format = "%a %H:%M";
-      gantt.timeDomain([ d3.timeDay.offset(getStartDate(tasks), -1), d3.timeDay.offset(getEndDate(tasks), +10) ]);
-      break;
-    default:
-  format = "%H:%M"
-
-    }
     gantt.tickFormat(format);
     gantt.redraw();
   }
@@ -309,6 +565,8 @@ var createGanttView = function ({
     //update(store.plannings.items[0].items,store.plannings.items[0].links)
   }
 
+  init()
+
   self.setActive = setActive
   self.setInactive = setInactive
   self.show = show
@@ -319,5 +577,5 @@ var createGanttView = function ({
   return self
 }
 
-var ganttView = createGanttView({targetSelector:".center-container" });
-ganttView.init();
+// var ganttView = createGanttView({targetSelector:".center-container" });
+// ganttView.init();
