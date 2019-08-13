@@ -570,6 +570,7 @@ var createGanttView = function ({
     }
 
     lastAction = undefined
+    update()
   }
 
 

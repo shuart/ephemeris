@@ -116,6 +116,8 @@ var createPlanningView = function () {
                   ev.select.updateData(store.plannings.items[0].items)
                   ev.select.updateLinks(store.plannings.items[0].links)
                   ev.select.update()
+                  if (ganttObject) {  ganttObject.update(prepareGanttData())}
+
                 },
                 onChangeStartEnd:function (e) {
                   console.log(e);
@@ -124,6 +126,8 @@ var createPlanningView = function () {
                   ev.select.updateData(store.plannings.items[0].items)
                   ev.select.updateLinks(store.plannings.items[0].links)
                   ev.select.update()
+                  if (ganttObject) {  ganttObject.update(prepareGanttData())}
+
                 }
                })
               // ganttView.show({
