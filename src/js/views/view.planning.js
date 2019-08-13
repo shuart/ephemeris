@@ -101,7 +101,31 @@ var createPlanningView = function () {
 
 
               let ganttData = prepareGanttData()
-              ganttObject = createGanttView({targetSelector:".center-container", initialData:ganttData })
+              ganttObject = createGanttView({
+                targetSelector:".center-container",
+                initialData:ganttData,
+                onChangeLengthEnd:function (e) {
+                  console.log(e);
+
+                  var a = moment(e.mouseTime);
+                  var b = moment(e.startTime);
+                  var dayDiff = a.diff(b, 'days')
+
+                  push(editPlanning({uuid:e.target.id, prop:'duration', value:dayDiff}))
+
+                  ev.select.updateData(store.plannings.items[0].items)
+                  ev.select.updateLinks(store.plannings.items[0].links)
+                  ev.select.update()
+                },
+                onChangeStartEnd:function (e) {
+                  console.log(e);
+                  push(editPlanning({uuid:e.target.id, prop:'start', value:e.mouseTime}))
+
+                  ev.select.updateData(store.plannings.items[0].items)
+                  ev.select.updateLinks(store.plannings.items[0].links)
+                  ev.select.update()
+                }
+               })
               // ganttView.show({
               //   items:store.plannings.items[0].items,
               //   links:store.plannings.items[0].links,

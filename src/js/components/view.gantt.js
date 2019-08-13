@@ -1,6 +1,8 @@
 var createGanttView = function ({
   targetSelector = undefined,
-  initialData = undefined
+  initialData = undefined,
+  onChangeLengthEnd = undefined,
+  onChangeStartEnd = undefined
   }={}) {
   var self ={};
   var objectIsActive = false;
@@ -17,6 +19,7 @@ var createGanttView = function ({
   var draggedElement = false
   var draggedElementType = undefined
   var dragMode = false
+  var lastAction = undefined
 
   var data = initialData || [{
     startDate: '2017-02-27',
@@ -476,6 +479,8 @@ var createGanttView = function ({
           draggedElement = undefined
           g1.select('.selectpath').attr("stroke-width", 0)
 
+          triggerPostActionEvents()//trigger the callback if defined
+
         })
         .on('mousemove', function(){
           console.log("dragging");
@@ -496,6 +501,9 @@ var createGanttView = function ({
             d3.select(draggedElement.parentNode).attr("transform", function(d) {
               return "translate(" + (xScale(currentDate)) + "," + d.y+ ")"
               })
+
+            lastAction = {type: 'changeStart',target:d3.select(draggedElement).datum(), mouseTime:currentDate}
+            //TODO, date are not correct here
             // draggedElement
             // .attr('x', xScale(currentDate))
             // .attr('y', d => d.y)
@@ -513,6 +521,9 @@ var createGanttView = function ({
             d3.select(draggedElement.parentNode).attr("transform", function(d) {
               return "translate(" + (xScale(currentDate)) + "," + d.y+ ")"
               })
+
+            lastAction = {type: 'changeStart',target:d3.select(draggedElement).datum(), mouseTime:currentDate}
+
             // draggedElement
             // .attr('x', xScale(currentDate))
             // .attr('y', d => d.y)
@@ -534,6 +545,7 @@ var createGanttView = function ({
               d3.select(draggedElement).attr("x", lengthToDate-10)
               d3.select(draggedElement.parentNode).select('.chartBand').attr("width", lengthToDate)
 
+              lastAction = {type: 'changeLength',target:d3.select(draggedElement).datum(), startTime:xScale.invert(startOfGroup[0]),mouseTime:currentDate}
             }
             // d3.select(draggedElement.parentNode).select('.chartBand')
             //   .attr("width", function(d) {
@@ -549,6 +561,16 @@ var createGanttView = function ({
         })
   };
 
+  const triggerPostActionEvents = function () {
+    if (lastAction.type == 'changeLength') {
+      if (onChangeLengthEnd) { onChangeLengthEnd(lastAction) }
+    }
+    if (lastAction.type == 'changeStart') {
+      if (onChangeStartEnd) { onChangeStartEnd(lastAction) }
+    }
+
+    lastAction = undefined
+  }
 
 
   const createGanttChart = (placeholder, data, { elementHeight, sortMode, showRelations, svgOptions }) => {
