@@ -13,6 +13,7 @@ var createGanttView = function ({
   var lastHoverClass = undefined
   var lastHoverElement = undefined
   var draggedElement = false
+  var draggedElementType = undefined
   var dragMode = false
 
   var init = function () {
@@ -317,21 +318,30 @@ var createGanttView = function ({
     }
 
     //Add the event elements
+    // bars
+    // .on('mousedown', function(d) {
+    //     console.log("dragMode ChartBand");
+    //     dragmode = true;
+    //     console.log(dragmode);
+    //     draggedElement = d3.select(this);
+    //     draggedElementType = "bar";
+    // })
+
+    //set bar group position
     bars
-    .on('mousedown', function(d) {
-        console.log("dragMode ChartBand");
-        dragmode = true;
-        console.log(dragmode);
-        draggedElement = d3.select(this);
-    })
+    .attr("transform", function(d) {
+      return "translate(" + d.x + "," + d.y+ ")"
+      })
 
     bars
       .append('rect')
       .attr("class","chartBand")
       .attr('rx', elementHeight / 2)
       .attr('ry', elementHeight / 2)
-      .attr('x', d => d.x)
-      .attr('y', d => d.y)
+      // .attr('x', d => d.x)
+      // .attr('y', d => d.y)
+      .attr('x', 0)
+      .attr('y', 0)
       .attr('width', d => d.width)
       .attr('height', d => d.height)
       .style('fill', '#ddd')
@@ -341,7 +351,15 @@ var createGanttView = function ({
         lastHoverBandGroup = this
         lastHoverElement = d3.select(this);
         console.log(lastHoverBandGroup);
-      })//TODO shoudl add group first
+      })
+      .on('mousedown', function(d) {
+          console.log("dragMode ChartBand");
+          dragmode = true;
+          console.log(dragmode);
+          draggedElement = this;
+          draggedElementType = "bar";
+      })
+      //TODO shoudl add group first
       // .on('mousedown', function(d) {
       //     console.log("dragMode ChartBand");
       //     dragmode = true;
@@ -353,8 +371,8 @@ var createGanttView = function ({
       .append('text')
       .style('fill', 'black')
       .style('font-family', 'sans-serif')
-      .attr('x', d => d.labelX)
-      .attr('y', d => d.labelY)
+      .attr('x', d => d.labelX-d.x)
+      .attr('y', d => elementHeight/1.5)
       .text(d => d.label);
 
     bars //handles
@@ -362,23 +380,26 @@ var createGanttView = function ({
       .attr("class","leftHandle")
       .attr('rx', elementHeight / 2)
       .attr('ry', elementHeight / 2)
-      .attr('x', d => d.x)
-      .attr('y', d => d.y + elementHeight / 4)
+      .attr('x', d => 0)
+      .attr('y', d => elementHeight / 4)
       .attr('width', elementHeight / 2)
       .attr('height', elementHeight / 2)
       .style('fill', '#ffffff')
       .style('stroke', '#ddd')
-      .on("mouseover",function (d,i) {
-        lastHoverClass = d3.select(this).attr("class");
-        console.log(lastHoverClass);
+      .on("mousedown",function (d,i) {
+        console.log("dragMode left Handle");
+        dragmode = true;
+        console.log(dragmode);
+        draggedElement = this;
+        draggedElementType = "leftHandle";
       })//TODO shoudl add group first
     bars //handles
       .append('rect')
       .attr("class","rightHandle")
       .attr('rx', elementHeight / 2)
       .attr('ry', elementHeight / 2)
-      .attr('x', d => d.x + d.width - elementHeight / 2)
-      .attr('y', d => d.y + elementHeight / 4)
+      .attr('x', d =>d.width - elementHeight / 2)
+      .attr('y', d =>elementHeight / 4)
       .attr('width', elementHeight / 2)
       .attr('height', elementHeight / 2)
       .style('fill', '#ffffff')
@@ -387,6 +408,13 @@ var createGanttView = function ({
         lastHoverClass = d3.select(this).attr("class");
         lastHoverElement = d3.select(this);
         console.log(lastHoverClass);
+      })
+      .on("mousedown",function (d,i) {
+        console.log("dragMode right Handle");
+        dragmode = true;
+        console.log(dragmode);
+        draggedElement = this;
+        draggedElementType = "rightHandle";
       })//TODO shoudl add group first
 
     bars
@@ -421,22 +449,67 @@ var createGanttView = function ({
           console.log("dragging");
           console.log(dragMode);
           console.log(draggedElement);
-          if (draggedElement) {
+          if (draggedElement && draggedElementType == "bar") {
             xy0 = d3.mouse(this);
             console.log(xScale.invert(d3.mouse(this)[0]));
             var currentDate = xScale.invert(d3.mouse(this)[0])
             console.log(currentDate);
 
-            draggedElement.attr("transform", function(d) {
-              return "translate(" + (xScale(currentDate)-d.x) + "," + 0+ ")"
+            d3.select(draggedElement.parentNode).attr("transform", function(d) {
+              return "translate(" + (xScale(currentDate)) + "," + d.y+ ")"
               })
             // draggedElement
             // .attr('x', xScale(currentDate))
             // .attr('y', d => d.y)
             //
           }
+          if (draggedElement && draggedElementType == "leftHandle") {
+            xy0 = d3.mouse(this);
+            console.log(xScale.invert(d3.mouse(this)[0]));
+            var currentDate = xScale.invert(d3.mouse(this)[0])
+            console.log(currentDate);
+
+            // d3.select(draggedElement).attr("transform", function(d) {
+            //   return "translate(" + (xScale(currentDate)-d.x) + "," + 0+ ")"
+            //   })
+            d3.select(draggedElement.parentNode).attr("transform", function(d) {
+              return "translate(" + (xScale(currentDate)) + "," + d.y+ ")"
+              })
+            // draggedElement
+            // .attr('x', xScale(currentDate))
+            // .attr('y', d => d.y)
+            //
+          }
+          if (draggedElement && draggedElementType == "rightHandle") {
+            xy0 = d3.mouse(this);
+            console.log(xScale.invert(d3.mouse(this)[0]));
+            var currentDate = xScale.invert(d3.mouse(this)[0])
+            console.log(currentDate);
+
+
+            let groupTransform = getTransformation(d3.select(draggedElement.parentNode).attr("transform"))
+            let startOfGroup =[groupTransform.translateX,groupTransform.translateY]
+
+            let lengthToDate =  xScale(currentDate) - startOfGroup[0]
+
+            console.log(lengthToDate);
+            d3.select(draggedElement).attr("x", lengthToDate-10)
+            d3.select(draggedElement.parentNode).select('.chartBand').attr("width", lengthToDate)
+            // d3.select(draggedElement.parentNode).select('.chartBand')
+            //   .attr("width", function(d) {
+            //     return "translate(" + (xScale(currentDate)) + "," + d.y+ ")"
+            //   })
+
+            // draggedElement
+            // .attr('x', xScale(currentDate))
+            // .attr('y', d => d.y)
+            //
+          }
+
         })
   };
+
+
 
   const createGanttChart = (placeholder, data, { elementHeight, sortMode, showRelations, svgOptions }) => {
     // prepare data
@@ -480,6 +553,39 @@ var createGanttView = function ({
 
   var setInactive = function () {
     objectIsActive = false;
+  }
+
+  function getTransformation(transform) {
+    // Create a dummy g for calculation purposes only. This will never
+    // be appended to the DOM and will be discarded once this function
+    // returns.
+    var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+    // Set the transform attribute to the provided string value.
+    g.setAttributeNS(null, "transform", transform);
+
+    // consolidate the SVGTransformList containing all transformations
+    // to a single SVGTransform of type SVG_TRANSFORM_MATRIX and get
+    // its SVGMatrix.
+    var matrix = g.transform.baseVal.consolidate().matrix;
+
+    // Below calculations are taken and adapted from the private function
+    // transform/decompose.js of D3's module d3-interpolate.
+    var {a, b, c, d, e, f} = matrix;   // ES6, if this doesn't work, use below assignment
+    // var a=matrix.a, b=matrix.b, c=matrix.c, d=matrix.d, e=matrix.e, f=matrix.f; // ES5
+    var scaleX, scaleY, skewX;
+    if (scaleX = Math.sqrt(a * a + b * b)) a /= scaleX, b /= scaleX;
+    if (skewX = a * c + b * d) c -= a * skewX, d -= b * skewX;
+    if (scaleY = Math.sqrt(c * c + d * d)) c /= scaleY, d /= scaleY, skewX /= scaleY;
+    if (a * d < b * c) a = -a, b = -b, skewX = -skewX, scaleX = -scaleX;
+    return {
+      translateX: e,
+      translateY: f,
+      rotate: Math.atan2(b, a) * 180 / Math.PI,
+      skewX: Math.atan(skewX) * 180 / Math.PI,
+      scaleX: scaleX,
+      scaleY: scaleY
+    };
   }
 
   function buildTasksListB(sourceData,links,ganttLink){
