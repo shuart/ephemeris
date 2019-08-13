@@ -285,8 +285,11 @@ var createGanttView = function ({
     // create container for the data
     const g1 = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const linesContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
-    const barsContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
+    g1
+    .append('rect')
+    .attr('width', '100%')
+    .attr('height', '100%')
+    .style('fill', '#fff')
 
     g1.append('g').call(xAxis);
     g1.append("g")
@@ -297,6 +300,20 @@ var createGanttView = function ({
           .tickSize(-500)
           .tickFormat("")
       )
+
+    const linesContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
+    const barsContainer = g1.append('g').attr('transform', `translate(0,${margin.top})`);
+
+    g1
+      .append("line")
+      .attr("class", "selectpath")
+      .attr("marker-end","url(#arrow)")
+      .attr("x1", 0)
+      .attr("y1", 0)
+      .attr("x2", 0)
+      .attr("y2", 0)
+      .attr("stroke-width", 0)
+      .attr("stroke", "#00b5ad");
 
     // create axes
     const bars = barsContainer
@@ -344,8 +361,8 @@ var createGanttView = function ({
       .attr('y', 0)
       .attr('width', d => d.width)
       .attr('height', d => d.height)
-      .style('fill', '#ddd')
-      .style('stroke', '#ddd')
+      .style('fill', 'rgb(238, 238, 238)')
+      .style('stroke', 'rgb(238, 238, 238)')
       .on("mouseover",function (d,i) {
         lastHoverClass = d3.select(this).attr("class");
         lastHoverBandGroup = this
@@ -372,7 +389,7 @@ var createGanttView = function ({
       .style('fill', 'black')
       .style('font-family', 'sans-serif')
       .attr('x', d => d.labelX-d.x)
-      .attr('y', d => elementHeight/1.5)
+      .attr('y', d => elementHeight/1.3)
       .text(d => d.label);
 
     bars //handles
@@ -392,6 +409,30 @@ var createGanttView = function ({
         console.log(dragmode);
         draggedElement = this;
         draggedElementType = "leftHandle";
+      })//TODO shoudl add group first
+    bars //Connector
+      .append('rect')
+      .attr("class","connector")
+      .attr('rx', elementHeight / 2)
+      .attr('ry', elementHeight / 2)
+      .attr('x', d => 20)
+      .attr('y', d => elementHeight / 4)
+      .attr('width', elementHeight / 2)
+      .attr('height', elementHeight / 2)
+      .style('fill', '#ddd')
+      .style('stroke', '#ffffff')
+      .on("mousedown",function (d,i) {
+        console.log("dragMode connector");
+        dragmode = true;
+        console.log(dragmode);
+        draggedElement = this;
+        draggedElementType = "connector";
+        //set start of line
+        let xy0 = d3.mouse(this.parentNode.parentNode.parentNode);
+
+        g1.select('.selectpath').attr("stroke-width", 2)
+          .attr("x1", xy0[0])
+          .attr("y1", xy0[1]);
       })//TODO shoudl add group first
     bars //handles
       .append('rect')
@@ -444,11 +485,19 @@ var createGanttView = function ({
           console.log('mouseup');
           dragMode = false;
           draggedElement = undefined
+          g1.select('.selectpath').attr("stroke-width", 0)
+
         })
         .on('mousemove', function(){
           console.log("dragging");
           console.log(dragMode);
           console.log(draggedElement);
+          if (draggedElement && draggedElementType == "connector") {
+            let xy0 = d3.mouse(this);
+            let path = g1.select('.selectpath').attr("stroke-width", 2)
+              .attr("x2", xy0[0])
+              .attr("y2", xy0[1]);
+          }
           if (draggedElement && draggedElementType == "bar") {
             xy0 = d3.mouse(this);
             console.log(xScale.invert(d3.mouse(this)[0]));
@@ -492,9 +541,11 @@ var createGanttView = function ({
 
             let lengthToDate =  xScale(currentDate) - startOfGroup[0]
 
-            console.log(lengthToDate);
-            d3.select(draggedElement).attr("x", lengthToDate-10)
-            d3.select(draggedElement.parentNode).select('.chartBand').attr("width", lengthToDate)
+            if (lengthToDate>10) {
+              d3.select(draggedElement).attr("x", lengthToDate-10)
+              d3.select(draggedElement.parentNode).select('.chartBand').attr("width", lengthToDate)
+
+            }
             // d3.select(draggedElement.parentNode).select('.chartBand')
             //   .attr("width", function(d) {
             //     return "translate(" + (xScale(currentDate)) + "," + d.y+ ")"
