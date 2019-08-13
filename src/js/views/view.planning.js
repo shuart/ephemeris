@@ -1,6 +1,7 @@
 var createPlanningView = function () {
   var self ={};
   var objectIsActive = false;
+  ganttObject = undefined
 
   var init = function () {
     //  ganttView= createGanttView({
@@ -41,17 +42,21 @@ var createPlanningView = function () {
           if (newValue) {
             push(editPlanning({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
           }
-
+          if (ganttObject) {  ganttObject.update(prepareGanttData())}
         },
         onEditItemTime: (ev)=>{
           push(editPlanning({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
           console.log(ev.target.valueAsDate);
+
+          if (ganttObject) {  ganttObject.update(prepareGanttData())}
         },
         onRemove: (ev)=>{
           console.log("remove");
           if (confirm("remove item ?")) {
             push(removePlanningItem({uuid:ev.target.dataset.id}))
             ev.select.updateData(store.plannings.items[0].items)
+
+            if (ganttObject) {  ganttObject.update(prepareGanttData())}
           }
         },
         onMove: (ev)=>{
@@ -71,11 +76,10 @@ var createPlanningView = function () {
           var newReq = prompt("Nouveau Besoin")
           push(addPlanningItem({name:newReq, duration:1}))
           console.log(store.plannings);
+
+          if (ganttObject) {  ganttObject.update(prepareGanttData())}
         },
         onClick: (ev)=>{
-        },
-        onClear: (ev)=>{
-          renderCDC()
         },
         extraActions:[
           {
@@ -94,22 +98,10 @@ var createPlanningView = function () {
           {
             name:"Gantt",
             action:(ev)=>{
-              let ganttData = store.plannings.items[0].items.map(function (i) {
-                return {
-                  startDate: i.start|| Date.now(),
-                  duration: [5, 'days'],
-                  // endDate: moment(i.start || Date.now(), "DD-MM-YYYY").add(5, 'days').toDate(),
-                  label: i.name,
-                  id: i.uuid,
-                  dependsOn: []
-                }
-              })
-              if (!ganttData[0]) {
-                ganttData = undefined
-              }
 
-              console.log(ganttData);
-              createGanttView({targetSelector:".center-container", initialData:ganttData })
+
+              let ganttData = prepareGanttData()
+              ganttObject = createGanttView({targetSelector:".center-container", initialData:ganttData })
               // ganttView.show({
               //   items:store.plannings.items[0].items,
               //   links:store.plannings.items[0].links,
@@ -145,6 +137,24 @@ var createPlanningView = function () {
           }
         ]
       })
+  }
+
+  var prepareGanttData = function () {
+    var store = query.currentProject()
+    let ganttData = store.plannings.items[0].items.map(function (i) {
+      return {
+        startDate: i.start|| Date.now(),
+        duration: [i.duration, 'days'],
+        // endDate: moment(i.start || Date.now(), "DD-MM-YYYY").add(5, 'days').toDate(),
+        label: i.name,
+        id: i.uuid,
+        dependsOn: []
+      }
+    })
+    if (!ganttData[0]) {
+      ganttData = undefined
+    }
+    return ganttData
   }
 
   var update = function () {

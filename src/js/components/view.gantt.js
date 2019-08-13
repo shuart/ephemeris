@@ -7,7 +7,7 @@ var createGanttView = function ({
   var container = document.querySelector(targetSelector)
   var currentWidth =1800
 
-
+  var sourceEl = undefined
   var gantt
   var tasks = []
 
@@ -33,8 +33,12 @@ var createGanttView = function ({
   }];
 
   var init = function () {
+    sourceEl = document.createElement('div');
+    sourceEl.classList="ganttArea"
+    document.querySelector(targetSelector).appendChild(sourceEl)
     connections()
     update()
+
 
   }
   var connections =function () {
@@ -43,7 +47,7 @@ var createGanttView = function ({
 
   var render = function () {
 
-    createGanttChart(document.querySelector(targetSelector), data, {
+    createGanttChart(sourceEl, data, {
       elementHeight: 20,
       sortMode: 'date', // alternatively, 'childrenCount'
       svgOptions: {
@@ -578,8 +582,12 @@ var createGanttView = function ({
     createChartSVG(data, placeholder, { svgWidth, svgHeight, scaleWidth, elementHeight, scaleHeight, fontSize, minStartDate, maxEndDate, margin, showRelations });
   };
 
-  var update = function (data, links) {
-    render(data,links)
+  var update = function (newData) {
+    if (newData) {
+      data = newData
+    }
+    sourceEl.innerHTML=""
+    render()
   }
 
   var setActive =function () {
