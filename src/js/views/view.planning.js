@@ -94,8 +94,22 @@ var createPlanningView = function () {
           {
             name:"Gantt",
             action:(ev)=>{
+              let ganttData = store.plannings.items[0].items.map(function (i) {
+                return {
+                  startDate: i.start|| Date.now(),
+                  duration: [5, 'days'],
+                  // endDate: moment(i.start || Date.now(), "DD-MM-YYYY").add(5, 'days').toDate(),
+                  label: i.name,
+                  id: i.uuid,
+                  dependsOn: []
+                }
+              })
+              if (!ganttData[0]) {
+                ganttData = undefined
+              }
 
-              createGanttView({targetSelector:".center-container" })
+              console.log(ganttData);
+              createGanttView({targetSelector:".center-container", initialData:ganttData })
               // ganttView.show({
               //   items:store.plannings.items[0].items,
               //   links:store.plannings.items[0].links,

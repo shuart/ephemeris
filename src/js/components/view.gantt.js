@@ -1,10 +1,12 @@
 var createGanttView = function ({
-  targetSelector = undefined
+  targetSelector = undefined,
+  initialData = undefined
   }={}) {
   var self ={};
   var objectIsActive = false;
   var container = document.querySelector(targetSelector)
   var currentWidth =1800
+
 
   var gantt
   var tasks = []
@@ -16,6 +18,20 @@ var createGanttView = function ({
   var draggedElementType = undefined
   var dragMode = false
 
+  var data = initialData || [{
+    startDate: '2017-02-27',
+    endDate: '2017-03-04',
+    label: 'milestone 01',
+    id: 'm01',
+    dependsOn: []
+  }, {
+    endDate: '2019-03-17',
+    duration: [5, 'days'],
+    label: 'milestone 04',
+    id: 'm04',
+    dependsOn: ['m01']
+  }];
+
   var init = function () {
     connections()
     update()
@@ -25,38 +41,7 @@ var createGanttView = function ({
 
   }
 
-  var render = function (data, links) {
-    var data = [{
-      startDate: '2017-02-27',
-      endDate: '2017-03-04',
-      label: 'milestone 01',
-      id: 'm01',
-      dependsOn: []
-    }, {
-      startDate: '2017-02-23',
-      endDate: '2017-03-01',
-      label: 'milestone 06',
-      id: 'm06',
-      dependsOn: ['m01']
-    }, {
-      duration: [7, 'days'],
-      endDate: '2017-03-24',
-      label: 'milestone 02',
-      id: 'm02',
-      dependsOn: ['m04']
-    }, {
-      startDate: '2017-02-27',
-      duration: [12, 'days'],
-      label: 'milestone 03',
-      id: 'm03',
-      dependsOn: ['m01']
-    }, {
-      endDate: '2017-03-17',
-      duration: [5, 'days'],
-      label: 'milestone 04',
-      id: 'm04',
-      dependsOn: ['m01']
-    }];
+  var render = function () {
 
     createGanttChart(document.querySelector(targetSelector), data, {
       elementHeight: 20,
