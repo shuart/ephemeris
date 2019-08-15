@@ -20,6 +20,18 @@ var createGanttView = function ({
   var draggedElementType = undefined
   var dragMode = false
   var lastAction = undefined
+  var zoomLevel = 10
+
+  var theme ={
+    slider:function (value) {
+      return `
+      <div>
+        <input class="zoominput" type="range" id="start" name="zoom"
+               min="1" max="100" value="${value}" >
+        <label for="zoom">Zoom</label>
+      </div>`
+    }
+  }
 
   var data = initialData || [{
     startDate: '2017-02-27',
@@ -38,6 +50,18 @@ var createGanttView = function ({
   var init = function () {
     sourceEl = document.createElement('div');
     sourceEl.classList="ganttArea"
+    sourceEl.style.height="50%"
+
+    menuEl = document.createElement('div');
+    menuEl.classList="ganttMenuArea"
+    sourceEl.appendChild(menuEl)
+    ganttEl = document.createElement('div');
+    ganttEl.classList="ganttDiagramArea"
+    ganttEl.style.overflow="auto"
+    ganttEl.style.maxWidth="100%"
+    ganttEl.style.maxHeight="90%"
+    sourceEl.appendChild(ganttEl)
+
     document.querySelector(targetSelector).appendChild(sourceEl)
     connections()
     update()
@@ -49,17 +73,34 @@ var createGanttView = function ({
   }
 
   var render = function () {
+    //Render Menu
+    renderMenu()
 
-    createGanttChart(sourceEl, data, {
+    //render Gantt
+    renderGantt()
+  }
+
+  var renderMenu = function () {
+    menuEl.innerHTML=""
+    menuEl.innerHTML = theme.slider(zoomLevel)
+    //connectMenuEvents
+    menuEl.querySelector(".zoominput").oninput = function(e) {
+      zoomLevel = (this.value)
+      renderGantt()
+    }
+  }
+
+  var renderGantt =function () {
+    ganttEl.innerHTML=""
+    createGanttChart(ganttEl, data, {
       elementHeight: 20,
-      sortMode: 'date', // alternatively, 'childrenCount'
+      sortMode: 'none', // alternatively, 'childrenCount' or 'date'
       svgOptions: {
-        width: 1200,
+        width: zoomLevel/100*10000,
         height: 400,
         fontSize: 12
       }
     });
-
   }
 
   const prepareDataElement = ({ id, label, startDate, endDate, duration, dependsOn }) => {
@@ -164,6 +205,8 @@ var createGanttView = function ({
       return sortElementsByChildrenCount(data);
     } else if (sortMode === 'date') {
       return sortElementsByEndDate(data);
+    } else if (sortMode === 'none') {
+      return data;
     }
   }
 
@@ -252,8 +295,18 @@ var createGanttView = function ({
 
   const createChartSVG = (data, placeholder, { svgWidth, svgHeight, elementHeight, scaleWidth, scaleHeight, fontSize, minStartDate, maxEndDate, margin, showRelations }) => {
     // create container element for the whole chart
-    const svg = d3.select(placeholder).append('svg').attr('width', svgWidth).attr('height', svgHeight);
+    const svgMenu = d3.select(placeholder)
+      .append('svg')
+      .attr('style', "position:sticky; top:0px; display:block;")
+      .attr('width', svgWidth)
+      .attr('height', 20);
+    const gAxis = svgMenu.append('g').attr('transform', `translate(${margin.left},0)`);
+    //gaxis repacle g1 as a target for the axis to allow it to stic on top
 
+    const svg = d3.select(placeholder).append('svg').attr('width', svgWidth).attr('height', svgHeight);
+    // .call(d3.zoom().on("zoom", function () {
+    //    svg.attr("transform", d3.event.transform)
+    // }))
     const xScale = d3.scaleTime()
       .domain([minStartDate.toDate(), maxEndDate.toDate()])
       .range([0, scaleWidth])
@@ -283,13 +336,15 @@ var createGanttView = function ({
     .attr('height', '100%')
     .style('fill', '#fff')
 
-    g1.append('g').call(xAxis);
+    // g1.append('g').call(xAxis);
+    gAxis.append('g').call(xAxis);
+
     g1.append("g")
       .attr("class", "grid")
       .attr("style", "opacity:0.1")
-      .attr("transform", "translate(0," + 500 + ")")
+      .attr("transform", "translate(0," + data.length*35 + ")")
       .call(make_x_gridlines()
-          .tickSize(-500)
+          .tickSize(-data.length*35 )
           .tickFormat("")
       )
 
@@ -576,8 +631,8 @@ var createGanttView = function ({
   const createGanttChart = (placeholder, data, { elementHeight, sortMode, showRelations, svgOptions }) => {
     // prepare data
     const margin = (svgOptions && svgOptions.margin) || {
-      top: elementHeight * 2,
-      left: elementHeight * 2
+      top: elementHeight * 0,
+      left: elementHeight * 1
     };
 
     const scaleWidth = ((svgOptions && svgOptions.width) || 600) - (margin.left * 2);
@@ -608,7 +663,6 @@ var createGanttView = function ({
     if (newData) {
       data = newData
     }
-    sourceEl.innerHTML=""
     render()
   }
 

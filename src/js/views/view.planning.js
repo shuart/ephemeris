@@ -82,19 +82,7 @@ var createPlanningView = function () {
         onClick: (ev)=>{
         },
         extraActions:[
-          {
-            name:"Diagramme",
-            action:(ev)=>{
-              loadTree(store.plannings.items[0],(flat) => {
-                console.log(ev);
-                console.log(store.plannings.items[0].items);
-                store.plannings.items[0] = flat
-                ev.select.updateData(store.plannings.items[0].items)
-                ev.select.updateLinks(store.plannings.items[0].links)
-                ev.select.update()
-              })
-            }
-          },
+
           {
             name:"Gantt",
             action:(ev)=>{
@@ -130,6 +118,12 @@ var createPlanningView = function () {
 
                 }
                })
+               if (ganttObject) {//change siz of list if gant is activated
+                 setTimeout(function () {
+                   document.querySelector(".center-container").children[1].style.height ="50%"
+                 }, 1500);
+
+               }
               // ganttView.show({
               //   items:store.plannings.items[0].items,
               //   links:store.plannings.items[0].links,
