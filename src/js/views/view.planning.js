@@ -49,7 +49,7 @@ var createPlanningView = function () {
           push(editPlanning({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
           console.log(ev.target.valueAsDate);
 
-          if (ganttObject) {  ganttObject.update(prepareGanttData())}
+          if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
         },
         onRemove: (ev)=>{
           console.log("remove");
@@ -99,7 +99,7 @@ var createPlanningView = function () {
                 ganttObject = createGanttView({
                   targetSelector:".center-container",
                   initialData:ganttData,
-                  elementDefaultColor :"rgb(72, 185, 179)",
+                  elementDefaultColor :"rgb(104, 185, 181)",
                   elementDefaultTextColor :"#fff",
                   onChangeLengthEnd:function (e) {
                     console.log(e);
