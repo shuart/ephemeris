@@ -33,7 +33,8 @@ var createPlanningView = function () {
           {prop:"name", displayAs:"name", edit:"true"},
           {prop:"desc", displayAs:"Description", edit:"true"},
           {prop:"start", displayAs:"Début", edit:"true", time:true},
-          {prop:"duration", displayAs:"Durée", edit:"true"}
+          {prop:"duration", displayAs:"Durée", edit:"true"},
+          {prop:"eventContainsPbs", displayAs:"Products contained", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
         ],
         idProp:"uuid",
         onEditItem: (ev)=>{
@@ -79,7 +80,11 @@ var createPlanningView = function () {
 
           if (ganttObject) {  ganttObject.update(prepareGanttData())}
         },
-        onClick: (ev)=>{
+        onEditChoiceItem: (ev)=>{
+          startSelection(ev)
+        },
+        onLabelClick: (ev)=>{
+          showSingleItemService.showById(ev.target.dataset.id)
         },
         extraActions:[
 
@@ -155,6 +160,98 @@ var createPlanningView = function () {
       ganttData = undefined
     }
     return ganttData
+  }
+
+  function startSelection(ev) {
+    var store = query.currentProject()
+    var metalinkType = ev.target.dataset.prop;
+    var sourceTriggerId = ev.target.dataset.id;
+    var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+    var sourceData = undefined
+    var invert = false
+    var source = "source"
+    var target = "target"
+    var sourceLinks= undefined
+    var displayRules= undefined
+    if (metalinkType == "assignedTo") {
+      sourceData=store.stakeholders.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"lastName", displayAs:"Last name", edit:false}
+      ]
+    }else if (metalinkType == "WpOwn") {
+      sourceData=store.currentPbs.items
+      sourceLinks=store.currentPbs.links
+      displayRules = [
+        {prop:"name", displayAs:"First name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
+    }else if (metalinkType == "WpOwnNeed") {
+      sourceData=store.requirements.items
+      sourceLinks=store.requirements.links
+      displayRules = [
+        {prop:"name", displayAs:"First name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
+    }else if (metalinkType == "contains") {
+      sourceData=store.currentPbs.items
+      sourceLinks=store.currentPbs.links
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
+    }else if (metalinkType == "originNeed") {
+      invert = true;
+      sourceData=store.currentPbs.items
+      source = "target"//invert link order for after
+      target = "source"
+      sourceLinks=store.currentPbs.links
+      displayRules = [
+        {prop:"name", displayAs:"First name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
+    }else if (metalinkType == "tags") {
+      sourceData=store.tags.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "eventContainsPbs") {
+      sourceData=store.currentPbs.items
+      sourceLinks=store.currentPbs.links
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+      ]
+    }
+    showListMenu({
+      sourceData:sourceData,
+      sourceLinks:sourceLinks,
+      parentSelectMenu:ev.select ,
+      multipleSelection:currentLinksUuidFromDS,
+      displayProp:"name",
+      searchable : true,
+      display:displayRules,
+      idProp:"uuid",
+      onCloseMenu: (ev)=>{
+        console.log(ev.select);
+        ev.select.getParent().refreshList()
+      },
+      onChangeSelect: (ev)=>{
+        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
+        for (newSelected of ev.select.getSelected()) {
+          if (!invert) {
+            push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
+          }else {
+            push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
+          }
+        }
+        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+        ev.select.getParent().refreshList()
+      },
+      onClick: (ev)=>{
+        console.log("select");
+      }
+    })
   }
 
   var update = function () {
