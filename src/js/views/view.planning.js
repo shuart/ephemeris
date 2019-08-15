@@ -86,79 +86,57 @@ var createPlanningView = function () {
           {
             name:"Gantt",
             action:(ev)=>{
+              if (ganttObject) {
+                document.querySelector(".center-container").innerHTML=""
+                ganttObject = undefined
+              }else {
+                let ganttData = prepareGanttData()
+                ganttObject = createGanttView({
+                  targetSelector:".center-container",
+                  initialData:ganttData,
+                  onChangeLengthEnd:function (e) {
+                    console.log(e);
 
+                    var a = moment(e.mouseTime);
+                    var b = moment(e.startTime);
+                    var dayDiff = a.diff(b, 'days')
 
-              let ganttData = prepareGanttData()
-              ganttObject = createGanttView({
-                targetSelector:".center-container",
-                initialData:ganttData,
-                onChangeLengthEnd:function (e) {
-                  console.log(e);
+                    push(editPlanning({uuid:e.target.id, prop:'duration', value:dayDiff}))
 
-                  var a = moment(e.mouseTime);
-                  var b = moment(e.startTime);
-                  var dayDiff = a.diff(b, 'days')
+                    ev.select.updateData(store.plannings.items[0].items)
+                    ev.select.updateLinks(store.plannings.items[0].links)
+                    ev.select.update()
+                    if (ganttObject) {  ganttObject.update(prepareGanttData())}
+                    changeListSize()
 
-                  push(editPlanning({uuid:e.target.id, prop:'duration', value:dayDiff}))
+                  },
+                  onChangeStartEnd:function (e) {
+                    console.log(e);
+                    push(editPlanning({uuid:e.target.id, prop:'start', value:e.mouseTime}))
 
-                  ev.select.updateData(store.plannings.items[0].items)
-                  ev.select.updateLinks(store.plannings.items[0].links)
-                  ev.select.update()
-                  if (ganttObject) {  ganttObject.update(prepareGanttData())}
+                    ev.select.updateData(store.plannings.items[0].items)
+                    ev.select.updateLinks(store.plannings.items[0].links)
+                    ev.select.update()
+                    if (ganttObject) {  ganttObject.update(prepareGanttData())}
+                    changeListSize()
 
-                },
-                onChangeStartEnd:function (e) {
-                  console.log(e);
-                  push(editPlanning({uuid:e.target.id, prop:'start', value:e.mouseTime}))
+                  }
+                 })
+              }
 
-                  ev.select.updateData(store.plannings.items[0].items)
-                  ev.select.updateLinks(store.plannings.items[0].links)
-                  ev.select.update()
-                  if (ganttObject) {  ganttObject.update(prepareGanttData())}
-
-                }
-               })
                if (ganttObject) {//change siz of list if gant is activated
-                 setTimeout(function () {
-                   document.querySelector(".center-container").children[1].style.height ="50%"
-                 }, 1500);
-
+                   changeListSize()
                }
-              // ganttView.show({
-              //   items:store.plannings.items[0].items,
-              //   links:store.plannings.items[0].links,
-              //   onConnect: (e)=>{
-              //     push(addPlanningLink({source:e.origin, target:e.target}))
-              //     ev.select.updateData(store.plannings.items[0].items)
-              //     ev.select.updateLinks(store.plannings.items[0].links)
-              //     ganttView.updateCurrentData(store.plannings.items[0].items,store.plannings.items[0].links)
-              //     ev.select.update()
-              //   },
-              //   onLinkClickedAction: (e)=>{
-              //     push(removePlanningLink({source:e.origin, target:e.target}))
-              //     ev.select.updateData(store.plannings.items[0].items)
-              //     ev.select.updateLinks(store.plannings.items[0].links)
-              //     ganttView.updateCurrentData(store.plannings.items[0].items,store.plannings.items[0].links)
-              //     ev.select.update()
-              //   },
-              //   onChangeLengthAction: (e)=>{
-              //     var citem = store.plannings.items[0].items.filter(el=>el.uuid == e.target)
-              //     var startDate = citem.startDate || moment().toDate();
-              //     var a = moment(e.endDate);
-              //     var b = moment(startDate);
-              //     var dayDiff = a.diff(b, 'days')
-              //     console.log({uuid:e.target, prop:"duration", value:dayDiff});
-              //     push(editPlanning({uuid:e.target, prop:"duration", value:dayDiff}))
-              //     ev.select.updateData(store.plannings.items[0].items)
-              //     ev.select.updateLinks(store.plannings.items[0].links)
-              //     ganttView.updateCurrentData(store.plannings.items[0].items,store.plannings.items[0].links)
-              //     ev.select.update()
-              //   }
-              // })
             }
           }
         ]
       })
+  }
+
+  var changeListSize = function () {
+    setTimeout(function () {
+      document.querySelector(".center-container").children[1].style.height ="50%"
+    }, 700);
   }
 
   var prepareGanttData = function () {
