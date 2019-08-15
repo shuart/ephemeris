@@ -2,6 +2,8 @@ var createGanttView = function ({
   targetSelector = undefined,
   initialData = undefined,
   onChangeLengthEnd = undefined,
+  elementDefaultColor = 'rgb(238, 238, 238)',
+  elementDefaultTextColor = 'black',
   onChangeStartEnd = undefined
   }={}) {
   var self ={};
@@ -20,7 +22,7 @@ var createGanttView = function ({
   var draggedElementType = undefined
   var dragMode = false
   var lastAction = undefined
-  var zoomLevel = 10
+  var zoomLevel = 30
 
   var theme ={
     slider:function (value) {
@@ -34,15 +36,15 @@ var createGanttView = function ({
   }
 
   var data = initialData || [{
-    startDate: '2017-02-27',
-    endDate: '2017-03-04',
-    label: 'milestone 01',
+    startDate: '2019-02-27',
+    endDate: '2019-04-04',
+    label: 'Exemple milestone 01',
     id: 'm01',
     dependsOn: []
   }, {
     endDate: '2019-03-17',
-    duration: [5, 'days'],
-    label: 'milestone 04',
+    duration: [25, 'days'],
+    label: 'Add milestone in the list',
     id: 'm04',
     dependsOn: ['m01']
   }];
@@ -299,7 +301,7 @@ var createGanttView = function ({
       .append('svg')
       .attr('style', "position:sticky; top:0px; display:block;")
       .attr('width', svgWidth)
-      .attr('height', 20);
+      .attr('height', 40);
     const gAxis = svgMenu.append('g').attr('transform', `translate(${margin.left},0)`);
     //gaxis repacle g1 as a target for the axis to allow it to stic on top
 
@@ -313,7 +315,7 @@ var createGanttView = function ({
 
     const make_x_gridlines = function() {
       return d3.axisBottom(xScale)
-          .ticks(d3.timeDay.every(1))
+          .ticks(d3.timeDay.every(getGridDensityFromZoom(zoomLevel)))
     }
 
     // prepare data for every data element
@@ -325,7 +327,13 @@ var createGanttView = function ({
     const xAxis = d3.axisBottom(xScale)
       .ticks(d3.timeDay.every(1))
       // .tickSize(200, 0, 0)
-      .tickFormat(d3.timeFormat('%d %b'));
+      .tickFormat(d3.timeFormat( getTimeFormatFromZoom(zoomLevel) ));
+
+
+    const xAxisMonth = d3.axisBottom(xScale)
+      .ticks(d3.timeMonth.every(1))
+      // .tickSize(200, 0, 0)
+      .tickFormat(d3.timeFormat('%B %y'));
 
     // create container for the data
     const g1 = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
@@ -337,7 +345,16 @@ var createGanttView = function ({
     .style('fill', '#fff')
 
     // g1.append('g').call(xAxis);
-    gAxis.append('g').call(xAxis);
+    gAxis.append('g').call(xAxisMonth).call(gAxis => gAxis.select(".domain").remove());
+    gAxis.append('g')
+      .attr('transform', `translate(0,20)`)
+      .call(xAxis);
+      //.selectAll("text")
+      //   .style("text-anchor", "end")
+      //   .attr("dx", "-.8em")
+      //   .attr("dy", ".15em")
+      //   .attr("transform", "rotate(-65)");
+
 
     g1.append("g")
       .attr("class", "grid")
@@ -408,8 +425,8 @@ var createGanttView = function ({
       .attr('y', 0)
       .attr('width', d => d.width)
       .attr('height', d => d.height)
-      .style('fill', 'rgb(238, 238, 238)')
-      .style('stroke', 'rgb(238, 238, 238)')
+      .style('fill', elementDefaultColor)
+      .style('stroke', elementDefaultColor)
       .on("mouseover",function (d,i) {
         lastHoverClass = d3.select(this).attr("class");
         lastHoverBandGroup = this
@@ -433,7 +450,7 @@ var createGanttView = function ({
 
     bars
       .append('text')
-      .style('fill', 'black')
+      .style('fill', elementDefaultTextColor)
       .style('font-family', 'sans-serif')
       .attr('x', d => d.labelX-d.x)
       .attr('y', d => elementHeight/1.3)
@@ -466,7 +483,7 @@ var createGanttView = function ({
       .attr('y', d => elementHeight / 4)
       .attr('width', elementHeight / 2)
       .attr('height', elementHeight / 2)
-      .style('fill', '#ddd')
+      .style('fill', 'rgba(221, 221, 221, 0)')
       .style('stroke', '#ffffff')
       .on("mousedown",function (d,i) {
         console.log("dragMode connector");
@@ -616,6 +633,25 @@ var createGanttView = function ({
         })
   };
 
+  const getTimeFormatFromZoom = function (zoom) {
+    if (zoom < 30) {
+      return ''
+    }else if (zoom < 50){
+      return '%d'
+    }else {
+      return '%d-%m'
+    }
+  }
+  const getGridDensityFromZoom = function (zoom) {
+    if (zoom < 5) {
+      return 62
+    }else if (zoom < 20){
+      return 31
+    }else {
+      return 1
+    }
+  }
+
   const triggerPostActionEvents = function () {
     if (lastAction.type == 'changeLength') {
       if (onChangeLengthEnd) { onChangeLengthEnd(lastAction) }
@@ -653,8 +689,23 @@ var createGanttView = function ({
     const { minStartDate, maxEndDate } = findDateBoundaries(data);
 
     // add some padding to axes
-    minStartDate.subtract(2, 'days');
-    maxEndDate.add(2, 'days');
+    minStartDate.subtract(20, 'days');
+
+    if (zoomLevel < 5) {
+      minStartDate.subtract(450, 'days');
+    }else if (zoomLevel < 20){
+      minStartDate.subtract(292, 'days');
+    }else {
+      minStartDate.subtract(20, 'days');
+    }
+    if (zoomLevel < 5) {
+      maxEndDate.add(450, 'days');
+    }else if (zoomLevel < 20){
+      maxEndDate.add(292, 'days');
+    }else {
+      maxEndDate.add(92, 'days');
+    }
+
 
     createChartSVG(data, placeholder, { svgWidth, svgHeight, scaleWidth, elementHeight, scaleHeight, fontSize, minStartDate, maxEndDate, margin, showRelations });
   };

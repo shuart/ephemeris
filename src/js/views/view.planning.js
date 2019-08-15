@@ -99,6 +99,8 @@ var createPlanningView = function () {
                 ganttObject = createGanttView({
                   targetSelector:".center-container",
                   initialData:ganttData,
+                  elementDefaultColor :"rgb(72, 185, 179)",
+                  elementDefaultTextColor :"#fff",
                   onChangeLengthEnd:function (e) {
                     console.log(e);
 
