@@ -86,6 +86,15 @@ var createPlanningView = function () {
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)
         },
+        onClick: (ev)=>{
+          showSingleEventService.showById(ev.target.dataset.id, function (e) {
+            ev.select.updateData(store.plannings.items[0].items)
+            ev.select.updateLinks(store.plannings.items[0].links)
+            ev.select.refreshList()
+            if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
+
+          })
+        },
         extraActions:[
 
           {
@@ -127,6 +136,14 @@ var createPlanningView = function () {
                     if (ganttObject) {  ganttObject.update(prepareGanttData())}
                     changeListSize()
 
+                  },
+                  onElementClicked : function (e) {
+                    showSingleEventService.showById(e.id, function (e) {
+                      ev.select.updateData(store.plannings.items[0].items)
+                      ev.select.updateLinks(store.plannings.items[0].links)
+                      ev.select.refreshList()
+                      if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
+                    })
                   }
                  })
               }

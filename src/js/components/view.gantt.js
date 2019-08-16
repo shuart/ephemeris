@@ -2,6 +2,7 @@ var createGanttView = function ({
   targetSelector = undefined,
   initialData = undefined,
   onChangeLengthEnd = undefined,
+  onElementClicked = undefined,
   elementDefaultColor = 'rgb(238, 238, 238)',
   elementDefaultTextColor = 'black',
   onChangeStartEnd = undefined
@@ -432,6 +433,13 @@ var createGanttView = function ({
         lastHoverBandGroup = this
         lastHoverElement = d3.select(this);
         console.log(lastHoverBandGroup);
+      })
+      .on("click",function (d,i) {
+        // lastHoverClass = d3.select(this).attr("class");
+        // lastHoverBandGroup = this
+        // lastHoverElement = d3.select(this);
+        console.log(d3.select(this).datum());
+        if (onElementClicked) { onElementClicked( d3.select(this).datum() ) }
       })
       .on('mousedown', function(d) {
           console.log("dragMode ChartBand");
