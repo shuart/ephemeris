@@ -161,10 +161,11 @@ var createPlanningView = function () {
                     var b = moment(e.startTime);
                     var dayDiff = a.diff(b, 'days')
 
-                    push(editPlanning({uuid:e.target.id, prop:'duration', value:dayDiff}))
+                    // push(editPlanning({uuid:e.target.id, prop:'duration', value:dayDiff}))
+                    push(act.edit("timeTracks",{uuid:e.target.id, prop:'duration', value:dayDiff}))
 
-                    ev.select.updateData(store.plannings.items[0].items)
-                    ev.select.updateLinks(store.plannings.items[0].links)
+                    ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+                    // ev.select.updateLinks(store.plannings.items[0].links)
                     ev.select.update()
                     if (ganttObject) {  ganttObject.update(prepareGanttData())}
                     changeListSize()
@@ -172,10 +173,11 @@ var createPlanningView = function () {
                   },
                   onChangeStartEnd:function (e) {
                     console.log(e);
-                    push(editPlanning({uuid:e.target.id, prop:'start', value:e.mouseTime}))
+                    // push(editPlanning({uuid:e.target.id, prop:'start', value:e.mouseTime}))
 
-                    ev.select.updateData(store.plannings.items[0].items)
-                    ev.select.updateLinks(store.plannings.items[0].links)
+                    push(act.edit("timeTracks",{uuid:e.target.id, prop:'start', value:e.mouseTime}))
+                    ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+                    // ev.select.updateLinks(store.plannings.items[0].links)
                     ev.select.update()
                     if (ganttObject) {  ganttObject.update(prepareGanttData())}
                     changeListSize()
