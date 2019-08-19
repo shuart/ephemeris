@@ -34,6 +34,7 @@ var createPlanningView = function () {
     let planningData = relevantTimeTracks.map(function (t) {
       let relatedEvent = store.events.items.find(e=>e.uuid == t.relatedEvent)
       return {
+        uuid:t.uuid,
         name:relatedEvent.name,
         desc:relatedEvent.desc,
         start:t.start,
@@ -66,21 +67,31 @@ var createPlanningView = function () {
           console.log("Edit");
           var newValue = prompt("Edit Item",ev.target.dataset.value)
           if (newValue) {
-            push(editPlanning({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+            if (ev.target.dataset.prop=="duration") {
+              push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+              ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+            }else {
+              let eventsUuid = store.timeTracks.items.find(t => t.uuid == ev.target.dataset.id).relatedEvent
+              console.log(eventsUuid);
+              push(act.edit("events",{uuid:eventsUuid, prop:ev.target.dataset.prop, value:newValue}))
+              ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+            }
           }
           if (ganttObject) {  ganttObject.update(prepareGanttData())}
         },
         onEditItemTime: (ev)=>{
-          push(editPlanning({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
-          console.log(ev.target.valueAsDate);
+          push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
+          ev.select.updateData(preparePlanningData(currentPlanning.uuid))
 
           if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
         },
         onRemove: (ev)=>{
           console.log("remove");
           if (confirm("remove item ?")) {
-            push(removePlanningItem({uuid:ev.target.dataset.id}))
-            ev.select.updateData(store.plannings.items[0].items)
+            // push(act.add("events",{uuid:eventUuid, name:newReq}))
+            push(act.remove("timeTracks",{uuid:ev.target.dataset.id}))
+            // push(act.add("timeLinks",{type:"planning", source:currentPlanning.uuid, target:trackUuid}))
+            ev.select.updateData(preparePlanningData(currentPlanning.uuid))
 
             if (ganttObject) {  ganttObject.update(prepareGanttData())}
           }
