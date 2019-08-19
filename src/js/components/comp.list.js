@@ -832,15 +832,16 @@ function showListMenu({
           var pastableHtml = ""
           var dropHtmlClass = ""
           var propDisplay = item[propName]
+          var currentIdProp = rule.deferredIdProp || idProp
           //force edit mode if in editItemMode
           if (editItemMode) {
             isEditable = true
           }
           if (isMeta) {
             if (isTarget) {
-              item[propName] = isMeta().filter(e => (e.type == propName && e.target == item[idProp] )).map(e => e.source)
+              item[propName] = isMeta().filter(e => (e.type == propName && e.target == item[currentIdProp] )).map(e => e.source)
             }else {
-              item[propName] = isMeta().filter(e => (e.type == propName && e.source == item[idProp] )).map(e => e.target)
+              item[propName] = isMeta().filter(e => (e.type == propName && e.source == item[currentIdProp] )).map(e => e.target)
             }
           }
 
@@ -869,7 +870,7 @@ function showListMenu({
             <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
           }else if (isEditable && isMeta) {
             editHtml+=`
-            <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[idProp]}" class="edit icon action_list_edit_choice_item" style=""></i>`
+            <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[currentIdProp]}" class="edit icon action_list_edit_choice_item" style=""></i>`
 
           }else if (isEditable && isTime) {
             console.log(item);

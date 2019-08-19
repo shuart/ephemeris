@@ -35,6 +35,7 @@ var createPlanningView = function () {
       let relatedEvent = store.events.items.find(e=>e.uuid == t.relatedEvent)
       return {
         uuid:t.uuid,
+        relatedEvent:relatedEvent.uuid,
         name:relatedEvent.name,
         desc:relatedEvent.desc,
         start:t.start,
@@ -60,7 +61,7 @@ var createPlanningView = function () {
           {prop:"desc", displayAs:"Description", edit:"true"},
           {prop:"start", displayAs:"Début", edit:"true", time:true},
           {prop:"duration", displayAs:"Durée", edit:"true"},
-          {prop:"eventContainsPbs", displayAs:"Products contained", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+          {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
         ],
         idProp:"uuid",
         onEditItem: (ev)=>{
@@ -96,19 +97,19 @@ var createPlanningView = function () {
             if (ganttObject) {  ganttObject.update(prepareGanttData())}
           }
         },
-        onMove: (ev)=>{
-          console.log("move");
-          if (confirm("move item ?")) {
-            push(movePlanning({origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
-            //update links if needed
-            push(removePlanningLink({target:ev.originTarget.dataset.id}))
-            if (ev.targetParentId && ev.targetParentId != "undefined") {
-              push(addPlanningLink({source:ev.targetParentId, target:ev.originTarget.dataset.id}))
-            }
-            ev.select.updateData(store.plannings.items[0].items)
-            ev.select.updateLinks(store.plannings.items[0].links)
-          }
-        },
+        // onMove: (ev)=>{
+        //   console.log("move");
+        //   if (confirm("move item ?")) {
+        //     push(movePlanning({origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+        //     //update links if needed
+        //     push(removePlanningLink({target:ev.originTarget.dataset.id}))
+        //     if (ev.targetParentId && ev.targetParentId != "undefined") {
+        //       push(addPlanningLink({source:ev.targetParentId, target:ev.originTarget.dataset.id}))
+        //     }
+        //     ev.select.updateData(store.plannings.items[0].items)
+        //     ev.select.updateLinks(store.plannings.items[0].links)
+        //   }
+        // },
         onAdd: (ev)=>{
           var newReq = prompt("Nouveau Besoin")
           if (newReq) {
@@ -227,7 +228,8 @@ var createPlanningView = function () {
   function startSelection(ev) {
     var store = query.currentProject()
     var metalinkType = ev.target.dataset.prop;
-    var sourceTriggerId = ev.target.dataset.id;
+    var sourceTriggerId = ev.target.dataset.id; //alredy modified by defferedIdProp rule
+    // var sourceTriggerId = store.timeTracks.items.find(t => t.uuid == ev.target.dataset.id).relatedEvent;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
     var sourceData = undefined
     var invert = false
