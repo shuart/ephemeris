@@ -1,7 +1,8 @@
 var createPlanningView = function () {
   var self ={};
   var objectIsActive = false;
-  ganttObject = undefined
+  var ganttObject = undefined
+  var currentPlanning = undefined
 
   var init = function () {
     //  ganttView= createGanttView({
@@ -20,12 +21,36 @@ var createPlanningView = function () {
 
   }
 
+  var preparePlanningData = function (planningUuid) {
+    var store = query.currentProject()
+    let relevantTimeLinks = store.timeLinks.items.filter(l=>l.type == "planning" && l.source == planningUuid)
+    let relevantTimeTracksUuid = relevantTimeLinks.map(r => r.target)
+    console.log(relevantTimeTracksUuid);
+    let relevantTimeTracks = store.timeTracks.items.filter(l => relevantTimeTracksUuid.includes(l.uuid))
+    console.log(relevantTimeTracks);
+    if (!relevantTimeTracks || !relevantTimeTracks[0]) {
+      return []
+    }
+    let planningData = relevantTimeTracks.map(function (t) {
+      let relatedEvent = store.events.items.find(e=>e.uuid == t.relatedEvent)
+      return {
+        name:relatedEvent.name,
+        desc:relatedEvent.desc,
+        start:t.start,
+        duration:t.duration
+      }
+    })
+    return planningData
+  }
+
+
   var render = function () {
+      currentPlanning = query.currentProject().plannings.items[0] //TODO remove
       var store = query.currentProject()
-      console.log(store.plannings.items[0].items);
+      console.log(preparePlanningData(currentPlanning.uuid));
       showListMenu({
-        sourceData:store.plannings.items[0].items,
-        sourceLinks:store.plannings.items[0].links,
+        sourceData:preparePlanningData(currentPlanning.uuid),
+        // sourceLinks:store.plannings.items[0].links,
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
@@ -75,8 +100,15 @@ var createPlanningView = function () {
         },
         onAdd: (ev)=>{
           var newReq = prompt("Nouveau Besoin")
-          push(addPlanningItem({name:newReq, duration:1}))
-          console.log(store.plannings);
+          if (newReq) {
+            let eventUuid = uuid()
+            let trackUuid = uuid()
+            push(act.add("events",{uuid:eventUuid, name:newReq}))
+            push(act.add("timeTracks",{uuid:trackUuid,relatedEvent:eventUuid, duration:1}))
+            push(act.add("timeLinks",{type:"planning", source:currentPlanning.uuid, target:trackUuid}))
+            ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+          }
+          console.log(store);
 
           if (ganttObject) {  ganttObject.update(prepareGanttData())}
         },
@@ -165,7 +197,7 @@ var createPlanningView = function () {
 
   var prepareGanttData = function () {
     var store = query.currentProject()
-    let ganttData = store.plannings.items[0].items.map(function (i) {
+    let ganttData = preparePlanningData(currentPlanning.uuid).map(function (i) {
       return {
         startDate: i.start|| Date.now(),
         duration: [i.duration, 'days'],

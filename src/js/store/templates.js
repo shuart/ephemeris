@@ -22,6 +22,18 @@ var store = {
     ],
     links:[]
   },
+  events:{
+    items:[],
+    links:[]
+  },
+  timeTracks:{
+    items:[],
+    links:[]
+  },
+  timeLinks:{
+    items:[],
+    links:[]
+  },
   requirements:{
     items:[
       {uuid:"fefsfse", name:"A requirement"},
