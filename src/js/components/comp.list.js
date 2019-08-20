@@ -1115,13 +1115,15 @@ function showListMenu({
   function filterDataWithValue(value) {
     var filteredData = sourceData.filter((item) => {
       for (rule of display) {
-        //TODO allow array search
-        if (fuzzysearch (value, item[rule.prop]) && item[rule.prop] && !Array.isArray(item[rule.prop])) {
-          return true
-        }else if (item[rule.prop] && !Array.isArray(item[rule.prop]) && fuzzysearch (value, item[rule.prop].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) ) {
-          return true
-        }else if (item[rule.prop] && !Array.isArray(item[rule.prop]) && fuzzysearch (value, item[rule.prop].toLowerCase()) ) {
-          return true
+        if (typeof item[rule.prop] === 'string' || item[rule.prop] instanceof String) {
+          //TODO allow array search
+          if (fuzzysearch (value, item[rule.prop]) && item[rule.prop] && !Array.isArray(item[rule.prop])) {
+            return true
+          }else if (item[rule.prop] && !Array.isArray(item[rule.prop]) && fuzzysearch (value, item[rule.prop].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) ) {
+            return true
+          }else if (item[rule.prop] && !Array.isArray(item[rule.prop]) && fuzzysearch (value, item[rule.prop].toLowerCase()) ) {
+            return true
+          }
         }
       }
       return false
