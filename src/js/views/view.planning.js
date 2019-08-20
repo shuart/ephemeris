@@ -4,6 +4,54 @@ var createPlanningView = function () {
   var ganttObject = undefined
   var currentPlanning = undefined
 
+  let theme = {}
+  theme.noPlanning = function () {
+    return `
+    <div class="ui placeholder segment">
+      <div class="ui icon header">
+        <i class="sticky calendar outline icon"></i>
+        Select a planning to display
+      </div>
+    </div>`
+  }
+  theme.planningPreviewItem = function (i) {
+     html =`
+     <div data-id="${i.uuid}" class="searchable_planning list-item action_planning_manager_load_planning">
+       <div class="relaxed" data-id="${i.uuid}" >
+        <strong data-id="${i.uuid}" >${i.name || "Untitled"}</strong>
+       </div>
+       <i class="fas fa-calendar-alt"></i>
+     </div>`
+
+    return html
+  }
+  theme.planningPreviewItemAlt = function (i) {
+     html =`
+     <div data-id="${i.uuid}" class="searchable_planning list-item action_planning_manager_load_planning">
+       <div class="relaxed" data-id="${i.uuid}" >
+        <strong data-id="${i.uuid}" >${i.name || "Untitled"}</strong>
+        <div data-id="${i.uuid}" >${i.content.substring(0,135)+".. "}</div>
+       </div>
+       <i class="fas fa-calendar-alt"></i>
+     </div>`
+
+    return html
+  }
+  theme.planningPreviewTitle= function (html) {
+     html =`
+        Plannings
+        <span class="action_planning_manager_add_planning small button"> Add</span>
+    `
+    return html
+  }
+  theme.planningSearchArea= function () {
+     html =`
+        <input class="planning_search_input search_input" type="text" placeholder="Search..">
+        <span class=""> <i class="fas fa-search"></i></span>
+    `
+    return html
+  }
+
   var init = function () {
     //  ganttView= createGanttView({
     //   targetSelector:".center-container",
@@ -18,7 +66,20 @@ var createPlanningView = function () {
 
   }
   var connections =function () {
-
+    connect(".action_planning_manager_load_planning", "click", (e)=>{
+      console.log(e.target.dataset.id);
+      let planningId = e.target.dataset.id
+      document.querySelector(".center-container").innerHTML=""
+      ganttObject = undefined
+      setCurrentPlanning(planningId)
+    })
+    connect(".action_planning_manager_add_planning", "click", (e)=>{
+      let newName = prompt("Enter a new name")
+      if (newName) {
+        push(act.add("plannings",{name:newName}))
+        update()
+      }
+    })
   }
 
   var preparePlanningData = function (planningUuid) {
@@ -45,9 +106,50 @@ var createPlanningView = function () {
     return planningData
   }
 
-
   var render = function () {
-      currentPlanning = query.currentProject().plannings.items[0] //TODO remove
+      document.querySelector(".center-container").innerHTML=theme.noPlanning()
+      let treeContainer = document.querySelector(".left-menu-area")
+      let planningTitleArea = document.querySelector(".left-menu-area .title")
+      let planningPreviewArea = treeContainer.querySelector('.left-list')
+      let searchArea = treeContainer.querySelector('.side_searchArea')
+      if (planningPreviewArea && searchArea) { //reuse what is already setup
+        planningTitleArea.innerHTML = theme.planningPreviewTitle()
+        searchArea.innerHTML=theme.planningSearchArea()
+        updatePlanningTree(planningPreviewArea)
+      //update search event
+      setUpSearch(document.querySelector(".planning_search_input"), query.currentProject().plannings.items)
+    }else {
+      alert("elemet missing")
+    }
+
+  }
+
+  var updatePlanningTree = function(container) {
+    var store = query.currentProject()
+    let html = ""
+    store.plannings.items.slice()
+    .sort(function(a, b) {
+        var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+        var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+        if (nameA < nameB) {return -1;}
+        if (nameA > nameB) {return 1;}
+        return 0;
+      })
+    .forEach(function (e) {//todo add proper routes
+      html += theme.planningPreviewItem(e)
+    })
+    container.innerHTML = html
+  }
+
+  var setCurrentPlanning = function (uuid) {
+    currentPlanning = query.currentProject().plannings.items.find(p=>p.uuid == uuid)//TODO remove
+    if (currentPlanning) {
+      renderPlanning()
+    }
+  }
+
+
+  var renderPlanning = function () {
       var store = query.currentProject()
       console.log(preparePlanningData(currentPlanning.uuid));
       showListMenu({
@@ -111,7 +213,7 @@ var createPlanningView = function () {
         //   }
         // },
         onAdd: (ev)=>{
-          var newReq = prompt("Nouveau Besoin")
+          var newReq = prompt("New track")
           if (newReq) {
             let eventUuid = uuid()
             let trackUuid = uuid()
@@ -139,7 +241,64 @@ var createPlanningView = function () {
           })
         },
         extraActions:[
+          {
+            name:"Remove",
+            action:(ev)=>{
+              var newReq = confirm("Remove current Planning")
+              if (newReq) {
+                push(act.remove("plannings",{uuid:currentPlanning.uuid}))
+                currentPlanning = undefined
+                setTimeout(function () {
+                  update()
+                }, 100);
+              }
 
+            }
+          },
+          {
+            name:"Rename",
+            action:(ev)=>{
+              var newReq = prompt("New planning name",currentPlanning.name)
+              if (newReq) {
+                push(act.edit("plannings",{uuid:currentPlanning.uuid, prop:"name", value:newReq}))
+                setTimeout(function () {
+                  update()
+                  document.querySelector(".center-container").innerHTML=""
+                  setCurrentPlanning(currentPlanning.uuid)
+                }, 100);
+              }
+
+            }
+          },
+          {
+            name:"Duplicate",
+            action:(ev)=>{
+              var newReq = confirm("Duplicate current Planning")
+              if (newReq) {
+                let newId = uuid()
+                push(act.add("plannings",{uuid:newId, name:currentPlanning.name+"_copy"}))
+
+                //duplicate tracks and links
+                let relevantTimeLinks = store.timeLinks.items.filter(l=>l.type == "planning" && l.source == currentPlanning.uuid)
+                let relevantTimeTracksUuid = relevantTimeLinks.map(r => r.target)
+                let relevantTimeTracks = store.timeTracks.items.filter(l => relevantTimeTracksUuid.includes(l.uuid))
+                relevantTimeTracks.forEach(function (t) {
+                  let newTrack = deepCopy(t)
+                  let newTrackId = uuid()
+                  newTrack.uuid = newTrackId
+                  push(act.add("timeTracks",newTrack))
+                  push(act.add("timeLinks",{type:"planning", source:newId, target:newTrackId}))
+                })
+
+                setTimeout(function () {
+                  update()
+                  document.querySelector(".center-container").innerHTML=""
+                  setCurrentPlanning(newId)
+                }, 100);
+              }
+
+            }
+          },
           {
             name:"Gantt",
             action:(ev)=>{
@@ -189,7 +348,7 @@ var createPlanningView = function () {
                       if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
 
                     })
-                  
+
                   }
                  })
               }
@@ -318,6 +477,29 @@ var createPlanningView = function () {
         console.log("select");
       }
     })
+  }
+
+  function setUpSearch(searchElement, sourceData) {
+    searchElement.addEventListener('keyup', function(e){
+      //e.stopPropagation()
+      var value = document.querySelector(".planning_search_input").value
+      console.log("fefsefsef");
+      console.log(sourceData);
+      var filteredData = sourceData.filter((item) => {
+        // console.log(fuzzysearch(value, item.name));
+        if (fuzzysearch(value, item.name) || fuzzysearch (value, item.name.toLowerCase()) ) {
+          console.log(item.name);
+          return true
+        }
+        return false
+      })
+      console.log(filteredData);
+      var filteredIds = filteredData.map(x => x.uuid);
+      var searchedItems = document.querySelectorAll(".searchable_planning")
+      for (item of searchedItems) {
+        if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "block"}else{item.style.display = "none"}
+      }
+    });
   }
 
   var update = function () {
