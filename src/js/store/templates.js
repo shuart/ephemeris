@@ -18,8 +18,7 @@ var store = {
     links:[]
   },
   plannings:{
-    items:[{uuid:"plaefse", name:"Project Planning", items:[], links:[]}
-    ],
+    items:[],
     links:[]
   },
   events:{
