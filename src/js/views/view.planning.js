@@ -218,7 +218,7 @@ var createPlanningView = function () {
             let eventUuid = uuid()
             let trackUuid = uuid()
             push(act.add("events",{uuid:eventUuid, name:newReq}))
-            push(act.add("timeTracks",{uuid:trackUuid,relatedEvent:eventUuid, duration:1}))
+            push(act.add("timeTracks",{uuid:trackUuid,relatedEvent:eventUuid, duration:5}))
             push(act.add("timeLinks",{type:"planning", source:currentPlanning.uuid, target:trackUuid}))
             ev.select.updateData(preparePlanningData(currentPlanning.uuid))
           }

@@ -39,16 +39,23 @@ var createGanttView = function ({
   var data = initialData || [{
     startDate: '2019-02-27',
     endDate: '2019-04-04',
-    label: 'Exemple milestone 01',
+    label: 'Add a track from the list',
     id: 'm01',
     dependsOn: []
-  }, {
-    endDate: '2019-03-17',
-    duration: [25, 'days'],
-    label: 'Add milestone in the list',
-    id: 'm04',
-    dependsOn: ['m01']
   }];
+  // var data = initialData || [{
+  //   startDate: '2019-02-27',
+  //   endDate: '2019-04-04',
+  //   label: 'Exemple milestone 01',
+  //   id: 'm01',
+  //   dependsOn: []
+  // }, {
+  //   endDate: '2019-03-17',
+  //   duration: [25, 'days'],
+  //   label: 'Add milestone in the list',
+  //   id: 'm04',
+  //   dependsOn: ['m01']
+  // }];
 
   var init = function () {
     sourceEl = document.createElement('div');
@@ -300,7 +307,7 @@ var createGanttView = function ({
     // create container element for the whole chart
     const svgMenu = d3.select(placeholder)
       .append('svg')
-      .attr('style', "position:sticky; top:0px; display:block;")
+      .attr('style', "position:sticky; top:0px; display:block;color:grey;")
       .attr('width', svgWidth)
       .attr('height', 40);
     const gAxis = svgMenu.append('g').attr('transform', `translate(${margin.left},0)`);
