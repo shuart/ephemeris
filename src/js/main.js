@@ -51,7 +51,7 @@ var reparse = false;
   pageManager.addComponent({name:"overview",object:overview,linkedComponents:["leftMenuProjectTree"],haveSideBar:false})
   pageManager.addComponent({name:"requirements",object:requirementsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"functions",object:functionsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
-  pageManager.addComponent({name:"planning",object:planningView, linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"planning",object:planningView, haveSideBar:false})
   pageManager.addComponent({name:"pbs",object:pbsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"interfaces",object:interfacesView, haveSideBar:false})
   pageManager.addComponent({name:"relations",object:relationsView, haveSideBar:false})

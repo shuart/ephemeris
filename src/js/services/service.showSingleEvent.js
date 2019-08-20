@@ -19,25 +19,31 @@ var createShowSingleEventService = function () {
 
     var storeGroup=undefined
     var label=undefined
+    if (store.timeTracks.items.find(i=>i.uuid == uuid)) { storeGroup = store.timeTracks; label='timeTracks'}
 
-    for (var i = 0; i < store.plannings.items.length; i++) {
-      let currentPlanning = store.plannings.items[i]
-      if (currentPlanning.items.find(i=>i.uuid == uuid)) {
-        storeGroup = currentPlanning; label='plannings'
-      }
-    }
+    // for (var i = 0; i < store.plannings.items.length; i++) {
+    //   let currentPlanning = store.plannings.items[i]
+    //   if (currentPlanning.items.find(i=>i.uuid == uuid)) {
+    //     storeGroup = currentPlanning; label='plannings'
+    //   }
+    // }
 
+    var originItem = undefined
     if (!storeGroup) {
       console.log("no group available");
       return
     }
-    var originItem = storeGroup.items.filter(e=> e.uuid == uuid)
+
+    if (label == "timeTracks") {
+      originItem = prepareEventDataFromTrack(uuid)
+    }
+
     showListMenu({
       sourceData:storeGroup.items,
       sourceLinks:storeGroup.links,
       displayProp:"name",
       searchable : false,
-      singleElement:originItem[0],
+      singleElement:originItem,
       rulesToDisplaySingleElement:generateRulesFromNodeType(label,store),
       display:[
         {prop:"name", displayAs:"Name", edit:false}
@@ -52,8 +58,9 @@ var createShowSingleEventService = function () {
         startSelectionFromParametersView(ev)
       },
       onEditItemTime: (ev)=>{
-        push(editPlanning({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
-        console.log(ev.target.valueAsDate);
+        push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
+        showById(uuid, callback)
+        setTimeout(function () {ev.select.remove()}, 100);
       },
       onLabelClick: (ev)=>{
         //check if label as a target or difined as a target in func checkIfTargetIsReachable
@@ -68,8 +75,18 @@ var createShowSingleEventService = function () {
         console.log("Edit");
         var newValue = prompt("Edit Item",ev.target.dataset.value)
         if (newValue) {
-          push(editPlanning({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          if (ev.target.dataset.prop=="duration") {
+            push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          }else {
+            let eventsUuid = store.timeTracks.items.find(t => t.uuid == ev.target.dataset.id).relatedEvent
+            console.log(eventsUuid);
+            push(act.edit("events",{uuid:eventsUuid, prop:ev.target.dataset.prop, value:newValue}))
+          }
         }
+
+        showById(uuid, callback)
+        setTimeout(function () {ev.select.remove()}, 100);
+
       }
     })
   }
@@ -312,7 +329,35 @@ var createShowSingleEventService = function () {
         {prop:"duration", displayAs:"Durée", edit:"true"},
         {prop:"eventContainsPbs", displayAs:"Products contained", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
       ]
+    }else if (type =="timeTracks"){
+      return [
+        {prop:"name", displayAs:"name", edit:"true"},
+        {prop:"desc", displayAs:"Description", edit:"true"},
+        {prop:"start", displayAs:"Début", edit:"true", time:true},
+        {prop:"duration", displayAs:"Durée", edit:"true"},
+        {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+      ]
     }
+  }
+
+  var prepareEventDataFromTrack = function (trackUuid) {
+    var store = query.currentProject()
+    let relevantTimeTracks = store.timeTracks.items.filter(l => l.uuid == trackUuid)
+    if (!relevantTimeTracks || !relevantTimeTracks[0]) {
+      return []
+    }
+    let planningData = relevantTimeTracks.map(function (t) {
+      let relatedEvent = store.events.items.find(e=>e.uuid == t.relatedEvent)
+      return {
+        uuid:t.uuid,
+        relatedEvent:relatedEvent.uuid,
+        name:relatedEvent.name,
+        desc:relatedEvent.desc,
+        start:t.start,
+        duration:t.duration
+      }
+    })
+    return planningData[0]
   }
 
   var update = function () {

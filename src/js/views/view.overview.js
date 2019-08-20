@@ -257,6 +257,27 @@ var createOverview = function (targetSelector) {
       }
       alertAboutUpdate("activities history feature has been added.")
     }
+    if (!store.events) {
+      store.events={
+        items:[],
+        links:[]
+      }
+      alertAboutUpdate("planning feature has been added.")
+    }
+    if (!store.timeTracks) {
+      store.timeTracks={
+        items:[],
+        links:[]
+      }
+      alertAboutUpdate("planning feature has been added.")
+    }
+    if (!store.timeLinks) {
+      store.timeLinks={
+        items:[],
+        links:[]
+      }
+      alertAboutUpdate("planning feature has been added.")
+    }
   }
 
 

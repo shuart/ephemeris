@@ -1,7 +1,56 @@
 var createPlanningView = function () {
   var self ={};
   var objectIsActive = false;
-  ganttObject = undefined
+  var ganttObject = undefined
+  var currentPlanning = undefined
+
+  let theme = {}
+  theme.noPlanning = function () {
+    return `
+    <div class="ui placeholder segment">
+      <div class="ui icon header">
+        <i class="sticky calendar outline icon"></i>
+        Select a planning to display
+      </div>
+    </div>`
+  }
+  theme.planningPreviewItem = function (i) {
+     html =`
+     <div data-id="${i.uuid}" class="searchable_planning list-item action_planning_manager_load_planning">
+       <div class="relaxed" data-id="${i.uuid}" >
+        <strong data-id="${i.uuid}" >${i.name || "Untitled"}</strong>
+       </div>
+       <i class="fas fa-calendar-alt"></i>
+     </div>`
+
+    return html
+  }
+  theme.planningPreviewItemAlt = function (i) {
+     html =`
+     <div data-id="${i.uuid}" class="searchable_planning list-item action_planning_manager_load_planning">
+       <div class="relaxed" data-id="${i.uuid}" >
+        <strong data-id="${i.uuid}" >${i.name || "Untitled"}</strong>
+        <div data-id="${i.uuid}" >${i.content.substring(0,135)+".. "}</div>
+       </div>
+       <i class="fas fa-calendar-alt"></i>
+     </div>`
+
+    return html
+  }
+  theme.planningPreviewTitle= function (html) {
+     html =`
+        Plannings
+        <span class="action_planning_manager_add_planning small button"> Add</span>
+    `
+    return html
+  }
+  theme.planningSearchArea= function () {
+     html =`
+        <input class="planning_search_input search_input" type="text" placeholder="Search..">
+        <span class=""> <i class="fas fa-search"></i></span>
+    `
+    return html
+  }
 
   var init = function () {
     //  ganttView= createGanttView({
@@ -17,15 +66,95 @@ var createPlanningView = function () {
 
   }
   var connections =function () {
+    connect(".action_planning_manager_load_planning", "click", (e)=>{
+      console.log(e.target.dataset.id);
+      let planningId = e.target.dataset.id
+      document.querySelector(".center-container").innerHTML=""
+      ganttObject = undefined
+      setCurrentPlanning(planningId)
+    })
+    connect(".action_planning_manager_add_planning", "click", (e)=>{
+      let newName = prompt("Enter a new name")
+      if (newName) {
+        push(act.add("plannings",{name:newName}))
+        update()
+      }
+    })
+  }
 
+  var preparePlanningData = function (planningUuid) {
+    var store = query.currentProject()
+    let relevantTimeLinks = store.timeLinks.items.filter(l=>l.type == "planning" && l.source == planningUuid)
+    let relevantTimeTracksUuid = relevantTimeLinks.map(r => r.target)
+    console.log(relevantTimeTracksUuid);
+    let relevantTimeTracks = store.timeTracks.items.filter(l => relevantTimeTracksUuid.includes(l.uuid))
+    console.log(relevantTimeTracks);
+    if (!relevantTimeTracks || !relevantTimeTracks[0]) {
+      return []
+    }
+    let planningData = relevantTimeTracks.map(function (t) {
+      let relatedEvent = store.events.items.find(e=>e.uuid == t.relatedEvent)
+      return {
+        uuid:t.uuid,
+        relatedEvent:relatedEvent.uuid,
+        name:relatedEvent.name,
+        desc:relatedEvent.desc,
+        start:t.start,
+        duration:t.duration
+      }
+    })
+    return planningData
   }
 
   var render = function () {
+      document.querySelector(".center-container").innerHTML=theme.noPlanning()
+      let treeContainer = document.querySelector(".left-menu-area")
+      let planningTitleArea = document.querySelector(".left-menu-area .title")
+      let planningPreviewArea = treeContainer.querySelector('.left-list')
+      let searchArea = treeContainer.querySelector('.side_searchArea')
+      if (planningPreviewArea && searchArea) { //reuse what is already setup
+        planningTitleArea.innerHTML = theme.planningPreviewTitle()
+        searchArea.innerHTML=theme.planningSearchArea()
+        updatePlanningTree(planningPreviewArea)
+      //update search event
+      setUpSearch(document.querySelector(".planning_search_input"), query.currentProject().plannings.items)
+    }else {
+      alert("elemet missing")
+    }
+
+  }
+
+  var updatePlanningTree = function(container) {
+    var store = query.currentProject()
+    let html = ""
+    store.plannings.items.slice()
+    .sort(function(a, b) {
+        var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+        var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+        if (nameA < nameB) {return -1;}
+        if (nameA > nameB) {return 1;}
+        return 0;
+      })
+    .forEach(function (e) {//todo add proper routes
+      html += theme.planningPreviewItem(e)
+    })
+    container.innerHTML = html
+  }
+
+  var setCurrentPlanning = function (uuid) {
+    currentPlanning = query.currentProject().plannings.items.find(p=>p.uuid == uuid)//TODO remove
+    if (currentPlanning) {
+      renderPlanning()
+    }
+  }
+
+
+  var renderPlanning = function () {
       var store = query.currentProject()
-      console.log(store.plannings.items[0].items);
+      console.log(preparePlanningData(currentPlanning.uuid));
       showListMenu({
-        sourceData:store.plannings.items[0].items,
-        sourceLinks:store.plannings.items[0].links,
+        sourceData:preparePlanningData(currentPlanning.uuid),
+        // sourceLinks:store.plannings.items[0].links,
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
@@ -34,49 +163,66 @@ var createPlanningView = function () {
           {prop:"desc", displayAs:"Description", edit:"true"},
           {prop:"start", displayAs:"Début", edit:"true", time:true},
           {prop:"duration", displayAs:"Durée", edit:"true"},
-          {prop:"eventContainsPbs", displayAs:"Products contained", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+          {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
         ],
         idProp:"uuid",
         onEditItem: (ev)=>{
           console.log("Edit");
           var newValue = prompt("Edit Item",ev.target.dataset.value)
           if (newValue) {
-            push(editPlanning({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+            if (ev.target.dataset.prop=="duration") {
+              push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+              ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+            }else {
+              let eventsUuid = store.timeTracks.items.find(t => t.uuid == ev.target.dataset.id).relatedEvent
+              console.log(eventsUuid);
+              push(act.edit("events",{uuid:eventsUuid, prop:ev.target.dataset.prop, value:newValue}))
+              ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+            }
           }
           if (ganttObject) {  ganttObject.update(prepareGanttData())}
         },
         onEditItemTime: (ev)=>{
-          push(editPlanning({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
-          console.log(ev.target.valueAsDate);
+          push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
+          ev.select.updateData(preparePlanningData(currentPlanning.uuid))
 
           if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
         },
         onRemove: (ev)=>{
           console.log("remove");
           if (confirm("remove item ?")) {
-            push(removePlanningItem({uuid:ev.target.dataset.id}))
-            ev.select.updateData(store.plannings.items[0].items)
+            // push(act.add("events",{uuid:eventUuid, name:newReq}))
+            push(act.remove("timeTracks",{uuid:ev.target.dataset.id}))
+            // push(act.add("timeLinks",{type:"planning", source:currentPlanning.uuid, target:trackUuid}))
+            ev.select.updateData(preparePlanningData(currentPlanning.uuid))
 
             if (ganttObject) {  ganttObject.update(prepareGanttData())}
           }
         },
-        onMove: (ev)=>{
-          console.log("move");
-          if (confirm("move item ?")) {
-            push(movePlanning({origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
-            //update links if needed
-            push(removePlanningLink({target:ev.originTarget.dataset.id}))
-            if (ev.targetParentId && ev.targetParentId != "undefined") {
-              push(addPlanningLink({source:ev.targetParentId, target:ev.originTarget.dataset.id}))
-            }
-            ev.select.updateData(store.plannings.items[0].items)
-            ev.select.updateLinks(store.plannings.items[0].links)
-          }
-        },
+        // onMove: (ev)=>{
+        //   console.log("move");
+        //   if (confirm("move item ?")) {
+        //     push(movePlanning({origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+        //     //update links if needed
+        //     push(removePlanningLink({target:ev.originTarget.dataset.id}))
+        //     if (ev.targetParentId && ev.targetParentId != "undefined") {
+        //       push(addPlanningLink({source:ev.targetParentId, target:ev.originTarget.dataset.id}))
+        //     }
+        //     ev.select.updateData(store.plannings.items[0].items)
+        //     ev.select.updateLinks(store.plannings.items[0].links)
+        //   }
+        // },
         onAdd: (ev)=>{
-          var newReq = prompt("Nouveau Besoin")
-          push(addPlanningItem({name:newReq, duration:1}))
-          console.log(store.plannings);
+          var newReq = prompt("New track")
+          if (newReq) {
+            let eventUuid = uuid()
+            let trackUuid = uuid()
+            push(act.add("events",{uuid:eventUuid, name:newReq}))
+            push(act.add("timeTracks",{uuid:trackUuid,relatedEvent:eventUuid, duration:1}))
+            push(act.add("timeLinks",{type:"planning", source:currentPlanning.uuid, target:trackUuid}))
+            ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+          }
+          console.log(store);
 
           if (ganttObject) {  ganttObject.update(prepareGanttData())}
         },
@@ -88,15 +234,71 @@ var createPlanningView = function () {
         },
         onClick: (ev)=>{
           showSingleEventService.showById(ev.target.dataset.id, function (e) {
-            ev.select.updateData(store.plannings.items[0].items)
-            ev.select.updateLinks(store.plannings.items[0].links)
+            ev.select.updateData(preparePlanningData(currentPlanning.uuid))
             ev.select.refreshList()
             if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
 
           })
         },
         extraActions:[
+          {
+            name:"Remove",
+            action:(ev)=>{
+              var newReq = confirm("Remove current Planning")
+              if (newReq) {
+                push(act.remove("plannings",{uuid:currentPlanning.uuid}))
+                currentPlanning = undefined
+                setTimeout(function () {
+                  update()
+                }, 100);
+              }
 
+            }
+          },
+          {
+            name:"Rename",
+            action:(ev)=>{
+              var newReq = prompt("New planning name",currentPlanning.name)
+              if (newReq) {
+                push(act.edit("plannings",{uuid:currentPlanning.uuid, prop:"name", value:newReq}))
+                setTimeout(function () {
+                  update()
+                  document.querySelector(".center-container").innerHTML=""
+                  setCurrentPlanning(currentPlanning.uuid)
+                }, 100);
+              }
+
+            }
+          },
+          {
+            name:"Duplicate",
+            action:(ev)=>{
+              var newReq = confirm("Duplicate current Planning")
+              if (newReq) {
+                let newId = uuid()
+                push(act.add("plannings",{uuid:newId, name:currentPlanning.name+"_copy"}))
+
+                //duplicate tracks and links
+                let relevantTimeLinks = store.timeLinks.items.filter(l=>l.type == "planning" && l.source == currentPlanning.uuid)
+                let relevantTimeTracksUuid = relevantTimeLinks.map(r => r.target)
+                let relevantTimeTracks = store.timeTracks.items.filter(l => relevantTimeTracksUuid.includes(l.uuid))
+                relevantTimeTracks.forEach(function (t) {
+                  let newTrack = deepCopy(t)
+                  let newTrackId = uuid()
+                  newTrack.uuid = newTrackId
+                  push(act.add("timeTracks",newTrack))
+                  push(act.add("timeLinks",{type:"planning", source:newId, target:newTrackId}))
+                })
+
+                setTimeout(function () {
+                  update()
+                  document.querySelector(".center-container").innerHTML=""
+                  setCurrentPlanning(newId)
+                }, 100);
+              }
+
+            }
+          },
           {
             name:"Gantt",
             action:(ev)=>{
@@ -117,10 +319,11 @@ var createPlanningView = function () {
                     var b = moment(e.startTime);
                     var dayDiff = a.diff(b, 'days')
 
-                    push(editPlanning({uuid:e.target.id, prop:'duration', value:dayDiff}))
+                    // push(editPlanning({uuid:e.target.id, prop:'duration', value:dayDiff}))
+                    push(act.edit("timeTracks",{uuid:e.target.id, prop:'duration', value:dayDiff}))
 
-                    ev.select.updateData(store.plannings.items[0].items)
-                    ev.select.updateLinks(store.plannings.items[0].links)
+                    ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+                    // ev.select.updateLinks(store.plannings.items[0].links)
                     ev.select.update()
                     if (ganttObject) {  ganttObject.update(prepareGanttData())}
                     changeListSize()
@@ -128,10 +331,11 @@ var createPlanningView = function () {
                   },
                   onChangeStartEnd:function (e) {
                     console.log(e);
-                    push(editPlanning({uuid:e.target.id, prop:'start', value:e.mouseTime}))
+                    // push(editPlanning({uuid:e.target.id, prop:'start', value:e.mouseTime}))
 
-                    ev.select.updateData(store.plannings.items[0].items)
-                    ev.select.updateLinks(store.plannings.items[0].links)
+                    push(act.edit("timeTracks",{uuid:e.target.id, prop:'start', value:e.mouseTime}))
+                    ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+                    // ev.select.updateLinks(store.plannings.items[0].links)
                     ev.select.update()
                     if (ganttObject) {  ganttObject.update(prepareGanttData())}
                     changeListSize()
@@ -139,11 +343,12 @@ var createPlanningView = function () {
                   },
                   onElementClicked : function (e) {
                     showSingleEventService.showById(e.id, function (e) {
-                      ev.select.updateData(store.plannings.items[0].items)
-                      ev.select.updateLinks(store.plannings.items[0].links)
+                      ev.select.updateData(preparePlanningData(currentPlanning.uuid))
                       ev.select.refreshList()
                       if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
+
                     })
+
                   }
                  })
               }
@@ -165,7 +370,7 @@ var createPlanningView = function () {
 
   var prepareGanttData = function () {
     var store = query.currentProject()
-    let ganttData = store.plannings.items[0].items.map(function (i) {
+    let ganttData = preparePlanningData(currentPlanning.uuid).map(function (i) {
       return {
         startDate: i.start|| Date.now(),
         duration: [i.duration, 'days'],
@@ -184,7 +389,8 @@ var createPlanningView = function () {
   function startSelection(ev) {
     var store = query.currentProject()
     var metalinkType = ev.target.dataset.prop;
-    var sourceTriggerId = ev.target.dataset.id;
+    var sourceTriggerId = ev.target.dataset.id; //alredy modified by defferedIdProp rule
+    // var sourceTriggerId = store.timeTracks.items.find(t => t.uuid == ev.target.dataset.id).relatedEvent;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
     var sourceData = undefined
     var invert = false
@@ -271,6 +477,29 @@ var createPlanningView = function () {
         console.log("select");
       }
     })
+  }
+
+  function setUpSearch(searchElement, sourceData) {
+    searchElement.addEventListener('keyup', function(e){
+      //e.stopPropagation()
+      var value = document.querySelector(".planning_search_input").value
+      console.log("fefsefsef");
+      console.log(sourceData);
+      var filteredData = sourceData.filter((item) => {
+        // console.log(fuzzysearch(value, item.name));
+        if (fuzzysearch(value, item.name) || fuzzysearch (value, item.name.toLowerCase()) ) {
+          console.log(item.name);
+          return true
+        }
+        return false
+      })
+      console.log(filteredData);
+      var filteredIds = filteredData.map(x => x.uuid);
+      var searchedItems = document.querySelectorAll(".searchable_planning")
+      for (item of searchedItems) {
+        if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "block"}else{item.style.display = "none"}
+      }
+    });
   }
 
   var update = function () {

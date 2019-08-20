@@ -18,8 +18,19 @@ var store = {
     links:[]
   },
   plannings:{
-    items:[{uuid:"plaefse", name:"Project Planning", items:[], links:[]}
-    ],
+    items:[],
+    links:[]
+  },
+  events:{
+    items:[],
+    links:[]
+  },
+  timeTracks:{
+    items:[],
+    links:[]
+  },
+  timeLinks:{
+    items:[],
     links:[]
   },
   requirements:{
