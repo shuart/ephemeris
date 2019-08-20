@@ -185,8 +185,8 @@ var createPlanningView = function () {
                   },
                   onElementClicked : function (e) {
                     showSingleEventService.showById(e.id, function (e) {
-                      ev.select.updateData(store.plannings.items[0].items)
-                      ev.select.updateLinks(store.plannings.items[0].links)
+                      ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+                      // ev.select.updateLinks(store.plannings.items[0].links)
                       ev.select.refreshList()
                       if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
                     })

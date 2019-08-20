@@ -19,13 +19,14 @@ var createShowSingleEventService = function () {
 
     var storeGroup=undefined
     var label=undefined
+    if (store.timeTracks.items.find(i=>i.uuid == uuid)) { storeGroup = store.timeTracks; label='timeTracks'}
 
-    for (var i = 0; i < store.plannings.items.length; i++) {
-      let currentPlanning = store.plannings.items[i]
-      if (currentPlanning.items.find(i=>i.uuid == uuid)) {
-        storeGroup = currentPlanning; label='plannings'
-      }
-    }
+    // for (var i = 0; i < store.plannings.items.length; i++) {
+    //   let currentPlanning = store.plannings.items[i]
+    //   if (currentPlanning.items.find(i=>i.uuid == uuid)) {
+    //     storeGroup = currentPlanning; label='plannings'
+    //   }
+    // }
 
     if (!storeGroup) {
       console.log("no group available");
@@ -305,6 +306,14 @@ var createShowSingleEventService = function () {
               {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
       ]
     }else if (type =="plannings"){
+      return [
+        {prop:"name", displayAs:"name", edit:"true"},
+        {prop:"desc", displayAs:"Description", edit:"true"},
+        {prop:"start", displayAs:"Début", edit:"true", time:true},
+        {prop:"duration", displayAs:"Durée", edit:"true"},
+        {prop:"eventContainsPbs", displayAs:"Products contained", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+      ]
+    }else if (type =="timeTracks"){
       return [
         {prop:"name", displayAs:"name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
