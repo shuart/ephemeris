@@ -24,6 +24,7 @@ var createGanttView = function ({
   var dragMode = false
   var lastAction = undefined
   var zoomLevel = 30
+  var currentScrollTime = undefined
 
   var theme ={
     slider:function (value) {
@@ -95,6 +96,7 @@ var createGanttView = function ({
     menuEl.innerHTML = theme.slider(zoomLevel)
     //connectMenuEvents
     menuEl.querySelector(".zoominput").oninput = function(e) {
+      console.log(ganttEl.scrollLeft);
       zoomLevel = (this.value)
       renderGantt()
     }
@@ -406,6 +408,10 @@ var createGanttView = function ({
         .attr('points', d => d.points);
     }
 
+    if (currentScrollTime) {//reset scroll position
+      ganttEl.scrollLeft = xScale(currentScrollTime)
+    }
+
     //Add the event elements
     // bars
     // .on('mousedown', function(d) {
@@ -559,6 +565,16 @@ var createGanttView = function ({
           //   // console.log(path);
           //   console.log(this);
           // }
+        })
+        .on('mouseleave', function(d){
+
+          let scrollPosition = ganttEl.scrollLeft
+          currentScrollTime = xScale.invert(scrollPosition)
+        })
+        .on('mouseenter', function(d){
+
+          let scrollPosition = ganttEl.scrollLeft
+          currentScrollTime = xScale.invert(scrollPosition)
         })
         .on('mouseup', function(){
           console.log('mouseup');
