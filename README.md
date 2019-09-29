@@ -15,11 +15,13 @@ System Engineering and requirements management application
 -   Produce text specifications based on your model
 -   Create interfaces matrix from specific part of your project
 -   Link pictures and documents to your Products and Requirements
+-   Schedule your projects with Gantt charts
 
 ![Lists](./images/ephemeris_lists.png)
 ![ERD](./images/ephemeris_erd.png)
 ![Meetings](./images/ephemeris_meetings.png)
 ![Meetings](./images/ephemeris_mm.png)
+![Meetings](./images/ephemeris_gantt.png)
 ![Interfaces](./images/ephemeris_interfaces.png)
 
 ## Getting Started
@@ -29,6 +31,7 @@ Download the latest version from the [Release](https://github.com/shuart/ephemer
 Once the appropriate ZIP file has been downloaded for your platform, extract it, run "Ephemeris" and follow the instructions.
 
 - Create a new user. This will be you personal session.
+- Fill in your profile
 - Once logged in, two default projects are already available. Focus on one of them or go to "Manage projects" in the settings menu to rename, add, or re-order the projects.
 - When focused on a project, you can go to different views and edit the projects products, functions and requirements.
 - The "Relations" and "Interfaces" views allow you to edit the project from a network diagram
