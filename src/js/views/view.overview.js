@@ -119,7 +119,7 @@ var createOverview = function (targetSelector) {
           }, 1000);
         },
         extraActions:[
-          {name:"Export",action:(ev)=>{addUserStakeholder()}}
+          {name:"Add",action:(ev)=>{addUserStakeholder()}}
         ]
       })
     })
