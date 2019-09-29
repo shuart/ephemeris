@@ -70,6 +70,7 @@ var reparse = false;
   pageManager.addComponent({name:"extraGraphsView",object:extraGraphsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"interfacesListView",object:interfacesListView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"singleActionView",object:singleActionView, haveSideBar:false})
+  pageManager.addComponent({name:"currentUserView",object:currentUserView, haveSideBar:false})
   pageManager.addComponent({name:"history",object:historyView, haveSideBar:false})
   //side menu component
   pageManager.addComponent({name:"leftMenu",object:leftMenu})
@@ -163,6 +164,9 @@ var reparse = false;
 
   connect(".action_toogle_single_action_view","click",(e)=>{
     singleActionView.update(e.target.dataset.id)
+  })
+  connect(".action_toogle_current_user_view","click",(e)=>{
+    currentUserView.update()
   })
   connect(".action_toogle_tags_view","click",(e)=>{
     tagsView.update()

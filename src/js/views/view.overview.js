@@ -44,6 +44,42 @@ var createOverview = function (targetSelector) {
       </div>
     `
   }
+  theme.quickstartForeignProject=function() {
+    return `
+    <h4>Quickstart guide</h4>
+
+      <div class="ui small steps">
+        <div class="link step action_toogle_add_me_in_stakeholders">
+          <i class="address book icon"></i>
+          <div class="content">
+            <div class="title">Add myself</div>
+            <div class="description">As a project stakeholder</div>
+          </div>
+        </div>
+        <div class="link step action_toogle_stakeholders">
+          <i class="address book icon"></i>
+          <div class="content">
+            <div class="title">Add a stakeholder</div>
+            <div class="description">To start capturing needs</div>
+          </div>
+        </div>
+        <div class="link step action_toogle_requirements_view">
+          <i class="comment icon"></i>
+          <div class="content">
+            <div class="title">Add a requirement</div>
+            <div class="description">To record a user need</div>
+          </div>
+        </div>
+        <div class="link step action_toogle_tree_pbs">
+          <i class="dolly icon"></i>
+          <div class="content">
+            <div class="title">Add a product</div>
+            <div class="description">And link it to a requirement</div>
+          </div>
+        </div>
+      </div>
+    `
+  }
 
 
   var init = function () {
@@ -52,6 +88,41 @@ var createOverview = function (targetSelector) {
 
   }
   var connections =function () {
+    connect(".action_toogle_add_me_in_stakeholders","click",(e)=>{
+      alert("Select your name in the stakeholder list to mark it as yourself, or add yourself as a new stakeholder")
+      showListMenu({
+        sourceData:query.currentProject().stakeholders.items,
+        displayProp:"name",
+        display:[
+          {prop:"name", displayAs:"Prénom", edit:false},
+          {prop:"lastName", displayAs:"Nom", edit:false},
+          {prop:"org", displayAs:"Entreprise", edit:false},
+          {prop:"role", displayAs:"Fonction", edit:false},
+          {prop:"mail", displayAs:"E-mail", edit:false}
+        ],
+        idProp:"uuid",
+        onClick: (ev)=>{
+          console.log(ev);
+          // console.log(IdToFuse, ProjectWhereFusedIs);
+          let idToReplace = ev.target.dataset.id
+          if (confirm("Do you want to mark this stakehoder as yourself?")) {
+            var projectScope = query.currentProject()
+            var idToChange = projectScope.stakeholders.items.find(s=>s.uuid==idToReplace)
+            idToChange.uuid = app.store.userData.info.userUuid//TODO BAD, Move to API
+            var metalinksOriginToChange = projectScope.metaLinks.items.filter(m=>m.source==idToReplace)
+            var metalinksTargetToChange = projectScope.metaLinks.items.filter(m=>m.target==idToReplace)
+            for (link of metalinksOriginToChange) {link.source = app.store.userData.info.userUuid}
+            for (link of metalinksTargetToChange) {link.target = app.store.userData.info.userUuid}
+          }
+          setTimeout(function () {
+            render()
+          }, 1000);
+        },
+        extraActions:[
+          {name:"Export",action:(ev)=>{addUserStakeholder()}}
+        ]
+      })
+    })
 
   }
 
@@ -60,9 +131,10 @@ var createOverview = function (targetSelector) {
     if (store) {
       clearUncompleteLinks()//clean all uncomplete metalink of the project
       updateFileForRetroCompatibility() //check file for retrocompatbiity
-      //create a PBS if first opening of project
+      //create a PBS and current user stakholder if first opening of project
       if (!store.currentPbs.items[0]) {
         createPBS()
+        createUserStakeholder()
       }
 
       var headerHtml =`
@@ -124,7 +196,7 @@ var createOverview = function (targetSelector) {
         </div>
 
         <div class="ui center aligned basic segment">
-          ${theme.quickstart()}
+          ${checkIfCurrentUserIsInStakeholders() ? theme.quickstart():theme.quickstartForeignProject()}
         </div>
 
       </div>
@@ -150,6 +222,10 @@ var createOverview = function (targetSelector) {
     }
   }
 
+  function checkIfCurrentUserIsInStakeholders() {
+    return query.currentProject().stakeholders.items.find(s=>s.uuid == app.store.userData.info.userUuid)
+  }
+
   function createPBS() {
     var store = query.currentProject()
     store.currentPbs.items.push({name: store.reference+store.name, uuid: "ita2215151-a50f-4dd3-904e-146118d5d444"})
@@ -157,6 +233,16 @@ var createOverview = function (targetSelector) {
     store.currentPbs.items.push({name: "Another linked product", uuid:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
     store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
     store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
+  }
+  function createUserStakeholder() {
+    var store = query.currentProject()
+    let i = app.store.userData.info
+    store.stakeholders.items[0] = {uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""}
+  }
+  function addUserStakeholder() {
+    var store = query.currentProject()
+    let i = app.store.userData.info
+    store.stakeholders.items.push({uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""})
   }
 
   function updateFileForRetroCompatibility() {

@@ -37,7 +37,9 @@ var createDbAdaptater = function () {
       uuid:newUuid,
       name:data.name || "new user",
       userData:{
-        info:{},
+        info:{
+          userUuid:genuuid()
+        },
         preferences:{
           projectDisplayOrder:[],
           hiddenProject:[]

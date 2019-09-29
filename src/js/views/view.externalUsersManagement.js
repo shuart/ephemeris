@@ -13,6 +13,7 @@ var createExternalUsersManagement = function (targetSelector) {
   }
 
   var render = function () {
+    container.innerHTML = ""
     var allUsers = getAllUsers()
     //var html = generateUsersViewHtml(allUsers)
     generateUsersViewList(allUsers)
@@ -72,6 +73,7 @@ var createExternalUsersManagement = function (targetSelector) {
       extraButtons : [
         {name:"Fuse", class:"fuse", prop:"projectId", action: (orev)=>{
           generateUsersFusionList(owners, orev.dataset.id, orev.dataset.extra )
+          update()
         }}
       ],
       onEditItem: (ev)=>{
@@ -96,7 +98,7 @@ var createExternalUsersManagement = function (targetSelector) {
         }
       },
       onClick: (ev)=>{
-        setActive()
+        // setActive()
         //mutations
         // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
         // console.log(ev.target);
@@ -128,8 +130,8 @@ var createExternalUsersManagement = function (targetSelector) {
           console.log(projectScope);
           var idToChange = projectScope.stakeholders.items.find(s=>s.uuid==IdToFuse)
           idToChange.uuid = ev.target.dataset.id //TODO BAD, Move to API
-          var metalinksOriginToChange = projectScope.metaLinks.filter(m=>m.source==IdToFuse)
-          var metalinksTargetToChange = projectScope.metaLinks.filter(m=>m.target==IdToFuse)
+          var metalinksOriginToChange = projectScope.metaLinks.items.filter(m=>m.source==IdToFuse)
+          var metalinksTargetToChange = projectScope.metaLinks.items.filter(m=>m.target==IdToFuse)
           for (link of metalinksOriginToChange) {link.source = ev.target.dataset.id}
           for (link of metalinksTargetToChange) {link.target = ev.target.dataset.id }
         }

@@ -1,6 +1,16 @@
 var createLeftMenuActions = function () {
   var self ={};
   var objectIsActive = false;
+  var actionSortStatus = "all"
+
+  let theme = {}
+  theme.actionPreviewTitle= function (html) {
+     html =`
+        Next actions
+        <span class="action_left_menu_action_toggle_mine small button"> ${actionSortStatus}</span>
+    `
+    return html
+  }
 
   var init = function () {
     connections()
@@ -21,6 +31,18 @@ var createLeftMenuActions = function () {
 
       }
     })
+    connect(".action_left_menu_action_toggle_mine","click",function (e) {
+      if (actionSortStatus != "my actions") {
+        if (app.store.userData.info.userUuid) {
+          actionSortStatus = "my actions"
+        }else {
+          alert("First fill your profile to be able to filter your actions")
+        }
+      }else {
+        actionSortStatus = "all"
+      }
+      update()
+    })
     //component connection
     //None
   }
@@ -39,7 +61,7 @@ var createLeftMenuActions = function () {
       document.querySelector(".current-area-title").innerHTML = ""
       document.querySelector(".current-area").innerHTML = ""
       document.querySelector(".pbsFlatView-area").innerHTML = ""
-      document.querySelector(".left-menu-area .title").innerHTML = "Next actions"
+      document.querySelector(".left-menu-area .title").innerHTML = theme.actionPreviewTitle()
       document.querySelector(".left-menu-area .left-list").innerHTML = generateNextActionList()
     }
   }
@@ -66,6 +88,7 @@ var createLeftMenuActions = function () {
         copy.projectName = store.name;
         copy.urgent = lessThanInSomeDays(a.dueDate,2)
         copy.projectUuid = store.uuid
+        copy.assignedToUuid = store.metaLinks.items.filter(m=>m.type == "assignedTo" && m.source == copy.uuid).map(f=>f.target)
         return copy
       })
       allActions = allActions.concat(formatedActions)
@@ -75,6 +98,10 @@ var createLeftMenuActions = function () {
     let filteredActions = allActions.filter( e => fuzzysearch(filterText, e.name))
     filteredActions = filteredActions.filter( e => e.open)
     filteredActions = filteredActions.filter( e => lessThanInSomeDays(e.dueDate,7))
+
+    if (actionSortStatus == "my actions" && app.store.userData.info.userUuid) {
+      filteredActions = filteredActions.filter( e => e.assignedToUuid.includes(app.store.userData.info.userUuid))
+    }
 
     let sortedActions = filteredActions.sort(function(a, b) {
       if (a.dueDate && b.dueDate) {

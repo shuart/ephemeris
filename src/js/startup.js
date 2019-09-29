@@ -52,6 +52,14 @@ function createStartUp() {
             app.store.projects = user.projects; //TODO use actions
             app.store.userData = user.userData; //TODO use actions
             app.state.currentUser = user.uuid; //TODO use actions
+            //setup profile if Needed
+            if (!app.store.userData.info.userLastName || !app.store.userData.info.userFirstName) {
+              app.store.userData.info.userFirstName = prompt("Set your first name")
+              app.store.userData.info.userLastName = prompt("Set your last name")
+            }
+            if (!app.store.userData.info.userUuid) {
+              app.store.userData.info.userUuid = genuuid()
+            }
             updateFileForRetroCompatibility()
             pageManager.setActivePage("projectSelection")
             sourceEl.remove()
