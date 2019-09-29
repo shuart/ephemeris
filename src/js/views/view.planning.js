@@ -199,6 +199,20 @@ var createPlanningView = function () {
             if (ganttObject) {  ganttObject.update(prepareGanttData())}
           }
         },
+        onMove: (ev)=>{
+          console.log("move");
+          if (confirm("move item ?")) {
+            push(act.move("timeTracks", {origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+            //update links if needed
+            push(act.removeLink("timeTracks",{target:ev.originTarget.dataset.id}))
+            if (ev.targetParentId && ev.targetParentId != "undefined") {
+              push(act.addLink("timeTracks",{source:ev.targetParentId, target:ev.originTarget.dataset.id}))
+            }
+            ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+
+            if (ganttObject) {  ganttObject.update(prepareGanttData())}
+          }
+        },
         // onMove: (ev)=>{
         //   console.log("move");
         //   if (confirm("move item ?")) {
