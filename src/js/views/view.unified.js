@@ -109,10 +109,12 @@ var createUnifiedView = function (targetSelector) {
         displayProp:"name",
         searchable : true,
         display:[
-          {prop:"name", displayAs:"Name", edit:false},
-          {prop:"desc", displayAs:"Description", edit:false}
+          {prop:"name", displayAs:"First name", edit:false},
+          {prop:"lastName", displayAs:"Last Name", edit:false},
+          {prop:"role", displayAs:"Role", edit:false}
         ],
         idProp:"uuid",
+        showColoredIcons: lettersFromNames,
         onCloseMenu: (ev)=>{
           update()
         },
