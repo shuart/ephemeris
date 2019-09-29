@@ -1211,7 +1211,7 @@ var createMeetingsManager = function (targetSelector) {
       return acc += htmlNewItem
     }
 
-    var mainText = `<div class="ui mini label">Nobody</div>`
+    var mainText = `<div class="ui mini label">All</div>`
     if (names && names[0]) {
       mainText = names.reduce(reduceChoices,"")
     }
