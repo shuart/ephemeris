@@ -335,15 +335,15 @@ var createGanttView = function ({
     const polylineData = createPolylineData(rectangleData, elementHeight);
 
     const xAxis = d3.axisBottom(xScale)
-      .ticks(d3.timeDay.every(1))
+      .ticks(d3.timeDay.every(getDayDensityFromZoom(zoomLevel)))
       // .tickSize(200, 0, 0)
       .tickFormat(d3.timeFormat( getTimeFormatFromZoom(zoomLevel) ));
 
 
     const xAxisMonth = d3.axisBottom(xScale)
-      .ticks(d3.timeMonth.every(1))
+      .ticks(d3.timeMonth.every( getMonthDensityFormatFromZoom(zoomLevel) ))
       // .tickSize(200, 0, 0)
-      .tickFormat(d3.timeFormat('%B %y'));
+      .tickFormat(d3.timeFormat(getMonthFormatFromZoom(zoomLevel) ));
 
     // create container for the data
     const g1 = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
@@ -665,7 +665,7 @@ var createGanttView = function ({
   };
 
   const getTimeFormatFromZoom = function (zoom) {
-    if (zoom < 30) {
+    if (zoom < 10) {
       return ''
     }else if (zoom < 50){
       return '%d'
@@ -673,11 +673,38 @@ var createGanttView = function ({
       return '%d-%m'
     }
   }
+  const getMonthFormatFromZoom = function (zoom) {
+    if (zoom < 10) {
+      return '%m %y'
+    }else if (zoom < 15){
+      return '%b %y'
+    }else {
+      return '%B %y'
+    }
+  }
+  const getMonthDensityFormatFromZoom = function (zoom) {
+    if (zoom < 5) {
+      return 12
+    }else if (zoom < 10){
+      return 6
+    }else {
+      return 1
+    }
+  }
   const getGridDensityFromZoom = function (zoom) {
     if (zoom < 5) {
       return 62
     }else if (zoom < 20){
       return 31
+    }else {
+      return 1
+    }
+  }
+  const getDayDensityFromZoom = function (zoom) {
+    if (zoom < 15) {
+      return 15
+    }else if (zoom < 20){
+      return 7
     }else {
       return 1
     }
