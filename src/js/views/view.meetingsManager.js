@@ -9,6 +9,8 @@ var createMeetingsManager = function (targetSelector) {
   let currentOpenedMeeting = undefined
   let currentMeetingObject = undefined
 
+  let opacityStyleOfClosedItems = "0.3"
+
   let theme = {}
   theme.noMeeting = function () {
     return `
@@ -241,7 +243,7 @@ var createMeetingsManager = function (targetSelector) {
     let colType=undefined
     let isEditable = !item.freeze
      html =`
-     <div class='row' style="position: relative; opacity: ${(item.freeze && item.resolved)? "0.5": "1"};">
+     <div class='row ${item.freeze? "old-meeting-item": "new-meeting-item"}' style="position: relative; opacity: ${(item.freeze && item.resolved)? opacityStyleOfClosedItems: "1"};">
 
        <div style="
           position: absolute;
@@ -302,7 +304,7 @@ var createMeetingsManager = function (targetSelector) {
     let colType=undefined
     let isEditable = !item.freeze
      html =`
-     <div class='row' style="position: relative; opacity: ${item.freeze? "0.5": "1"};">
+     <div class='row  ${item.freeze? "old-meeting-item": "new-meeting-item"}' style="position: relative; opacity: ${item.freeze? opacityStyleOfClosedItems: "1"};">
      <div style="
          position: absolute;
          left: -33px;
@@ -353,7 +355,7 @@ var createMeetingsManager = function (targetSelector) {
     let colType=undefined
     let isEditable = !item.freeze
      html =`
-     <div class='row' style="position: relative;opacity: ${item.freeze? "0.5": "1"};">
+     <div class='row ${item.freeze? "old-meeting-item": "new-meeting-item"}' style="position: relative;opacity: ${item.freeze? opacityStyleOfClosedItems: "1"};">
      <div style="
          position: absolute;
          left: -33px;
@@ -867,6 +869,7 @@ var createMeetingsManager = function (targetSelector) {
           document.querySelector('.main-container').style.paddingLeft= "0px"
           document.querySelector('.meetingAreaEditor').style.width= "100%"
           document.querySelector('.meetingAreaEditor').style.marginLeft="26px"
+          document.querySelector('.new-meeting-item').style.fontWeight="bold"
 
           //clean for prints
           let meetingContainer = document.querySelector('.meetingAreaEditor')
@@ -886,6 +889,9 @@ var createMeetingsManager = function (targetSelector) {
           a.remove()
           })
           meetingContainer.querySelectorAll('.action_meetingmanager_list_delete_topic').forEach(function(a){
+          a.remove()
+          })
+          meetingContainer.querySelectorAll('.action_meetingmanager_list_delete_item').forEach(function(a){
           a.remove()
           })
 
