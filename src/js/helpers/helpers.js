@@ -358,3 +358,38 @@ var getObjectGroupByUuid = function (uuid) {
   }
   return storeGroup
 }
+
+//Workarounds
+
+var workarounds = {}
+//due to a poor implementation of the meeting/participant/assigned to relation. TODO, move to separate data
+workarounds.replaceStakeholderIdInMeetings = function (store, oldId, newId) {
+
+
+  store.meetings.items.forEach(meeting=>{
+    //replace participants area
+    var index = meeting.participants.absent.indexOf(oldId);
+    if (index !== -1) {meeting.participants.absent[index] = newId;}
+    var index = meeting.participants.cc.indexOf(oldId);
+    if (index !== -1) {meeting.participants.cc[index] = newId;}
+    var index = meeting.participants.present.indexOf(oldId);
+    if (index !== -1) {meeting.participants.present[index] = newId;}
+
+
+
+    //replace in topics
+    meeting.chapters.forEach(c=>{
+      c.topics.forEach(t=>{
+        t.items.forEach(i=>{
+          if (i.assignedTo) {
+            var index = i.assignedTo.indexOf(oldId);
+            if (index !== -1) {i.assignedTo[index] = newId;}
+          }
+        })
+      })
+    })
+  })
+
+
+
+}

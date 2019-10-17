@@ -113,6 +113,7 @@ var createOverview = function (targetSelector) {
             var metalinksTargetToChange = projectScope.metaLinks.items.filter(m=>m.target==idToReplace)
             for (link of metalinksOriginToChange) {link.source = app.store.userData.info.userUuid}
             for (link of metalinksTargetToChange) {link.target = app.store.userData.info.userUuid}
+            workarounds.replaceStakeholderIdInMeetings(projectScope, idToReplace, app.store.userData.info.userUuid)
           }
           setTimeout(function () {
             render()

@@ -134,6 +134,8 @@ var createExternalUsersManagement = function (targetSelector) {
           var metalinksTargetToChange = projectScope.metaLinks.items.filter(m=>m.target==IdToFuse)
           for (link of metalinksOriginToChange) {link.source = ev.target.dataset.id}
           for (link of metalinksTargetToChange) {link.target = ev.target.dataset.id }
+          workarounds.replaceStakeholderIdInMeetings(query.currentProject(), IdToFuse, ev.target.dataset.id)
+
         }
         setTimeout(function () {
           render()
