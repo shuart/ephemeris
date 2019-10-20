@@ -73,6 +73,7 @@ var reparse = false;
   pageManager.addComponent({name:"currentUserView",object:currentUserView, haveSideBar:false})
   pageManager.addComponent({name:"vvManager",object:vvManager, haveSideBar:false})
   pageManager.addComponent({name:"vvSet",object:vvSet, haveSideBar:false})
+  pageManager.addComponent({name:"vvReport",object:vvReport, haveSideBar:false})
   pageManager.addComponent({name:"history",object:historyView, haveSideBar:false})
   //side menu component
   pageManager.addComponent({name:"leftMenu",object:leftMenu})
@@ -172,6 +173,9 @@ var reparse = false;
   })
   connect(".action_toogle_vv_set_view","click",(e)=>{
     vvSet.update(e.target.dataset.id)
+  })
+  connect(".action_toogle_vv_report_view","click",(e)=>{
+    vvReport.update(e.target.dataset.id)
   })
   connect(".action_toogle_current_user_view","click",(e)=>{
     currentUserView.update()

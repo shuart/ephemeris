@@ -17,6 +17,14 @@ var createVvManager = function (targetSelector) {
     </div>
     `
   }
+  theme.vvReportArea = function (reports) {
+    return`
+    <h2>Reports</h2>
+    <div class="ui link cards" style="padding:5px;">
+      ${reports.map(report=> theme.vvReport(report)).join('')}
+    </div>
+    `
+  }
   theme.vvSet = function (set) {
     return `
     <div class="ui card">
@@ -50,7 +58,46 @@ var createVvManager = function (targetSelector) {
         </div>
       </div>
       <div class="extra content">
-        <button data-id="${set.uuid}" class="action_toogle_vv_set_view ui button">Join Project</button>
+        <button data-id="${set.uuid}" class="action_toogle_vv_set_view ui mini button">View</button>
+        <button data-id="${set.uuid}" class="action_vv_manager_add_report_from_set ui mini button">Create a report</button>
+      </div>
+    </div>
+    `
+  }
+  theme.vvReport= function (report) {
+    return `
+    <div class="ui card">
+      <div class="content">
+        <div class="header">${report.name}</div>
+      </div>
+      <div class="content">
+        <h4 class="ui sub header">Activity</h4>
+        <div class="ui small feed">
+          <div class="event">
+            <div class="content">
+              <div class="summary">
+                 <a>Elliot Fu</a> added <a>Jenny Hess</a> to the project
+              </div>
+            </div>
+          </div>
+          <div class="event">
+            <div class="content">
+              <div class="summary">
+                 <a>Stevie Feliciano</a> was added as an <a>Administrator</a>
+              </div>
+            </div>
+          </div>
+          <div class="event">
+            <div class="content">
+              <div class="summary">
+                 <a>Helen Troy</a> added two pictures
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="extra content">
+        <button data-id="${report.uuid}" class="action_toogle_vv_report_view ui button">View</button>
       </div>
     </div>
     `
@@ -65,6 +112,19 @@ var createVvManager = function (targetSelector) {
       push(act.add("vvSets",{name:"new Set"}))
       render()
     })
+    connect(".action_vv_manager_add_report_from_set", "click", function (e) {
+      var store = query.currentProject()
+      let reportUuid = genuuid()
+      push(act.add("vvReports",{uuid:reportUuid, name:"New Report based on "+ e.target.dataset.id}))
+      //generate the report action based on the set
+      let vvDefinitionsInOrigin = deepCopy( store.vvDefinitions.items.filter(def=> def.sourceSet == e.target.dataset.id) )
+      vvDefinitionsInOrigin.forEach(function (def) {
+        def.uuid = genuuid()
+        def.sourceReport = reportUuid
+        push(act.add("vvActions",def))
+      })
+      render()
+    })
   }
 
   var render = function () {
@@ -75,6 +135,10 @@ var createVvManager = function (targetSelector) {
       let vvSetsList = store.vvSets.items
       container.appendChild(
         toNode(theme.vvSetArea(vvSetsList))
+      )
+      let vvReportsList = store.vvReports.items
+      container.appendChild(
+        toNode(theme.vvReportArea(vvReportsList))
       )
       // vvSetsList.forEach(set =>{
       //   container.appendChild(toNode(theme.vvSet()))
