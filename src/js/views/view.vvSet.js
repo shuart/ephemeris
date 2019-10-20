@@ -143,6 +143,9 @@ var createVvSet = function ({
         push(act.add("vvDefinitions",{uuid:genuuid(), sourceSet:currentSetUuid, name:definitionName, color:"#ffffff"}))
         ev.select.updateData(generateRelevantSet(currentSetUuid))
       },
+      onLabelClick: (ev)=>{
+        showSingleItemService.showById(ev.target.dataset.id)
+      },
       onClick: (ev)=>{
         //mutations
         // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)

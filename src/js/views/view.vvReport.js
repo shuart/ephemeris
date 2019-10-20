@@ -143,6 +143,9 @@ var createVvReport = function ({
         push(act.add("vvActions",{uuid:genuuid(), sourceReport:currentReportUuid, name:definitionName, color:"#ffffff"}))
         ev.select.updateData(generateRelevantActions(currentReportUuid))
       },
+      onLabelClick: (ev)=>{
+        showSingleItemService.showById(ev.target.dataset.id)
+      },
       onClick: (ev)=>{
         //mutations
         // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
