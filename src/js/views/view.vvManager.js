@@ -8,16 +8,20 @@ var createVvManager = function (targetSelector) {
   theme.vvSetArea = function (sets) {
     return`
     <h2>Verification & Validation Sets</h2>
+    <button class="action_vv_manager_add_set ui right labeled icon green mini button">
+      <i class="plus icon"></i>
+      Add a V&V set
+    </button>
     <div class="ui link cards" style="padding:5px;">
-      ${sets.map(set=> theme.vvSet()).join('')}
+      ${sets.map(set=> theme.vvSet(set)).join('')}
     </div>
     `
   }
-  theme.vvSet = function () {
+  theme.vvSet = function (set) {
     return `
     <div class="ui card">
       <div class="content">
-        <div class="header">Project Timeline</div>
+        <div class="header">${set.name}</div>
       </div>
       <div class="content">
         <h4 class="ui sub header">Activity</h4>
@@ -46,7 +50,7 @@ var createVvManager = function (targetSelector) {
         </div>
       </div>
       <div class="extra content">
-        <button class="ui button">Join Project</button>
+        <button data-id="${set.uuid}" class="action_toogle_vv_set_view ui button">Join Project</button>
       </div>
     </div>
     `
@@ -57,15 +61,18 @@ var createVvManager = function (targetSelector) {
 
   }
   var connections =function () {
-
+    connect(".action_vv_manager_add_set", "click", function (e) {
+      push(act.add("vvSets",{name:"new Set"}))
+      render()
+    })
   }
 
   var render = function () {
     var store = query.currentProject()
     container.innerHTML = ""
     if (store) {
-      let vvSetsList = [1,2,3,4]
-      // let vvSetsList = store.vvSets.items
+      // let vvSetsList = [1,2,3,4]
+      let vvSetsList = store.vvSets.items
       container.appendChild(
         toNode(theme.vvSetArea(vvSetsList))
       )
