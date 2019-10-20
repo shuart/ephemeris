@@ -365,6 +365,35 @@ var createOverview = function (targetSelector) {
       }
       alertAboutUpdate("planning feature has been added.")
     }
+    if (!store.vvSets) {
+      store.vvSets={
+        items:[],
+        links:[]
+      }
+      alertAboutUpdate("Verification feature (V&V sets) has been added.")
+    }
+    if (!store.vvDefinitions) {
+      store.vvDefinitions={
+        items:[],
+        links:[]
+      }
+      alertAboutUpdate("Verification feature (V&V definitions) has been added.")
+    }
+    if (!store.vvReports) {
+      store.vvReports={
+        items:[],
+        links:[]
+      }
+      alertAboutUpdate("Verification feature (V&V reports) has been added.")
+    }
+    if (!store.vvActions) {
+      store.vvActions={
+        items:[],
+        links:[]
+      }
+      alertAboutUpdate("Verification feature (V&V actions) has been added.")
+    }
+
   }
 
 
