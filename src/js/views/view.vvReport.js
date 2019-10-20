@@ -114,10 +114,10 @@ var createVvReport = function ({
       fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"name", displayAs:"Name", edit:false},
+        {prop:"vvReportNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
         {prop:"other", displayAs:"Shall Statement", edit:false},
         {prop:"other", displayAs:"Success Criteria", edit:false},
         {prop:"other", displayAs:"Verification Method", edit:false},
-        {prop:"vvReportNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"Result", displayAs:"Result", edit:true},

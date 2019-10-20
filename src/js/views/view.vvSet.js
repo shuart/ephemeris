@@ -114,10 +114,10 @@ var createVvSet = function ({
       fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"name", displayAs:"Name", edit:"true"},
+        {prop:"vvDefinitionNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
         {prop:"other", displayAs:"Shall Statement", edit:"true"},
         {prop:"other", displayAs:"Success Criteria", edit:"true"},
         {prop:"other", displayAs:"Verification Method", edit:"true"},
-        {prop:"vvDefinitionNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
         {prop:"relatedObjects", displayAs:"Related Products", edit:"true"}
       ],
       idProp:"uuid",
