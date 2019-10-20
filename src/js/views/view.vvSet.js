@@ -59,9 +59,9 @@ var createVvSet = function ({
 
     mainEl.classList ="ui raised padded container segment"
     // mainEl.style.width = "50%"
-    mainEl.style.width = "50%"
+    mainEl.style.width = "75%"
     mainEl.style.maxHeight = "90%"
-    mainEl.style.left= "25%";
+    mainEl.style.left= "12%";
     mainEl.style.padding = "50px";
     mainEl.style.overflow = "auto";
     // mainEl.style.left= "25%";
@@ -70,6 +70,7 @@ var createVvSet = function ({
     container.style.position = "relative"
     container.style.height = "90%"
     container.style.overflow = "auto"
+    container.classList = "vvDefinitionsArea"
 
     var menuArea = document.createElement("div");
 
@@ -81,20 +82,67 @@ var createVvSet = function ({
     mainEl.appendChild(container)
 
     menuArea.appendChild(toNode(renderMenu(uuid)))
-    container.appendChild(toNode(renderSet(uuid)))
-
+    // container.appendChild(toNode(renderSet(uuid)))
     document.body.appendChild(sourceOccElement)
-
+    renderSet()
   }
 
-  var renderSet =function (uuid){
-
+  var renderSet =function (){
+    var store = query.currentProject()
+    let relevantSet = generateRelevantSet(currentSetUuid)
+    let workSet = deepCopy(relevantSet)
+    displayWorkSet(workSet, ".vvDefinitionsArea")
   }
   var renderMenu =function (uuid){
     return theme.menu()
   }
 
   //UTILS
+
+  var generateRelevantSet = function (currentSetUuid) {
+    var store = query.currentProject()
+    return store.vvDefinitions.items.filter(i=>i.sourceSet == currentSetUuid)
+  }
+
+  var displayWorkSet = function (workSet, container) {
+    showListMenu({
+      sourceData:workSet,
+      displayProp:"name",
+      targetDomContainer:container,
+      fullScreen:true,// TODO: perhaps not full screen?
+      display:[
+        {prop:"name", displayAs:"Name", edit:"true"},
+        {prop:"color", displayAs:"Color", edit:"true"}
+      ],
+      idProp:"uuid",
+      onEditItem: (ev)=>{
+        console.log("Edit");
+        var newValue = prompt("Edit Item",ev.target.dataset.value)
+        if (newValue) {
+          push(act.edit("tags", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+        }
+      },
+      onRemove: (ev)=>{
+        if (confirm("remove item ?")) {
+          push(act.remove("tags",{uuid:ev.target.dataset.id}))
+          ev.select.updateData(store.tags.items)
+        }
+      },
+      onAdd: (ev)=>{
+        let definitionName = prompt("New Defintion")
+        push(act.add("vvDefinitions",{uuid:genuuid(), sourceSet:currentSetUuid, name:definitionName, color:"#ffffff"}))
+        ev.select.updateData(generateRelevantSet(currentSetUuid))
+      },
+      onClick: (ev)=>{
+        //mutations
+        // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
+        // console.log(ev.target);
+        // store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
+        // ev.selectDiv.remove()
+        // renderCDC(store.db, searchFilter)
+      }
+    })
+  }
   var update = function (uuid) {
     if (uuid) {
       currentSetUuid = uuid
