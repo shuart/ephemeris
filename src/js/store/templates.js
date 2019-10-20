@@ -159,8 +159,8 @@ var store = {
     links:[]
   },
   vvReports:{
-    items:[]
-    links:[],
+    items:[],
+    links:[]
   },
   vvDefinitions:{
     items:[],
