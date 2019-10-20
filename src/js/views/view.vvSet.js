@@ -59,9 +59,9 @@ var createVvSet = function ({
 
     mainEl.classList ="ui raised padded container segment"
     // mainEl.style.width = "50%"
-    mainEl.style.width = "75%"
+    mainEl.style.width = "80%"
     mainEl.style.maxHeight = "90%"
-    mainEl.style.left= "12%";
+    mainEl.style.left= "10%";
     mainEl.style.padding = "50px";
     mainEl.style.overflow = "auto";
     // mainEl.style.left= "25%";
@@ -112,20 +112,25 @@ var createVvSet = function ({
       fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"name", displayAs:"Name", edit:"true"},
-        {prop:"color", displayAs:"Color", edit:"true"}
+        {prop:"other", displayAs:"Shall Statement", edit:"true"},
+        {prop:"other", displayAs:"Success Criteria", edit:"true"},
+        {prop:"other", displayAs:"Verification Method", edit:"true"},
+        {prop:"relatedRequirements", displayAs:"Related Requirements", edit:"true"},
+        {prop:"relatedObjects", displayAs:"Related Products", edit:"true"}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{
         console.log("Edit");
         var newValue = prompt("Edit Item",ev.target.dataset.value)
         if (newValue) {
-          push(act.edit("tags", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          push(act.edit("vvDefinitions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          ev.select.updateData(generateRelevantSet(currentSetUuid))
         }
       },
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
-          push(act.remove("tags",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.tags.items)
+          push(act.remove("vvDefinitions",{uuid:ev.target.dataset.id}))
+          ev.select.updateData(generateRelevantSet(currentSetUuid))
         }
       },
       onAdd: (ev)=>{
