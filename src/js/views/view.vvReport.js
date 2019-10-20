@@ -105,8 +105,10 @@ var createVvReport = function ({
   }
 
   var displayWorkSet = function (workSet, container) {
+    var store = query.currentProject()
     showListMenu({
       sourceData:workSet,
+      metaLinks:store.metaLinks.items,
       displayProp:"name",
       targetDomContainer:container,
       fullScreen:true,// TODO: perhaps not full screen?
@@ -115,7 +117,7 @@ var createVvReport = function ({
         {prop:"other", displayAs:"Shall Statement", edit:false},
         {prop:"other", displayAs:"Success Criteria", edit:false},
         {prop:"other", displayAs:"Verification Method", edit:false},
-        {prop:"relatedRequirements", displayAs:"Related Requirements", edit:false},
+        {prop:"vvReportNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"Result", displayAs:"Result", edit:true},

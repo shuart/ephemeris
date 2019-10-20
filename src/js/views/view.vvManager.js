@@ -119,7 +119,17 @@ var createVvManager = function (targetSelector) {
       //generate the report action based on the set
       let vvDefinitionsInOrigin = deepCopy( store.vvDefinitions.items.filter(def=> def.sourceSet == e.target.dataset.id) )
       vvDefinitionsInOrigin.forEach(function (def) {
-        def.uuid = genuuid()
+        let newDefUuid = genuuid()
+        //copy related metalinks
+        let relatedMetalink = deepCopy(store.metaLinks.items.filter(l=> l.source == def.uuid && l.type == 'vvDefinitionNeed'))
+        relatedMetalink.forEach(function (relatedLink) {
+          relatedLink.uuid = genuuid()
+          relatedLink.source =newDefUuid
+          relatedLink.type ="vvReportNeed"
+          push(act.add("metaLinks",relatedLink))
+        })
+        //then modify the def to an action
+        def.uuid = newDefUuid
         def.sourceReport = reportUuid
         push(act.add("vvActions",def))
       })
