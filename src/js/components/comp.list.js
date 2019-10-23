@@ -893,6 +893,7 @@ function showListMenu({
             function reduceChoices(acc, e) {
               console.log(e);
               console.log(rule.choices());
+              var itemStyle = 'cursor:pointer;'
               var foudItem = rule.choices().find(i=>i.uuid == e)
               if (foudItem) {
                 var newItem = foudItem.name + " "+ (foudItem.lastName || " ")+" "
@@ -901,7 +902,10 @@ function showListMenu({
                 if(formatedNewItem.length > 25) {
                     formatedNewItem = newItem.substring(0,10)+".. ";
                 }
-                var htmlNewItem = `<div style="cursor:pointer;" data-inverted="" data-id="${newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${formatedNewItem}</div>`
+                if (rule.choiceStyle) {
+                  itemStyle= rule.choiceStyle(foudItem)+" "+itemStyle || itemStyle;
+                }
+                var htmlNewItem = `<div style="${itemStyle}" data-inverted="" data-id="${newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${formatedNewItem}</div>`
                 return acc += htmlNewItem
               }else {
                 return acc

@@ -154,6 +154,22 @@ var store = {
     items:[]
     // items:[{uuid:uuid(), name:"An exemple interface",type:"physical connection", source:"555sfse", target:"f896546e", description:"Un interface"}]
   },
+  vvSets:{
+    items:[],
+    links:[]
+  },
+  vvReports:{
+    items:[],
+    links:[]
+  },
+  vvDefinitions:{
+    items:[],
+    links:[]
+  },
+  vvActions:{
+    items:[],
+    links:[]
+  },
   history:{
     items:[]
     // items:[{uuid:uuid(), name:"An exemple interface",type:"physical connection", source:"555sfse", target:"f896546e", description:"Un interface"}]

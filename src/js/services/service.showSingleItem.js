@@ -27,6 +27,7 @@ var createShowSingleItemService = function () {
     else if (store.workPackages.items.find(i=>i.uuid == uuid)) { storeGroup = "workPackages"; label='workPackages'}
     else if (store.interfaces.items.find(i=>i.uuid == uuid)) { storeGroup = "interfaces"; label='interfaces'}
     else if (store.documents.items.find(i=>i.uuid == uuid)) { storeGroup = "documents"; label='documents'}
+    else if (store.vvActions.items.find(i=>i.uuid == uuid)) { storeGroup = "vvActions"; label='vvActions'}
 
     if (!store[storeGroup]) {
       console.log("no group available");
@@ -231,6 +232,7 @@ var createShowSingleItemService = function () {
     else if (store.workPackages.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.interfaces.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.documents.items.find(i=>i.uuid == uuid)) {return true }
+    else if (store.vvActions.items.find(i=>i.uuid == uuid)) {return true }
     else {
       return false
     }
@@ -252,7 +254,8 @@ var createShowSingleItemService = function () {
         {prop:"originNeed",isTarget:true, displayAs:"linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:false},
         {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
         {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false},
-        {prop:"documentsNeed", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
+        {prop:"documentsNeed", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true},
+        {prop:"vvReportNeed", isTarget:true, displayAs:"V&V", choiceStyle: (item) =>item.status=="Pass"? 'background-color:#21ba45 !important;':'background-color:#dd4b39 !important;', meta:()=>store.metaLinks.items, choices:()=>store.vvActions.items, edit:false}
       ]
     }else if (type =="Pbs") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
@@ -300,6 +303,18 @@ var createShowSingleItemService = function () {
               {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true},
               {prop:"documents",isTarget:true, displayAs:"Products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
               {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
+      ]
+    }else if (type =="vvActions"){
+      return [
+              {prop:"name", displayAs:"Name", edit:false},
+              {prop:"vvReportNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
+              {prop:"other", displayAs:"Shall Statement", edit:false},
+              {prop:"other", displayAs:"Success Criteria", edit:false},
+              {prop:"other", displayAs:"Verification Method", edit:false},
+              {prop:"relatedObjects", displayAs:"Related Products", edit:false},
+              {prop:"relatedObjects", displayAs:"Related Products", edit:false},
+              {prop:"Result", displayAs:"Result", edit:true},
+              {prop:"Status", displayAs:"Status", edit:true}
       ]
     }
   }
