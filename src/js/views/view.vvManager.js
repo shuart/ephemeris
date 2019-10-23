@@ -68,9 +68,18 @@ var createVvManager = function (targetSelector) {
           <div class="event">
             <div class="content">
               <div class="summary">
-                Contains <a>${stats.numberOfDefinitions.length}</a> V&V definitions
+                Contains <a>${stats.actions.length}</a> V&V actions.
+                <a>${stats.completedActions.length}</a> completed
               </div>
-
+            </div>
+          </div>
+          <div class="event">
+            <div class="content">
+              <div class="summary">
+                <div class="ui teal small progress" data-value="15" data-total="20">
+                    <div style="min-width:0%; width:${stats.completedActions.length/stats.actions.length*100}%;" class="bar"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -176,8 +185,12 @@ var createVvManager = function (targetSelector) {
   }
   var getReportStatistics = function (report) {
     let store = query.currentProject()
-    let definitions= store.metaLinks.items
-    return {numberOfDefinitions: definitions.length}
+    let actions= store.vvActions.items.filter(d=>d.sourceReport == report.uuid)
+    let completedActions= actions.filter(d=>d.status == "Pass")
+    let actionsUuids= actions.map(d=>d.uuid)
+    //let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
+
+    return {actions:actions, completedActions: completedActions}
   }
 
 

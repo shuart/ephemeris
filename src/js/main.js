@@ -71,7 +71,7 @@ var reparse = false;
   pageManager.addComponent({name:"interfacesListView",object:interfacesListView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"singleActionView",object:singleActionView, haveSideBar:false})
   pageManager.addComponent({name:"currentUserView",object:currentUserView, haveSideBar:false})
-  pageManager.addComponent({name:"vvManager",object:vvManager, haveSideBar:false})
+  pageManager.addComponent({name:"vvManager",object:vvManager,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"vvSet",object:vvSet, haveSideBar:false})
   pageManager.addComponent({name:"vvReport",object:vvReport, haveSideBar:false})
   pageManager.addComponent({name:"history",object:historyView, haveSideBar:false})
