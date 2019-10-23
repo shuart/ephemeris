@@ -103,6 +103,11 @@ var createVvManager = function (targetSelector) {
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", function () {
+      if (objectIsActive) {
+        update()
+      }
+    })
     connect(".action_vv_manager_add_set", "click", function (e) {
       var name = prompt("Name you set")
       if (name) {

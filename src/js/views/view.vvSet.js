@@ -115,9 +115,9 @@ var createVvSet = function ({
       display:[
         {prop:"name", displayAs:"Name", edit:"true"},
         {prop:"vvDefinitionNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
-        {prop:"other", displayAs:"Shall Statement", edit:"true"},
-        {prop:"other", displayAs:"Success Criteria", edit:"true"},
-        {prop:"other", displayAs:"Verification Method", edit:"true"},
+        {prop:"shallStatement", displayAs:"Shall Statement", edit:true},
+        {prop:"successCriteria", displayAs:"Success Criteria", edit:true},
+        {prop:"verificationMethod", displayAs:"Verification Method", edit:true},
         {prop:"relatedObjects", displayAs:"Related Products", edit:"true"}
       ],
       idProp:"uuid",

@@ -115,9 +115,9 @@ var createVvReport = function ({
       display:[
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"vvReportNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
-        {prop:"other", displayAs:"Shall Statement", edit:false},
-        {prop:"other", displayAs:"Success Criteria", edit:false},
-        {prop:"other", displayAs:"Verification Method", edit:false},
+        {prop:"shallStatement", displayAs:"Shall Statement", edit:false},
+        {prop:"successCriteria", displayAs:"Success Criteria", edit:false},
+        {prop:"verificationMethod", displayAs:"Verification Method", edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"result", displayAs:"Result", edit:true},
