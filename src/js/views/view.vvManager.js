@@ -6,12 +6,18 @@ var createVvManager = function (targetSelector) {
   var theme={}
 
   theme.vvSetArea = function (sets) {
+    let stats = getGlobalStatistics()
     return`
     <h2>Verification & Validation Sets</h2>
     <button class="action_vv_manager_add_set ui right labeled icon green mini button">
       <i class="plus icon"></i>
       Add a V&V set
     </button>
+    <div class="ui tiny progress" data-value="15" data-total="20">
+        <div style="min-width:0%; width:${stats.percentOfCoveredNeeds}%;" class="bar"></div>
+        <div class="label">${stats.percentOfCoveredNeeds}% of requirements covered</div>
+    </div>
+
     <div class="ui link cards" style="padding:5px;">
       ${sets.map(set=> theme.vvSet(set)).join('')}
     </div>
@@ -176,6 +182,16 @@ var createVvManager = function (targetSelector) {
 
   }
 
+  var getGlobalStatistics = function (set) {
+    let store = query.currentProject()
+    // let requirementsConvered= store.vvDefinitions.items.map().filter(d=>d.sourceSet == set.uuid)
+    // let definitionsUuids= definitions.map(d=>d.uuid)
+    let coveredNeedsRawList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed").map(l=>l.target)
+    let coveredNeedList = coveredNeedsRawList.filter((item,index)=>coveredNeedsRawList.indexOf(item)===index)
+    let percentOfCoveredNeeds = Math.round(coveredNeedList.length/store.requirements.items.length*100)
+    // let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
+    return {coveredNeeds: coveredNeedList, percentOfCoveredNeeds:percentOfCoveredNeeds}
+  }
   var getSetStatistics = function (set) {
     let store = query.currentProject()
     let definitions= store.vvDefinitions.items.filter(d=>d.sourceSet == set.uuid)
