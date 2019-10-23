@@ -26,6 +26,7 @@ var createVvManager = function (targetSelector) {
     `
   }
   theme.vvSet = function (set) {
+    let stats = getSetStatistics(set)
     return `
     <div class="ui card">
       <div class="content">
@@ -37,34 +38,25 @@ var createVvManager = function (targetSelector) {
           <div class="event">
             <div class="content">
               <div class="summary">
-                 <a>Elliot Fu</a> added <a>Jenny Hess</a> to the project
+                 Contains <a>${stats.numberOfDefinitions}</a> V&V definitions
               </div>
-            </div>
-          </div>
-          <div class="event">
-            <div class="content">
               <div class="summary">
-                 <a>Stevie Feliciano</a> was added as an <a>Administrator</a>
-              </div>
-            </div>
-          </div>
-          <div class="event">
-            <div class="content">
-              <div class="summary">
-                 <a>Helen Troy</a> added two pictures
+                Cover <a>${stats.coveredNeeds.length}</a> Needs
               </div>
             </div>
           </div>
         </div>
       </div>
       <div class="extra content">
-        <button data-id="${set.uuid}" class="action_toogle_vv_set_view ui mini button">View</button>
-        <button data-id="${set.uuid}" class="action_vv_manager_add_report_from_set ui mini button">Create a report</button>
+        <button data-name="${set.name}" data-id="${set.uuid}" class="action_toogle_vv_set_view ui mini button">View</button>
+        <button data-name="${set.name}" data-id="${set.uuid}" class="action_vv_manager_add_report_from_set ui mini button">Create a report</button>
+        <button data-name="${set.name}" data-id="${set.uuid}" class="action_vv_manager_remove_set ui mini basic red button">X</button>
       </div>
     </div>
     `
   }
   theme.vvReport= function (report) {
+    let stats = getReportStatistics(report)
     return `
     <div class="ui card">
       <div class="content">
@@ -76,28 +68,16 @@ var createVvManager = function (targetSelector) {
           <div class="event">
             <div class="content">
               <div class="summary">
-                 <a>Elliot Fu</a> added <a>Jenny Hess</a> to the project
+                Contains <a>${stats.numberOfDefinitions.length}</a> V&V definitions
               </div>
-            </div>
-          </div>
-          <div class="event">
-            <div class="content">
-              <div class="summary">
-                 <a>Stevie Feliciano</a> was added as an <a>Administrator</a>
-              </div>
-            </div>
-          </div>
-          <div class="event">
-            <div class="content">
-              <div class="summary">
-                 <a>Helen Troy</a> added two pictures
-              </div>
+
             </div>
           </div>
         </div>
       </div>
       <div class="extra content">
-        <button data-id="${report.uuid}" class="action_toogle_vv_report_view ui button">View</button>
+        <button data-id="${report.uuid}" class="action_toogle_vv_report_view ui mini button">View</button>
+        <button data-name="${report.name}" data-id="${report.uuid}" class="action_vv_manager_remove_report ui mini basic red button">X</button>
       </div>
     </div>
     `
@@ -109,13 +89,42 @@ var createVvManager = function (targetSelector) {
   }
   var connections =function () {
     connect(".action_vv_manager_add_set", "click", function (e) {
-      push(act.add("vvSets",{name:"new Set"}))
-      render()
+      var name = prompt("Name you set")
+      if (name) {
+        push(act.add("vvSets",{name:name}))
+        render()
+      }
+    })
+    connect(".action_vv_manager_remove_set", "click", function (e) {
+      var bRemove = confirm("Do you want to remove this set and all it's definitions?")
+      if (bRemove) {
+        var store = query.currentProject()
+        let definitions= store.vvDefinitions.items.filter(d=>d.sourceSet == e.target.dataset.id)
+        let definitionsUuids= definitions.map(d=>d.uuid)
+        let relatedMetaLinks = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
+        definitions.forEach(d=>{push(act.remove("vvDefinitions",{uuid:d.uuid}))})
+        relatedMetaLinks.forEach(d=>{push(act.remove("metaLinks",{uuid:d.uuid}))})
+        push(act.remove("vvSets",{uuid:e.target.dataset.id}))
+        render()
+      }
+    })
+    connect(".action_vv_manager_remove_report", "click", function (e) {
+      var bRemove = confirm("Do you want to remove this report and all it's definitions?")
+      if (bRemove) {
+        var store = query.currentProject()
+        let actions= store.vvActions.items.filter(d=>d.sourceReport == e.target.dataset.id)
+        let actionsUuids= actions.map(d=>d.uuid)
+        let relatedMetaLinks = store.metaLinks.items.filter(l => l.type=="vvReportNeed" && actionsUuids.includes(l.source))
+        actions.forEach(d=>{push(act.remove("vvActions",{uuid:d.uuid}))})
+        relatedMetaLinks.forEach(d=>{push(act.remove("metaLinks",{uuid:d.uuid}))})
+        push(act.remove("vvReports",{uuid:e.target.dataset.id}))
+        render()
+      }
     })
     connect(".action_vv_manager_add_report_from_set", "click", function (e) {
       var store = query.currentProject()
       let reportUuid = genuuid()
-      push(act.add("vvReports",{uuid:reportUuid, name:"New Report based on "+ e.target.dataset.id}))
+      push(act.add("vvReports",{uuid:reportUuid, name:"Report based on "+ e.target.dataset.name}))
       //generate the report action based on the set
       let vvDefinitionsInOrigin = deepCopy( store.vvDefinitions.items.filter(def=> def.sourceSet == e.target.dataset.id) )
       vvDefinitionsInOrigin.forEach(function (def) {
@@ -156,6 +165,19 @@ var createVvManager = function (targetSelector) {
 
     }
 
+  }
+
+  var getSetStatistics = function (set) {
+    let store = query.currentProject()
+    let definitions= store.vvDefinitions.items.filter(d=>d.sourceSet == set.uuid)
+    let definitionsUuids= definitions.map(d=>d.uuid)
+    let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
+    return {numberOfDefinitions: definitions.length, coveredNeeds: coveredNeedsList}
+  }
+  var getReportStatistics = function (report) {
+    let store = query.currentProject()
+    let definitions= store.metaLinks.items
+    return {numberOfDefinitions: definitions.length}
   }
 
 

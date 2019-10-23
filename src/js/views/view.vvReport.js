@@ -120,8 +120,8 @@ var createVvReport = function ({
         {prop:"other", displayAs:"Verification Method", edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
-        {prop:"Result", displayAs:"Result", edit:true},
-        {prop:"Status", displayAs:"Status", edit:true}
+        {prop:"result", displayAs:"Result", edit:true},
+        {prop:"status", displayAs:"Status", edit:true}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{

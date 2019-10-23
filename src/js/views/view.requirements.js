@@ -22,7 +22,8 @@ var createRequirementsView = function () {
       {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
       {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
       {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
-      {prop:"documentsNeed", displayAs:"Documents", droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
+      {prop:"documentsNeed", displayAs:"Documents", droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true},
+      {prop:"vvReportNeed", isTarget:true, displayAs:"V&V", choiceStyle: (item) =>item.status=="Pass"? 'background-color:#21ba45 !important;':'background-color:#dd4b39 !important;', meta:()=>store.metaLinks.items, choices:()=>store.vvActions.items, edit:false}
 
     ]
     if (simpleView) {
