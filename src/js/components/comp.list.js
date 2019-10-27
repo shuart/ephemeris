@@ -885,9 +885,15 @@ function showListMenu({
           if (rule.options) {
             let choice = rule.options.find(o=>o.choiceId == item[propName])
             if (item[propName] && choice) {
-              propDisplay = choice.name;
+              // propDisplay = choice.name;
+              let style = choice.color? `color:${choice.color} !important;border-color:${choice.color} !important;`:''
+              propDisplay = `<a style="${style}" class="ui basic mini label">${choice.name}</a>`;
             }else {
-              propDisplay = rule.options.find(o=>o.choiceId == 0).name
+              // propDisplay = rule.options.find(o=>o.choiceId == 0).name
+              let defaultOption = rule.options.find(o=>o.choiceId == 0)
+              let style = defaultOption.color? `color:${defaultOption.color} !important;border-color:${defaultOption.color} !important;`:''
+
+              propDisplay = `<a style="${style}" class="ui basic mini label">${defaultOption.name}</a>`
             }
             if (isEditable) {
               editHtml+=`
