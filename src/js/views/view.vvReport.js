@@ -121,7 +121,7 @@ var createVvReport = function ({
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"result", displayAs:"Result", edit:true},
-        {prop:"status", displayAs:"Status", options:()=>{"efs","fefsef"},edit:true}
+        {prop:"status", displayAs:"Status", options:listOptions.vv_status,edit:true}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{

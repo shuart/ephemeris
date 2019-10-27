@@ -330,12 +330,14 @@ function showListMenu({
           }
         }
         if (event.target.classList.contains("action_list_edit_options_item")) {
+          console.log(event.target.dataset.options);
           showListMenu({
-            sourceData:listOptions.vv_status,
+
+            sourceData:JSON.parse(event.target.dataset.options),
             displayProp:"name",
             display:[{prop:"name", displayAs:"Options", edit:false}],
             extraButtons : [
-              {name:"Select", class:"select_option", prop:"name", action: (orev)=>{
+              {name:"Select", class:"select_option", prop:"choiceId", action: (orev)=>{
                 onEditOptionsItem({select:self, value:orev.dataset.extra, selectDiv:sourceEl, target:event.target})
                 if (!editItemMode && !singleElement) {refreshList()}else {sourceEl.remove();render();}
               }}
@@ -881,9 +883,15 @@ function showListMenu({
             dropHtmlClass+="action_list_droppable"
           }
           if (rule.options) {
-            editHtml+=`
-            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_options_item" style=""></i>`
+            let choice = rule.options.find(o=>o.choiceId == item[propName])
+            if (item[propName] && choice) {
+              propDisplay = choice.name;
+            }else {
+              propDisplay = rule.options.find(o=>o.choiceId == 0).name
+            }
 
+            editHtml+=`
+            <i data-options='${JSON.stringify(rule.options)}' data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_options_item" style=""></i>`
           }
           if (isEditable && !isMeta && !isTime && !rule.options) {
             editHtml+=`

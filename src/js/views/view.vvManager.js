@@ -207,7 +207,7 @@ var createVvManager = function (targetSelector) {
   var getReportStatistics = function (report) {
     let store = query.currentProject()
     let actions= store.vvActions.items.filter(d=>d.sourceReport == report.uuid)
-    let completedActions= actions.filter(d=>d.status == "Pass")
+    let completedActions= actions.filter(d=>d.status == 2)
     let actionsUuids= actions.map(d=>d.uuid)
     //let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
 
