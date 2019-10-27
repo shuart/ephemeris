@@ -1,6 +1,7 @@
 function showListMenu({
   displayProp=undefined,
   idProp = undefined,
+  simpleMenuStyling = false,
   parentSelectMenu = undefined,
   targetDomContainer = undefined,
   display = undefined,
@@ -70,9 +71,9 @@ function showListMenu({
         </div>`
     },
     nestedListClass: 'row',
-    topMenu:() => {
+    topMenu:(options) => {
       var html = /*html*/`
-      <div style="flex-shrink:0" class="ui mini menu target_menu_left_buttons">
+      <div style="flex-shrink:0" class="ui ${options.basicStyling?"secondary":""} mini menu target_menu_left_buttons">
         <div class="right menu target_menu_right_buttons">
         </div>
       </div>
@@ -332,7 +333,7 @@ function showListMenu({
         if (event.target.classList.contains("action_list_edit_options_item")) {
           console.log(event.target.dataset.options);
           showListMenu({
-
+            simpleMenuStyling:true,
             sourceData:JSON.parse(event.target.dataset.options),
             displayProp:"name",
             display:[{prop:"name", displayAs:"Options", edit:false}],
@@ -500,7 +501,7 @@ function showListMenu({
   }
 
   function createMenu() {
-    mainEl.appendChild(toNode(theme.topMenu()));
+    mainEl.appendChild(toNode(theme.topMenu({basicStyling:simpleMenuStyling})));
 
     //display extra action buttons
     if (extraActions) {

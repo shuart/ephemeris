@@ -249,6 +249,7 @@ var createVvSet = function ({
       sourceLinks:sourceLinks,
       parentSelectMenu:ev.select ,
       multipleSelection:currentLinksUuidFromDS,
+      simpleMenuStyling:true,
       displayProp:"name",
       searchable : true,
       display:displayRules,
