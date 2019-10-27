@@ -393,6 +393,13 @@ var createOverview = function (targetSelector) {
       }
       alertAboutUpdate("Verification feature (V&V actions) has been added.")
     }
+    if (!store.settings) {
+      store.settings={
+        items:[],
+        links:[]
+      }
+      alertAboutUpdate("Project Settings view has been added.")
+    }
 
   }
 

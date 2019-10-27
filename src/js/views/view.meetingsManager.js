@@ -22,8 +22,11 @@ var createMeetingsManager = function (targetSelector) {
     </div>`
   }
   theme.editor = function (e) {//editor start point
+    var store = query.currentProject()
+
      html =`
      <div style="width:80%; margin-left:10%;" id="meetingAreaEditor" class="meetingAreaEditor">
+        <img style="margin-left:70%;" class="ui small image" src=${store.settings.items.find(s=>s.type=="projectLogo")?store.settings.items.find(s=>s.type=="projectLogo").value:""}>
         <h1 class="ui header">${e.title}
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_rename_meeting">Rename</button>
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_add_meeting_follow_up">Follow-up</button>
