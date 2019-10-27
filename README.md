@@ -15,6 +15,7 @@ System Engineering and requirements management application
 -   Produce text specifications based on your model
 -   Create interfaces matrix from specific part of your project
 -   Link pictures and documents to your Products and Requirements
+-   Perform V&V on your projects
 -   Schedule your projects with Gantt charts
 
 ![Lists](./images/ephemeris_lists.png)
@@ -22,6 +23,7 @@ System Engineering and requirements management application
 ![Meetings](./images/ephemeris_meetings.png)
 ![Meetings](./images/ephemeris_mm.png)
 ![Meetings](./images/ephemeris_gantt.png)
+![Meetings](./images/ephemeris_vandv.png)
 ![Interfaces](./images/ephemeris_interfaces.png)
 
 ## Getting Started
