@@ -159,7 +159,15 @@ var createVvSet = function ({
         // store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
         // ev.selectDiv.remove()
         // renderCDC(store.db, searchFilter)
-      }
+      },
+      extraActions:[
+        {
+          name:"Export",
+          action:(ev)=>{
+            exportToCSV()
+          }
+        }
+      ]
     })
   }
   function startSelection(ev) {
@@ -308,6 +316,16 @@ var createVvSet = function ({
         console.log("select");
       }
     })
+  }
+
+  var exportToCSV = function () {
+    let store = query.currentProject()
+    let data = generateRelevantSet(currentSetUuid).map(i=>{
+      let linkToTextReq = getRelatedItems(i, "requirements", {metalinksType:"vvDefinitionNeed"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextVerif = listOptions.vv_verification_type[i.verificationMethod]? listOptions.vv_verification_type[i.verificationMethod].name:listOptions.vv_verification_type[0].name
+      return {id:i.uuid, name:i.name, ReportNeed:linkToTextReq, shallStatement:i.shallStatement, successCriteria:i.successCriteria,verificationMethod:linkToTextVerif}
+    })
+    JSONToCSVConvertor(data, 'V&V Set', true)
   }
 
   var update = function (uuid) {
