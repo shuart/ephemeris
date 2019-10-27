@@ -11,7 +11,7 @@ var createVvSet = function ({
   let theme = {
     menu : function () {
       return `
-      <div class="ui mini menu">
+      <div class="ui mini secondary menu">
         <div class="item">
 
         </div>
