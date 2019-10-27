@@ -773,6 +773,29 @@ textarea {
   box-shadow: 17px 0px 8px -13px rgba(0,0,0,0.13);
 }
 
+/* Options in list */
+/* .options_in_list{
+  position:relative
+}
+.options_in_list .options_menu{
+  height: 50px;
+  position: absolute;
+  right: 100%;
+  top: 0px;
+  display: inline-flex;
+}
+.options_in_list .options_menu .item{
+  width: 200px;
+  text-align: center;
+  background-color:#00b5ad;
+  color:#fff;
+  text-shadow: none;
+  background-image: none;
+  cursor: pointer;
+  display: inline-block;
+  border-radius: .28571429rem;
+  margin: 2px;
+} */
 
 .tag_area{
   display: flex;

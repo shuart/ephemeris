@@ -121,7 +121,7 @@ var createVvReport = function ({
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"result", displayAs:"Result", edit:true},
-        {prop:"status", displayAs:"Status", edit:true}
+        {prop:"status", displayAs:"Status", options:()=>{"efs","fefsef"},edit:true}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{
@@ -132,6 +132,13 @@ var createVvReport = function ({
           ev.select.updateData(generateRelevantActions(currentReportUuid))
         }
       },
+      onEditOptionsItem: (ev)=>{
+        console.log("Edit_option");
+          let newValue = ev.value
+          push(act.edit("vvActions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          ev.select.updateData(generateRelevantActions(currentReportUuid))
+      },
+
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("vvActions",{uuid:ev.target.dataset.id}))

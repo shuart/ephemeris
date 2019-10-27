@@ -30,6 +30,7 @@ function showListMenu({
   onEditItemTime = (e)=>{console.log("edit select")},
   onEditTextItem = (e)=>{console.log("edit text")},
   onEditChoiceItem = undefined,
+  onEditOptionsItem = undefined,
   onChangeSelect = undefined,
   onCloseMenu = (e)=>{console.log("list closed")},
   onClear = undefined,
@@ -327,6 +328,21 @@ function showListMenu({
             sourceEl.remove()
             render()
           }
+        }
+        if (event.target.classList.contains("action_list_edit_options_item")) {
+          showListMenu({
+            sourceData:listOptions.vv_status,
+            displayProp:"name",
+            display:[{prop:"name", displayAs:"Options", edit:false}],
+            extraButtons : [
+              {name:"Select", class:"select_option", prop:"name", action: (orev)=>{
+                onEditOptionsItem({select:self, value:orev.dataset.extra, selectDiv:sourceEl, target:event.target})
+                if (!editItemMode && !singleElement) {refreshList()}else {sourceEl.remove();render();}
+              }}
+            ],
+            idProp:"uuid",
+            onCloseMenu: (ev)=>{console.log(ev.select);}
+          })
         }
         if (event.target.classList.contains("action_list_go_to_item")) {
           let link = event.target.dataset.value
@@ -864,8 +880,12 @@ function showListMenu({
           if (isDroppable) {
             dropHtmlClass+="action_list_droppable"
           }
+          if (rule.options) {
+            editHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_options_item" style=""></i>`
 
-          if (isEditable && !isMeta && !isTime) {
+          }
+          if (isEditable && !isMeta && !isTime && !rule.options) {
             editHtml+=`
             <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
           }else if (isEditable && isMeta) {
@@ -889,6 +909,19 @@ function showListMenu({
             <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[idProp]}" class="edit icon action_list_edit_time_item" style="">
             </i>`
           }
+          // if (rule.options) {
+          //   let optionsHTML = `
+          //     <div class="options_in_list item">
+          //       Dropdown
+          //
+          //       <div style="" class="options_menu">
+          //         <div class="item">Choice 1</div>
+          //         <div class="item">Choice 2</div>
+          //         <div class="item">Choice 3</div>
+          //       </div>
+          //     </div>`
+          //   propDisplay = optionsHTML
+          // }
           if (rule.choices) {
             function reduceChoices(acc, e) {
               console.log(e);
