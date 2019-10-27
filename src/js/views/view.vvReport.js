@@ -119,7 +119,6 @@ var createVvReport = function ({
         {prop:"successCriteria", displayAs:"Success Criteria", edit:false},
         {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:false},
         {prop:"relatedObjects", displayAs:"Related Products", edit:false},
-        {prop:"relatedObjects", displayAs:"Related Products", edit:false},
         {prop:"result", displayAs:"Result", edit:true},
         {prop:"status", displayAs:"Status", options:listOptions.vv_status,edit:true}
       ],
