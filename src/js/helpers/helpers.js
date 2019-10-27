@@ -359,6 +359,39 @@ var getObjectGroupByUuid = function (uuid) {
   return storeGroup
 }
 
+var batchRemoveMetaLinks = function (store, type, originalSet, targetSet, initiatorType, initId) {
+  let idsToRemove = originalSet.filter(os=>!targetSet.includes(os))
+  console.log(idsToRemove);
+  let relatedMetaLinks =[]
+  if (initiatorType == "source") {
+    relatedMetaLinks= store.metaLinks.items.filter(l => l.type==type && l.source== initId && idsToRemove.includes(l.target))
+  }else {
+    relatedMetaLinks= store.metaLinks.items.filter(l => l.type==type && l.target== initId && idsToRemove.includes(l.source))
+  }
+  relatedMetaLinks.forEach(d=>{
+    push(act.remove("metaLinks",{uuid:d.uuid}))
+  })
+}
+var batchAddMetaLinks = function (store, type, originalSet, targetSet, initiatorType, initId) {
+  console.log(originalSet);
+  console.log(targetSet);
+
+  let alreadyConnected =[]
+  if (initiatorType == "source") {
+    alreadyConnected= store.metaLinks.items.filter(l => l.type==type && l.source== initId && targetSet.includes(l.target)).map(l=>l.target)
+  }else {
+    alreadyConnected= store.metaLinks.items.filter(l => l.type==type && l.target== initId && targetSet.includes(l.source)).map(l=>l.source)
+  }
+  let idsToAdd= targetSet.filter(os=>!alreadyConnected.includes(os))
+    console.log(idsToAdd);
+  idsToAdd.forEach(id=>{
+    if (initiatorType == "source") {
+      push(act.add("metaLinks",{type:type, source:initId, target:id}))
+    }else {
+      push(act.add("metaLinks",{type:type, source:id, target:initId}))
+    }
+  })
+}
 //Workarounds
 
 var workarounds = {}

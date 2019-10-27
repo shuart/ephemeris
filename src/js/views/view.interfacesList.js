@@ -187,14 +187,9 @@ var createInterfacesListView = function () {
         ev.select.getParent().refreshList()
       },
       onChangeSelect: (ev)=>{
-        store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
-        for (newSelected of ev.select.getSelected()) {
-          if (!invert) {
-            push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
-          }else {
-            push(act.add("metaLinks",{type:metalinkType, source:newSelected, target:sourceTriggerId}))
-          }
-        }
+        batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+        batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+
         ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
         ev.select.getParent().refreshList()
       },
