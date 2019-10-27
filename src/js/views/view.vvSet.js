@@ -10,11 +10,11 @@ var createVvSet = function ({
   let currentSetGenerateBuffer = []
 
   let theme = {
-    menu : function () {
+    menu : function (name) {
       return `
       <div class="ui mini secondary menu">
         <div class="item">
-
+          <h2>V&V plan, ${name?name:""}</h2>
         </div>
         <div class="item">
 
@@ -95,7 +95,9 @@ var createVvSet = function ({
     displayWorkSet(workSet, ".vvDefinitionsArea")
   }
   var renderMenu =function (uuid){
-    return theme.menu()
+    var store = query.currentProject()
+    let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
+    return theme.menu(currentSet.name)
   }
 
   //UTILS
@@ -172,6 +174,19 @@ var createVvSet = function ({
           name:"Generate",
           action:(ev)=>{
             generateFromRequirements()
+          }
+        },
+        {
+          name:"Rename",
+          action:(ev)=>{
+            var store = query.currentProject()
+            let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
+            let newName = prompt("Change Set Name", currentSet.name)
+            if (newName) {
+              push(act.edit("vvSets", {uuid:currentSetUuid, prop:"name", value:newName}))
+              sourceOccElement.remove()
+              update()
+            }
           }
         }
       ]
