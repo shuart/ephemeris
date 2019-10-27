@@ -166,6 +166,22 @@ var createVvReport = function ({
           action:(ev)=>{
             exportToCSV()
           }
+        },
+        {
+          name:"Rename",
+          action:(ev)=>{
+            var store = query.currentProject()
+            let currentReport = store.vvReports.items.find(s=>s.uuid == currentReportUuid)
+            let newName = prompt("Change Report Name", currentReport.name)
+            if (newName) {
+              push(act.edit("vvReports", {uuid:currentReportUuid, prop:"name", value:newName}))
+
+              setTimeout(function () {
+                sourceOccElement.remove()
+                update()
+              }, 100);
+            }
+          }
         }
       ]
     })

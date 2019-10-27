@@ -184,8 +184,10 @@ var createVvSet = function ({
             let newName = prompt("Change Set Name", currentSet.name)
             if (newName) {
               push(act.edit("vvSets", {uuid:currentSetUuid, prop:"name", value:newName}))
-              sourceOccElement.remove()
-              update()
+              setTimeout(function () {
+                sourceOccElement.remove()
+                update()
+              }, 100);
             }
           }
         }
