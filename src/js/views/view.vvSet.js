@@ -117,7 +117,7 @@ var createVvSet = function ({
         {prop:"vvDefinitionNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
         {prop:"shallStatement", displayAs:"Shall Statement", edit:true},
         {prop:"successCriteria", displayAs:"Success Criteria", edit:true},
-        {prop:"verificationMethod", displayAs:"Verification Method", edit:true},
+        {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:true},
         {prop:"relatedObjects", displayAs:"Related Products", edit:"true"}
       ],
       idProp:"uuid",
@@ -128,6 +128,12 @@ var createVvSet = function ({
           push(act.edit("vvDefinitions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
           ev.select.updateData(generateRelevantSet(currentSetUuid))
         }
+      },
+      onEditOptionsItem: (ev)=>{
+        console.log("Edit_option");
+          let newValue = ev.value
+          push(act.edit("vvDefinitions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          ev.select.updateData(generateRelevantSet(currentSetUuid))
       },
       onEditChoiceItem: (ev)=>{
         startSelection(ev)

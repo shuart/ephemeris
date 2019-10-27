@@ -889,9 +889,10 @@ function showListMenu({
             }else {
               propDisplay = rule.options.find(o=>o.choiceId == 0).name
             }
-
-            editHtml+=`
-            <i data-options='${JSON.stringify(rule.options)}' data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_options_item" style=""></i>`
+            if (isEditable) {
+              editHtml+=`
+              <i data-options='${JSON.stringify(rule.options)}' data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_options_item" style=""></i>`
+            }
           }
           if (isEditable && !isMeta && !isTime && !rule.options) {
             editHtml+=`
