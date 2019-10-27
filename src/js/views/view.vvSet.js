@@ -7,6 +7,7 @@ var createVvSet = function ({
   var objectIsActive = false;
 
   let currentSetUuid = undefined
+  let currentSetGenerateBuffer = []
 
   let theme = {
     menu : function () {
@@ -166,10 +167,71 @@ var createVvSet = function ({
           action:(ev)=>{
             exportToCSV()
           }
+        },
+        {
+          name:"Generate",
+          action:(ev)=>{
+            generateFromRequirements()
+          }
         }
       ]
     })
   }
+
+  function generateFromRequirements() {
+    var store = query.currentProject()
+    showListMenu({
+      sourceData:store.requirements.items,
+      sourceLinks:store.requirements.links,
+      multipleSelection:currentSetGenerateBuffer,
+      metaLinks:store.metaLinks.items,
+      displayProp:"name",
+      // targetDomContainer:container,
+      // fullScreen:true,// TODO: perhaps not full screen?
+      display:[
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+
+      ],
+      idProp:"uuid",
+      onClick: (ev)=>{
+      },
+      onChangeSelect: (ev)=>{
+        //prepare func to changeItems
+        var changeProp = function (sourceTriggerId) {
+          console.log(currentLinksUuidFromDS)
+          currentSetGenerateBuffer = currentLinksUuidFromDS
+        }
+      },
+      extraActions:[
+        {
+          name:"Create",
+          action:(ev)=>{
+            console.log(currentSetGenerateBuffer);
+            // createListFromBuffer()
+            currentSetGenerateBuffer.forEach(b=>{
+              let id = genuuid()
+              let relatedRequirement = store.requirements.items.find(r=>r.uuid == b)
+              push(act.add("vvDefinitions",{
+                uuid:id,
+                sourceSet:currentSetUuid,
+                name:relatedRequirement.name,
+                shallStatement:relatedRequirement.desc || relatedRequirement.name,
+                successCriteria:"Fulfill statement",
+                color:"#ffffff"}))
+              push(act.add("metaLinks",{type:"vvDefinitionNeed", source:id, target:b}))
+            })
+            sourceOccElement.remove()
+            update()
+          }
+        }
+      ]
+    })
+  }
+
+
+
+
   function startSelection(ev) {
     var store = query.currentProject()
     var metalinkType = ev.target.dataset.prop;
