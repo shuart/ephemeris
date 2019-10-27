@@ -314,7 +314,7 @@ var createShowSingleItemService = function () {
               {prop:"relatedObjects", displayAs:"Related Products", edit:false},
               {prop:"relatedObjects", displayAs:"Related Products", edit:false},
               {prop:"Result", displayAs:"Result", edit:true},
-              {prop:"Status", displayAs:"Status", edit:true}
+              {prop:"status", displayAs:"Status", options:listOptions.vv_status,edit:true}
       ]
     }
   }
