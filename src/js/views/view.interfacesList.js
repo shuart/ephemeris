@@ -46,8 +46,8 @@ var createInterfacesListView = function () {
       // targetDomContainer:".center-container",
       // fullScreen:true,// TODO: perhaps not full screen?
       display:[
-        {prop:"type", displayAs:"Type", edit:false},
         {prop:"name", displayAs:"Name", edit:true},
+        {prop:"type", displayAs:"Type", edit:true},
         {prop:"description", displayAs:"Description", edit:true},
         {prop:"source", displayAs:"Source item", edit:false},
         {prop:"target", displayAs:"Target item", edit:false},
