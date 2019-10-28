@@ -1657,6 +1657,9 @@ var createRelationsView = function () {
       onNodeContextMenu:function (node) {
         showEditMenu(node)
       },
+      onLinkContextMenu:function (link) {
+        showEditMenu(link)
+      },
       onNodeClick:function (node) {
         previousSelectedNode = lastSelectedNode;
         lastSelectedNode = node;
@@ -1710,9 +1713,9 @@ var createRelationsView = function () {
   activeGraph.updateWithD3Data(d3format)
   }
 
-  var showEditMenu = function (node) {
+  var showEditMenu = function (item) {
 
-    showSingleItemService.showById(node.uuid, function (e) {
+    showSingleItemService.showById(item.uuid, function (e) {
       update()//update graph
     })
   }

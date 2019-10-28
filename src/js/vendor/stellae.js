@@ -549,6 +549,12 @@ function stellae(_selector, _options) {
                                    options.onRelationshipDoubleClick(d);
                                }
                            })
+                           .on("contextmenu", function (d, i) {
+                             if (typeof options.onLinkContextMenu === 'function') {
+                                d3.event.preventDefault();
+                                options.onLinkContextMenu(d);
+                             }
+                           })
                            .on('mouseenter', function(d) {
                                if (info) {
                                    updateInfo(d);
