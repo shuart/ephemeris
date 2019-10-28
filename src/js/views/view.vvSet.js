@@ -8,6 +8,7 @@ var createVvSet = function ({
 
   let currentSetUuid = undefined
   let currentSetGenerateBuffer = []
+  let currentSetGenerateInterfaceBuffer = []
 
   let theme = {
     menu : function (name) {
@@ -117,7 +118,8 @@ var createVvSet = function ({
       fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"name", displayAs:"Name", edit:"true"},
-        {prop:"vvDefinitionNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
+        {prop:"vvDefinitionNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
+        {prop:"vvDefinitionInterface", displayAs:"Related Interface", meta:()=>store.metaLinks.items, choices:()=>store.interfaces.items, edit:true},
         {prop:"shallStatement", displayAs:"Shall Statement", edit:true},
         {prop:"successCriteria", displayAs:"Success Criteria", edit:true},
         {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:true},
@@ -171,9 +173,15 @@ var createVvSet = function ({
           }
         },
         {
-          name:"Generate",
+          name:"Generate-Requirements",
           action:(ev)=>{
             generateFromRequirements()
+          }
+        },
+        {
+          name:"Generate-Interfaces",
+          action:(ev)=>{
+            generateFromInterfaces()
           }
         },
         {
@@ -237,6 +245,57 @@ var createVvSet = function ({
                 successCriteria:"Fulfill statement",
                 color:"#ffffff"}))
               push(act.add("metaLinks",{type:"vvDefinitionNeed", source:id, target:b}))
+            })
+            sourceOccElement.remove()
+            update()
+          }
+        }
+      ]
+    })
+  }
+  function generateFromInterfaces() {
+    var store = query.currentProject()
+    showListMenu({
+      sourceData:store.interfaces.items,
+      sourceLinks:store.interfaces.links,
+      multipleSelection:currentSetGenerateInterfaceBuffer,
+      metaLinks:store.metaLinks.items,
+      displayProp:"name",
+      // targetDomContainer:container,
+      // fullScreen:true,// TODO: perhaps not full screen?
+      display:[
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description", fullText:true, edit:false},
+        {prop:"type", displayAs:"Type", edit:false}
+
+      ],
+      idProp:"uuid",
+      onClick: (ev)=>{
+      },
+      onChangeSelect: (ev)=>{
+        //prepare func to changeItems
+        var changeProp = function (sourceTriggerId) {
+          console.log(currentLinksUuidFromDS)
+          currentSetGenerateInterfaceBuffer = currentLinksUuidFromDS
+        }
+      },
+      extraActions:[
+        {
+          name:"Create",
+          action:(ev)=>{
+            console.log(currentSetGenerateInterfaceBuffer);
+            // createListFromBuffer()
+            currentSetGenerateInterfaceBuffer.forEach(b=>{
+              let id = genuuid()
+              let relatedInterfaces = store.interfaces.items.find(r=>r.uuid == b)
+              push(act.add("vvDefinitions",{
+                uuid:id,
+                sourceSet:currentSetUuid,
+                name:relatedInterfaces.name,
+                shallStatement:relatedInterfaces.desc || relatedInterfaces.name,
+                successCriteria:"Fulfill statement",
+                color:"#ffffff"}))
+              push(act.add("metaLinks",{type:"vvDefinitionInterface", source:id, target:b}))
             })
             sourceOccElement.remove()
             update()
@@ -313,6 +372,15 @@ var createVvSet = function ({
       sourceData=store.requirements.items
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "vvDefinitionInterface") {
+      sourceGroup="interfaces"
+      sourceLinks=store.interfaces.links
+      sourceData=store.interfaces.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"type", displayAs:"Type", edit:false},
+        {prop:"desc", displayAs:"Description", edit:false}
       ]
     }else if (metalinkType == "documents") {
       if (typeof nw !== "undefined") {//if using node webkit

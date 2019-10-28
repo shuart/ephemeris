@@ -292,7 +292,9 @@ var createShowSingleItemService = function () {
               {prop:"name", displayAs:"Name", edit:true},
               {prop:"description", displayAs:"Description", edit:true},
               {prop:"source", displayAs:"Source", custom:e=>getObjectNameByUuid(e), edit:false},
-              {prop:"target", displayAs:"Target", custom:e=>getObjectNameByUuid(e), edit:false}
+              {prop:"target", displayAs:"Target", custom:e=>getObjectNameByUuid(e), edit:false},
+              {prop:"vvReportInterface", isTarget:true, displayAs:"V&V", choiceStyle: (item) =>item.status==2? 'background-color:#21ba45 !important;':'background-color:#dd4b39 !important;', meta:()=>store.metaLinks.items, choices:()=>store.vvActions.items, edit:false}
+
       ]
     }else if (type =="documents"){
       return [
@@ -306,6 +308,7 @@ var createShowSingleItemService = function () {
       return [
               {prop:"name", displayAs:"Name", edit:false},
               {prop:"vvReportNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
+              {prop:"vvReportInterface", displayAs:"Related Interfaces", meta:()=>store.metaLinks.items, choices:()=>store.interfaces.items, edit:false},
               {prop:"shallStatement", displayAs:"Shall Statement", edit:false},
               {prop:"successCriteria", displayAs:"Success Criteria", edit:false},
               {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:false},
