@@ -289,7 +289,7 @@ var createShowSingleItemService = function () {
     }else if (type =="interfaces"){
       return [
               {prop:"name", displayAs:"Name", edit:true},
-              {prop:"type", displayAs:"Type", edit:false},
+              {prop:"type", displayAs:"Type", edit:true},
               {prop:"description", displayAs:"Description", edit:true},
               {prop:"source", displayAs:"Source", custom:e=>getObjectNameByUuid(e), edit:false},
               {prop:"target", displayAs:"Target", custom:e=>getObjectNameByUuid(e), edit:false},
