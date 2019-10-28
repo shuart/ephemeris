@@ -47,11 +47,11 @@ var createInterfacesListView = function () {
       // fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"name", displayAs:"Name", edit:true},
-        {prop:"type", displayAs:"Type", edit:true},
+        {prop:"interfacesType", displayAs:"Type", meta:()=>store.metaLinks.items, choices:()=>store.interfacesTypes.items, edit:true},
         {prop:"description", displayAs:"Description", edit:true},
         {prop:"source", displayAs:"Source item", edit:false},
         {prop:"target", displayAs:"Target item", edit:false},
-        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{
@@ -94,6 +94,12 @@ var createInterfacesListView = function () {
           name:"Export",
           action:(ev)=>{
             exportToCSV()
+          }
+        },
+        {
+          name:"Types",
+          action:(ev)=>{
+            interfacesTypesView.update()
           }
         },
         {
@@ -141,6 +147,12 @@ var createInterfacesListView = function () {
     }else if (metalinkType == "tags") {
       sourceGroup="tags";
       sourceData=store.tags.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
+    }else if (metalinkType == "interfacesType") {
+      sourceGroup="interfacesTypes";
+      sourceData=store.interfacesTypes.items
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -203,8 +215,9 @@ var createInterfacesListView = function () {
     let store = query.currentProject()
     let data = readifyInterfaces().map(i=>{
       let linkToTextTags = getRelatedItems(i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextTypes = getRelatedItems(i, "interfacesTypes", {metalinksType:"interfacesType"}).map(s=> s[0]? s[0].name : "").join(",")
 
-      return {id:i.uuid, type:i.type, description:i.description, source:i.source, target:i.target, tags:linkToTextTags}
+      return {id:i.uuid, type:linkToTextTypes||"Interface", description:i.description, source:i.source, target:i.target, tags:linkToTextTags}
     })
     JSONToCSVConvertor(data, 'Interfaces', true)
 

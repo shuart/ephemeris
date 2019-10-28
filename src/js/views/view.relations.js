@@ -1026,6 +1026,16 @@ var createRelationsView = function () {
     sideListe.refresh(itemsToDisplay, relations)
     updateSideListeVisibility()
   }
+  var getInterfaceTypeFromUuid = function (store, uuid) {
+    let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
+    if (itemMetaLink) {
+      let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
+      return item.name
+    }else {
+      return store.interfacesTypes.items[0].name
+    }
+
+  }
 
   var updateSideListeVisibility = function () {//TODO integrate in list tree
     let elementList = document.querySelector(".left-list").querySelectorAll('.action_tree_list_relations_toogle_visibility')
@@ -1124,12 +1134,12 @@ var createRelationsView = function () {
       relations = relations.concat(store.metaLinks.items)
     }
     if (elementVisibility.interfaces ) {
-      relations = relations.concat(store.interfaces.items.map((e) => {e.customColor="#6dce9e"; return e}))
+      relations = relations.concat(store.interfaces.items.map((e) => { e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customColor="#6dce9e"; return e}))
     }
     if (elementVisibility.compose) {
-      relations = relations.concat(store.currentPbs.links.map((e) => {e.type = "Composed by"; return e}))
+      relations = relations.concat(store.currentPbs.links.map((e) => { e.displayType = "Composed by";  e.type = "Composed by"; return e}))
       if (elementVisibility.physicalSpaces) {
-        relations = relations.concat(store.physicalSpaces.links.map((e) => {e.type = "Contains"; return e}))
+        relations = relations.concat(store.physicalSpaces.links.map((e) => {e.displayType = "Contains"; e.type = "Contains"; return e}))
       }
       groupLinks = []//TODO WHat is the point?
     }

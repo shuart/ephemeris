@@ -113,6 +113,12 @@ var createShowSingleItemService = function () {
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ];
+    }else if (metalinkType == "interfacesType") {
+      sourceGroup="interfacesTypes";
+      sourceData=store.interfacesTypes.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ]
     }else if (metalinkType == "category") {
       sourceGroup="categories";
       displayRules = [
@@ -289,10 +295,11 @@ var createShowSingleItemService = function () {
     }else if (type =="interfaces"){
       return [
               {prop:"name", displayAs:"Name", edit:true},
-              {prop:"type", displayAs:"Type", edit:true},
+              {prop:"interfacesType", displayAs:"Type", meta:()=>store.metaLinks.items, choices:()=>store.interfacesTypes.items, edit:true},
               {prop:"description", displayAs:"Description", edit:true},
               {prop:"source", displayAs:"Source", custom:e=>getObjectNameByUuid(e), edit:false},
               {prop:"target", displayAs:"Target", custom:e=>getObjectNameByUuid(e), edit:false},
+              {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
               {prop:"vvReportInterface", isTarget:true, displayAs:"V&V", choiceStyle: (item) =>item.status==2? 'background-color:#21ba45 !important;':'background-color:#dd4b39 !important;', meta:()=>store.metaLinks.items, choices:()=>store.vvActions.items, edit:false}
 
       ]

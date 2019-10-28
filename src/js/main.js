@@ -63,6 +63,7 @@ var reparse = false;
   pageManager.addComponent({name:"notesManager",object:notesManager, haveSideBar:false})
   pageManager.addComponent({name:"meetingsManager",object:meetingsManager, haveSideBar:false})
   pageManager.addComponent({name:"tags",object:tagsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"interfacesTypes",object:interfacesTypesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"categories",object:categoriesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"workPackages",object:workPackagesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"documents",object:documentsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
@@ -183,6 +184,9 @@ var reparse = false;
   })
   connect(".action_toogle_tags_view","click",(e)=>{
     tagsView.update()
+  })
+  connect(".action_toogle_interfaces_types_view","click",(e)=>{
+    interfacesTypesView.update()
   })
   connect(".action_toogle_template_view","click",(e)=>{
     templatesView.update()

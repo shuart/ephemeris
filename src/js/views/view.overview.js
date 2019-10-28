@@ -400,6 +400,21 @@ var createOverview = function (targetSelector) {
       }
       alertAboutUpdate("Project Settings view has been added.")
     }
+    if (!store.interfacesTypes) {
+      store.interfacesTypes={
+        items:[
+          {uuid: uuid(), name: "Interface", color: "#ffffff"},
+          {uuid: uuid(), name: "Physical connection", color: "#ffffff"},
+          {uuid: uuid(), name: "Data connection", color: "#ffffff"},
+          {uuid: uuid(), name: "Command connection", color: "#ffffff"},
+          {uuid: uuid(), name: "Power connection", color: "#ffffff"},
+          {uuid: uuid(), name: "Electrical connection", color: "#ffffff"},
+          {uuid: uuid(), name: "Mechanical connection", color: "#ffffff"}
+        ]
+      },
+      alertAboutUpdate("Interfaces types have been added.")
+    }
+
 
   }
 

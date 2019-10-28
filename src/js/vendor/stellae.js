@@ -592,7 +592,7 @@ function stellae(_selector, _options) {
                 .attr('pointer-events', 'none')
                 .attr('text-anchor', 'middle')
                 .text(function(d) {
-                    return d.type;
+                    return d.displayType;
                 });
     }
 
@@ -1089,6 +1089,7 @@ function stellae(_selector, _options) {
 
             relationship = {
                 id: s.relationships + 1 + i,
+                displayType: label.toUpperCase(),
                 type: label.toUpperCase(),
                 startNode: d.id,
                 endNode: s.nodes + 1 + i,
@@ -1257,7 +1258,7 @@ function stellae(_selector, _options) {
                 });
 
 
-            var bbox = {width:d.type.length*4, height:0};// simplification considering each letter is 4px large
+            var bbox = {width:d.displayType.length*4, height:0};// simplification considering each letter is 4px large
 
             tickRelationshipsCurrentOutline(outline, bbox,sourceRotationAngle , sourceUnitaryNormalVector)
             if (options.showLinksText) {
