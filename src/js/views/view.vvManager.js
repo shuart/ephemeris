@@ -208,10 +208,10 @@ var createVvManager = function (targetSelector) {
     // let definitionsUuids= definitions.map(d=>d.uuid)
     let coveredNeedsRawList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed").map(l=>l.target)
     let coveredNeedList = coveredNeedsRawList.filter((item,index)=>coveredNeedsRawList.indexOf(item)===index)
-    let percentOfCoveredNeeds = Math.round(coveredNeedList.length/store.requirements.items.length*100)
+    let percentOfCoveredNeeds = store.requirements.items[0]? Math.round(coveredNeedList.length/store.requirements.items.length*100):0
     let coveredInterfaceRawList = store.metaLinks.items.filter(l => l.type=="vvDefinitionInterface").map(l=>l.target)
     let coveredInterfaceList = coveredInterfaceRawList.filter((item,index)=>coveredInterfaceRawList.indexOf(item)===index)
-    let percentOfCoveredInterfaces = Math.round(coveredInterfaceList.length/store.interfaces.items.length*100)
+    let percentOfCoveredInterfaces = store.interfaces.items[0]? Math.round(coveredInterfaceList.length/store.interfaces.items.length*100):0
     // let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
     return {coveredNeeds: coveredNeedList, percentOfCoveredNeeds:percentOfCoveredNeeds,percentOfCoveredInterfaces:percentOfCoveredInterfaces}
   }
