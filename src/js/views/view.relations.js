@@ -1131,7 +1131,7 @@ var createRelationsView = function () {
 
     relations = []//checl what connection to display TODO store in func
     if (elementVisibility.metaLinks) {
-      relations = relations.concat(store.metaLinks.items)
+      relations = relations.concat(store.metaLinks.items.map((e) => { e.displayType = e.type; return e}))
     }
     if (elementVisibility.interfaces ) {
       relations = relations.concat(store.interfaces.items.map((e) => { e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customColor="#6dce9e"; return e}))
