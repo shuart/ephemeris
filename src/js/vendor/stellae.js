@@ -1256,9 +1256,10 @@ function stellae(_selector, _options) {
                     var displacementDist = d.displacement|| 0;
                     return 'translate(' + (d.source.x+(displacementDist*normal.x))+ ', ' + (d.source.y+(displacementDist*normal.y)) + ')rotate(' + angle + ')';
                 });
-
-
-            var bbox = {width:d.displayType.length*4, height:0};// simplification considering each letter is 4px large
+            if (d.displayType) {
+              displayWidth= d.displayType.length*4
+            }
+            var bbox = {width:displayWidth, height:0};// simplification considering each letter is 4px large
 
             tickRelationshipsCurrentOutline(outline, bbox,sourceRotationAngle , sourceUnitaryNormalVector)
             if (options.showLinksText) {
