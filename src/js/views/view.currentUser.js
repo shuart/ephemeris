@@ -193,6 +193,45 @@ var createCurrentUserView = function ({
       </div>
     </div>
     <div class="ui divider"></div>
+    <h3 class="header">
+      Online Settings (experimental)
+    </h3>
+    <div data-id="${i.uuid}" class="ui segment">
+      <div class="content">
+        <h3 class="header">Email Adress</h3>
+        ${i.userOnlineEmail}
+        <i data-prop="userOnlineEmail" data-value="${i.userOnlineEmail}" data-id="${i.userUuid}" class="edit icon action_current_user_edit_item" style="opacity:0.2"></i>
+        <div class="ui divider"></div>
+
+        <h3 class="header">Password</h3>
+        ${i.userOnlinePassword}
+        <i data-prop="userOnlinePassword" data-value="${i.userOnlinePassword}" data-id="${i.userUuid}" class="edit icon action_current_user_edit_item" style="opacity:0.2"></i>
+        <div class="ui divider"></div>
+
+        <h3 class="header">Account ID</h3>
+        ${i.userOnlineAccountId}
+        <i data-prop="userOnlineAccountId" data-value="${i.userOnlineAccountId}" data-id="${i.userUuid}" class="edit icon action_current_user_edit_item" style="opacity:0.2"></i>
+
+        <h3 class="header">Passphrase</h3>
+        ${i.userOnlinePassphrase}
+        <i data-prop="userOnlinePassphrase" data-value="${i.userOnlinePassphrase}" data-id="${i.userUuid}" class="edit icon action_current_user_edit_item" style="opacity:0.2"></i>
+
+        <h3 class="header">Server</h3>
+        ${i.userOnlineServer}
+        <i data-prop="userOnlineServer" data-value="${i.userOnlineServer}" data-id="${i.userUuid}" class="edit icon action_current_user_edit_item" style="opacity:0.2"></i>
+        <h3 class="header">Socket Path</h3>
+        ${i.userOnlineSocket}
+        <i data-prop="userOnlineSocket" data-value="${i.userOnlineSocket}" data-id="${i.userUuid}" class="edit icon action_current_user_edit_item" style="opacity:0.2"></i>
+        <h3 class="header">Connect (true or false)</h3>
+        ${i.userOnlineConnectBool}
+        <i data-prop="userOnlineConnectBool" data-value="${i.userOnlineConnectBool}" data-id="${i.userUuid}" class="edit icon action_current_user_edit_item" style="opacity:0.2"></i>
+
+
+        <div class="ui divider"></div>
+
+      </div>
+    </div>
+    <div class="ui divider"></div>
     `
     return html
   }
