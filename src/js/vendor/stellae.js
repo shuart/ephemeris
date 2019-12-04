@@ -1256,6 +1256,7 @@ function stellae(_selector, _options) {
                     var displacementDist = d.displacement|| 0;
                     return 'translate(' + (d.source.x+(displacementDist*normal.x))+ ', ' + (d.source.y+(displacementDist*normal.y)) + ')rotate(' + angle + ')';
                 });
+            var displayWidth = 8
             if (d.displayType) {
               displayWidth= d.displayType.length*4
             }
