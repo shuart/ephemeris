@@ -943,6 +943,7 @@ function showListMenu({
               console.log(e);
               console.log(rule.choices());
               var itemStyle = 'cursor:pointer;'
+              var customDataId = undefined
               var foudItem = rule.choices().find(i=>i.uuid == e)
               if (foudItem) {
                 var newItem = foudItem.name + " "+ (foudItem.lastName || " ")+" "
@@ -954,7 +955,14 @@ function showListMenu({
                 if (rule.choiceStyle) {
                   itemStyle= rule.choiceStyle(foudItem)+" "+itemStyle || itemStyle;
                 }
-                var htmlNewItem = `<div style="${itemStyle}" data-inverted="" data-id="${newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${formatedNewItem}</div>`
+                if (rule.dataIdIsLinkId) {//TODO reorganise rules options
+                  if (isTarget) {
+                    customDataId = isMeta().find(e => (e.type == propName && e.target == item[currentIdProp] )).uuid
+                  }else {
+                    customDataId = isMeta().find(e => (e.type == propName && e.source == item[currentIdProp] )).uuid
+                  }
+                }
+                var htmlNewItem = `<div style="${itemStyle}" data-inverted="" data-id="${customDataId|| newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${formatedNewItem}</div>`
                 return acc += htmlNewItem
               }else {
                 return acc

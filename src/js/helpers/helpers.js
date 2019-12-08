@@ -398,7 +398,6 @@ var workarounds = {}
 //due to a poor implementation of the meeting/participant/assigned to relation. TODO, move to separate data
 workarounds.replaceStakeholderIdInMeetings = function (store, oldId, newId) {
 
-
   store.meetings.items.forEach(meeting=>{
     //replace participants area
     var index = meeting.participants.absent.indexOf(oldId);
@@ -407,8 +406,6 @@ workarounds.replaceStakeholderIdInMeetings = function (store, oldId, newId) {
     if (index !== -1) {meeting.participants.cc[index] = newId;}
     var index = meeting.participants.present.indexOf(oldId);
     if (index !== -1) {meeting.participants.present[index] = newId;}
-
-
 
     //replace in topics
     meeting.chapters.forEach(c=>{
@@ -423,6 +420,15 @@ workarounds.replaceStakeholderIdInMeetings = function (store, oldId, newId) {
     })
   })
 
+}
+//create a fake metalink to display interfaces in pbs single view
+workarounds.generateLinksToInterfaceTargets = function (interfaces) {
+  let newLinks = interfaces.map(i=>{
+    return {uuid:i.uuid,type:"fakeInterfaces", source:i.source, target:i.target}
+  })
 
-
+  let invertedNewLinks = interfaces.map(i=>{
+    return {uuid:i.uuid,type:"fakeInterfaces", source:i.target, target:i.source}
+  })
+  return newLinks.concat(invertedNewLinks)
 }
