@@ -948,6 +948,7 @@ function showListMenu({
               console.log(rule.choices());
               var itemStyle = 'cursor:pointer;'
               var customDataId = undefined
+              var secondaryAction = ""
               var foudItem = rule.choices().find(i=>i.uuid == e)
               if (foudItem) {
                 var newItem = foudItem.name + " "+ (foudItem.lastName || " ")+" "
@@ -961,12 +962,14 @@ function showListMenu({
                 }
                 if (rule.dataIdIsLinkId) {//TODO reorganise rules options
                   if (isTarget) {
-                    customDataId = isMeta().find(e => (e.type == propName && e.target == item[currentIdProp] )).uuid
+                    secondActionCustomDataId = isMeta().find(e => (e.type == propName && e.target == item[currentIdProp] )).uuid
+                    secondaryAction = `<div class="detail">| <i data-id="${secondActionCustomDataId|| newItemId}" class="cubes icon action_list_click_label"></i></div>`
                   }else {
-                    customDataId = isMeta().find(e => (e.type == propName && e.source == item[currentIdProp] )).uuid
+                    secondActionCustomDataId = isMeta().find(e => (e.type == propName && e.source == item[currentIdProp] )).uuid
+                    secondaryAction = `<div class="detail">| <i data-id="${secondActionCustomDataId|| newItemId}" class="cubes icon action_list_click_label"></i></div>`
                   }
                 }
-                var htmlNewItem = `<div style="${itemStyle}" data-inverted="" data-id="${customDataId|| newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${formatedNewItem}</div>`
+                var htmlNewItem = `<div style="${itemStyle}" data-inverted="" data-id="${customDataId|| newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${formatedNewItem}${secondaryAction} </div>`
                 return acc += htmlNewItem
               }else {
                 return acc
