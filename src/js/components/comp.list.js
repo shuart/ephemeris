@@ -843,6 +843,7 @@ function showListMenu({
           var isFullText = rule.fullText
           var isPastable = rule.pastable
           var isDroppable = rule.droppable
+          var isActionable = rule.actionable
           var isMeta = rule.meta //get the metaFunction
           var isCustom = rule.custom
           var isTarget = rule.isTarget //met is target
@@ -879,6 +880,9 @@ function showListMenu({
           if (isPastable) {
             pastableHtml+=`
             <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="paste icon action_list_past" style="cursor:pointer;opacity: 0.15;"></i>`
+          }
+          if (isActionable) {
+            goToHtml+=`<div style="cursor:pointer;" data-id="${isActionable(item[propName])}" class="ui mini basic label action_list_click_label">Show</div>`
           }
           if (isDroppable) {
             dropHtmlClass+="action_list_droppable"

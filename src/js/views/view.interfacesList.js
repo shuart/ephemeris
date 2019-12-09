@@ -23,11 +23,11 @@ var createInterfacesListView = function () {
     var originalLinks = query.currentProject().interfaces.items
     let data = originalLinks.map(function (l) {
 
-      let newItem = {uuid:l.uuid,
+      let newItem = {uuid:l.uuid,//TODO check if still necessary
         description:l.description,
         name:l.name,
-        source: getObjectNameByUuid(l.source),
-        target:getObjectNameByUuid(l.target),
+        source: l.source,
+        target:l.target,
         type:l.type
       };
       return newItem
@@ -49,8 +49,8 @@ var createInterfacesListView = function () {
         {prop:"name", displayAs:"Name", edit:true},
         {prop:"interfacesType", displayAs:"Type", meta:()=>store.metaLinks.items, choices:()=>store.interfacesTypes.items, edit:true},
         {prop:"description", displayAs:"Description", edit:true},
-        {prop:"source", displayAs:"Source item", edit:false},
-        {prop:"target", displayAs:"Target item", edit:false},
+        {prop:"source", displayAs:"Source item", custom:e=>getObjectNameByUuid(e), actionable:e=>e,edit:false},
+        {prop:"target", displayAs:"Target item", custom:e=>getObjectNameByUuid(e), actionable:e=>e,edit:false},
         {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
       ],
       idProp:"uuid",
@@ -88,6 +88,9 @@ var createInterfacesListView = function () {
           ev.select.updateData(readifyInterfaces())
           ev.select.update()//TODO Why is it necessary?
         })
+      },
+      onLabelClick: (ev)=>{
+          showSingleItemService.showById(ev.target.dataset.id)
       },
       extraActions:[
         {
