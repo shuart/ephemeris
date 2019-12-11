@@ -590,7 +590,11 @@ var createRelationsView = function () {
     }, container)
     bind(".action_relations_isolate_nodes_and_children","click",(e)=>{
       let selectedNodes = activeGraph.getSelectedNodes()
-      isolateSelectedNodes(selectedNodes, true)
+      if (activeMode == relations) {
+        isolateSelectedNodes(selectedNodes, true)
+      }else {
+        isolateSelectedNodesWithInterfaces(selectedNodes, true)
+      }
     }, container)
     bind(".action_relations_remove_nodes","click",(e)=>{
       let selectedNodes = activeGraph.getSelectedNodes()
@@ -1059,8 +1063,10 @@ var createRelationsView = function () {
       let rootArray = [r.uuid]
       let itemsChildren = items.filter((i) => {//get all the children of this element
         return links.find((l)=> {
-          if (l.source.uuid) {return l.source.uuid == r.uuid && l.target.uuid == i.uuid//check if links source is object
-          }else { return l.source == r.uuid && l.target == i.uuid}//or ID
+          if (l.displayType == "Composed by") {
+            if (l.source.uuid) {return l.source.uuid == r.uuid && l.target.uuid == i.uuid//check if links source is object
+            }else { return l.source == r.uuid && l.target == i.uuid}//or ID
+          }
         })
       })
       //recursively trandform them in leaf and branches
@@ -1068,6 +1074,30 @@ var createRelationsView = function () {
       rootArray = rootArray.concat(thisitemChildrenArray)
       console.log(acc);
       return acc.concat(rootArray)
+    }, [])
+  }
+  function findRelatedUuid(roots,items, links) {
+
+    return roots.reduce(function (acc, r) {
+      console.log(acc);
+      let rootArray = [r.uuid]
+      let itemsRelated = items
+        .filter((i) => {//get all the children of this element
+          return links.find((l)=> {
+            if (l.displayType != "Composed by") {
+              console.log(l);
+              if (l.source.uuid) {return ( (l.source.uuid == r.uuid && l.target.uuid == i.uuid)||(l.source.uuid == i.uuid && l.target.uuid == r.uuid) )//check if links source is object
+              }else { return ( (l.source == r.uuid && l.target == i.uuid)||(l.source == i.uuid && l.target == r.uuid) )}//or ID
+            }
+          })
+        })
+        .map(i=>i.uuid)
+      console.log(itemsRelated);
+      //recursively trandform them in leaf and branches
+      // let thisitemChildrenArray = findChildrenUuid(itemsChildren,items, links)
+      // rootArray = rootArray.concat(thisitemChildrenArray)
+      console.log(acc);
+      return acc.concat(itemsRelated)
     }, [])
   }
 
@@ -1078,6 +1108,24 @@ var createRelationsView = function () {
     let selectedNodesAndChildrenUuid = findChildrenUuid(selectedNodes, itemsToDisplay, relations)
     let stayVisibleNodes = showChildren? selectedNodesAndChildrenUuid : selectedNodesUuid
     hiddenItemsFromSideView=[] //resetGraph
+    let newDisplayList= itemsToDisplay.filter( i => !stayVisibleNodes.includes(i.uuid))
+    newDisplayList.forEach(function (item) {// hide everyting
+      hiddenItemsFromSideView.push(item.uuid)
+    })
+    update()
+  }
+  var isolateSelectedNodesWithInterfaces = function (currentSelected, showChildren) {
+
+    let selectedNodes = currentSelected
+    let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+    console.log(selectedNodes, itemsToDisplay, relations);
+    let selectedNodesAndChildrenUuid = findChildrenUuid(selectedNodes, itemsToDisplay, relations)
+    let relatedNodes = findRelatedUuid(selectedNodes, itemsToDisplay, relations)
+    console.log(relatedNodes);
+    selectedNodesAndChildrenUuid = selectedNodesAndChildrenUuid.concat(relatedNodes)
+    let stayVisibleNodes = showChildren? selectedNodesAndChildrenUuid : selectedNodesUuid
+    hiddenItemsFromSideView=[] //resetGraph
+    console.log(stayVisibleNodes);
     let newDisplayList= itemsToDisplay.filter( i => !stayVisibleNodes.includes(i.uuid))
     newDisplayList.forEach(function (item) {// hide everyting
       hiddenItemsFromSideView.push(item.uuid)
