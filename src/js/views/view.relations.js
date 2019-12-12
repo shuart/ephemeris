@@ -1063,7 +1063,7 @@ var createRelationsView = function () {
       let rootArray = [r.uuid]
       let itemsChildren = items.filter((i) => {//get all the children of this element
         return links.find((l)=> {
-          if (l.displayType == "Composed by") {
+          if (l.type != "Physical connection") {
             if (l.source.uuid) {return l.source.uuid == r.uuid && l.target.uuid == i.uuid//check if links source is object
             }else { return l.source == r.uuid && l.target == i.uuid}//or ID
           }
@@ -1084,7 +1084,7 @@ var createRelationsView = function () {
       let itemsRelated = items
         .filter((i) => {//get all the children of this element
           return links.find((l)=> {
-            if (l.displayType != "Composed by") {
+            if (l.type == "Physical connection") {
               if (l.source.uuid) {return ( (l.source.uuid == r.uuid && l.target.uuid == i.uuid)||(l.source.uuid == i.uuid && l.target.uuid == r.uuid) )//check if links source is object
               }else { return ( (l.source == r.uuid && l.target == i.uuid)||(l.source == i.uuid && l.target == r.uuid) )}//or ID
             }
