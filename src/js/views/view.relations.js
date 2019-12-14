@@ -15,6 +15,7 @@ var createRelationsView = function () {
 
   var currentGraphTransformation=[0,0,1]
   var addMode = "compose";
+  var addModeInterfaceType = undefined;
   var addItemMode ="currentPbs"
   //What to show
   var hiddenItemsFromSideView = [];
@@ -69,6 +70,14 @@ var createRelationsView = function () {
   var container = undefined
 
   var theme={
+    viewInterfaceList:(interfaceItems)=> { ;
+      let html = interfaceItems.map(i=>
+        `<div style="${(addModeInterfaceType == i.uuid)? "background-color: #6dce9e !important":""}" data-id="${i.uuid}" class="item action_interface_change_interface_type">
+          ${i.name}
+        </div>`
+        ).join('')
+      return html
+    },
     viewListItem:(item) => {
       if (item) {
         let cardHtml = `
@@ -759,6 +768,11 @@ var createRelationsView = function () {
         elementVisibility.interfaces = !elementVisibility.interfaces
         update()
     }, container)
+    bind(".action_interface_change_interface_type","click",(e)=>{
+        let interfaceDefaultTypeId = e.target.dataset.id;
+        addModeInterfaceType = interfaceDefaultTypeId
+        update()
+    }, container)
 
   }
 
@@ -1442,6 +1456,13 @@ var createRelationsView = function () {
           </div>
         </div>
       </div>
+      <div class="ui simple dropdown item">
+        Types
+        <i class="dropdown icon"></i>
+        <div class="menu" style="margin-top:0px;">
+          ${theme.viewInterfaceList(query.currentProject().interfacesTypes.items)}
+        </div>
+      </div>
     </div>`
     if (activeMode == "relations") {
       container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + relationsMenuHTML +`</div>`
@@ -1804,7 +1825,11 @@ var createRelationsView = function () {
       if (addMode == "physical") {
           let isCircularRef = store.interfaces.items.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
           if (!isCircularRef) {
-            push(act.add("interfaces",{type:"Physical connection", name:"Interface between "+lastSelectedNode.name+" and "+previousSelectedNode.name, source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+            let newInterfaceUuid = uuid()
+            push(act.add("interfaces",{uuid:newInterfaceUuid, type:"Physical connection", name:"Interface between "+lastSelectedNode.name+" and "+previousSelectedNode.name, source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+            if (addModeInterfaceType) {
+              push(act.add("metaLinks",{type:"interfacesType", source:newInterfaceUuid, target:addModeInterfaceType}))
+            }
           }else {
             alert("Circular reference. Action not possible")
           }
