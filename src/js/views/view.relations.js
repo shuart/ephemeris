@@ -1310,7 +1310,7 @@ var createRelationsView = function () {
     <div class="ui item">
       <div class="ui toggle checkbox">
         <input ${fixedValues ? 'checked':''} class="action_restore_last_interface_toogle_network" type="checkbox" name="public">
-        <label>Pinned Nodes</label>
+        <label>Fix Nodes</label>
       </div>
     </div>
 
