@@ -288,6 +288,15 @@ var reparse = false;
       },
       extraActions:[
         {
+          name:"WP",
+          action:(ev)=>{
+            pageManager.setActivePage("workPackages")
+            setTimeout(function () {
+              ev.select.remove() //TODO UGLY! find a better way. Needed because the list comp wil reload after invoking
+            }, 200);
+          }
+        },
+        {
           name:"Import",
           action:(ev)=>{
             importCSVfromFileSelector(function (results) {

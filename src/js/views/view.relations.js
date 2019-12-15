@@ -30,6 +30,7 @@ var createRelationsView = function () {
     requirements : true,
     stakeholders : true,
     physicalSpaces : false,
+    workPackages : false,
     metaLinks : true,
     interfaces : false,
     compose : false
@@ -46,6 +47,7 @@ var createRelationsView = function () {
     requirements : true,
     stakeholders : true,
     physicalSpaces : false,
+    workPackages : false,
     metaLinks : true,
     interfaces : false,
     compose : false
@@ -214,11 +216,13 @@ var createRelationsView = function () {
     bind(".action_relations_toogle_group_stakeholders","click",(e)=>{ groupElements.stakeholders = !groupElements.stakeholders; update(); }, container)
     bind(".action_relations_toogle_group_pbs","click",(e)=>{ groupElements.pbs = !groupElements.pbs; update(); }, container)
     bind(".action_relations_toogle_group_physicalSpaces","click",(e)=>{ groupElements.physicalSpaces = !groupElements.physicalSpaces; update(); }, container)
+    bind(".action_relations_toogle_group_workPackages","click",(e)=>{ groupElements.workPackages = !groupElements.workPackages; update(); }, container)
 
     bind(".action_relations_toogle_show_functions","click",(e)=>{ elementVisibility.functions = !elementVisibility.functions; update(); }, container)
     bind(".action_relations_toogle_show_requirements","click",(e)=>{ elementVisibility.requirements = !elementVisibility.requirements; update(); }, container)
     bind(".action_relations_toogle_show_stakeholders","click",(e)=>{ elementVisibility.stakeholders = !elementVisibility.stakeholders; update(); }, container)
     bind(".action_relations_toogle_show_physicalSpaces","click",(e)=>{ elementVisibility.physicalSpaces = !elementVisibility.physicalSpaces; update(); }, container)
+    bind(".action_relations_toogle_show_workPackages","click",(e)=>{ elementVisibility.workPackages = !elementVisibility.workPackages; update(); }, container)
     bind(".action_relations_toogle_show_metalinks","click",(e)=>{ elementVisibility.metaLinks = !elementVisibility.metaLinks; update(); }, container)
     bind(".action_relations_toogle_show_interfaces","click",(e)=>{ elementVisibility.interfaces = !elementVisibility.interfaces; update(); }, container)
     bind(".action_relations_toogle_show_compose","click",(e)=>{ elementVisibility.compose = !elementVisibility.compose; update(); }, container)
@@ -1177,6 +1181,7 @@ var createRelationsView = function () {
     var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
     var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
     var array5 = store.physicalSpaces.items.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
+    var array6 = store.workPackages.items.map((e) => {e.customColor="#b8431f ";e.labels = ["workPackages"]; return e})
 
     itemsToDisplay = []
     itemsToDisplay = itemsToDisplay.concat(array2)
@@ -1184,6 +1189,7 @@ var createRelationsView = function () {
     if (elementVisibility.functions) { itemsToDisplay = itemsToDisplay.concat(array1) }
     if (elementVisibility.stakeholders) { itemsToDisplay = itemsToDisplay.concat(array4) }
     if (elementVisibility.physicalSpaces) { itemsToDisplay = itemsToDisplay.concat(array5) }
+    if (elementVisibility.workPackages) { itemsToDisplay = itemsToDisplay.concat(array6) }
 
     relations = []//checl what connection to display TODO store in func
     if (elementVisibility.metaLinks) {
@@ -1268,6 +1274,7 @@ var createRelationsView = function () {
           requirements : true,
           stakeholders : true,
           physicalSpaces : true,
+          workPackages : true,
           metaLinks : true,
           interfaces : false,
           compose : true
@@ -1501,6 +1508,7 @@ var createRelationsView = function () {
         <a class="${elementVisibility.requirements ? 'active teal':''} ui item action_relations_toogle_show_requirements">Requirements</a>
         <a class="${elementVisibility.stakeholders ? 'active teal':''} ui item action_relations_toogle_show_stakeholders">Stakeholders</a>
         <a class="${elementVisibility.physicalSpaces ? 'active teal':''} ui item action_relations_toogle_show_physicalSpaces">Physical Spaces</a>
+        <a class="${elementVisibility.workPackages ? 'active teal':''} ui item action_relations_toogle_show_workPackages">Work Packages</a>
         </div>
       </div>
       <div class="item">
@@ -1519,6 +1527,7 @@ var createRelationsView = function () {
         <a class="${groupElements.stakeholders ? 'active teal':''} ui item action_relations_toogle_group_stakeholders">Stakeholders</a>
         <a class="${groupElements.pbs ? 'active teal':''} ui item action_relations_toogle_group_pbs">Products</a>
         <a class="${groupElements.physicalSpaces ? 'active teal':''} ui item action_relations_toogle_group_physicalSpaces">Physical Spaces</a>
+        <a class="${groupElements.workPackages ? 'active teal':''} ui item action_relations_toogle_group_workPackages">Work Packages</a>
         </div>
       </div>
 
@@ -1649,7 +1658,8 @@ var createRelationsView = function () {
           'Requirements': {fill:"#ffffff", transform:"scale("+0.05+") translate(-250, -250)", path:"M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"},
           'User': {fill:"#ffffff", transform:"scale("+0.05+") translate(-210, -250)", path:"M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48v-41.6c0-74.2-60.2-134.4-134.4-134.4z"},
           'Project': {fill:"#73787f", transform:"scale("+0.05+") translate(-220, -250)", path:"M128 148v-40c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12zm140 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm-128 96h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm128 0h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm-76 84v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm76 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm180 124v36H0v-36c0-6.6 5.4-12 12-12h19.5V24c0-13.3 10.7-24 24-24h337c13.3 0 24 10.7 24 24v440H436c6.6 0 12 5.4 12 12zM79.5 463H192v-67c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v67h112.5V49L80 48l-.5 415z"},
-          'physicalSpaces': {fill:"#ffffff", transform:"scale("+0.05+") translate(-220, -250)", path:"M128 148v-40c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12zm140 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm-128 96h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm128 0h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm-76 84v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm76 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm180 124v36H0v-36c0-6.6 5.4-12 12-12h19.5V24c0-13.3 10.7-24 24-24h337c13.3 0 24 10.7 24 24v440H436c6.6 0 12 5.4 12 12zM79.5 463H192v-67c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v67h112.5V49L80 48l-.5 415z"}
+          'physicalSpaces': {fill:"#ffffff", transform:"scale("+0.05+") translate(-220, -250)", path:"M128 148v-40c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12zm140 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm-128 96h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm128 0h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm-76 84v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm76 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm180 124v36H0v-36c0-6.6 5.4-12 12-12h19.5V24c0-13.3 10.7-24 24-24h337c13.3 0 24 10.7 24 24v440H436c6.6 0 12 5.4 12 12zM79.5 463H192v-67c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v67h112.5V49L80 48l-.5 415z"},
+          'workPackages': {fill:"#ffffff", transform:"scale("+0.05+") translate(-220, -250)", path:"M461.2 128H80c-8.84 0-16-7.16-16-16s7.16-16 16-16h384c8.84 0 16-7.16 16-16 0-26.51-21.49-48-48-48H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h397.2c28.02 0 50.8-21.53 50.8-48V176c0-26.47-22.78-48-50.8-48zM416 336c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32z"}
           // 'Functions': 'cogs',
           // 'Pbs': 'dolly',
           // 'Requirements': 'comment',
@@ -1820,6 +1830,18 @@ var createRelationsView = function () {
       push(act.add("metaLinks",{type:"contains", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
     }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "physicalSpaces") {
       push(act.add("metaLinks",{type:"contains", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
+    }else if (nodeTypes[0] =="workPackages" && nodeTypes[1] == "Pbs") {
+      push(act.add("metaLinks",{type:"WpOwn", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+    }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "workPackages") {
+      push(act.add("metaLinks",{type:"WpOwn", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
+    }else if (nodeTypes[0] =="workPackages" && nodeTypes[1] == "Requirements") {
+      push(act.add("metaLinks",{type:"WpOwnNeed", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+    }else if (nodeTypes[0] =="Requirements" && nodeTypes[1] == "workPackages") {
+      push(act.add("metaLinks",{type:"WpOwnNeed", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
+    }else if (nodeTypes[0] =="workPackages" && nodeTypes[1] == "User") {
+      push(act.add("metaLinks",{type:"assignedTo", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+    }else if (nodeTypes[0] =="User" && nodeTypes[1] == "workPackages") {
+      push(act.add("metaLinks",{type:"assignedTo", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
     }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "Pbs") {
       //check for circular references
       if (addMode == "physical") {
