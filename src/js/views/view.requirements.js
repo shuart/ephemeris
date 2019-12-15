@@ -3,6 +3,7 @@ var createRequirementsView = function () {
   var objectIsActive = false;
   var simpleView = true;
   var isExtraFieldsVisible =false;
+  var extraFields = undefined
 
   var init = function () {
     connections()
@@ -14,28 +15,33 @@ var createRequirementsView = function () {
   }
 
   var render = function () {
-
+    var store = query.currentProject()
     var displayRules = [
-      {prop:"name", displayAs:"Name", edit:"true"},
-      {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-      {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
-      {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-      {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
-      {prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
-      {prop:"documentsNeed", displayAs:"Documents", droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true},
-      {prop:"vvReportNeed", isTarget:true, displayAs:"V&V", choiceStyle: (item) =>item.status=="Pass"? 'background-color:#21ba45 !important;':'background-color:#dd4b39 !important;', meta:()=>store.metaLinks.items, choices:()=>store.vvActions.items, edit:false}
-
-    ]
-    if (simpleView) {
-      displayRules = [
         {prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
         {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
         {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
       ]
+
+    extraFields = [
+      {uuid:"name", prop:"name", displayAs:"Name", edit:"true"},
+      {uuid:"desc", prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
+      {uuid:"origin", prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
+      {uuid:"originNeed", prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
+      {uuid:"tags", prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+      {uuid:"WpOwnNeed", prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
+      {uuid:"documentsNeed", prop:"documentsNeed", displayAs:"Documents", droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true},
+      {uuid:"vvReportNeed", prop:"vvReportNeed", isTarget:true, displayAs:"V&V", choiceStyle: (item) =>item.status=="Pass"? 'background-color:#21ba45 !important;':'background-color:#dd4b39 !important;', meta:()=>store.metaLinks.items, choices:()=>store.vvActions.items, edit:false}
+    ]
+
+    let storeSettings = store.settings.items.find(s=>s.type == "requirementsListViewVisibleFields")
+    if (storeSettings && storeSettings.value[0]) { //if store settings exist and array is populated
+      displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
+      //displayRules = extraFields
     }
 
-    var store = query.currentProject()
+
+
       showListMenu({
         sourceData:store.requirements.items,
         sourceLinks:store.requirements.links,
@@ -133,14 +139,12 @@ var createRequirementsView = function () {
             }
           },
           {
-            name:"Tags",
+            name:"Fields",
             action:(ev)=>{
-              simpleView = !simpleView;
-              setTimeout(function () {
+              ephHelpers.startSelectionToShowFields(ev,extraFields, "requirementsListViewVisibleFields", "Visible Fields in Requirements list", function () {
                 document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
                 update()
-              }, 200);
-              // ev.select.remove();
+              })
             }
           },
           {

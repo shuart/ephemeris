@@ -392,6 +392,47 @@ var batchAddMetaLinks = function (store, type, originalSet, targetSet, initiator
     }
   })
 }
+
+var ephHelpers = {}
+
+ephHelpers.startSelectionToShowFields = function (ev,sourceList, settingsType, settingsName, callback) {
+  // setup option if not exist
+  let store = query.currentProject()
+  let settingsUuid = undefined
+  if (!store.settings.items.find(s=>s.type == settingsType)) {
+    settingsUuid = uuid()
+    push(act.add("settings",{uuid:settingsUuid, type:settingsType, name:settingsName, value:[]}))
+  }else {
+    settingsUuid = store.settings.items.find(s=>s.type == settingsType).uuid
+  }
+  showListMenu({
+    sourceData:sourceList,
+    multipleSelection: store.settings.items.find(s=>s.type == settingsType).value,
+    displayProp:"prop",
+    searchable : true,
+    display:[
+      {prop:"displayAs", displayAs:"Available fields", edit:false}
+    ],
+    idProp:"uuid",
+    onCloseMenu: (ev)=>{
+      setTimeout(function () {
+        callback()
+      }, 200);
+    },
+    onChangeSelect: (ev)=>{
+
+      push(act.edit("settings",{uuid:settingsUuid, prop:"value", value:ev.select.getSelected()}))
+      console.log(store.settings.items.find(s=>s.type == settingsType));
+      //app.store.userData.preferences.hiddenProject = ev.select.getSelected()
+    },
+    onClick: (ev)=>{
+      console.log("select");
+    }
+  })
+}
+
+
+
 //Workarounds
 
 var workarounds = {}

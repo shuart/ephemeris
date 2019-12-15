@@ -3,6 +3,7 @@ var createPbsView = function () {
   var objectIsActive = false;
   var simpleView = true;
   var isExtraFieldsVisible =false;
+  var extraFields = undefined
 
   var init = function () {
     connections()
@@ -14,6 +15,7 @@ var createPbsView = function () {
   }
 
   var render = function () {
+    var store = query.currentProject()
 
     var displayRules = [
       {prop:"name", displayAs:"name", edit:"true"},
@@ -21,23 +23,28 @@ var createPbsView = function () {
       {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
       {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"}
     ]
-    if (!simpleView) {
-      displayRules = [
-        {prop:"name", displayAs:"name", edit:"true"},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-        {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
-        {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"},
-        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
-        {prop:"category", displayAs:"Category", meta:()=>store.metaLinks.items, choices:()=>store.categories.items, edit:true},
-        {prop:"contains",isTarget:true, displayAs:"Physical Spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:true},
-        {prop:"fakeInterfaces", displayAs:"Interfaces", meta:()=>workarounds.generateLinksToInterfaceTargets(store.interfaces.items), choices:()=>store.currentPbs.items, customChoiceName:e=>e.target, dataIdIsLinkId:true,edit:false},//TODO clean as this is a bit of an hack
-        {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
-        {prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
-      ]
+
+    extraFields = [
+      {uuid:"name", prop:"name", displayAs:"name", edit:"true"},
+      {uuid:"desc", prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
+      {uuid:"originNeed", prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
+      {uuid:"originFunction", prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"},
+      {uuid:"tags", prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
+      {uuid:"category", prop:"category", displayAs:"Category", meta:()=>store.metaLinks.items, choices:()=>store.categories.items, edit:true},
+      {uuid:"contains", prop:"contains",isTarget:true, displayAs:"Physical Spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:true},
+      {uuid:"fakeInterfaces", prop:"fakeInterfaces", displayAs:"Interfaces", meta:()=>workarounds.generateLinksToInterfaceTargets(store.interfaces.items), choices:()=>store.currentPbs.items, customChoiceName:e=>e.target, dataIdIsLinkId:true,edit:false},//TODO clean as this is a bit of an hack
+      {uuid:"WpOwn", prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
+      {uuid:"documents", prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
+    ]
+
+    let storeSettings = store.settings.items.find(s=>s.type == "pbsListViewVisibleFields")
+    if (storeSettings && storeSettings.value[0]) { //if store settings exist and array is populated
+      displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
+      //displayRules = extraFields
     }
 
 
-    var store = query.currentProject()
+
     console.log(store.currentPbs.items);
       showListMenu({
         sourceData:store.currentPbs.items,
@@ -149,15 +156,24 @@ var createPbsView = function () {
               // ev.select.remove();
             }
           },
+          // {
+          //   name:"Extras",
+          //   action:(ev)=>{
+          //     simpleView = !simpleView;
+          //     setTimeout(function () {
+          //       document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+          //       update()
+          //     }, 200);
+          //     // ev.select.remove();
+          //   }
+          // },
           {
-            name:"Extras",
+            name:"Fields",
             action:(ev)=>{
-              simpleView = !simpleView;
-              setTimeout(function () {
+              ephHelpers.startSelectionToShowFields(ev,extraFields, "pbsListViewVisibleFields", "Visible Fields in Product list", function () {
                 document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
                 update()
-              }, 200);
-              // ev.select.remove();
+              })
             }
           },
           {
