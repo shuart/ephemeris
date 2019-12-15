@@ -54,6 +54,12 @@ var createWorkPackagesView = function () {
           ev.select.refreshList()
         })
       },
+      extraButtons : [
+        {name:"Relations", class:"fuse", prop:"projectId", action: (orev)=>{
+          console.log('fesfsefsef');
+          pageManager.setActivePage("relations", {param:{context:"extract", uuid:orev.dataset.id}})//TODO should not call page ma,ager directly
+        }}
+      ],
       extraActions:[
         {
           name:"Export",
@@ -184,7 +190,10 @@ var createWorkPackagesView = function () {
 
   var setActive =function () {
     objectIsActive = true;
-    update()
+    //update()
+    setTimeout(function () {
+      update()
+    }, 40);//TODO discover why it's needed and remove
   }
 
   var setInactive = function () {
