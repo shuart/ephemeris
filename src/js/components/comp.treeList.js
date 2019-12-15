@@ -18,6 +18,7 @@ var createTreeList = function ({
   var domSearchElement = undefined
   var searchResults = undefined
   var closedCaret = []
+  var flatMode = false
 
   var objectIsActive = false;
   var theme = {}
@@ -25,6 +26,7 @@ var createTreeList = function ({
   theme.item = function (i, visibility) {
      html =`
      <div data-id="${i[identifier]}" class="searchable_item list-item">
+       <div class="type-marker" style="${i.customColor? "":"display:none;"}position: relative;height: inherit;width: 2px;background:${i.customColor? i.customColor:"#01ffff"};right: 9px;opacity: 0.7;"></div>
        <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
        ${theme.itemExtraIcon(i)}
        <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customEyeIconClass? customEyeIconClass:"far fa-eye"} ${customEyeActionClass}"></i>
@@ -66,6 +68,10 @@ var createTreeList = function ({
      `
     return html
   }
+  theme.flatModeToggle = function () {
+     html ="<div style='cursor:pointer;width: 10px;height: 10px;position: absolute;top: 111px;left: 232px;opacity:0.2;'><i class='fas fa-sitemap'></i></div>"
+    return html
+  }
   function getCartStyle(caret, childrenAreClosed) {
     if (caret && childrenAreClosed) {
       return '<i style="float:left;" class="tree_caret fas fa-caret-right"></i>'
@@ -98,6 +104,11 @@ var createTreeList = function ({
 
     domElement = container.appendChild(document.createElement("div"))
     domElement.classList="tree_list_area"
+    domModeElement = container.appendChild(document.createElement("div"))
+    domModeElement.classList="tree_list_change_mode_area"
+    if (links) {
+      domModeElement.innerHTML=theme.flatModeToggle()
+    }
 
     //set up search if needed
     if (searchContainer) {
@@ -105,7 +116,7 @@ var createTreeList = function ({
       domSearchElement = searchContainer.appendChild(document.createElement("div"))
       domSearchElement.classList="tree_list_search_area"
       domSearchElement.innerHTML=theme.itemSearchArea()
-      setUpSearch(domSearchElement.querySelector('.tree_item_search_input'), items);
+      setUpSearch(domSearchElement.querySelector('.tree_item_search_input'));
     }
     console.log(domElement);
   }
@@ -135,6 +146,10 @@ var createTreeList = function ({
 
         }
     }
+    domModeElement.onclick = function(event) {
+      flatMode = !flatMode
+      update()
+    }
   }
 
   var render = function () {
@@ -142,7 +157,8 @@ var createTreeList = function ({
       let list = searchResults.map(i=>theme.item(i)).join("")
       domElement.innerHTML = list
       searchResults = undefined //reset search result if reloading
-    }else if (!links) {
+    }else if (!links || flatMode) {
+      console.log(items);
       let list = items.map(i=>theme.item(i)).join("")
       domElement.innerHTML = list
     }else if (links) {
@@ -258,9 +274,11 @@ var createTreeList = function ({
     }).join("")
   }
 
-  function setUpSearch(searchElement, sourceData) {
+  function setUpSearch(searchElement) {
+
     searchElement.addEventListener('keyup', function(e){
       //e.stopPropagation()
+      let sourceData = items//get local global items
       var value = searchElement.value
       console.log(value);
       console.log(sourceData);

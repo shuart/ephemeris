@@ -245,7 +245,7 @@ var createRelationsView = function () {
         //Then HIDE
         hiddenItemsFromSideView.push(linkedNodeId)
         //propagate
-        if (controlChildrenVisibility == true) {
+        if (controlChildrenVisibility == true && current.parentNode.parentNode.nextElementSibling) {
           let children = current.parentNode.parentNode.nextElementSibling.querySelectorAll('.action_tree_list_relations_toogle_visibility')
           for (var i = 0; i < children.length; i++) {
             let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
@@ -256,7 +256,7 @@ var createRelationsView = function () {
         //Then SHOW
         hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedNodeId)
         //propagate
-        if (controlChildrenVisibility == true) {
+        if (controlChildrenVisibility == true && current.parentNode.parentNode.nextElementSibling) {
           let children = current.parentNode.parentNode.nextElementSibling.querySelectorAll('.action_tree_list_relations_toogle_visibility')
           for (var i = 0; i < children.length; i++) {
             let child = children[i];let linkedChildId = child.dataset.id;let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
