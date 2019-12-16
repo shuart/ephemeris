@@ -912,6 +912,34 @@ var createRelationsView = function () {
         <div style="opacity: 0.85;height: 99%;width: 210px;position: absolute;left:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenuSnapshot ? '':'hidden'} menuSnapshotGraph"></div>
       </div>`
 
+      container.ondragover = function (ev) {
+        ev.preventDefault();
+        console.log(ev);
+      }
+      container.ondrop = function (ev) {
+        ev.preventDefault();
+        console.log(ev);
+        let dropUuid = ev.dataTransfer.getData("text")
+        console.log(ev.dataTransfer.getData("text"));
+        if (dropUuid) {
+          setTimeout(function () {
+            let mousePosition = activeGraph.getlocalMousePositionFromLayerMousePosition([ev.layerX, ev.layerY])
+            console.log(mousePosition);
+            //if hidden, SHOW
+            if (hiddenItemsFromSideView.includes(dropUuid)) {
+              hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, dropUuid)
+            }
+            //update Position
+            itemsToFixAtNextUpdate.push({uuid:dropUuid, fx:mousePosition.x, fy:mousePosition.y})
+            update()
+            setTimeout(function () {
+              setGraphToFixed()
+            }, 200);
+          }, 300);
+        }
+
+      }
+
     renderMenu(container)
 
     //append container and add graph afterward //TODO should be reveresed

@@ -394,6 +394,9 @@ var batchAddMetaLinks = function (store, type, originalSet, targetSet, initiator
 }
 
 var ephHelpers = {}
+ephHelpers.drag = function(ev) {
+        ev.dataTransfer.setData('text', ev.target.dataset.id);
+    }
 
 ephHelpers.startSelectionToShowFields = function (ev,sourceList, settingsType, settingsName, callback) {
   // setup option if not exist

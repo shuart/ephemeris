@@ -13,6 +13,7 @@ module.exports = stellae;
 function stellae(_selector, _options) {
     var base, scale, translate, container, graph, info, node, nodes, relationship, relationshipOutline, relationshipOverlay, relationshipText, relationships, selector, simulation, svg, svgNodes, svgRelationships, svgScale, svgTranslate,
         selection,
+        mouseCurrentPosition,
         classes2colors = {},
         justLoaded = false,
         numClasses = 0,
@@ -133,6 +134,12 @@ function stellae(_selector, _options) {
              .attr('width', '100%')
              .attr('height', '100%')
              .attr('class', 'stellae-graph')
+             // .on("mousemove", function() {
+             //   var xy  = d3.mouse(this);
+             //   console.log(xy);
+             //   var transform = d3.zoomTransform(base.node());
+             //   mouseCurrentPosition = transform.invert(xy);
+             // })
              .on("mousedown", function(e) {//Selection box creation
                function mouseTransform(mouse) {
                  var xy = mouse;
@@ -1646,6 +1653,19 @@ function stellae(_selector, _options) {
     function getSelectedNodes() {
       return currentSelectedNodes
     }
+
+    // function getCurrentMousePosition() {
+    //         var xy1 = mouseCurrentPosition
+    //         console.log("Zoomed:[",xy1[0],xy1[1],"]")
+    //         return{x:xy1[0],y:xy1[1]}
+    // }
+    function getlocalMousePositionFromLayerMousePosition(xy) {
+            var transform = d3.zoomTransform(base.node());
+            var xy1 = transform.invert(xy);
+            console.log("Zoomed:[",xy1[0],xy1[1],"]")
+            return{x:xy1[0],y:xy1[1]}
+    }
+
     function initialZoom(startPositions) {
         // svgScale = startPositions[2]
         // svgTranslate = [startPositions[0],startPositions[1]];
@@ -1679,6 +1699,8 @@ function stellae(_selector, _options) {
         setFocusedNodes:setFocusedNodes,
         setFadeOtherNodesOnHoover: setFadeOtherNodesOnHoover,
         getSelectedNodes: getSelectedNodes,
+        // getCurrentMousePosition: getCurrentMousePosition,
+        getlocalMousePositionFromLayerMousePosition: getlocalMousePositionFromLayerMousePosition,
         version: version
     };
 }
