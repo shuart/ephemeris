@@ -874,6 +874,7 @@ var createRelationsView = function () {
           functions : true,
           requirements : true,
           stakeholders : true,
+          workPackages : true,
           physicalSpaces : true,
           metaLinks : true,
           interfaces : true,
