@@ -154,10 +154,14 @@ var createTreeList = function ({
   }
 
   var render = function () {
+    //check if a new search is Needed
+    if (domSearchElement.querySelector('.tree_item_search_input').value == "") {
+      searchResults = undefined //reset search result if reloading
+    }
     if (searchResults && searchResults[0]){
       let list = searchResults.map(i=>theme.item(i)).join("")
       domElement.innerHTML = list
-      searchResults = undefined //reset search result if reloading
+      //searchResults = undefined //reset search result if reloading
     }else if (!links || flatMode) {
       console.log(items);
       let list = items.map(i=>theme.item(i)).join("")
@@ -275,27 +279,29 @@ var createTreeList = function ({
     }).join("")
   }
 
+  function searchList(sourceData, value) {
+    var filteredData = sourceData.filter((item) => {
+      if (fuzzysearch(value, item.name) || fuzzysearch (value, item.name.toLowerCase()) ) {
+        return true
+      }
+      return false
+    })
+    console.log(filteredData);
+    if (filteredData[0] && filteredData.length != items.length) {
+      searchResults = filteredData
+    }else {
+      searchResults = undefined
+    }
+    update()
+  }
+
   function setUpSearch(searchElement) {
 
     searchElement.addEventListener('keyup', function(e){
       //e.stopPropagation()
       let sourceData = items//get local global items
       var value = searchElement.value
-      console.log(value);
-      console.log(sourceData);
-      var filteredData = sourceData.filter((item) => {
-        if (fuzzysearch(value, item.name) || fuzzysearch (value, item.name.toLowerCase()) ) {
-          return true
-        }
-        return false
-      })
-      console.log(filteredData);
-      if (filteredData[0] && filteredData.length != items.length) {
-        searchResults = filteredData
-      }else {
-        searchResults = undefined
-      }
-      update()
+      searchList(sourceData, value)
 
       // var filteredIds = filteredData.map(x => x.uuid);
       // var searchedItems = document.querySelectorAll(".searchable_note")
