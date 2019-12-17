@@ -59,7 +59,7 @@ var createPbsView = function () {
         allowBatchActions:true,
         onEditItem: (ev)=>{
           createInputPopup({
-            originalData:ev.target.dataset.value,
+            originalData:ev.target.dataset.value || "",
             onSave:e =>{
               push(editPbs({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:e}))
               ev.select.refreshList()

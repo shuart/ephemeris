@@ -907,7 +907,7 @@ function showListMenu({
           }
           if (isEditable && !isMeta && !isTime && !rule.options) {
             editHtml+=`
-            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
+            <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
           }else if (isEditable && isMeta) {
             editHtml+=`
             <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[currentIdProp]}" class="edit icon action_list_edit_choice_item" style=""></i>`

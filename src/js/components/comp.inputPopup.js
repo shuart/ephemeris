@@ -73,7 +73,7 @@ var createInputPopup = function ({
       element: document.querySelector('.inputTextAreaEditor'),
       autoDownloadFontAwesome:false,
       spellChecker:false,
-      initialValue : originalData
+      initialValue : originalData || ""
     });
   }
 
