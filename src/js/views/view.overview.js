@@ -414,6 +414,14 @@ var createOverview = function (targetSelector) {
       },
       alertAboutUpdate("Interfaces types have been added.")
     }
+    if (!store.changes) {
+      store.changes={
+        items:[
+
+        ]
+      },
+      alertAboutUpdate("Changes have been added.")
+    }
 
 
   }

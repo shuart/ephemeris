@@ -30,6 +30,7 @@ var createRequirementsView = function () {
       {uuid:"originNeed", prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
       {uuid:"tags", prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
       {uuid:"WpOwnNeed", prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
+      {uuid:"reqChangedBy", prop:"reqChangedBy", displayAs:"Changed by", meta:()=>store.metaLinks.items, choices:()=>store.changes.items, edit:true},
       {uuid:"documentsNeed", prop:"documentsNeed", displayAs:"Documents", droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true},
       {uuid:"vvReportNeed", prop:"vvReportNeed", isTarget:true, displayAs:"V&V", choiceStyle: (item) =>item.status=="Pass"? 'background-color:#21ba45 !important;':'background-color:#dd4b39 !important;', meta:()=>store.metaLinks.items, choices:()=>store.vvActions.items, edit:false}
     ]
@@ -260,6 +261,14 @@ var createRequirementsView = function () {
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
+    }else if (metalinkType == "reqChangedBy") {
+      sourceGroup="changes"
+      sourceLinks=store.changes.links
+      sourceData=store.changes.items
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"desc", displayAs:"Description", edit:false}
+      ]
     }else if (metalinkType == "documentsNeed") {
       if (typeof nw !== "undefined") {//if using node webkit
         prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
@@ -295,6 +304,9 @@ var createRequirementsView = function () {
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
         if (sourceGroup == "currentPbs") {
           push(addPbsLink({uuid:linkUuid,source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+        }
+        if (sourceGroup == "changes") {
+          push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
         }
         ev.select.setEditItemMode({
           item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],

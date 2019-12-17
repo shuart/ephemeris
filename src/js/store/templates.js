@@ -185,6 +185,10 @@ var store = {
     items:[]
     // items:[{uuid:uuid(), name:"An exemple interface",type:"physical connection", source:"555sfse", target:"f896546e", description:"Un interface"}]
   },
+  changes:{
+    items:[]
+    // items:[{uuid:uuid(), name:"An exemple change",desc:"change desc", createdAt:"555sfse"}]
+  },
   settings:{
     items:[]
   },
