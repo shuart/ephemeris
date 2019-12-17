@@ -79,18 +79,29 @@ var createShowTreeFromListService = function () {
           }
         },
         onRemove:(ev)=>{
-          if (confirm("Keep Childs?")) {
-            var originalLinks = store.requirements.links.filter(e=>e.source == ev.element.data.uuid)
-            for (link of originalLinks) {
-              push(act.addLink(storeGroup,{source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
+          if (confirm("Remove?")) {
+            if (true) {
+              console.log(ev);
+              var originalLinks = store[storeGroup].links.filter(e=>e.source == ev.element.data.uuid)
+              for (link of originalLinks) {
+                push(act.addLink(storeGroup,{source:ev.element.parent.data.uuid, target:link.target}))
+              }
             }
+            // if (confirm("Keep Childs?")) {
+            //   console.log(ev);
+            //   var originalLinks = store[storeGroup].links.filter(e=>e.source == ev.element.data.uuid)
+            //   for (link of originalLinks) {
+            //     push(act.addLink(storeGroup,{source:ev.element.parent.data.uuid, target:link.target}))
+            //   }
+            // }
+            //remove all links
+            console.log(ev);
+            push(act.removeLink(storeGroup,{source:ev.element.data.uuid}))
+            //addNewLinks
+            push(act.remove(storeGroup,{uuid:ev.element.data.uuid}))
+            //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
+            ev.sourceTree.setData(generateDataSource(storeGroup))
           }
-          //remove all links
-          push(act.removeLink(storeGroup,{source:ev.element.data.uuid}))
-          //addNewLinks
-          push(act.remove(storeGroup,{uuid:ev.target.dataset.id}))
-          //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-          ev.sourceTree.setData(generateDataSource(storeGroup))
         },
         onLabelClicked:(originev)=>{
           showSingleItemService.showById(originev.element.data.uuid)

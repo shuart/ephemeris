@@ -25,7 +25,7 @@ var createPbsView = function () {
     ]
 
     extraFields = [
-      {uuid:"name", prop:"Name", displayAs:"name", edit:"true"},
+      {uuid:"name", prop:"name", displayAs:"Name", edit:"true"},
       {uuid:"desc", prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
       {uuid:"originNeed", prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
       {uuid:"originFunction", prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"},
