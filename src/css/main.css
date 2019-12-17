@@ -655,7 +655,7 @@ textarea {
 
 }
 .flexTable .top.row {
-  text-align: center;
+  /* text-align: center; */
   font-weight: bold;
 }
 .flexTable .column {
