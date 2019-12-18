@@ -997,9 +997,9 @@ var createRelationsView = function () {
       if (fixedValues) { //check if network is fixed or dynamic
         if (currentSnapshot) {// has a snapshot been activated
           fixedValuesList = query.currentProject().graphs.items.find(i=>i.uuid == currentSnapshot).nodesPositions
-
-          if (fixedValuesList && itemsToDisplay && filteredItemsToDisplay.length-fixedValuesList.length > 0 ) {// if element to display are note the same as the snapshot
-            if (!confirm(filteredItemsToDisplay.length-fixedValuesList.length +1 +" extra items have been added since this snapshot was created. Show them in the snapshot?")) {//TODO why is the +1 needed?
+          console.log(filteredItemsToDisplay.length, fixedValuesList.length);
+          if (fixedValuesList && itemsToDisplay && filteredItemsToDisplay.length-fixedValuesList.length > -1 ) {// if element to display are note the same as the snapshot
+            if (!confirm("Update this snapshot with " + (filteredItemsToDisplay.length-fixedValuesList.length +1) +" newly added items?")) {//TODO why is the +1 needed?
 
               let originalFilteredItemsToDisplay = deepCopy(filteredItemsToDisplay)
               let originalHiddenItemsFromSideView = deepCopy(hiddenItemsFromSideView)//store value before modyfing theme
@@ -1008,13 +1008,34 @@ var createRelationsView = function () {
               filteredItemsToDisplay= filteredItemsToDisplay.filter(f => extraFilter.includes(f.uuid)) //remove other nodes
               hiddenItemsFromSideView = hiddenItemsFromSideView.concat(originalFilteredItemsToDisplay.filter(f => !extraFilter.includes(f.uuid)).map(o=>o.uuid))//update the hidden item prop
 
-              if (confirm('Check if new nodes are related to graph and show them?')) {
+              // check if new items were related
+              if (fixedValuesList.length <50) { //for performance TODO check if needed
+                //check if a new node is connected
                 let childrenFilter = findChildrenUuid(fixedValuesList, itemsToDisplay, relations)
-                console.log(filteredItemsToDisplay);
-                console.log(childrenFilter);
-                filteredItemsToDisplay= originalFilteredItemsToDisplay.filter(f => childrenFilter.includes(f.uuid))
-                hiddenItemsFromSideView = originalHiddenItemsFromSideView.concat(originalFilteredItemsToDisplay.filter(f => !childrenFilter.includes(f.uuid)).map(o=>o.uuid))
+
+                let newChilds = childrenFilter.filter(f => {
+                    if (!f) {
+                      return false // filter if node is undefined
+                    }else {
+                      return !fixedValuesList.includes(f.uuid)
+                    }
+                  }
+                )
+                console.log(newChilds);
+                if ((newChilds.length > 0) && confirm('Check if new nodes are related to graph and show them?')) {
+                  filteredItemsToDisplay= originalFilteredItemsToDisplay.filter(f => childrenFilter.includes(f.uuid))
+                  hiddenItemsFromSideView = originalHiddenItemsFromSideView.concat(originalFilteredItemsToDisplay.filter(f => !childrenFilter.includes(f.uuid)).map(o=>o.uuid))
+                }
+              }else {
+                if (confirm('Check if new nodes are related to graph and show them?')) {
+                  let childrenFilter = findChildrenUuid(fixedValuesList, itemsToDisplay, relations)
+                  console.log(filteredItemsToDisplay);
+                  console.log(childrenFilter);
+                  filteredItemsToDisplay= originalFilteredItemsToDisplay.filter(f => childrenFilter.includes(f.uuid))
+                  hiddenItemsFromSideView = originalHiddenItemsFromSideView.concat(originalFilteredItemsToDisplay.filter(f => !childrenFilter.includes(f.uuid)).map(o=>o.uuid))
+                }
               }
+
             }
           }
           currentSnapshot = undefined//clear current snapshot
