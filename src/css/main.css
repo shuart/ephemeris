@@ -567,6 +567,7 @@ textarea {
 .flexTable {
   width: 100%;
   position: relative;
+  transform: translate3d(0, 0, 0);
 }
 .flexTable .table{
   overflow: hidden;
