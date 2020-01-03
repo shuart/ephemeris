@@ -13,11 +13,11 @@ var createVvManager = function (targetSelector) {
       <i class="plus icon"></i>
       Add a V&V set
     </button>
-    <div class="ui tiny progress" data-value="15" data-total="20">
+    <div class="ui tiny progress" data-value="15" data-percent="0,0" data-total="20">
         <div style="min-width:0%; width:${stats.percentOfCoveredNeeds}%;" class="bar"></div>
         <div class="label">${stats.percentOfCoveredNeeds}% of requirements covered</div>
     </div>
-    <div class="ui tiny progress" data-value="15" data-total="20">
+    <div class="ui tiny progress" data-value="15" data-percent="0,0" data-total="20">
         <div style="min-width:0%; width:${stats.percentOfCoveredInterfaces}%;" class="bar"></div>
         <div class="label">${stats.percentOfCoveredInterfaces}% of interfaces covered</div>
     </div>
@@ -83,14 +83,16 @@ var createVvManager = function (targetSelector) {
               <div class="summary">
                 Contains <a>${stats.actions.length}</a> V&V actions.
                 <a>${stats.completedActions.length}</a> completed
+                <a>${stats.failedActions.length}</a> failed
               </div>
             </div>
           </div>
           <div class="event">
             <div class="content">
               <div class="summary">
-                <div class="ui teal small progress" data-value="15" data-total="20">
-                    <div style="min-width:0%; width:${stats.completedActions.length/stats.actions.length*100}%;" class="bar"></div>
+                <div class="ui multiple small progress" data-value="15" data-percent="0,0">
+                    <div style="min-width:0%; width:${stats.completedActions.length/stats.actions.length*100}%;" class="teal bar"></div>
+                    <div style="min-width:0%; width:${stats.failedActions.length/stats.actions.length*100}%;" class="red bar"></div>
                 </div>
               </div>
             </div>
@@ -235,10 +237,11 @@ var createVvManager = function (targetSelector) {
     let store = query.currentProject()
     let actions= store.vvActions.items.filter(d=>d.sourceReport == report.uuid)
     let completedActions= actions.filter(d=>d.status == 2)
+    let failedActions= actions.filter(d=>d.status == 1)
     let actionsUuids= actions.map(d=>d.uuid)
     //let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
 
-    return {actions:actions, completedActions: completedActions}
+    return {actions:actions, completedActions: completedActions, failedActions: failedActions}
   }
 
 
