@@ -124,7 +124,7 @@ var createVvSet = function ({
         {prop:"shallStatement", displayAs:"Shall Statement", edit:true},
         {prop:"successCriteria", displayAs:"Success Criteria", edit:true},
         {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:true},
-        {prop:"relatedObjects", displayAs:"Related Products", edit:"true"}
+        {uuid:"documents", prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{
@@ -399,6 +399,21 @@ var createVvSet = function ({
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
+    }else if (metalinkType == "documentsNeed") {
+      sourceGroup="documents";
+      prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`,
+      onLoaded = function (ev) {
+        dropAreaService.setDropZone(".prepend", function () {
+          ev.select.updateData(store.documents.items)
+          ev.select.refreshList()
+          setTimeout(function () {
+            ev.select.scrollDown()
+          }, 100);
+        })
+      },
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false}
+      ];
     }
     showListMenu({
       sourceData:sourceData,

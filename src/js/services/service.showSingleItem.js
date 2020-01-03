@@ -338,7 +338,7 @@ var createShowSingleItemService = function () {
               {prop:"shallStatement", displayAs:"Shall Statement", edit:false},
               {prop:"successCriteria", displayAs:"Success Criteria", edit:false},
               {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:false},
-              {prop:"relatedObjects", displayAs:"Related Products", edit:false},
+              {uuid:"documents", prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true},
               {prop:"Result", displayAs:"Result", edit:true},
               {prop:"status", displayAs:"Status", options:listOptions.vv_status,edit:true}
       ]

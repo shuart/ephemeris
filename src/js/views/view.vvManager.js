@@ -172,6 +172,14 @@ var createVvManager = function (targetSelector) {
           relatedLink.type ="vvReportInterface"
           push(act.add("metaLinks",relatedLink))
         })
+        //copy related metalinks of documents
+        let relatedMetalinkDocument = deepCopy(store.metaLinks.items.filter(l=> l.source == def.uuid && l.type == 'documents'))
+        relatedMetalinkDocument.forEach(function (relatedLink) {
+          relatedLink.uuid = genuuid()
+          relatedLink.source =newDefUuid
+          relatedLink.type ="documents"
+          push(act.add("metaLinks",relatedLink))
+        })
         //then modify the def to an action
         def.uuid = newDefUuid
         def.sourceReport = reportUuid
