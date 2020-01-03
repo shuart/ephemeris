@@ -1087,16 +1087,17 @@ var createRelationsView = function () {
       searchContainer:document.querySelector(".side_searchArea"),
       items: itemsToDisplay,
       links:relations,
+      onUpdate:updateSideListeVisibility,
       customEyeActionClass:"action_tree_list_relations_toogle_visibility",
       customExtraActionClass:"fas fa-link action_toogle_diag_relations_options",
       customTextActionClass:"action_LM_project_tree_show_item_popup"//works because event listener is specified in leftmenu.projectTree
     })
-    updateSideListeVisibility()
+    //updateSideListeVisibility()
   }
 
   var udapteSideListe = function () {
     sideListe.refresh(itemsToDisplay, relations)
-    updateSideListeVisibility()
+    //updateSideListeVisibility()
   }
   var getInterfaceTypeFromUuid = function (store, uuid) {
     let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)

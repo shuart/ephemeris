@@ -6,6 +6,7 @@ var createTreeList = function ({
   identifier = "uuid",
   valueFunction = (i)=> i.name,
   contentFunction = undefined,
+  onUpdate= undefined,
   onToogleVisibility=undefined,
   customEyeActionClass="",
   customEyeIconClass=undefined,
@@ -171,7 +172,10 @@ var createTreeList = function ({
       let list = renderRecursiveList(items, linkCopy)
       domElement.innerHTML = list
     }
-
+    //onUpdate callBack
+    if (onUpdate) {
+      onUpdate()
+    }
   }
 
   var renderRecursiveList = function (items, links) {
