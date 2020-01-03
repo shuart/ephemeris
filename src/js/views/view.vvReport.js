@@ -61,6 +61,7 @@ var createVvReport = function ({
     // mainEl.style.width = "50%"
     mainEl.style.width = "80%"
     mainEl.style.maxHeight = "90%"
+    mainEl.style.height = "90%"
     mainEl.style.left= "10%";
     mainEl.style.padding = "50px";
     mainEl.style.overflow = "auto";
@@ -69,7 +70,7 @@ var createVvReport = function ({
 
     container.style.position = "relative"
     container.style.height = "90%"
-    container.style.overflow = "auto"
+    container.style.overflow = "hidden"
     container.classList = "vvActionsArea"
 
     var menuArea = document.createElement("div");
