@@ -6,7 +6,7 @@ function showListMenu({
   targetDomContainer = undefined,
   display = undefined,
   extraFields =undefined,
-  focusSearchOnRender = true,
+  focusSearchOnRender = false,
   singleElement =undefined,
   rulesToDisplaySingleElement = undefined,
   fullScreen= false,
@@ -947,8 +947,6 @@ function showListMenu({
           // }
           if (rule.choices) {
             function reduceChoices(acc, e) {
-              console.log(e);
-              console.log(rule.choices());
               var itemStyle = 'cursor:pointer;'
               var customDataId = undefined
               var secondaryAction = ""
