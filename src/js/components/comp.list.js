@@ -1029,7 +1029,6 @@ function showListMenu({
       html += "</div>"//End of Searchable Item
 
       //Check if some children exist if there is a link items
-      console.log(sourceLinks);
       if (sourceLinks) {
         if (source.includes(item.uuid)) {//if children, generate the html to append them
           //first get all the children from the links
