@@ -46,6 +46,9 @@ function showListMenu({
   listIsExpanded = false
   }={}) {
 
+    //store already created items
+    var existingItems = undefined;
+
     var extraValuesAdded =false;
     //utility to parse html
     function toNode(html) {
@@ -789,10 +792,10 @@ function showListMenu({
         extraStyle = 'style="background-color= lightgrey; opacity= 0.5;"'
       }
       if (multipleSelection &&  multipleSelection.includes(item[idProp])) {
-        extraStyle = "background-color: #DAF7A6; opacity: 0.8;"
+        extraStyle = 'style="background-color: #f6ffe7; opacity: 1.0;"'
       }
       //define row elemet
-      html += `<div ${extraStyle}' data-id='${item[idProp]}' class='searchable ${theme.nestedListClass}'>`//Start of Searchable item
+      html += `<div ${extraStyle} data-id='${item[idProp]}' class='searchable ${theme.nestedListClass}'>`//Start of Searchable item
       //add list add helpers
       if (onAddFromPopup) {
         html += `<div data-id='${item[idProp]}' class='addMagnet'>
@@ -1277,11 +1280,34 @@ function showListMenu({
   function setEditItemMode(data) {
     editItemMode = {item:data.item, onLeave:data.onLeave}
   }
+
   function refreshList() {
     if (listIsExpanded) {
       listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
     }
-    listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
+
+    let newDom = theme.listWrapper(buildSingle(sourceData, sourceLinks))
+    //listContainer
+
+    morphdom(listContainer, '<div class="table">'+newDom+'</div>');
+
+    // if (!existingItems) {// if no current items, recreate all list
+    //   listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
+    // }else{
+    //
+    //
+    //   for (var i = 0; i < newDataSet.length; i++) {
+    //     newDataSet[i]
+    //     let idOfExistingItem = newDataSet[i].id
+    //     if (sourceData.find()) {
+    //
+    //     }
+    //   }
+    //
+    //   let getElementToUpdate = listContainer.querySelector('.searchable.row[data-id='+elementId+']')
+    //
+    // }
+
     //focus on search
     if (focusSearchOnRender) {
       let listInput = sourceEl.querySelector(".list-search-input")
