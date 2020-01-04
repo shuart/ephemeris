@@ -254,7 +254,9 @@ function showListMenu({
           refreshList()
         }
         if (event.target.classList.contains("action_list_remove_item_from_selection")) {
+          console.log(multipleSelection)
           multipleSelection = multipleSelection.filter(i => i != event.target.dataset.id)
+          console.log(multipleSelection)
           onChangeSelect({select:self,selectDiv:sourceEl, target:event.target})
           refreshList()
         }
@@ -1283,10 +1285,14 @@ function showListMenu({
       listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
     }
 
-    let newDom = theme.listWrapper(buildSingle(sourceData, sourceLinks))
-    //listContainer
+    if (morphdom && !multipleSelection) {//triger selectiv diff replace only in full lists
+      let newDom = theme.listWrapper(buildSingle(sourceData, sourceLinks))
+      morphdom(listContainer, '<div class="table">'+newDom+'</div>');
+    }else {
+      listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
+    }
 
-    morphdom(listContainer, '<div class="table">'+newDom+'</div>');
+
 
     // if (!existingItems) {// if no current items, recreate all list
     //   listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
