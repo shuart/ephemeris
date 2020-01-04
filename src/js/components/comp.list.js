@@ -1287,7 +1287,12 @@ function showListMenu({
 
     if (morphdom && !multipleSelection) {//triger selectiv diff replace only in full lists
       let newDom = theme.listWrapper(buildSingle(sourceData, sourceLinks))
-      morphdom(listContainer, '<div class="table">'+newDom+'</div>');
+      morphdom(listContainer, '<div class="table">'+newDom+'</div>', {
+          onBeforeElUpdated: function(fromEl, toEl) {
+              if (fromEl.isEqualNode(toEl)) { return false }
+              return true
+          }
+      });
     }else {
       listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
     }
