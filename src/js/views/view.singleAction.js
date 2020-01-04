@@ -152,24 +152,16 @@ var createSingleActionView = function ({
       sourceOccElement.remove()
     })
     connect(".action_single_action_edit_time_item","click",(e)=>{
-      console.log(event.target.parentElement.querySelector("input"));
-      event.target.parentElement.querySelector("input").style.display ="inline-block"
-      event.target.parentElement.querySelector("input").style.borderRadius ="8px"
-      event.target.parentElement.querySelector("input").style.borderStyle ="dashed"
-      event.target.parentElement.querySelector("input").style.borderColor ="#9ed2ce"
-      event.target.parentElement.querySelector("input").style.borderColor ="#e8e8e8"
-      event.target.parentElement.querySelector("input").style.backgroundColor= "#e8e8e8"
-      event.target.parentElement.querySelector("input").previousSibling.previousSibling.remove()
-      event.target.style.display ="none"
-      event.target.parentElement.querySelector("input").onchange = function (ev) {
-        //onEditItemTime({select:self, selectDiv:sourceEl, target:ev.target})
+      ephHelpers.promptSingleDatePicker(e.target.dataset.value, function (event) {
+        let selected = event.selectedDates
+        if (selected[0]) {
+          let newDate = moment(selected[0]).add(12, 'hours').toDate()
+          push(act.edit("actions",{uuid:e.target.dataset.id, prop:e.target.dataset.prop, value:newDate, project:e.target.dataset.project}))
+          sourceOccElement.remove()
+          update()
+        }
+      })
 
-        console.log(ev);
-        push(act.edit("actions",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate, project:ev.target.dataset.project}))
-        sourceOccElement.remove()
-        update()
-      }
-      //sourceEl.remove()
     })
     connect(".action_single_action_select_item_assigned","click",(e)=>{
       var metalinkType = e.target.dataset.prop;

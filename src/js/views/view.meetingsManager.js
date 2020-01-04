@@ -637,23 +637,15 @@ var createMeetingsManager = function (targetSelector) {
     })
     connect(".action_meeting_manager_list_edit_time_item","click",(e)=>{
       console.log(event.target.parentElement.querySelector("input"));
-      event.target.parentElement.querySelector("input").style.display ="inline-block"
-      event.target.parentElement.querySelector("input").style.borderRadius ="8px"
-      event.target.parentElement.querySelector("input").style.borderStyle ="dashed"
-      event.target.parentElement.querySelector("input").style.borderColor ="#9ed2ce"
-      event.target.parentElement.querySelector("input").style.borderColor ="#e8e8e8"
-      event.target.parentElement.querySelector("input").style.backgroundColor= "#e8e8e8"
-      event.target.parentElement.querySelector("input").previousSibling.previousSibling.remove()
-      event.target.style.display ="none"
-      event.target.parentElement.querySelector("input").onchange = function (ev) {
-        //onEditItemTime({select:self, selectDiv:sourceEl, target:ev.target})
-        let targetItem = getTopicItemByUuid(e.target.dataset.id)//TODO move to reducer
-        targetItem[ev.target.dataset.prop] = ev.target.valueAsDate
-        // push(act.edit("actions",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate, project:ev.target.dataset.project}))
-        update()
-        renderMeeting(meeting)
-      }
-      //sourceEl.remove()
+      let targetItem = getTopicItemByUuid(e.target.dataset.id)
+
+      ephHelpers.promptSingleDatePicker(targetItem[e.target.dataset.prop], function (event) {
+        let selected = event.selectedDates
+        if (selected[0]) {
+          targetItem[e.target.dataset.prop] = moment(selected[0]).add(12, 'hours').toDate()
+          update()
+        }
+      })
     })
     connect(".action_meeting_manager_change_date","click",(e)=>{
       var baseElem = event.target.parentElement.parentElement.querySelector("input");
@@ -775,26 +767,15 @@ var createMeetingsManager = function (targetSelector) {
       console.log(targetItem);
       console.log(e.target);
 
-      var datepicker = new Datepickk();
-      /*Set highlight*/
-      datepicker.highlight = [{
-      start: new Date(targetItem.createdOn),
-      end: new Date(targetItem.createdOn),
-      backgroundColor: '#3faa56',
-      color: '#ffffff'
-      //legend: 'Current'//this is optional
-      }];
-      datepicker.closeOnSelect = true;
-      datepicker.onClose = function (event) {
-        let selected = datepicker.selectedDates
+      ephHelpers.promptSingleDatePicker(targetItem.createdOn, function (event) {
+        let selected = event.selectedDates
         if (selected[0] && confirm('Update creation date?')) {
           targetItem.createdOn = moment(selected[0]).add(12, 'hours').toDate()
           update()
         }
-      }
-      datepicker.show()
-
+      })
     })
+
     connect(".action_meetingmanager_list_delete_item", "click", (e)=>{
       let targetItem = getTopicItemByUuid(e.target.dataset.id)
       console.log(e.target.dataset.id);
