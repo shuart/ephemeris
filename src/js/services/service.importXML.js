@@ -53,8 +53,6 @@ var createImportXMLService = function () {
   var importXML = function () {
 
     reader = new FileReader;
-
-    alert("fefsef")
     var input=document.createElement('input');
     input.style.display="none"
     input.id="newInput"
@@ -65,7 +63,9 @@ var createImportXMLService = function () {
       reader.addEventListener("load", function() {
         console.log(reader.result);
         var xmlDOM = xmlParser(reader.result)
-        xmlToProject(xmlDOM)
+        if (confirm("Archimate importer Beta: This is an experimental feature. The current open project will be modified. Do you wish to continue")) {
+          xmlToProject(xmlDOM)
+        }
         //console.log(parser.parse(reader.result, options));
         document.querySelector('#newInput').remove()
       });
@@ -241,6 +241,7 @@ var createImportXMLService = function () {
         AggregationRelationship:{name:"Aggregation Relationship", type:"AggregationRelationship", layer:"implementation_migration", dashStyle:"normal"},
         AssignmentRelationship:{name:"Assignment Relationship", type:"AssignmentRelationship", layer:"implementation_migration", dashStyle:"normal"},
         RealizationRelationship:{name:"Realization Relationship", type:"RealizationRelationship", layer:"implementation_migration", dashStyle:"dashed"},
+        RealisationRelationship:{name:"Realisation Relationship", type:"RealisationRelationship", layer:"implementation_migration", dashStyle:"dashed"},//TODO what is the correct writing?
         UsedByRelationship:{name:"Used By Relationship", type:"UsedByRelationship", layer:"implementation_migration", dashStyle:"normal"},
         AccessRelationship:{name:"Access Relationship", type:"AccessRelationship", layer:"implementation_migration", dashStyle:"dashed"},
         AssociationRelationship:{name:"Association Relationship", type:"AssociationRelationship", layer:"implementation_migration", dashStyle:"normal"},
