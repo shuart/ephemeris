@@ -6,5 +6,9 @@ listOptions={
     {choiceId:2,name:"Inspection"},
     {choiceId:3,name:"Test"},
     {choiceId:4,name:"Demonstration"}
-  ]
+  ],
+  interface_type_stroke_type:[
+    {choiceId:0, name:"Normal"},
+    {choiceId:1, name:"Dashed"}
+  ],
 }

@@ -1109,6 +1109,24 @@ var createRelationsView = function () {
     }
 
   }
+  var getInterfaceDashArrayTypeFromUuid = function (store, uuid) {
+    let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
+    if (itemMetaLink) {
+      let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
+      return item.dashArray==1? "3 4": undefined
+    }else {
+      return undefined
+    }
+  }
+  // var getInterfaceCustomColorFromUuid = function (store, uuid) {
+  //   let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
+  //   if (itemMetaLink) {
+  //     let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
+  //     return item.dashArray==1? "3 4": undefined
+  //   }else {
+  //     return undefined
+  //   }
+  // }
 
   var updateSideListeVisibility = function () {//TODO integrate in list tree
     let elementList = document.querySelector(".left-list").querySelectorAll('.action_tree_list_relations_toogle_visibility')
@@ -1224,11 +1242,16 @@ var createRelationsView = function () {
     if (cat) { return cat.svgPath
     }else { return undefined}
   }
+  var getCustomColorFromItemId = function (uuid) {
+    let cat = getCategoryFromItemUuid(uuid)
+    if (cat) { return cat.color
+    }else { return undefined}
+  }
   var updateItemsToDisplayAndRelations= function (elementVisibility) {//only side effect TODO: find a better way?
     var store = JSON.stringify(query.currentProject())
     store = JSON.parse(store)// TODO used multiple time. Should do it only once
     var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
-    var array2 =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid); return e})
+    var array2 =store.currentPbs.items.map((e) => {e.customColor=getCustomColorFromItemId(e.uuid)||"#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid); return e})
     var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
     var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
     var array5 = store.physicalSpaces.items.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
@@ -1247,7 +1270,7 @@ var createRelationsView = function () {
       relations = relations.concat(store.metaLinks.items.map((e) => { e.displayType = e.type; return e}))
     }
     if (elementVisibility.interfaces ) {
-      relations = relations.concat(store.interfaces.items.map((e) => { e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customColor="#6dce9e"; return e}))
+      relations = relations.concat(store.interfaces.items.map((e) => { e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customDashArray = getInterfaceDashArrayTypeFromUuid(store, e.uuid); e.customColor="#6dce9e"; return e}))
     }
     if (elementVisibility.compose) {
       relations = relations.concat(store.currentPbs.links.map((e) => { e.displayType = "Composed by";  e.type = "Composed by"; return e}))

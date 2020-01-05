@@ -278,7 +278,8 @@ var createMeetingsManager = function (targetSelector) {
            ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
            ${theme.meetingItemResolved(item)}
            ${theme.meetingItemConnection(item)}
-           <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
+           <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.1;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
+           <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="calendar icon action_meetingmanager_list_edit_item_creation_time" style="display:inline-block;opacity:0.1;font-size: 13px;vertical-align: top; position: absolute;left: -33px;top: 36px;"></i>
 
          </div>
        </div>
@@ -335,7 +336,8 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 90px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
-         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
+         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.1;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
+         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="calendar icon action_meetingmanager_list_edit_item_creation_time" style="display:inline-block;opacity:0.1;font-size: 13px;vertical-align: top; position: absolute;left: -33px;top: 36px;"></i>
 
          </div>
        </div>
@@ -387,7 +389,8 @@ var createMeetingsManager = function (targetSelector) {
          <div style="width: 90px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
          ${theme.meetingItemConnection(item)}
-         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.2;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
+         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.1;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
+         <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="calendar icon action_meetingmanager_list_edit_item_creation_time" style="display:inline-block;opacity:0.1;font-size: 13px;vertical-align: top; position: absolute;left: -33px;top: 36px;"></i>
 
          </div>
        </div>
@@ -634,23 +637,15 @@ var createMeetingsManager = function (targetSelector) {
     })
     connect(".action_meeting_manager_list_edit_time_item","click",(e)=>{
       console.log(event.target.parentElement.querySelector("input"));
-      event.target.parentElement.querySelector("input").style.display ="inline-block"
-      event.target.parentElement.querySelector("input").style.borderRadius ="8px"
-      event.target.parentElement.querySelector("input").style.borderStyle ="dashed"
-      event.target.parentElement.querySelector("input").style.borderColor ="#9ed2ce"
-      event.target.parentElement.querySelector("input").style.borderColor ="#e8e8e8"
-      event.target.parentElement.querySelector("input").style.backgroundColor= "#e8e8e8"
-      event.target.parentElement.querySelector("input").previousSibling.previousSibling.remove()
-      event.target.style.display ="none"
-      event.target.parentElement.querySelector("input").onchange = function (ev) {
-        //onEditItemTime({select:self, selectDiv:sourceEl, target:ev.target})
-        let targetItem = getTopicItemByUuid(e.target.dataset.id)//TODO move to reducer
-        targetItem[ev.target.dataset.prop] = ev.target.valueAsDate
-        // push(act.edit("actions",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate, project:ev.target.dataset.project}))
-        update()
-        renderMeeting(meeting)
-      }
-      //sourceEl.remove()
+      let targetItem = getTopicItemByUuid(e.target.dataset.id)
+
+      ephHelpers.promptSingleDatePicker(targetItem[e.target.dataset.prop], function (event) {
+        let selected = event.selectedDates
+        if (selected[0]) {
+          targetItem[e.target.dataset.prop] = moment(selected[0]).add(12, 'hours').toDate()
+          update()
+        }
+      })
     })
     connect(".action_meeting_manager_change_date","click",(e)=>{
       var baseElem = event.target.parentElement.parentElement.querySelector("input");
@@ -767,6 +762,20 @@ var createMeetingsManager = function (targetSelector) {
         }
       }
     })
+    connect(".action_meetingmanager_list_edit_item_creation_time", "click", (e)=>{
+      let targetItem = getTopicItemByUuid(e.target.dataset.id)
+      console.log(targetItem);
+      console.log(e.target);
+
+      ephHelpers.promptSingleDatePicker(targetItem.createdOn, function (event) {
+        let selected = event.selectedDates
+        if (selected[0] && confirm('Update creation date?')) {
+          targetItem.createdOn = moment(selected[0]).add(12, 'hours').toDate()
+          update()
+        }
+      })
+    })
+
     connect(".action_meetingmanager_list_delete_item", "click", (e)=>{
       let targetItem = getTopicItemByUuid(e.target.dataset.id)
       console.log(e.target.dataset.id);
@@ -897,6 +906,9 @@ var createMeetingsManager = function (targetSelector) {
           a.remove()
           })
           meetingContainer.querySelectorAll('.action_meetingmanager_list_delete_item').forEach(function(a){
+          a.remove()
+          })
+          meetingContainer.querySelectorAll('.action_meetingmanager_list_edit_item_creation_time').forEach(function(a){
           a.remove()
           })
 

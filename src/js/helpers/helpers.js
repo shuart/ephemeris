@@ -435,6 +435,23 @@ ephHelpers.startSelectionToShowFields = function (ev,sourceList, settingsType, s
 }
 
 
+ephHelpers.promptSingleDatePicker = function (currentSelectedDate, callback) {
+  var datepicker = new Datepickk();
+  /*Set highlight*/
+  datepicker.highlight = [{
+  start: new Date(currentSelectedDate),
+  end: new Date(currentSelectedDate),
+  backgroundColor: '#3faa56',
+  color: '#ffffff'
+  //legend: 'Current'//this is optional
+  }];
+  datepicker.closeOnSelect = true;
+  datepicker.onClose = function (event) {
+    callback(datepicker)
+  }
+  datepicker.show()
+}
+
 
 //Workarounds
 
