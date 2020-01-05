@@ -343,7 +343,7 @@ function showListMenu({
             parent:div,
             onDone: function(color) {
               console.log(color);
-              alert(color.hex);
+              // alert(color.hex);
               onEditColorItem({select:self, selectDiv:sourceEl, target:event.target, color:color})
               colorPicker.destroy();div.remove();//clean the picker
               if (!editItemMode && !singleElement) {
