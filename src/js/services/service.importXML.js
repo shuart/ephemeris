@@ -116,20 +116,43 @@ var createImportXMLService = function () {
 
     //send to current project
     let store = query.currentProject()
+    // create archimate interface Types
     if (store) {
       alert("loading into project")
+      // create archimate interface Types
+      let archimateRelations = archimateTemplate.specs.relations
+      for (var relation in archimateRelations) {
+        if (archimateRelations.hasOwnProperty(relation)) {
+          let rel = archimateRelations[relation]
+          let typeName = rel.name
+          let relationId = archimateTemplate.prefix+rel.type
+          push(act.add("interfacesTypes",{uuid:relationId, name:typeName, extTyp:rel.type, color:"#ffffff"}))
+
+        }
+      }
+
+      //Loading elements
       projectProducts.forEach(function (item) {
         push(addPbs({uuid:item.id, name:item.name}))
         push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:item.id}))
       })
       projectRelations.forEach(function (item) {
-        push(act.add("interfaces",{type:undefined, name:item.name,description:"Archimate relation", source:item.source, target:item.target}))
+        let interfaceUuid = item.id
+        let interfaceTypeTargetId = archimateTemplate.prefix+item.name.substring(10)
+        console.log(interfaceTypeTargetId);
+        push(act.add("interfaces",{uuid:interfaceUuid, type:undefined, name:item.name,description:"Archimate relation", source:item.source, target:item.target}))
+        if (true) {
+
+          push(act.add("metaLinks",{type:"interfacesType", source:interfaceUuid, target:interfaceTypeTargetId}))
+        }
+
       })
     }
 
   }
 
   var archimateTemplate = {
+    prefix:{idPrefix:'extArchi_'},
     specs:{
       layers:{
         strategy:{name:"Strategy", type:"strategy", color:"#ffffff"},
@@ -143,59 +166,61 @@ var createImportXMLService = function () {
         relations:{name:"Relations", type:"relations", color:"#ffffff"}//connectors and view missing
       },
       elements:{
-        ressource:{name:"Ressource", type:"ressource", layer:"strategy"},
-        capability:{name:"Capability", type:"capability", layer:"strategy"},
-        courseOfAction:{name:"Course of Action", type:"courseOfAction", layer:"strategy"},
+        Ressource:{name:"Ressource", type:"Ressource", layer:"strategy"},
+        Capability:{name:"Capability", type:"Capability", layer:"strategy"},
+        CourseOfAction:{name:"Course of Action", type:"CourseOfAction", layer:"strategy"},
         //strategy
-        businessObject:{name:"Business Object", type:"businessObject", layer:"business"},
-        contract:{name:"Contract", type:"contract", layer:"business"},
-        representation:{name:"Representation", type:"representation", layer:"business"},
-        product:{name:"Product", type:"product", layer:"business"},
-        businessService:{name:"Business Service", type:"businessService", layer:"business"},
-        businessEvent:{name:"Business Event", type:"businessEvent", layer:"business"},
-        businessFunction:{name:"Business Function", type:"businessFunction", layer:"business"},
-        businessInteraction:{name:"Business Interaction", type:"businessInteraction", layer:"business"},
-        businessProcess:{name:"Business Process", type:"businessProcess", layer:"business"},
-        businessRole:{name:"Business Role", type:"businessRole", layer:"business"},
-        businessCollaboration:{name:"Business Collaboration", type:"businessCollaboration", layer:"business"},
-        businessActor:{name:"Business Actor", type:"businessActor", layer:"business"},
-        businessInterface:{name:"Business Interface", type:"businessInterface", layer:"business"},
+        BusinessObject:{name:"Business Object", type:"BusinessObject", layer:"business"},
+        Contract:{name:"Contract", type:"Contract", layer:"business"},
+        Representation:{name:"Representation", type:"Representation", layer:"business"},
+        Product:{name:"Product", type:"Product", layer:"business"},
+        BusinessService:{name:"Business Service", type:"BusinessService", layer:"business"},
+        BusinessEvent:{name:"Business Event", type:"BusinessEvent", layer:"business"},
+        BusinessFunction:{name:"Business Function", type:"BusinessFunction", layer:"business"},
+        BusinessInteraction:{name:"Business Interaction", type:"BusinessInteraction", layer:"business"},
+        BusinessProcess:{name:"Business Process", type:"BusinessProcess", layer:"business"},
+        BusinessRole:{name:"Business Role", type:"BusinessRole", layer:"business"},
+        BusinessCollaboration:{name:"Business Collaboration", type:"BusinessCollaboration", layer:"business"},
+        BusinessActor:{name:"Business Actor", type:"BusinessActor", layer:"business"},
+        BusinessInterface:{name:"Business Interface", type:"BusinessInterface", layer:"business"},
         //application
-        dataObject:{name:"Data Object", type:"dataObject", layer:"application"},
-        applicationService:{name:"Application Service", type:"applicationService", layer:"application"},
-        applicationEvent:{name:"Application Event", type:"applicationEvent", layer:"application"},
-        applicationFunction:{name:"Application Function", type:"applicationFunction", layer:"application"},
-        applicationInteraction:{name:"Application Interaction", type:"applicationInteraction", layer:"application"},
-        applicationProcess:{name:"Application Process", type:"applicationProcess", layer:"application"},
-        applicationComponent:{name:"Application Component", type:"applicationComponent", layer:"application"},
-        applicationCollaboration:{name:"Application Collaboration", type:"applicationCollaboration", layer:"application"},
-        applicationInterface:{name:"Application Interface", type:"applicationInterface", layer:"application"},
+        DataObject:{name:"Data Object", type:"DataObject", layer:"application"},
+        ApplicationService:{name:"Application Service", type:"ApplicationService", layer:"application"},
+        ApplicationEvent:{name:"Application Event", type:"ApplicationEvent", layer:"application"},
+        ApplicationFunction:{name:"Application Function", type:"ApplicationFunction", layer:"application"},
+        ApplicationInteraction:{name:"Application Interaction", type:"ApplicationInteraction", layer:"application"},
+        ApplicationProcess:{name:"Application Process", type:"ApplicationProcess", layer:"application"},
+        ApplicationComponent:{name:"Application Component", type:"ApplicationComponent", layer:"application"},
+        ApplicationCollaboration:{name:"Application Collaboration", type:"ApplicationCollaboration", layer:"application"},
+        ApplicationInterface:{name:"Application Interface", type:"ApplicationInterface", layer:"application"},
         //technology
-        artifact:{name:"Artifact", type:"artifact", layer:"technology"},
-        technologyService:{name:"Technology Service", type:"technologyService", layer:"technology"},
-        technologyEvent:{name:"Technology Event", type:"technologyEvent", layer:"technology"},
-        technologyFunction:{name:"Technology Function", type:"technologyFunction", layer:"technology"},
-        technologyInteraction:{name:"Technology Interaction", type:"technologyInteraction", layer:"technology"},
-        technologyProcess:{name:"Technology Process", type:"technologyProcess", layer:"technology"},
-        node:{name:"Node", type:"node", layer:"technology"},
-        technologyInterface:{name:"Technology Interface", type:"technologyInterface", layer:"technology"},
-        communicationNetwork:{name:"Communication Network", type:"communicationNetwork", layer:"technology"},
-        systemSoftware:{name:"System Software", type:"systemSoftware", layer:"technology"},
-        technologyCollaboration:{name:"Technology Collaboration", type:"technologyCollaboration", layer:"technology"},
-        path:{name:"Path", type:"path", layer:"technology"},
-        device:{name:"Device", type:"device", layer:"technology"},
+        Artifact:{name:"Artifact", type:"Artifact", layer:"technology"},
+        TechnologyService:{name:"Technology Service", type:"TechnologyService", layer:"technology"},
+        TechnologyEvent:{name:"Technology Event", type:"TechnologyEvent", layer:"technology"},
+        TechnologyFunction:{name:"Technology Function", type:"TechnologyFunction", layer:"technology"},
+        TechnologyInteraction:{name:"Technology Interaction", type:"TechnologyInteraction", layer:"technology"},
+        TechnologyProcess:{name:"Technology Process", type:"TechnologyProcess", layer:"technology"},
+        Node:{name:"Node", type:"Node", layer:"technology"},
+        TechnologyInterface:{name:"Technology Interface", type:"TechnologyInterface", layer:"technology"},
+        CommunicationNetwork:{name:"Communication Network", type:"CommunicationNetwork", layer:"technology"},
+        SystemSoftware:{name:"System Software", type:"SystemSoftware", layer:"technology"},
+        TechnologyCollaboration:{name:"Technology Collaboration", type:"TechnologyCollaboration", layer:"technology"},
+        Path:{name:"Path", type:"Path", layer:"technology"},
+        Device:{name:"Device", type:"Device", layer:"technology"},
         //physical
-        material:{name:"Materal", type:"material", layer:"physical"},
-        facility:{name:"Facility", type:"facility", layer:"physical"},
-        equipment:{name:"Equipment", type:"equipment", layer:"physical"},
-        distributionNetwork:{name:"Distribution Network", type:"distributionNetwork", layer:"physical"},
+        Material:{name:"Materal", type:"Material", layer:"physical"},
+        Facility:{name:"Facility", type:"Facility", layer:"physical"},
+        Equipment:{name:"Equipment", type:"Equipment", layer:"physical"},
+        DistributionNetwork:{name:"Distribution Network", type:"DistributionNetwork", layer:"physical"},
         //implementation_migration
-        deliverable:{name:"Deliverable", type:"deliverable", layer:"implementation_migration"},
-        gap:{name:"Gap", type:"gap", layer:"implementation_migration"},
-        workPackage:{name:"Work Package", type:"workPackage", layer:"implementation_migration"},
-        implementationEvent:{name:"Implementation Event", type:"implementationEvent", layer:"implementation_migration"},
-        plateau:{name:"Plateau", type:"plateau", layer:"implementation_migration"},
+        Deliverable:{name:"Deliverable", type:"Deliverable", layer:"implementation_migration"},
+        Gap:{name:"Gap", type:"Gap", layer:"implementation_migration"},
+        WorkPackage:{name:"Work Package", type:"WorkPackage", layer:"implementation_migration"},
+        ImplementationEvent:{name:"Implementation Event", type:"ImplementationEvent", layer:"implementation_migration"},
+        Plateau:{name:"Plateau", type:"Plateau", layer:"implementation_migration"}
         //TODO Add Motivation
+      },
+      relations:{
         //relations
         CompositionRelationship:{name:"Composition Relationship", type:"CompositionRelationship", layer:"implementation_migration"},
         AggregationRelationship:{name:"Aggregation Relationship", type:"AggregationRelationship", layer:"implementation_migration"},
@@ -209,7 +234,6 @@ var createImportXMLService = function () {
         SpecializationRelationship:{name:"Specialization Relationship", type:"SpecializationRelationship", layer:"implementation_migration"},
         JunctionRelationship:{name:"Junction Relationship", type:"JunctionRelationship", layer:"implementation_migration"},
         GroupingRelationship:{name:"Grouping Relationship", type:"GroupingRelationship", layer:"implementation_migration"}
-
       }
     }
 
