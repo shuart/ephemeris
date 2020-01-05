@@ -19,6 +19,7 @@ var createCategoriesView = function () {
       // fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"name", displayAs:"Name", edit:"true"},
+        {prop:"color", displayAs:"Color", color:true, edit:true},
         {prop:"svgPath", displayAs:"Path", fullText:true,edit:"true"}
       ],
       idProp:"uuid",
@@ -33,6 +34,12 @@ var createCategoriesView = function () {
           if (newValue) {
             push(act.edit("categories", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
           }
+        }
+
+      },
+      onEditColorItem: (ev)=>{
+        if (ev.color && ev.color.hex) {
+          push(act.edit("categories", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:(ev.color.hex+"").slice(0,-2)}))
         }
 
       },

@@ -578,7 +578,10 @@ function stellae(_selector, _options) {
                 .attr("marker-end", "url(#markerstriangle)")
                 .attr('class', 'outline')
                 .attr('fill', 'none')
-                .attr('stroke', '#a5abb6')
+                .style("stroke-dasharray", function (d) {
+                  return d.customDashArray || ""
+                })
+                //.attr('stroke', '#a5abb6')
                 .attr('stroke',function(d) {
                     // return d.color ||'#b38b47';
                     // return d.color ||'#02b5ab';

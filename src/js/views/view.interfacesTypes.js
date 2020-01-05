@@ -19,7 +19,8 @@ var createInterfacesTypesView = function () {
       // fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"name", displayAs:"Name", edit:"true"},
-        {prop:"color", displayAs:"Color", edit:"true"}
+        // {prop:"color", displayAs:"Color", edit:"true"},
+        {prop:"dashArray", displayAs:"Style", options:listOptions.interface_type_stroke_type, edit:"true"}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{
@@ -28,6 +29,12 @@ var createInterfacesTypesView = function () {
         if (newValue) {
           push(act.edit("interfacesTypes", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
         }
+      },
+      onEditOptionsItem: (ev)=>{
+        console.log("Edit_option");
+          let newValue = ev.value
+          push(act.edit("interfacesTypes", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+          ev.select.updateData(store.interfacesTypes.items)
       },
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
