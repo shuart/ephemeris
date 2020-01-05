@@ -90,7 +90,7 @@ var createImportXMLService = function () {
     var parseAsElementFolder =function (folder, targetArray) {
       let type = folder.getAttribute('type')
       doForEach(folder.children, function (item) {
-        targetArray.push({id:item.id, name:item.getAttribute("name"), type:type})
+        targetArray.push({id:item.id, name:item.getAttribute("name"), type:item.getAttribute("xsi:type"), layertype:type})
       })
     }
     var parseAsRelations =function (folder, targetArray) {
@@ -125,8 +125,21 @@ var createImportXMLService = function () {
         if (archimateRelations.hasOwnProperty(relation)) {
           let rel = archimateRelations[relation]
           let typeName = rel.name.slice(0, -12)
-          let relationId = archimateTemplate.prefix+rel.type
-          push(act.add("interfacesTypes",{uuid:relationId, name:typeName, extTyp:rel.type, color:"#ffffff"}))
+          let relationId = archimateTemplate.prefix.idPrefix+rel.type
+          push(act.add("interfacesTypes",{uuid:relationId, name:typeName, extTyp:rel.type, color:"#ffffff", dashArray:rel.dashStyle == "dashed"?1:0}))
+
+        }
+      }
+      // create archimate categories Types
+      let archimateLayers = deepCopy(archimateTemplate.specs.layers)//TODO make general
+      let archimateCategories = deepCopy(archimateTemplate.specs.elements)//TODO make general
+      for (var category in archimateCategories) {
+        if (archimateCategories.hasOwnProperty(category)) {
+          let cat = archimateCategories[category]
+          let typeName = cat.name
+          let catId = archimateTemplate.prefix.idPrefix+cat.type
+          let linkedLayer = archimateLayers[cat.layer]
+          push(act.add("categories",{uuid:catId, name:typeName, extTyp:cat.type, color:linkedLayer.color}))
 
         }
       }
@@ -135,14 +148,16 @@ var createImportXMLService = function () {
       projectProducts.forEach(function (item) {
         push(addPbs({uuid:item.id, name:item.name}))
         push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:item.id}))
+        if (true) {
+          push(act.add("metaLinks",{type:"category", source:item.id, target:archimateTemplate.prefix.idPrefix+item.type.substring(10)}))
+        }
       })
       projectRelations.forEach(function (item) {
         let interfaceUuid = item.id
-        let interfaceTypeTargetId = archimateTemplate.prefix+item.name.substring(10)
+        let interfaceTypeTargetId = archimateTemplate.prefix.idPrefix+item.name.substring(10)
         console.log(interfaceTypeTargetId);
         push(act.add("interfaces",{uuid:interfaceUuid, type:undefined, name:item.name,description:"Archimate relation", source:item.source, target:item.target}))
         if (true) {
-
           push(act.add("metaLinks",{type:"interfacesType", source:interfaceUuid, target:interfaceTypeTargetId}))
         }
 
@@ -155,13 +170,13 @@ var createImportXMLService = function () {
     prefix:{idPrefix:'extArchi_'},
     specs:{
       layers:{
-        strategy:{name:"Strategy", type:"strategy", color:"#ffffff"},
-        business:{name:"Business", type:"business", color:"#ffffff"},
-        application:{name:"Application", type:"application", color:"#ffffff"},
-        technology:{name:"Technology", type:"technology", color:"#ffffff"},
-        physical:{name:"Physical", type:"physical", color:"#ffffff"},
-        motivation:{name:"Motivation", type:"motivation", color:"#ffffff"},
-        implementation_migration:{name:"Implementation & Migration", type:"implementation_migration", color:"#ffffff"},
+        strategy:{name:"Strategy", type:"strategy", color:"#fbdb9a"},
+        business:{name:"Business", type:"business", color:"#f2c748"},
+        application:{name:"Application", type:"application", color:"#5c9dce"},
+        technology:{name:"Technology", type:"technology", color:"#97bf83"},
+        physical:{name:"Physical", type:"physical", color:"#87cc65"},
+        motivation:{name:"Motivation", type:"motivation", color:"#cdcdcd"},
+        implementation_migration:{name:"Implementation & Migration", type:"implementation_migration", color:"#f2c4ca"},
         other:{name:"Other", type:"other", color:"#ffffff"},
         relations:{name:"Relations", type:"relations", color:"#ffffff"}//connectors and view missing
       },
@@ -222,18 +237,18 @@ var createImportXMLService = function () {
       },
       relations:{
         //relations
-        CompositionRelationship:{name:"Composition Relationship", type:"CompositionRelationship", layer:"implementation_migration"},
-        AggregationRelationship:{name:"Aggregation Relationship", type:"AggregationRelationship", layer:"implementation_migration"},
-        AssignmentRelationship:{name:"Assignment Relationship", type:"AssignmentRelationship", layer:"implementation_migration"},
-        RealizationRelationship:{name:"Realization Relationship", type:"RealizationRelationship", layer:"implementation_migration"},
-        UsedByRelationship:{name:"Used By Relationship", type:"UsedByRelationship", layer:"implementation_migration"},
-        AccessRelationship:{name:"Access Relationship", type:"AccessRelationship", layer:"implementation_migration"},
-        AssociationRelationship:{name:"Association Relationship", type:"AssociationRelationship", layer:"implementation_migration"},
-        FlowRelationship:{name:"Flow Relationship", type:"FlowRelationship", layer:"implementation_migration"},
-        TriggeringRelationship:{name:"Triggering Relationship", type:"TriggeringRelationship", layer:"implementation_migration"},
-        SpecializationRelationship:{name:"Specialization Relationship", type:"SpecializationRelationship", layer:"implementation_migration"},
-        JunctionRelationship:{name:"Junction Relationship", type:"JunctionRelationship", layer:"implementation_migration"},
-        GroupingRelationship:{name:"Grouping Relationship", type:"GroupingRelationship", layer:"implementation_migration"}
+        CompositionRelationship:{name:"Composition Relationship", type:"CompositionRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        AggregationRelationship:{name:"Aggregation Relationship", type:"AggregationRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        AssignmentRelationship:{name:"Assignment Relationship", type:"AssignmentRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        RealizationRelationship:{name:"Realization Relationship", type:"RealizationRelationship", layer:"implementation_migration", dashStyle:"dashed"},
+        UsedByRelationship:{name:"Used By Relationship", type:"UsedByRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        AccessRelationship:{name:"Access Relationship", type:"AccessRelationship", layer:"implementation_migration", dashStyle:"dashed"},
+        AssociationRelationship:{name:"Association Relationship", type:"AssociationRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        FlowRelationship:{name:"Flow Relationship", type:"FlowRelationship", layer:"implementation_migration", dashStyle:"dashed"},
+        TriggeringRelationship:{name:"Triggering Relationship", type:"TriggeringRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        SpecializationRelationship:{name:"Specialization Relationship", type:"SpecializationRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        JunctionRelationship:{name:"Junction Relationship", type:"JunctionRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        GroupingRelationship:{name:"Grouping Relationship", type:"GroupingRelationship", layer:"implementation_migration", dashStyle:"normal"}
       }
     }
 
