@@ -24,7 +24,7 @@ var createImportXMLService = function () {
   }
   var connections =function () {
     document.addEventListener("keydown", function(event) {
-      if (!( event.key == 'i' && event.ctrlKey) ) return true;
+      if (!( event.key == 'k' && event.ctrlKey) ) return true;
       importXML()
       //document.querySelector('#topmenu_project_saver').click()
       //A bit ugly TODO: check for a better way
