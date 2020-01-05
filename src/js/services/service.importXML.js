@@ -120,11 +120,11 @@ var createImportXMLService = function () {
     if (store) {
       alert("loading into project")
       // create archimate interface Types
-      let archimateRelations = archimateTemplate.specs.relations
+      let archimateRelations = deepCopy(archimateTemplate.specs.relations)//TODO make general
       for (var relation in archimateRelations) {
         if (archimateRelations.hasOwnProperty(relation)) {
           let rel = archimateRelations[relation]
-          let typeName = rel.name
+          let typeName = rel.name.slice(0, -12)
           let relationId = archimateTemplate.prefix+rel.type
           push(act.add("interfacesTypes",{uuid:relationId, name:typeName, extTyp:rel.type, color:"#ffffff"}))
 
