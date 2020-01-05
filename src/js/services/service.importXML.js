@@ -194,8 +194,22 @@ var createImportXMLService = function () {
         gap:{name:"Gap", type:"gap", layer:"implementation_migration"},
         workPackage:{name:"Work Package", type:"workPackage", layer:"implementation_migration"},
         implementationEvent:{name:"Implementation Event", type:"implementationEvent", layer:"implementation_migration"},
-        plateau:{name:"Plateau", type:"plateau", layer:"implementation_migration"}
+        plateau:{name:"Plateau", type:"plateau", layer:"implementation_migration"},
         //TODO Add Motivation
+        //relations
+        CompositionRelationship:{name:"Composition Relationship", type:"CompositionRelationship", layer:"implementation_migration"},
+        AggregationRelationship:{name:"Aggregation Relationship", type:"AggregationRelationship", layer:"implementation_migration"},
+        AssignmentRelationship:{name:"Assignment Relationship", type:"AssignmentRelationship", layer:"implementation_migration"},
+        RealizationRelationship:{name:"Realization Relationship", type:"RealizationRelationship", layer:"implementation_migration"},
+        UsedByRelationship:{name:"Used By Relationship", type:"UsedByRelationship", layer:"implementation_migration"},
+        AccessRelationship:{name:"Access Relationship", type:"AccessRelationship", layer:"implementation_migration"},
+        AssociationRelationship:{name:"Association Relationship", type:"AssociationRelationship", layer:"implementation_migration"},
+        FlowRelationship:{name:"Flow Relationship", type:"FlowRelationship", layer:"implementation_migration"},
+        TriggeringRelationship:{name:"Triggering Relationship", type:"TriggeringRelationship", layer:"implementation_migration"},
+        SpecializationRelationship:{name:"Specialization Relationship", type:"SpecializationRelationship", layer:"implementation_migration"},
+        JunctionRelationship:{name:"Junction Relationship", type:"JunctionRelationship", layer:"implementation_migration"},
+        GroupingRelationship:{name:"Grouping Relationship", type:"GroupingRelationship", layer:"implementation_migration"}
+
       }
     }
 
