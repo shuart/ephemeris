@@ -129,6 +129,78 @@ var createImportXMLService = function () {
 
   }
 
+  var archimateTemplate = {
+    specs:{
+      layers:{
+        strategy:{name:"Strategy", type:"strategy", color:"#ffffff"},
+        business:{name:"Business", type:"business", color:"#ffffff"},
+        application:{name:"Application", type:"application", color:"#ffffff"},
+        technology:{name:"Technology", type:"technology", color:"#ffffff"},
+        physical:{name:"Physical", type:"physical", color:"#ffffff"},
+        motivation:{name:"Motivation", type:"motivation", color:"#ffffff"},
+        implementation_migration:{name:"Implementation & Migration", type:"implementation_migration", color:"#ffffff"},
+        other:{name:"Other", type:"other", color:"#ffffff"},
+        relations:{name:"Relations", type:"relations", color:"#ffffff"}//connectors and view missing
+      },
+      elements:{
+        ressource:{name:"Ressource", type:"ressource", layer:"strategy"},
+        capability:{name:"Capability", type:"capability", layer:"strategy"},
+        courseOfAction:{name:"Course of Action", type:"courseOfAction", layer:"strategy"},
+        //strategy
+        businessObject:{name:"Business Object", type:"businessObject", layer:"business"},
+        contract:{name:"Contract", type:"contract", layer:"business"},
+        representation:{name:"Representation", type:"representation", layer:"business"},
+        product:{name:"Product", type:"product", layer:"business"},
+        businessService:{name:"Business Service", type:"businessService", layer:"business"},
+        businessEvent:{name:"Business Event", type:"businessEvent", layer:"business"},
+        businessFunction:{name:"Business Function", type:"businessFunction", layer:"business"},
+        businessInteraction:{name:"Business Interaction", type:"businessInteraction", layer:"business"},
+        businessProcess:{name:"Business Process", type:"businessProcess", layer:"business"},
+        businessRole:{name:"Business Role", type:"businessRole", layer:"business"},
+        businessCollaboration:{name:"Business Collaboration", type:"businessCollaboration", layer:"business"},
+        businessActor:{name:"Business Actor", type:"businessActor", layer:"business"},
+        businessInterface:{name:"Business Interface", type:"businessInterface", layer:"business"},
+        //application
+        dataObject:{name:"Data Object", type:"dataObject", layer:"application"},
+        applicationService:{name:"Application Service", type:"applicationService", layer:"application"},
+        applicationEvent:{name:"Application Event", type:"applicationEvent", layer:"application"},
+        applicationFunction:{name:"Application Function", type:"applicationFunction", layer:"application"},
+        applicationInteraction:{name:"Application Interaction", type:"applicationInteraction", layer:"application"},
+        applicationProcess:{name:"Application Process", type:"applicationProcess", layer:"application"},
+        applicationComponent:{name:"Application Component", type:"applicationComponent", layer:"application"},
+        applicationCollaboration:{name:"Application Collaboration", type:"applicationCollaboration", layer:"application"},
+        applicationInterface:{name:"Application Interface", type:"applicationInterface", layer:"application"},
+        //technology
+        artifact:{name:"Artifact", type:"artifact", layer:"technology"},
+        technologyService:{name:"Technology Service", type:"technologyService", layer:"technology"},
+        technologyEvent:{name:"Technology Event", type:"technologyEvent", layer:"technology"},
+        technologyFunction:{name:"Technology Function", type:"technologyFunction", layer:"technology"},
+        technologyInteraction:{name:"Technology Interaction", type:"technologyInteraction", layer:"technology"},
+        technologyProcess:{name:"Technology Process", type:"technologyProcess", layer:"technology"},
+        node:{name:"Node", type:"node", layer:"technology"},
+        technologyInterface:{name:"Technology Interface", type:"technologyInterface", layer:"technology"},
+        communicationNetwork:{name:"Communication Network", type:"communicationNetwork", layer:"technology"},
+        systemSoftware:{name:"System Software", type:"systemSoftware", layer:"technology"},
+        technologyCollaboration:{name:"Technology Collaboration", type:"technologyCollaboration", layer:"technology"},
+        path:{name:"Path", type:"path", layer:"technology"},
+        device:{name:"Device", type:"device", layer:"technology"},
+        //physical
+        material:{name:"Materal", type:"material", layer:"physical"},
+        facility:{name:"Facility", type:"facility", layer:"physical"},
+        equipment:{name:"Equipment", type:"equipment", layer:"physical"},
+        distributionNetwork:{name:"Distribution Network", type:"distributionNetwork", layer:"physical"},
+        //implementation_migration
+        deliverable:{name:"Deliverable", type:"deliverable", layer:"implementation_migration"},
+        gap:{name:"Gap", type:"gap", layer:"implementation_migration"},
+        workPackage:{name:"Work Package", type:"workPackage", layer:"implementation_migration"},
+        implementationEvent:{name:"Implementation Event", type:"implementationEvent", layer:"implementation_migration"},
+        plateau:{name:"Plateau", type:"plateau", layer:"implementation_migration"}
+        //TODO Add Motivation
+      }
+    }
+
+  }
+
 
   var update = function () {
     render()
