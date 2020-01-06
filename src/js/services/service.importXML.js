@@ -87,16 +87,25 @@ var createImportXMLService = function () {
       }
     };
     //rules
-    var parseAsElementFolder =function (folder, targetArray) {
-      let type = folder.getAttribute('type')
+    var parseAsElementFolder =function (folder, targetArray, folderType) {
+      let type = folderType || folder.getAttribute('type')// if type is specified use it or find it
       doForEach(folder.children, function (item) {
-        targetArray.push({id:item.id, name:item.getAttribute("name"), type:item.getAttribute("xsi:type"), layertype:type})
+        console.log(item.tagName.toLowerCase());
+        if (item.tagName.toLowerCase() == "element") {
+          targetArray.push({id:item.id, name:item.getAttribute("name"), type:item.getAttribute("xsi:type"), layertype:type})
+        }else if (item.tagName.toLowerCase() == "folder") {//if element is another folder
+          parseAsElementFolder(item, projectProducts, type)// parse as a folder with the previous folder type
+        }
       })
     }
-    var parseAsRelations =function (folder, targetArray) {
-      let type = folder.getAttribute('type')
+    var parseAsRelations =function (folder, targetArray,folderType) {
+      let type = folderType || folder.getAttribute('type')// if type is specified use it or find it
       doForEach(folder.children, function (item) {
-        targetArray.push({id:item.id, name:item.getAttribute("xsi:type"), source:item.getAttribute("source"), target:item.getAttribute("target")})
+        if (item.tagName.toLowerCase() == "element") {
+          targetArray.push({id:item.id, name:item.getAttribute("xsi:type"), source:item.getAttribute("source"), target:item.getAttribute("target")})
+        }else if (item.tagName.toLowerCase() == "folder") {//if element is another folder
+          parseAsRelations(item, projectRelations, type)// parse as a folder with the previous folder type
+        }
       })
     }
 
@@ -153,6 +162,9 @@ var createImportXMLService = function () {
         }
       })
       projectRelations.forEach(function (item) {
+        if (item.name==null) {
+          item.name =  "NULL at import"
+        }
         let interfaceUuid = item.id
         let interfaceTypeTargetId = archimateTemplate.prefix.idPrefix+item.name.substring(10)
         console.log(interfaceTypeTargetId);
@@ -240,8 +252,8 @@ var createImportXMLService = function () {
         CompositionRelationship:{name:"Composition Relationship", type:"CompositionRelationship", layer:"implementation_migration", dashStyle:"normal"},
         AggregationRelationship:{name:"Aggregation Relationship", type:"AggregationRelationship", layer:"implementation_migration", dashStyle:"normal"},
         AssignmentRelationship:{name:"Assignment Relationship", type:"AssignmentRelationship", layer:"implementation_migration", dashStyle:"normal"},
-        RealizationRelationship:{name:"Realization Relationship", type:"RealizationRelationship", layer:"implementation_migration", dashStyle:"dashed"},
-        RealisationRelationship:{name:"Realisation Relationship", type:"RealisationRelationship", layer:"implementation_migration", dashStyle:"dashed"},//TODO what is the correct writing?
+        zationRelationship:{name:"zation Relationship", type:"zationRelationship", layer:"implementation_migration", dashStyle:"dashed"},
+        sationRelationship:{name:"sation Relationship", type:"sationRelationship", layer:"implementation_migration", dashStyle:"dashed"},//TODO what is the correct writing?
         UsedByRelationship:{name:"Used By Relationship", type:"UsedByRelationship", layer:"implementation_migration", dashStyle:"normal"},
         AccessRelationship:{name:"Access Relationship", type:"AccessRelationship", layer:"implementation_migration", dashStyle:"dashed"},
         AssociationRelationship:{name:"Association Relationship", type:"AssociationRelationship", layer:"implementation_migration", dashStyle:"normal"},
