@@ -41,7 +41,9 @@ var createCategoriesView = function () {
         if (ev.color && ev.color.hex) {
           push(act.edit("categories", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:(ev.color.hex+"").slice(0,-2)}))
         }
-
+      },
+      onRemoveColorItem: (ev)=>{
+          push(act.edit("categories", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:undefined}))
       },
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {

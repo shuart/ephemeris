@@ -29,6 +29,7 @@ function showListMenu({
   onMove= undefined,
   onEditItem = (e)=>{console.log("edit select")},
   onEditColorItem = (e)=>{console.log("edit select")},
+  onRemoveColorItem = (e)=>{console.log("edit select")},
   onEditItemTime = (e)=>{console.log("edit select")},
   onEditTextItem = (e)=>{console.log("edit text")},
   onEditChoiceItem = undefined,
@@ -355,7 +356,15 @@ function showListMenu({
             }
           });
           colorPicker.openHandler();
-
+        }
+        if (event.target.classList.contains("action_list_remove_item_color")) {
+          onRemoveColorItem({select:self, selectDiv:sourceEl, target:event.target})
+          if (!editItemMode && !singleElement) {
+            refreshList()
+          }else {
+            sourceEl.remove()
+            render()
+          }
         }
         if (event.target.classList.contains("action_list_edit_options_item")) {
           console.log(event.target.dataset.options);
@@ -937,7 +946,8 @@ function showListMenu({
             propDisplay = `<a style="background-color:${item[propName]}" class="ui basic mini label">${item[propName]}</a>`;
             if (isEditable && Picker) {//check if colorpicker is used TODO namespacing should be better
               editHtml+=`
-              <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="edit icon action_list_edit_item_color" style=""></i>`
+              <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="edit icon action_list_edit_item_color" style=""></i>
+              <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="times icon action_list_remove_item_color" style="opacity:0.1; cursor:pointer;"></i>`
             }else if (isEditable && !Picker) {
               editHtml+=`
               <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
