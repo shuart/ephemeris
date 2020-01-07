@@ -168,7 +168,7 @@ var createImportXMLService = function () {
         let interfaceUuid = item.id
         let interfaceTypeTargetId = archimateTemplate.prefix.idPrefix+item.name.substring(10)
         console.log(interfaceTypeTargetId);
-        push(act.add("interfaces",{uuid:interfaceUuid, type:undefined, name:item.name,description:"Archimate relation", source:item.source, target:item.target}))
+        push(act.add("interfaces",{uuid:interfaceUuid, type:"Physical connection", name:item.name,description:"Archimate relation", source:item.source, target:item.target}))
         if (true) {
           push(act.add("metaLinks",{type:"interfacesType", source:interfaceUuid, target:interfaceTypeTargetId}))
         }
