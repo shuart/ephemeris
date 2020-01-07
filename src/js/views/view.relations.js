@@ -1144,7 +1144,8 @@ var createRelationsView = function () {
 
     }
   }
-  function findChildrenUuid(roots,items, links) {
+  function findChildrenUuid(roots,items, links, ignoredNodes) {
+    var ignoredNodes = ignoredNodes || []// if no ignored nodes than assign it an empty array to use for the other recursions
     return roots.reduce(function (acc, r) {
       console.log(acc);
       let rootArray = [r.uuid]
@@ -1156,8 +1157,12 @@ var createRelationsView = function () {
           }
         })
       })
+      if (ignoredNodes[0]) {//remove node that have already been found previously
+        itemsChildren = itemsChildren.filter(i=>!ignoredNodes.includes(i))
+      }
+      ignoredNodes = ignoredNodes.concat(itemsChildren)// add them to ignored list for further recursion
       //recursively trandform them in leaf and branches
-      let thisitemChildrenArray = findChildrenUuid(itemsChildren,items, links)
+      let thisitemChildrenArray = findChildrenUuid(itemsChildren,items, links, ignoredNodes)
       rootArray = rootArray.concat(thisitemChildrenArray)
       console.log(acc);
       return acc.concat(rootArray)
