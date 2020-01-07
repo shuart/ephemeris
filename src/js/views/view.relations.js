@@ -1191,7 +1191,10 @@ var createRelationsView = function () {
 
     let selectedNodes = currentSelected
     let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
-    let selectedNodesAndChildrenUuid = findChildrenUuid(selectedNodes, itemsToDisplay, relations)
+    let selectedNodesAndChildrenUuid = undefined
+    if (showChildren) {
+      selectedNodesAndChildrenUuid = findChildrenUuid(selectedNodes, itemsToDisplay, relations)
+    }
     let stayVisibleNodes = showChildren? selectedNodesAndChildrenUuid : selectedNodesUuid
     hiddenItemsFromSideView=[] //resetGraph
     let newDisplayList= itemsToDisplay.filter( i => !stayVisibleNodes.includes(i.uuid))
