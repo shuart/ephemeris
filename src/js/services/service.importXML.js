@@ -174,6 +174,59 @@ var createImportXMLService = function () {
         }
 
       })
+    }else if (app.state.currentUser) {
+      var newProjectFromXMLName = prompt("Add a new Project from XML file")
+      //TODO Bad
+      if (newProjectFromXMLName) {
+        var newProjectFromXml = createNewProject(newProjectFromXMLName)
+        // create archimate interface Types
+        let archimateRelations = deepCopy(archimateTemplate.specs.relations)//TODO make general
+        for (var relation in archimateRelations) {
+          if (archimateRelations.hasOwnProperty(relation)) {
+            let rel = archimateRelations[relation]
+            let typeName = rel.name.slice(0, -12)
+            let relationId = archimateTemplate.prefix.idPrefix+rel.type
+
+            newProjectFromXml.interfacesTypes.items.push({uuid:relationId, name:typeName, extTyp:rel.type, color:"#ffffff", dashArray:rel.dashStyle == "dashed"?1:0})
+          }
+        }
+        // create archimate categories Types
+        let archimateLayers = deepCopy(archimateTemplate.specs.layers)//TODO make general
+        let archimateCategories = deepCopy(archimateTemplate.specs.elements)//TODO make general
+        for (var category in archimateCategories) {
+          if (archimateCategories.hasOwnProperty(category)) {
+            let cat = archimateCategories[category]
+            let typeName = cat.name
+            let catId = archimateTemplate.prefix.idPrefix+cat.type
+            let linkedLayer = archimateLayers[cat.layer]
+            newProjectFromXml.categories.items.push({uuid:catId, name:typeName, extTyp:cat.type, color:linkedLayer.color})
+          }
+        }
+        //Loading elements
+        newProjectFromXml.currentPbs.items.push({name: newProjectFromXMLName, uuid: genuuid()})
+        projectProducts.forEach(function (item) {
+          newProjectFromXml.currentPbs.items.push({uuid:item.id, name:item.name})
+          console.log(newProjectFromXml);
+          newProjectFromXml.currentPbs.links.push({uuid:genuuid(),source:newProjectFromXml.currentPbs.items[0].uuid, target:item.id})
+          if (true) {
+            newProjectFromXml.metaLinks.items.push({uuid:genuuid(),type:"category", source:item.id, target:archimateTemplate.prefix.idPrefix+item.type.substring(10)})
+          }
+        })
+        projectRelations.forEach(function (item) {
+          if (item.name==null) {
+            item.name =  "NULL at import"
+          }
+          let interfaceUuid = item.id
+          let interfaceTypeTargetId = archimateTemplate.prefix.idPrefix+item.name.substring(10)
+          console.log(interfaceTypeTargetId);
+          newProjectFromXml.interfaces.items.push({uuid:interfaceUuid, type:"Physical connection", name:item.name,description:"Archimate relation", source:item.source, target:item.target})
+          if (true) {
+            newProjectFromXml.metaLinks.items.push({uuid:genuuid(),type:"interfacesType", source:interfaceUuid, target:interfaceTypeTargetId})
+          }
+        })
+        app.store.projects.push(newProjectFromXml)
+        setTimeout(function () {pageManager.setActivePage("projectSelection")}, 2000);
+      }
     }
 
   }
