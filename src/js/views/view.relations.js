@@ -603,11 +603,11 @@ var createRelationsView = function () {
     }, container)
     bind(".action_relations_isolate_nodes_and_children","click",(e)=>{
       let selectedNodes = activeGraph.getSelectedNodes()
-      if (activeMode == relations) {
-        isolateSelectedNodes(selectedNodes, true)
-      }else {
-        isolateSelectedNodesWithInterfaces(selectedNodes, true)
-      }
+      isolateSelectedNodesWithInterfaces(selectedNodes, false)
+    }, container)
+    bind(".action_relations_isolate_nodes_and_all_children","click",(e)=>{
+      let selectedNodes = activeGraph.getSelectedNodes()
+      isolateSelectedNodesWithInterfaces(selectedNodes, true)
     }, container)
     bind(".action_relations_remove_nodes","click",(e)=>{
       let selectedNodes = activeGraph.getSelectedNodes()
@@ -1151,7 +1151,7 @@ var createRelationsView = function () {
       let rootArray = [r.uuid]
       let itemsChildren = items.filter((i) => {//get all the children of this element
         return links.find((l)=> {
-          if (l.type != "Physical connection") {
+          if (true) {//was filtering between composition and interface. Not needed
             if (l.source.uuid) {return l.source.uuid == r.uuid && l.target.uuid == i.uuid//check if links source is object
             }else { return l.source == r.uuid && l.target == i.uuid}//or ID
           }
@@ -1176,7 +1176,7 @@ var createRelationsView = function () {
       let itemsRelated = items
         .filter((i) => {//get all the children of this element
           return links.find((l)=> {
-            if (l.type == "Physical connection") {
+            if (true) {//was filtering relations and composition. Not needed
               if (l.source.uuid) {return ( (l.source.uuid == r.uuid && l.target.uuid == i.uuid)||(l.source.uuid == i.uuid && l.target.uuid == r.uuid) )//check if links source is object
               }else { return ( (l.source == r.uuid && l.target == i.uuid)||(l.source == i.uuid && l.target == r.uuid) )}//or ID
             }
@@ -1207,12 +1207,17 @@ var createRelationsView = function () {
 
     let selectedNodes = currentSelected
     let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+    let selectedNodesAndChildrenUuid = []
+    if (showChildren) {
+      selectedNodesAndChildrenUuid = findChildrenUuid(selectedNodes, itemsToDisplay, relations)
+    }
 
-    let selectedNodesAndChildrenUuid = findChildrenUuid(selectedNodes, itemsToDisplay, relations)
     let relatedNodes = findRelatedUuid(selectedNodes, itemsToDisplay, relations)
 
     selectedNodesAndChildrenUuid = selectedNodesAndChildrenUuid.concat(relatedNodes)
-    let stayVisibleNodes = showChildren? selectedNodesAndChildrenUuid : selectedNodesUuid
+    var selectedNodesAndRelated = selectedNodesUuid.concat(relatedNodes)
+
+    let stayVisibleNodes = showChildren? selectedNodesAndChildrenUuid : selectedNodesAndRelated
     hiddenItemsFromSideView=[] //resetGraph
 
     let newDisplayList= itemsToDisplay.filter( i => !stayVisibleNodes.includes(i.uuid))
@@ -1435,7 +1440,10 @@ var createRelationsView = function () {
           <i class="crop icon action_relations_isolate_nodes"></i>
         </button>
         <button class="ui mini button action_relations_isolate_nodes_and_children" data-tooltip="Show only selected relations" data-position="bottom center">
-          <i class="eye dropper icon action_relations_isolate_nodes_and_children"></i>
+          <i class="expand alternate icon action_relations_isolate_nodes_and_children"></i>
+        </button>
+        <button class="ui mini button action_relations_isolate_nodes_and_all_children" data-tooltip="Show only selected relations and children" data-position="bottom center">
+          <i class="expand arrows alternate icon action_relations_isolate_nodes_and_all_children"></i>
         </button>
         <div class="ui icon button action_relations_duplicate_nodes" data-tooltip="duplicate selected Product" data-position="bottom center">
           <i class="copy outline icon action_relations_duplicate_nodes"></i>
