@@ -2,7 +2,7 @@ var NwBuilder = require('nw-builder'),
   output = 'build',
   opts = {
     files: './src/**', // use the glob format
-    version: '0.43.1',
+    version: '0.43.4',
     buildDir: output + '/release/',
     cacheDir: output + '/cache/',
 	flavor:"normal",
