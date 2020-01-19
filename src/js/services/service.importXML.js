@@ -86,13 +86,22 @@ var createImportXMLService = function () {
         callback(item[i])
       }
     };
+    var findElementTypeInChildren = function (item, elementName) {
+      for (var i = 0; i < item.length; i++) {
+        if (item[i].tagName.toLowerCase() == elementName) {
+          return item[i]
+        }
+      }
+    }
     //rules
     var parseAsElementFolder =function (folder, targetArray, folderType) {
       let type = folderType || folder.getAttribute('type')// if type is specified use it or find it
       doForEach(folder.children, function (item) {
         console.log(item.tagName.toLowerCase());
         if (item.tagName.toLowerCase() == "element") {
-          targetArray.push({id:item.id, name:item.getAttribute("name"), type:item.getAttribute("xsi:type"), layertype:type})
+          let elementId = item.id || item.getAttribute("identifier")
+          let elementName = item.getAttribute("name") || findElementTypeInChildren(item.children,"name").innerHTML
+          targetArray.push({id:elementId, name:elementName, type:item.getAttribute("xsi:type"), layertype:type})
         }else if (item.tagName.toLowerCase() == "folder") {//if element is another folder
           parseAsElementFolder(item, projectProducts, type)// parse as a folder with the previous folder type
         }
@@ -102,7 +111,8 @@ var createImportXMLService = function () {
       let type = folderType || folder.getAttribute('type')// if type is specified use it or find it
       doForEach(folder.children, function (item) {
         if (item.tagName.toLowerCase() == "element") {
-          targetArray.push({id:item.id, name:item.getAttribute("xsi:type"), source:item.getAttribute("source"), target:item.getAttribute("target")})
+          let elementId = item.id || item.getAttribute("identifier")
+          targetArray.push({id:elementId, name:item.getAttribute("xsi:type"), source:item.getAttribute("source"), target:item.getAttribute("target")})
         }else if (item.tagName.toLowerCase() == "folder") {//if element is another folder
           parseAsRelations(item, projectRelations, type)// parse as a folder with the previous folder type
         }
