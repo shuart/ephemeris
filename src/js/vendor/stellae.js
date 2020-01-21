@@ -957,7 +957,7 @@ function stellae(_selector, _options) {
                            .force('collide', d3.forceCollide().radius(function(d) {
                                return options.minCollision;
                            }).strength(1).iterations(1))
-                           .force('charge', d3.forceManyBody().strength(options.chargeStrength).distanceMax(800))
+                           .force('charge', d3.forceManyBodyReuse().strength(options.chargeStrength).distanceMax(800))
                            .force('link', d3.forceLink().id(function(d) {
                                return d.id;
                            }))
