@@ -20,14 +20,14 @@ var createTreeList = function ({
   var domSearchElement = undefined
   var searchResults = undefined
   var closedCaret = []
-  var flatMode = false
+  var flatMode = true
 
   var objectIsActive = false;
   var theme = {}
 
   theme.item = function (i, visibility) {
      html =`
-     <div ${isDraggable? ' draggable="true" ondragstart="ephHelpers.drag(event)" ':""} data-id="${i[identifier]}" class="searchable_item list-item">
+     <div style="height:auto" ${isDraggable? ' draggable="true" ondragstart="ephHelpers.drag(event)" ':""} data-id="${i[identifier]}" class="searchable_item list-item">
        <div class="type-marker" style="${i.customColor? "":"display:none;"}position: relative;height: inherit;width: 2px;background:${i.customColor? i.customColor:"#01ffff"};right: 9px;opacity: 0.7;"></div>
        <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
        ${theme.itemExtraIcon(i)}
@@ -106,11 +106,15 @@ var createTreeList = function ({
 
     domElement = container.appendChild(document.createElement("div"))
     domElement.classList="tree_list_area"
+    domElement.style.height="100%"
+    domElement.style.overflow="auto"
     domModeElement = container.appendChild(document.createElement("div"))
     domModeElement.classList="tree_list_change_mode_area"
     if (links) {
       domModeElement.innerHTML=theme.flatModeToggle()
     }
+
+    setUpScrollEvent(domElement)
 
     //set up search if needed
     if (searchContainer) {
@@ -165,7 +169,9 @@ var createTreeList = function ({
       //searchResults = undefined //reset search result if reloading
     }else if (!links || flatMode) {
       console.log(items);
-      let list = items.map(i=>theme.item(i)).join("")
+      // let list = items.map(i=>theme.item(i)).join("")
+      console.log(items);
+      let list = renderCurrentCluster(items, domElement.scrollTop)
       domElement.innerHTML = list
     }else if (links) {
       let linkCopy = deepCopy(links)//deep copy the links to allow removing them
@@ -175,6 +181,55 @@ var createTreeList = function ({
     //onUpdate callBack
     if (onUpdate) {
       onUpdate()
+    }
+  }
+
+  function renderCurrentCluster(items, scrollPosition) {
+    var clusteredElementHeight = 32
+
+    let currentElementHeight = domElement.clientHeight;
+    //console.log( scrollPosition )
+    //console.log(currentElementHeight )
+
+    //clean element
+    domElement.innerHTML = ""
+
+    //calculation
+    let nbrOfElementToAdd = Math.floor(currentElementHeight/clusteredElementHeight)+5
+    let nbrOfHiddenTopElement = Math.floor(scrollPosition/clusteredElementHeight)
+    let startElementListPosition = nbrOfHiddenTopElement
+    let endElementListPosition = nbrOfHiddenTopElement+nbrOfElementToAdd
+    console.log(endElementListPosition);
+    let clusteredHTML = ""
+    //add padding element
+    let startPadderSize = nbrOfHiddenTopElement*clusteredElementHeight
+    clusteredHTML += generateFakeElement(startPadderSize)
+    //add current cluster
+    clusteredHTML += insertElementsB(items, startElementListPosition, endElementListPosition)
+    //add end padding element
+    let endPadderSize = (items.length-endElementListPosition)*clusteredElementHeight
+    clusteredHTML += generateFakeElement(endPadderSize)
+
+    return clusteredHTML
+
+    function insertElementsB (items, startElement, endElement) {
+      let clusterHTML=""
+      for (let i = startElement; i < endElement; i++) {
+        //console.log("add" + list[i])
+        if (items[i]) {
+          clusterHTML +=theme.item(items[i]) ||""
+        }
+
+        //domTarget.insertAdjacentHTML("beforeend", list[i])
+      }
+       return clusterHTML
+    }
+    function generateFakeElement(height) {
+      if (height>0) {
+        return `<div style="height:${height}px; background-color:blue">${height}</div>`
+      }else {
+         return ``
+       }
     }
   }
 
@@ -313,6 +368,13 @@ var createTreeList = function ({
       //   if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "block"}else{item.style.display = "none"}
       // }
     });
+  }
+
+  function setUpScrollEvent(domElement) {
+    domElement.addEventListener('scroll', function (event) {
+            //console.log(event)
+            render()
+    })
   }
 
   var update = function () {
