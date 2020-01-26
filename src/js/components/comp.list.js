@@ -1206,11 +1206,11 @@ function showListMenu({
         }
       }
       html += nestedHtml
-      // if (singleItem) {
-      //   if (sourceLinks && source.includes(item.uuid)) {
-      //     html += "</div><h3>Linked Elements</h3>"
-      //   }
-      // }
+      if (singleItem) {
+        if (sourceLinks) {
+          html += "</div><h3>Linked Elements</h3>"
+        }
+      }
     }
     //add action button
 
