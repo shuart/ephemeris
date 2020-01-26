@@ -49,6 +49,8 @@ function showListMenu({
   }={}) {
 
     var extraValuesAdded =false;
+
+    var lastScrollFuntion = undefined
     //utility to parse html
     function toNode(html) {
       var tpl = document.createElement('template');
@@ -501,7 +503,8 @@ function showListMenu({
     if (!fullScreen) { //windowedCase
       mainEl.classList = theme.windowedContainerClass;
       mainEl.style.width = "50%"
-      mainEl.style.maxHeight = "90%"
+      //mainEl.style.maxHeight = "90%"
+      mainEl.style.height = "90%"
       mainEl.style.left= "25%";
     }else if(targetDomContainer){ //embeded case
       mainEl.classList =theme.embededContainerClass;
@@ -695,6 +698,35 @@ function showListMenu({
   }
 
   //MAIN function to build list
+
+  function reBuildList() {
+    // listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
+    // console.log(buildSingle(sourceData, sourceLinks));
+    var arrayToBuild = buildSingle(sourceData, sourceLinks)
+    //listContainer.innerHTML= ""
+    if (arrayToBuild[0]) {
+      // listContainer.innerHTML= theme.listWrapper(generateFullList(arrayToBuild))
+      //console.log(theme.listWrapper(generateFullList(arrayToBuild)));
+      // console.log(listContainer.innerHTML);
+      if (lastScrollFuntion) {
+        listContainer.removeEventListener('scroll',lastScrollFuntion) //clean last event listener
+      }
+      setTimeout(function () {// let layout calculation happen first
+        let htmlToInject = theme.listWrapper(generateFullList(arrayToBuild))
+        //Remove all event listener on lists
+        listContainer.innerHTML= htmlToInject
+      }, 80);
+
+
+      lastScrollFuntion = function (event) {
+              //console.log(event)
+              let htmlToInject = theme.listWrapper(generateFullList(arrayToBuild))
+              //console.log(htmlToInject);
+              listContainer.innerHTML= htmlToInject
+      }
+      listContainer.addEventListener('scroll',lastScrollFuntion)
+    }
+  }
   function buildSingle(sourceData, sourceLinks, rootNodes, level, parentId, greyed, firstOnly) {
     var source = undefined
     var targets = undefined
@@ -780,6 +812,7 @@ function showListMenu({
     //   fullListHtml += generateItemHtml(data[i])
     //   console.log(generateItemHtml(data[i]));
     // }
+    //console.log(listContainer.scrollTop);
     fullListHtml = renderCurrentCluster(data, listContainer.scrollTop)
 
     return fullListHtml
@@ -797,10 +830,14 @@ function showListMenu({
     domElement.innerHTML = ""
 
     //calculation
-    let nbrOfElementToAdd = Math.floor(currentElementHeight/clusteredElementHeight)+2
+    let nbrOfElementToAdd = Math.floor(currentElementHeight/clusteredElementHeight)+3
     let nbrOfHiddenTopElement = Math.floor(scrollPosition/clusteredElementHeight)
     let startElementListPosition = nbrOfHiddenTopElement
     let endElementListPosition = nbrOfHiddenTopElement+nbrOfElementToAdd
+    console.log(scrollPosition);
+    console.log(clusteredElementHeight);
+    console.log(nbrOfHiddenTopElement);
+    console.log(nbrOfElementToAdd);
     console.log(endElementListPosition);
     let clusteredHTML = ""
     //add padding element
@@ -819,7 +856,7 @@ function showListMenu({
       for (let i = startElement; i < endElement; i++) {
         //console.log("add" + list[i])
         if (items[i]) {
-          clusterHTML +=generateItemHtml(items[i]) ||""
+          clusterHTML +=generateItemHtml(items[i], i) ||""
         }
 
         //domTarget.insertAdjacentHTML("beforeend", list[i])
@@ -835,7 +872,7 @@ function showListMenu({
     }
   }
 
-  function generateItemHtml(dataToBuild) {
+  function generateItemHtml(dataToBuild, index) {
     var source = undefined
     var targets = undefined
     var rootNodes = dataToBuild.rootNodes || deepCopy(sourceData)
@@ -922,7 +959,7 @@ function showListMenu({
           <div data-id="${item[idProp]}" class="ui mini basic red circular icon button action_list_remove_item"><i data-id="${item[idProp]}" class="close icon action_list_remove_item"></i></div>
         </div>`
     }
-    var extraStyle =""
+    var extraStyle = (index%2 == 0)?'style="background: #FCFCFC;"' :'style="background: #ffffff;"'   //if index is impair, add a background
     if (greyed || (ismoving && ismoving.dataset.id == item[idProp])) {
       extraStyle = 'style="background-color= lightgrey; opacity= 0.5;"'
     }
@@ -1260,26 +1297,7 @@ function showListMenu({
         listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
         listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
       }else {
-        // listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
-        // console.log(buildSingle(sourceData, sourceLinks));
-        var arrayToBuild = buildSingle(sourceData, sourceLinks)
-        listContainer.innerHTML= ""
-        if (arrayToBuild[0]) {
-          // listContainer.innerHTML= theme.listWrapper(generateFullList(arrayToBuild))
-          //console.log(theme.listWrapper(generateFullList(arrayToBuild)));
-          // console.log(listContainer.innerHTML);
-          let htmlToInject = theme.listWrapper(generateFullList(arrayToBuild))
-          console.log(htmlToInject);
-          listContainer.innerHTML= htmlToInject
-
-          listContainer.addEventListener('scroll', function (event) {
-                  //console.log(event)
-                  let htmlToInject = theme.listWrapper(generateFullList(arrayToBuild))
-                  console.log(htmlToInject);
-                  listContainer.innerHTML= htmlToInject
-          })
-        }
-
+        reBuildList()
       }
 
       globalContainer.appendChild(listContainerTop)
@@ -1421,7 +1439,7 @@ function showListMenu({
     if (listIsExpanded) {
       listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
     }
-    listContainer.innerHTML = theme.listWrapper(buildSingle(sourceData, sourceLinks))
+    reBuildList()
     //focus on search
     if (focusSearchOnRender) {
       let listInput = sourceEl.querySelector(".list-search-input")
