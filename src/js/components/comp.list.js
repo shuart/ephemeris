@@ -776,11 +776,63 @@ function showListMenu({
 
   function generateFullList(data) {
     let fullListHtml = ""
-    for (var i = 0; i < data.length; i++) {
-      fullListHtml += generateItemHtml(data[i])
-      console.log(generateItemHtml(data[i]));
-    }
+    // for (var i = 0; i < data.length; i++) {
+    //   fullListHtml += generateItemHtml(data[i])
+    //   console.log(generateItemHtml(data[i]));
+    // }
+    fullListHtml = renderCurrentCluster(data, listContainer.scrollTop)
+
     return fullListHtml
+  }
+
+  function renderCurrentCluster(items, scrollPosition) {
+    var clusteredElementHeight = 42
+    var domElement = listContainer
+
+    let currentElementHeight = domElement.clientHeight;
+    //console.log( scrollPosition )
+    //console.log(currentElementHeight )
+
+    //clean element
+    domElement.innerHTML = ""
+
+    //calculation
+    let nbrOfElementToAdd = Math.floor(currentElementHeight/clusteredElementHeight)+5
+    let nbrOfHiddenTopElement = Math.floor(scrollPosition/clusteredElementHeight)
+    let startElementListPosition = nbrOfHiddenTopElement
+    let endElementListPosition = nbrOfHiddenTopElement+nbrOfElementToAdd
+    console.log(endElementListPosition);
+    let clusteredHTML = ""
+    //add padding element
+    let startPadderSize = nbrOfHiddenTopElement*clusteredElementHeight
+    clusteredHTML += generateFakeElement(startPadderSize)
+    //add current cluster
+    clusteredHTML += insertElementsB(items, startElementListPosition, endElementListPosition)
+    //add end padding element
+    let endPadderSize = (items.length-endElementListPosition)*clusteredElementHeight
+    clusteredHTML += generateFakeElement(endPadderSize)
+
+    return clusteredHTML
+
+    function insertElementsB (items, startElement, endElement) {
+      let clusterHTML=""
+      for (let i = startElement; i < endElement; i++) {
+        //console.log("add" + list[i])
+        if (items[i]) {
+          clusterHTML +=generateItemHtml(items[i]) ||""
+        }
+
+        //domTarget.insertAdjacentHTML("beforeend", list[i])
+      }
+       return clusterHTML
+    }
+    function generateFakeElement(height) {
+      if (height>0) {
+        return `<div style="height:${height}px; background-color:blue">${height}</div>`
+      }else {
+         return ``
+       }
+    }
   }
 
   function generateItemHtml(dataToBuild) {
@@ -1165,14 +1217,17 @@ function showListMenu({
     //item list (global var)
     listContainer = document.createElement('div');
     listContainer.classList = "table"
+    listContainer.style.height = "90%"
+    listContainer.style.overflow = "auto"
 
     listContainerFirstCol = document.createElement('div');
     listContainerFirstCol.classList = "table-first-col"
     // listContainer.style.overflow = "auto"
     //item list (global var)
     globalContainer = document.createElement('div');
-    globalContainer.style.overflow = "auto"
+    // globalContainer.style.overflow = "auto"
     globalContainer.classList = "flexTable"
+    globalContainer.style.height = "100%"
 
     if (listIsExpanded) {
       globalContainer.classList.add("expanded")
@@ -1206,12 +1261,23 @@ function showListMenu({
         listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
       }else {
         // listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
-        console.log(buildSingle(sourceData, sourceLinks));
+        // console.log(buildSingle(sourceData, sourceLinks));
         var arrayToBuild = buildSingle(sourceData, sourceLinks)
         listContainer.innerHTML= ""
         if (arrayToBuild[0]) {
-          listContainer.innerHTML= theme.listWrapper(generateFullList(arrayToBuild))
-          console.log(theme.listWrapper(generateFullList(arrayToBuild)));
+          // listContainer.innerHTML= theme.listWrapper(generateFullList(arrayToBuild))
+          //console.log(theme.listWrapper(generateFullList(arrayToBuild)));
+          // console.log(listContainer.innerHTML);
+          let htmlToInject = theme.listWrapper(generateFullList(arrayToBuild))
+          console.log(htmlToInject);
+          listContainer.innerHTML= htmlToInject
+
+          listContainer.addEventListener('scroll', function (event) {
+                  //console.log(event)
+                  let htmlToInject = theme.listWrapper(generateFullList(arrayToBuild))
+                  console.log(htmlToInject);
+                  listContainer.innerHTML= htmlToInject
+          })
         }
 
       }
