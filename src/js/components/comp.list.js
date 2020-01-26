@@ -1285,8 +1285,13 @@ function showListMenu({
       )
       globalContainer.appendChild(listContainer)
     }else if (editItemMode){
-      listContainer.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks, editItemMode.item))
+      var arrayToBuild = buildSingle(sourceData, sourceLinks, editItemMode.item)
+      listContainer.innerHTML =theme.listWrapper(
+        "<div class='"+ theme.singleElementsListClass + "'>"+ generateFullList(arrayToBuild)+"</div>"
+      )
       globalContainer.appendChild(listContainer)
+      // listContainer.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks, editItemMode.item))
+      // globalContainer.appendChild(listContainer)
     }else {
       //build top row
       let titleLineHtml = buildTitleLine(display, extraButtons)
