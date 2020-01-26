@@ -786,7 +786,7 @@ function showListMenu({
   }
 
   function renderCurrentCluster(items, scrollPosition) {
-    var clusteredElementHeight = 42
+    var clusteredElementHeight = 43
     var domElement = listContainer
 
     let currentElementHeight = domElement.clientHeight;
@@ -797,7 +797,7 @@ function showListMenu({
     domElement.innerHTML = ""
 
     //calculation
-    let nbrOfElementToAdd = Math.floor(currentElementHeight/clusteredElementHeight)+5
+    let nbrOfElementToAdd = Math.floor(currentElementHeight/clusteredElementHeight)+2
     let nbrOfHiddenTopElement = Math.floor(scrollPosition/clusteredElementHeight)
     let startElementListPosition = nbrOfHiddenTopElement
     let endElementListPosition = nbrOfHiddenTopElement+nbrOfElementToAdd
@@ -1094,8 +1094,8 @@ function showListMenu({
         // }
         if (rule.choices) {
           function reduceChoices(acc, e) {
-            console.log(e);
-            console.log(rule.choices());
+            // console.log(e);
+            // console.log(rule.choices());
             var itemStyle = 'cursor:pointer;'
             var customDataId = undefined
             var secondaryAction = ""
