@@ -739,15 +739,341 @@ function showListMenu({
         return 0;})
     }
 
-    var htmlArray = []
+    var html = ""
     if (multipleSelection) {
       alreadySelectedItems = data.filter(item => multipleSelection.includes(item[idProp]) )
       console.log(alreadySelectedItems);
     }
 
-    for (item of data) {
+    // if (!singleItem) { TODO add top menu
+    //   let listHeaderElements = ""
+    //   for (rule of rules) {
+    //     let dispName = rule.displayAs;
+    //     listHeaderElements += theme.listItem(dispName, 'title')
+    //   }
+    //
+    //   html += theme.topRow(listHeaderElements)
+    // }
 
-      htmlArray.push({rootNodes, level, parentId, greyed, firstOnly, item})
+    for (item of data) {
+      var remove =""
+      var move =""
+      var multipleSelect =""
+      var extraButtonsHtml =""
+
+      if (extraButtons && !singleItem) {
+        for (action of extraButtons) {
+          extraButtonsHtml = `<div class="right floated content">
+              <div data-extra="${item[action.prop]}" data-id="${item[idProp]}" class="ui mini basic teal button action_extra_${action.class}">${action.name}</div>
+            </div>`
+        }
+      }
+      if (multipleSelection && !singleItem) {
+        if (multipleSelection.includes(item[idProp])) {
+          multipleSelect = `<div class="right floated content">
+              <div data-id="${item[idProp]}" class="ui mini green button action_list_remove_item_from_selection">unselect</div>
+            </div>`
+        }else{
+          multipleSelect = `<div class="right floated content">
+              <div data-id="${item[idProp]}" class="ui mini basic green button action_list_add_item_to_selection">Select</div>
+            </div>`
+        }
+      }
+      if (onMove && !greyed && !singleItem) {
+        move = `<div style="opacity:0.9;" class="right floated content">
+            <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui mini basic circular icon button action_list_move_item"><i data-parentid="${parentId}" data-id="${item[idProp]}" class="sort icon action_list_move_item"></i></div>
+          </div>`
+        if (ismoving && ismoving.dataset.id != item[idProp] && sourceLinks && !ismovingExtraItems.find(i=>i.dataset.id == item[idProp] )) {
+          move =`
+            <div class="right floated content">
+              <div class="ui mini buttons">
+                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_add_to_move_item_toogle">select</button>
+                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Move next</button>
+                <div class="ou"></div>
+                <button data-id="${item[idProp]}" data-grandparentid="${parentId}" data-parentid="${item[idProp]}" class="ui positive button action_list_end_move_item">Link</button>
+              </div>
+            </div>
+          `
+        }else if (ismoving && ismovingExtraItems.find(i=>i.dataset.id == item[idProp] )) {
+          move =`
+            <div class="right floated content">
+              <div class="ui mini buttons">
+                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button basic green action_list_end_add_to_move_item_toogle">selected</button>              </div>
+            </div>
+          `
+        }else if (ismoving && ismoving.dataset.id != item[idProp]) {
+          move =`
+            <div class="right floated content">
+              <div class="ui mini buttons">
+                <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Move next</button>
+              </div>
+            </div>
+          `
+        }else if (ismoving && !singleItem) {
+          move = `<div class="right floated content">
+              <div data-id="${item[idProp]}" class="ui mini blue button action_list_move_item">Cancel</div>
+            </div>`
+        }
+      }
+      if (onRemove && !singleItem && !ismoving) {
+        remove = `<div style="opacity:0.4;" class="right floated content">
+            <div data-id="${item[idProp]}" class="ui mini basic red circular icon button action_list_remove_item"><i data-id="${item[idProp]}" class="close icon action_list_remove_item"></i></div>
+          </div>`
+      }
+      var extraStyle =""
+      if (greyed || (ismoving && ismoving.dataset.id == item[idProp])) {
+        extraStyle = 'style="background-color= lightgrey; opacity= 0.5;"'
+      }
+      if (multipleSelection &&  multipleSelection.includes(item[idProp])) {
+        extraStyle = "background-color: #DAF7A6; opacity: 0.8;"
+      }
+      //define row elemet
+      html += `<div ${extraStyle}' data-id='${item[idProp]}' class='searchable ${theme.nestedListClass}'>`//Start of Searchable item
+      //add list add helpers
+      if (onAddFromPopup) {
+        html += `<div data-id='${item[idProp]}' class='addMagnet'>
+          <div data-id='${item[idProp]}' class='addPopup action_list_add_from_popup_item'>+</div>
+        </div>`
+      }
+      if (true) {//Display if is list
+
+        var nestedHtml = ""
+        if (singleItem) {
+          html += `<h2>${item[rules[0].prop]}</h2>`
+          nestedHtml = "<div class='ui container segment'>"
+        }
+        let firstItemStyle = `style='padding-left: ${25*level}px;'`
+
+        if (showColoredIcons) {
+
+          let letters = showColoredIcons(item)
+          let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
+          let style = 'style="background: '+colorFromLetters(letters)+';width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 15px;color: white;text-align: center;"'
+          nestedHtml +=`
+          <div  ${colStyle} data-id="${item[idProp]}" class="column">
+            <div ${style} data-id="${item[idProp]}" class="content">
+              ${letters}
+            </div>
+          </div>
+          `
+        }
+        if (showBatchActions) {
+          let marked = currentSelectedBatch.includes(item[idProp])
+          let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
+          let style = 'style="background: transparent;width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 15px;color: grey;text-align: center;"'
+          nestedHtml +=`
+          <div  ${colStyle} data-id="${item[idProp]}" class="column">
+            <div ${style} data-id="${item[idProp]}" class="content">
+              <i data-id="${item[idProp]}"  class="large ${marked ? "check":""} circle outline icon action_toogle_in_selected_batch"></i>
+            </div>
+          </div>
+          `
+        }
+        for (rule of rules) {
+          var propName = rule.prop
+          var dispName = rule.displayAs
+          var isEditable = rule.edit
+          var isLink = rule.link
+          var isOsPath = rule.localPath
+          var isTime = rule.time
+          var isColor = rule.color
+          var isFullText = rule.fullText
+          var isPastable = rule.pastable
+          var isDroppable = rule.droppable
+          var isActionable = rule.actionable
+          var isMeta = rule.meta //get the metaFunction
+          var isCustom = rule.custom
+          var isTarget = rule.isTarget //met is target
+          var editHtml = ""
+          var goToHtml = ""
+          var pastableHtml = ""
+          var dropHtmlClass = ""
+          var propDisplay = item[propName]
+          var currentIdProp = rule.deferredIdProp || idProp
+          //force edit mode if in editItemMode
+          if (editItemMode) {
+            isEditable = true
+          }
+          if (isMeta) {
+            if (isTarget) {
+              item[propName] = isMeta().filter(e => (e.type == propName && e.target == item[currentIdProp] )).map(e => e.source)
+            }else {
+              item[propName] = isMeta().filter(e => (e.type == propName && e.source == item[currentIdProp] )).map(e => e.target)
+            }
+          }
+
+          if (isCustom) {
+            propDisplay = isCustom(item[propName])
+          }
+
+          if (isLink && item[propName]) {
+            goToHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_item" style="cursor:pointer; color:blue"></i>`
+          }
+          if (isOsPath && item[propName]) {
+            goToHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_desktop_item" style="cursor:pointer; color:blue"></i>`
+          }
+          if (isPastable) {
+            pastableHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="paste icon action_list_past" style="cursor:pointer;opacity: 0.15;"></i>`
+          }
+          if (isActionable) {
+            goToHtml+=`<div style="cursor:pointer;" data-id="${isActionable(item[propName])}" class="ui mini basic label action_list_click_label">Show</div>`
+          }
+          if (isDroppable) {
+            dropHtmlClass+="action_list_droppable"
+          }
+          if (rule.options) {
+            let choice = rule.options.find(o=>o.choiceId == item[propName])
+            if (item[propName] && choice) {
+              // propDisplay = choice.name;
+              let style = choice.color? `color:${choice.color} !important;border-color:${choice.color} !important;`:''
+              propDisplay = `<a style="${style}" class="ui basic mini label">${choice.name}</a>`;
+            }else {
+              // propDisplay = rule.options.find(o=>o.choiceId == 0).name
+              let defaultOption = rule.options.find(o=>o.choiceId == 0)
+              let style = defaultOption.color? `color:${defaultOption.color} !important;border-color:${defaultOption.color} !important;`:''
+
+              propDisplay = `<a style="${style}" class="ui basic mini label">${defaultOption.name}</a>`
+            }
+            if (isEditable) {
+              editHtml+=`
+              <i data-options='${JSON.stringify(rule.options)}' data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_options_item" style=""></i>`
+            }
+          }
+          if (isColor) {
+            propDisplay = `<a style="background-color:${item[propName]}" class="ui basic mini label">${item[propName]}</a>`;
+            if (isEditable && Picker) {//check if colorpicker is used TODO namespacing should be better
+              editHtml+=`
+              <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="edit icon action_list_edit_item_color" style=""></i>
+              <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="times icon action_list_remove_item_color" style="opacity:0.1; cursor:pointer;"></i>`
+            }else if (isEditable && !Picker) {
+              editHtml+=`
+              <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
+            }
+          }
+          if (isEditable && !isMeta && !isTime && !rule.options && !isColor) {
+            editHtml+=`
+            <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
+          }else if (isEditable && isMeta) {
+            editHtml+=`
+            <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[currentIdProp]}" class="edit icon action_list_edit_choice_item" style=""></i>`
+
+          }else if (isEditable && isTime) {
+            console.log(item);
+            console.log(propName);
+            console.log(item[propName]);
+            let today
+            if (item[propName]) {
+              today = new Date(item[propName]).toISOString().substr(0, 10);
+            }else {
+              today = new Date().toISOString().substr(0, 10);
+            }
+
+            propDisplay = moment(item[propName]).format("MMM Do YY");
+            editHtml+=`
+            <input data-prop="${propName}" data-id="${item[idProp]}" style="display:none;" type="date" class="dateinput ${item[idProp]} action_list_edit_time_input" name="trip-start" value="${today}">
+            <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[idProp]}" class="edit icon action_list_edit_time_item" style="">
+            </i>`
+          }
+          // if (rule.options) {
+          //   let optionsHTML = `
+          //     <div class="options_in_list item">
+          //       Dropdown
+          //
+          //       <div style="" class="options_menu">
+          //         <div class="item">Choice 1</div>
+          //         <div class="item">Choice 2</div>
+          //         <div class="item">Choice 3</div>
+          //       </div>
+          //     </div>`
+          //   propDisplay = optionsHTML
+          // }
+          if (rule.choices) {
+            function reduceChoices(acc, e) {
+              console.log(e);
+              console.log(rule.choices());
+              var itemStyle = 'cursor:pointer;'
+              var customDataId = undefined
+              var secondaryAction = ""
+              var foudItem = rule.choices().find(i=>i.uuid == e)
+              if (foudItem) {
+                var newItem = foudItem.name + " "+ (foudItem.lastName || " ")+" "
+                var formatedNewItem = newItem
+                var newItemId = foudItem.uuid
+                if(formatedNewItem.length > 25) {
+                    formatedNewItem = newItem.substring(0,10)+".. ";
+                }
+                if (rule.choiceStyle) {
+                  itemStyle= rule.choiceStyle(foudItem)+" "+itemStyle || itemStyle;
+                }
+                if (rule.dataIdIsLinkId) {//TODO reorganise rules options
+                  if (isTarget) {
+                    secondActionCustomDataId = isMeta().find(e => (e.type == propName && e.target == item[currentIdProp] )).uuid
+                    secondaryAction = `<div class="detail">| <i data-id="${secondActionCustomDataId|| newItemId}" class="cubes icon action_list_click_label"></i></div>`
+                  }else {
+                    secondActionCustomDataId = isMeta().find(e => (e.type == propName && e.source == item[currentIdProp] )).uuid
+                    secondaryAction = `<div class="detail">| <i data-id="${secondActionCustomDataId|| newItemId}" class="cubes icon action_list_click_label"></i></div>`
+                  }
+                }
+                var htmlNewItem = `<div style="${itemStyle}" data-inverted="" data-id="${customDataId|| newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${formatedNewItem}${secondaryAction} </div>`
+                return acc += htmlNewItem
+              }else {
+                return acc
+              }
+            }
+            propDisplay = item[propName].reduce(reduceChoices,"")
+          }else if(isFullText && !singleItem){
+            if(propDisplay && propDisplay.length > 35) {propDisplay = propDisplay.substring(0,35)+".. ";}
+          }
+
+
+          if (!singleItem) {
+            nestedHtml +=`
+            <div data-id="${item[idProp]}" class="column ${dropHtmlClass}">
+              <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
+                ${propDisplay||""}
+                ${goToHtml}
+                ${pastableHtml}
+                ${editHtml}
+              </div>
+            </div>
+            `
+          }else {
+            nestedHtml +=`
+            <div data-id="${item[idProp]}" class="">
+              <h3 data-id="${item[idProp]}" class="ui header">
+                <span class="">${dispName}</span>
+              </h3>
+              <div data-id="${item[idProp]}" class="">
+                ${propDisplay||""}
+                ${goToHtml}
+                ${editHtml}
+              </div>
+            </div>
+            <div class="ui divider"></div>
+            `
+          }
+          if (firstItemStyle) {
+            firstItemStyle =""
+          }
+        }
+        html += nestedHtml
+        if (singleItem) {
+          if (sourceLinks && source.includes(item.uuid)) {
+            html += "</div><h3>Linked Elements</h3>"
+          }
+        }
+      }
+      //add action button
+
+      html += multipleSelect
+      html += extraButtonsHtml
+
+      html += move
+      html += remove
+      html += "</div>"//End of Searchable Item
 
       //Check if some children exist if there is a link items
       console.log(sourceLinks);
@@ -765,369 +1091,25 @@ function showListMenu({
           console.log(sourceLinks);
           var childrenLinks = sourceLinks.filter(el => el.source != item.uuid)//remove all link with current item from source
           console.log(childrenData, childrenLinks)
-          htmlArray = htmlArray.concat(buildSingle(sourceData, childrenLinks, childrenData,(level+1), item.uuid, isGreyed))
+          html += buildSingle(sourceData, childrenLinks, childrenData,(level+1), item.uuid, isGreyed)
+          // if (level > 0) {
+          //   html += "</div>" //close nested element
+          // }
         }
+
       }
       // Item completed, the loop goes to the next
     }
     //All the list has been built
-    return htmlArray
-  }
-
-  function generateFullList(data) {
-    let fullListHtml = ""
-    for (var i = 0; i < data.length; i++) {
-      fullListHtml += generateItemHtml(data[i])
-      console.log(generateItemHtml(data[i]));
-    }
-    return fullListHtml
-  }
-
-  function generateItemHtml(dataToBuild) {
-    var source = undefined
-    var targets = undefined
-    var rootNodes = dataToBuild.rootNodes || deepCopy(sourceData)
-    var level = dataToBuild.level || 0
-    var data = undefined
-    // var links = sourceLinks
-    var rules = undefined
-    var parentId = dataToBuild.parentId
-    var greyed = dataToBuild.greyed
-    var alreadySelectedItems = undefined
-    var singleItem = (!Array.isArray(dataToBuild.rootNodes))
-    var html =""
-
-    var rules = display
-
-    //only treat the first col
-    // if (firstOnly) {
-    //   rules = [rules[0]]
-    // }
-
-    var item = dataToBuild.item
-
-    var remove =""
-    var move =""
-    var multipleSelect =""
-    var extraButtonsHtml =""
-
-    if (extraButtons && !singleItem) {
-      for (action of extraButtons) {
-        extraButtonsHtml = `<div class="right floated content">
-            <div data-extra="${item[action.prop]}" data-id="${item[idProp]}" class="ui mini basic teal button action_extra_${action.class}">${action.name}</div>
-          </div>`
-      }
-    }
-    if (multipleSelection && !singleItem) {
-      if (multipleSelection.includes(item[idProp])) {
-        multipleSelect = `<div class="right floated content">
-            <div data-id="${item[idProp]}" class="ui mini green button action_list_remove_item_from_selection">unselect</div>
-          </div>`
-      }else{
-        multipleSelect = `<div class="right floated content">
-            <div data-id="${item[idProp]}" class="ui mini basic green button action_list_add_item_to_selection">Select</div>
-          </div>`
-      }
-    }
-    if (onMove && !greyed && !singleItem) {
-      move = `<div style="opacity:0.9;" class="right floated content">
-          <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui mini basic circular icon button action_list_move_item"><i data-parentid="${parentId}" data-id="${item[idProp]}" class="sort icon action_list_move_item"></i></div>
-        </div>`
-      if (ismoving && ismoving.dataset.id != item[idProp] && sourceLinks && !ismovingExtraItems.find(i=>i.dataset.id == item[idProp] )) {
-        move =`
-          <div class="right floated content">
-            <div class="ui mini buttons">
-              <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_add_to_move_item_toogle">select</button>
-              <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Move next</button>
-              <div class="ou"></div>
-              <button data-id="${item[idProp]}" data-grandparentid="${parentId}" data-parentid="${item[idProp]}" class="ui positive button action_list_end_move_item">Link</button>
-            </div>
-          </div>
-        `
-      }else if (ismoving && ismovingExtraItems.find(i=>i.dataset.id == item[idProp] )) {
-        move =`
-          <div class="right floated content">
-            <div class="ui mini buttons">
-              <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button basic green action_list_end_add_to_move_item_toogle">selected</button>              </div>
-          </div>
-        `
-      }else if (ismoving && ismoving.dataset.id != item[idProp]) {
-        move =`
-          <div class="right floated content">
-            <div class="ui mini buttons">
-              <button data-id="${item[idProp]}" data-parentid="${parentId}" class="ui button action_list_end_move_item">Move next</button>
-            </div>
-          </div>
-        `
-      }else if (ismoving && !singleItem) {
-        move = `<div class="right floated content">
-            <div data-id="${item[idProp]}" class="ui mini blue button action_list_move_item">Cancel</div>
-          </div>`
-      }
-    }
-    if (onRemove && !singleItem && !ismoving) {
-      remove = `<div style="opacity:0.4;" class="right floated content">
-          <div data-id="${item[idProp]}" class="ui mini basic red circular icon button action_list_remove_item"><i data-id="${item[idProp]}" class="close icon action_list_remove_item"></i></div>
-        </div>`
-    }
-    var extraStyle =""
-    if (greyed || (ismoving && ismoving.dataset.id == item[idProp])) {
-      extraStyle = 'style="background-color= lightgrey; opacity= 0.5;"'
-    }
-    if (multipleSelection &&  multipleSelection.includes(item[idProp])) {
-      extraStyle = "background-color: #DAF7A6; opacity: 0.8;"
-    }
-    //define row elemet
-    html += `<div ${extraStyle}' data-id='${item[idProp]}' class='searchable ${theme.nestedListClass}'>`//Start of Searchable item
-    //add list add helpers
-    if (onAddFromPopup) {
-      html += `<div data-id='${item[idProp]}' class='addMagnet'>
-        <div data-id='${item[idProp]}' class='addPopup action_list_add_from_popup_item'>+</div>
-      </div>`
-    }
-    if (true) {//Display if is list
-
-      var nestedHtml = ""
-      if (singleItem) {
-        html += `<h2>${item[rules[0].prop]}</h2>`
-        nestedHtml = "<div class='ui container segment'>"
-      }
-      let firstItemStyle = `style='padding-left: ${25*level}px;'`
-
-      if (showColoredIcons) {
-
-        let letters = showColoredIcons(item)
-        let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
-        let style = 'style="background: '+colorFromLetters(letters)+';width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 15px;color: white;text-align: center;"'
-        nestedHtml +=`
-        <div  ${colStyle} data-id="${item[idProp]}" class="column">
-          <div ${style} data-id="${item[idProp]}" class="content">
-            ${letters}
-          </div>
-        </div>
-        `
-      }
-      if (showBatchActions) {
-        let marked = currentSelectedBatch.includes(item[idProp])
-        let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
-        let style = 'style="background: transparent;width: 32px;height: 32px;border-radius: 100%;padding: 5px;font-size: 15px;color: grey;text-align: center;"'
-        nestedHtml +=`
-        <div  ${colStyle} data-id="${item[idProp]}" class="column">
-          <div ${style} data-id="${item[idProp]}" class="content">
-            <i data-id="${item[idProp]}"  class="large ${marked ? "check":""} circle outline icon action_toogle_in_selected_batch"></i>
-          </div>
-        </div>
-        `
-      }
-      for (rule of rules) {
-        var propName = rule.prop
-        var dispName = rule.displayAs
-        var isEditable = rule.edit
-        var isLink = rule.link
-        var isOsPath = rule.localPath
-        var isTime = rule.time
-        var isColor = rule.color
-        var isFullText = rule.fullText
-        var isPastable = rule.pastable
-        var isDroppable = rule.droppable
-        var isActionable = rule.actionable
-        var isMeta = rule.meta //get the metaFunction
-        var isCustom = rule.custom
-        var isTarget = rule.isTarget //met is target
-        var editHtml = ""
-        var goToHtml = ""
-        var pastableHtml = ""
-        var dropHtmlClass = ""
-        var propDisplay = item[propName]
-        var currentIdProp = rule.deferredIdProp || idProp
-        //force edit mode if in editItemMode
-        if (editItemMode) {
-          isEditable = true
-        }
-        if (isMeta) {
-          if (isTarget) {
-            item[propName] = isMeta().filter(e => (e.type == propName && e.target == item[currentIdProp] )).map(e => e.source)
-          }else {
-            item[propName] = isMeta().filter(e => (e.type == propName && e.source == item[currentIdProp] )).map(e => e.target)
-          }
-        }
-
-        if (isCustom) {
-          propDisplay = isCustom(item[propName])
-        }
-
-        if (isLink && item[propName]) {
-          goToHtml+=`
-          <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_item" style="cursor:pointer; color:blue"></i>`
-        }
-        if (isOsPath && item[propName]) {
-          goToHtml+=`
-          <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="external alternate icon action_list_go_to_desktop_item" style="cursor:pointer; color:blue"></i>`
-        }
-        if (isPastable) {
-          pastableHtml+=`
-          <i data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="paste icon action_list_past" style="cursor:pointer;opacity: 0.15;"></i>`
-        }
-        if (isActionable) {
-          goToHtml+=`<div style="cursor:pointer;" data-id="${isActionable(item[propName])}" class="ui mini basic label action_list_click_label">Show</div>`
-        }
-        if (isDroppable) {
-          dropHtmlClass+="action_list_droppable"
-        }
-        if (rule.options) {
-          let choice = rule.options.find(o=>o.choiceId == item[propName])
-          if (item[propName] && choice) {
-            // propDisplay = choice.name;
-            let style = choice.color? `color:${choice.color} !important;border-color:${choice.color} !important;`:''
-            propDisplay = `<a style="${style}" class="ui basic mini label">${choice.name}</a>`;
-          }else {
-            // propDisplay = rule.options.find(o=>o.choiceId == 0).name
-            let defaultOption = rule.options.find(o=>o.choiceId == 0)
-            let style = defaultOption.color? `color:${defaultOption.color} !important;border-color:${defaultOption.color} !important;`:''
-
-            propDisplay = `<a style="${style}" class="ui basic mini label">${defaultOption.name}</a>`
-          }
-          if (isEditable) {
-            editHtml+=`
-            <i data-options='${JSON.stringify(rule.options)}' data-prop="${propName}" data-value="${item[propName]}" data-id="${item[idProp]}" class="edit icon action_list_edit_options_item" style=""></i>`
-          }
-        }
-        if (isColor) {
-          propDisplay = `<a style="background-color:${item[propName]}" class="ui basic mini label">${item[propName]}</a>`;
-          if (isEditable && Picker) {//check if colorpicker is used TODO namespacing should be better
-            editHtml+=`
-            <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="edit icon action_list_edit_item_color" style=""></i>
-            <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="times icon action_list_remove_item_color" style="opacity:0.1; cursor:pointer;"></i>`
-          }else if (isEditable && !Picker) {
-            editHtml+=`
-            <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
-          }
-        }
-        if (isEditable && !isMeta && !isTime && !rule.options && !isColor) {
-          editHtml+=`
-          <i data-prop="${propName}" data-value="${item[propName] || ""}" data-id="${item[idProp]}" class="edit icon action_list_edit_item" style=""></i>`
-        }else if (isEditable && isMeta) {
-          editHtml+=`
-          <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[currentIdProp]}" class="edit icon action_list_edit_choice_item" style=""></i>`
-
-        }else if (isEditable && isTime) {
-          console.log(item);
-          console.log(propName);
-          console.log(item[propName]);
-          let today
-          if (item[propName]) {
-            today = new Date(item[propName]).toISOString().substr(0, 10);
-          }else {
-            today = new Date().toISOString().substr(0, 10);
-          }
-
-          propDisplay = moment(item[propName]).format("MMM Do YY");
-          editHtml+=`
-          <input data-prop="${propName}" data-id="${item[idProp]}" style="display:none;" type="date" class="dateinput ${item[idProp]} action_list_edit_time_input" name="trip-start" value="${today}">
-          <i data-prop="${propName}" data-value='${JSON.stringify(item[propName])}' data-id="${item[idProp]}" class="edit icon action_list_edit_time_item" style="">
-          </i>`
-        }
-        // if (rule.options) {
-        //   let optionsHTML = `
-        //     <div class="options_in_list item">
-        //       Dropdown
-        //
-        //       <div style="" class="options_menu">
-        //         <div class="item">Choice 1</div>
-        //         <div class="item">Choice 2</div>
-        //         <div class="item">Choice 3</div>
-        //       </div>
-        //     </div>`
-        //   propDisplay = optionsHTML
-        // }
-        if (rule.choices) {
-          function reduceChoices(acc, e) {
-            console.log(e);
-            console.log(rule.choices());
-            var itemStyle = 'cursor:pointer;'
-            var customDataId = undefined
-            var secondaryAction = ""
-            var foudItem = rule.choices().find(i=>i.uuid == e)
-            if (foudItem) {
-              var newItem = foudItem.name + " "+ (foudItem.lastName || " ")+" "
-              var formatedNewItem = newItem
-              var newItemId = foudItem.uuid
-              if(formatedNewItem.length > 25) {
-                  formatedNewItem = newItem.substring(0,10)+".. ";
-              }
-              if (rule.choiceStyle) {
-                itemStyle= rule.choiceStyle(foudItem)+" "+itemStyle || itemStyle;
-              }
-              if (rule.dataIdIsLinkId) {//TODO reorganise rules options
-                if (isTarget) {
-                  secondActionCustomDataId = isMeta().find(e => (e.type == propName && e.target == item[currentIdProp] )).uuid
-                  secondaryAction = `<div class="detail">| <i data-id="${secondActionCustomDataId|| newItemId}" class="cubes icon action_list_click_label"></i></div>`
-                }else {
-                  secondActionCustomDataId = isMeta().find(e => (e.type == propName && e.source == item[currentIdProp] )).uuid
-                  secondaryAction = `<div class="detail">| <i data-id="${secondActionCustomDataId|| newItemId}" class="cubes icon action_list_click_label"></i></div>`
-                }
-              }
-              var htmlNewItem = `<div style="${itemStyle}" data-inverted="" data-id="${customDataId|| newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${formatedNewItem}${secondaryAction} </div>`
-              return acc += htmlNewItem
-            }else {
-              return acc
-            }
-          }
-          propDisplay = item[propName].reduce(reduceChoices,"")
-        }else if(isFullText && !singleItem){
-          if(propDisplay && propDisplay.length > 35) {propDisplay = propDisplay.substring(0,35)+".. ";}
-        }
-
-
-        if (!singleItem) {
-          nestedHtml +=`
-          <div data-id="${item[idProp]}" class="column ${dropHtmlClass}">
-            <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
-              ${propDisplay||""}
-              ${goToHtml}
-              ${pastableHtml}
-              ${editHtml}
-            </div>
-          </div>
-          `
-        }else {
-          nestedHtml +=`
-          <div data-id="${item[idProp]}" class="">
-            <h3 data-id="${item[idProp]}" class="ui header">
-              <span class="">${dispName}</span>
-            </h3>
-            <div data-id="${item[idProp]}" class="">
-              ${propDisplay||""}
-              ${goToHtml}
-              ${editHtml}
-            </div>
-          </div>
-          <div class="ui divider"></div>
-          `
-        }
-        if (firstItemStyle) {
-          firstItemStyle =""
-        }
-      }
-      html += nestedHtml
-      if (singleItem) {
-        if (sourceLinks && source.includes(item.uuid)) {
-          html += "</div><h3>Linked Elements</h3>"
-        }
-      }
-    }
-    //add action button
-
-    html += multipleSelect
-    html += extraButtonsHtml
-
-    html += move
-    html += remove
-    html += "</div>"//End of Searchable Item
-
+    //console.log(html);
     return html
   }
 
+  // function createNewItemEditor() {
+  //   var newItem = {uuid:genuuid()}
+  //   var html = buildSingle(sourceData, sourceLinks, [newItem])
+  //   container.innerHTML ="<div class='"+ theme.singleElementsListClass + "'>"+html+"</div>"
+  // }
 
   function createPrepend() {
     if (prependContent) {
@@ -1205,15 +1187,7 @@ function showListMenu({
         listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
         listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
       }else {
-        // listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
-        console.log(buildSingle(sourceData, sourceLinks));
-        var arrayToBuild = buildSingle(sourceData, sourceLinks)
-        listContainer.innerHTML= ""
-        if (arrayToBuild[0]) {
-          listContainer.innerHTML= theme.listWrapper(generateFullList(arrayToBuild))
-          console.log(theme.listWrapper(generateFullList(arrayToBuild)));
-        }
-
+        listContainer.innerHTML= theme.listWrapper(buildSingle(sourceData, sourceLinks))
       }
 
       globalContainer.appendChild(listContainerTop)
