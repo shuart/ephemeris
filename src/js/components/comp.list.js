@@ -839,6 +839,7 @@ function showListMenu({
     console.log(nbrOfHiddenTopElement);
     console.log(nbrOfElementToAdd);
     console.log(endElementListPosition);
+    console.log(items);
     let clusteredHTML = ""
     //add padding element
     let startPadderSize = nbrOfHiddenTopElement*clusteredElementHeight
@@ -886,7 +887,13 @@ function showListMenu({
     var singleItem = (!Array.isArray(dataToBuild.rootNodes))
     var html =""
 
-    var rules = display
+    if (singleItem) {
+      rules = rulesToDisplaySingleElement || display
+      data = [rootNodes]
+    }else {
+      rules = display
+      //data = deepCopy(sourceData)
+    }
 
     //only treat the first col
     // if (firstOnly) {
@@ -1199,11 +1206,11 @@ function showListMenu({
         }
       }
       html += nestedHtml
-      if (singleItem) {
-        if (sourceLinks && source.includes(item.uuid)) {
-          html += "</div><h3>Linked Elements</h3>"
-        }
-      }
+      // if (singleItem) {
+      //   if (sourceLinks && source.includes(item.uuid)) {
+      //     html += "</div><h3>Linked Elements</h3>"
+      //   }
+      // }
     }
     //add action button
 
@@ -1272,7 +1279,10 @@ function showListMenu({
 
     //build contente
     if (singleElement) {
-      listContainer.innerHTML =theme.listWrapper("<div class='"+ theme.singleElementsListClass + "'>"+ buildSingle(sourceData, sourceLinks, singleElement)+"</div>")
+      var arrayToBuild = buildSingle(sourceData, sourceLinks, singleElement)
+      listContainer.innerHTML =theme.listWrapper(
+        "<div class='"+ theme.singleElementsListClass + "'>"+ generateFullList(arrayToBuild)+"</div>"
+      )
       globalContainer.appendChild(listContainer)
     }else if (editItemMode){
       listContainer.innerHTML =theme.listWrapper(buildSingle(sourceData, sourceLinks, editItemMode.item))
