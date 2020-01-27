@@ -827,7 +827,7 @@ function showListMenu({
   }
 
   function renderCurrentCluster(items, scrollPosition) {
-    var clusteredElementHeight = 43
+    var clusteredElementHeight = 40
     var domElement = listContainer
 
     let currentElementHeight = domElement.clientHeight;
@@ -838,7 +838,7 @@ function showListMenu({
     domElement.innerHTML = ""
 
     //calculation
-    let nbrOfElementToAdd = Math.floor(currentElementHeight/clusteredElementHeight)+3
+    let nbrOfElementToAdd = Math.floor(currentElementHeight/clusteredElementHeight)+1
     let nbrOfHiddenTopElement = Math.floor(scrollPosition/clusteredElementHeight)
     let startElementListPosition = nbrOfHiddenTopElement
     let endElementListPosition = nbrOfHiddenTopElement+nbrOfElementToAdd
@@ -934,7 +934,7 @@ function showListMenu({
       }
     }
     if (onMove && !greyed && !singleItem) {
-      move = `<div style="opacity:0.9;" class="right floated content">
+      move = `<div class="right floated content">
           <div data-parentid="${parentId}" data-id="${item[idProp]}" class="ui mini basic circular icon button action_list_move_item"><i data-parentid="${parentId}" data-id="${item[idProp]}" class="sort icon action_list_move_item"></i></div>
         </div>`
       if (ismoving && ismoving.dataset.id != item[idProp] && sourceLinks && !ismovingExtraItems.find(i=>i.dataset.id == item[idProp] )) {
@@ -1189,14 +1189,28 @@ function showListMenu({
 
 
         if (!singleItem) {
-          nestedHtml +=`
-            <div ${firstItemStyle} data-id="${item[idProp]}" class=" column content action_menu_select_option">
-              ${propDisplay||""}
-              ${goToHtml}
-              ${pastableHtml}
-              ${editHtml}
+          if (firstItemStyle != '') {//special case for first item
+            nestedHtml +=`
+            <div data-id="${item[idProp]}" class="column ${dropHtmlClass}">
+              <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
+                ${propDisplay||""}
+                ${goToHtml}
+                ${pastableHtml}
+                ${editHtml}
+              </div>
             </div>
-          `
+            `
+          }else {
+            nestedHtml +=`
+              <div data-id="${item[idProp]}" class="column content action_menu_select_option">
+                ${propDisplay||""}
+                ${goToHtml}
+                ${pastableHtml}
+                ${editHtml}
+              </div>
+            `
+          }
+
           // nestedHtml +=`
           // <div data-id="${item[idProp]}" class="column ${dropHtmlClass}">
           //   <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
@@ -1292,7 +1306,7 @@ function showListMenu({
     globalContainer = document.createElement('div');
     // globalContainer.style.overflow = "auto"
     globalContainer.classList = "flexTable"
-    globalContainer.style.height = "100%"
+    globalContainer.style.height = "95%"
 
     if (listIsExpanded) {
       globalContainer.classList.add("expanded")
@@ -1322,7 +1336,7 @@ function showListMenu({
       listContainerTop.classList = "top-line"
       listContainerTop.style.position = "sticky"
       listContainerTop.style.background = "white"
-      listContainerTop.style.opacity = "0.9"
+      // listContainerTop.style.opacity = "0.9"
       listContainerTop.style.zIndex = "5"
       listContainerTop.style.top = "0"
 
