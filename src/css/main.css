@@ -567,7 +567,7 @@ textarea {
 .flexTable {
   width: 100%;
   position: relative;
-  transform: translate3d(0, 0, 0);
+  /* transform: translate3d(0, 0, 0); */
 }
 .flexTable .table{
   overflow: hidden;
@@ -606,9 +606,9 @@ textarea {
   /* padding-left:1px; */
   padding-top: 5px;
 }
-.flexTable .row:nth-child(even)  {
+/* .flexTable .row:nth-child(even)  {
   background: #FCFCFC;
-}
+} */
 
 .flexTable .row .title {
   display: flex;
