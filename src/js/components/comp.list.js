@@ -607,7 +607,8 @@ function showListMenu({
         //e.stopPropagation()
         var value = sourceEl.querySelector(".list-search-input").value
         currentSearchValue = value
-        filterDataWithValue(value)
+        //filterDataWithValue(value)
+        refreshList()
         // var filteredData = sourceData.filter((item) => {
         //   for (rule of display) {
         //     //TODO allow array search
@@ -813,7 +814,14 @@ function showListMenu({
     //   console.log(generateItemHtml(data[i]));
     // }
     //console.log(listContainer.scrollTop);
-    fullListHtml = renderCurrentCluster(data, listContainer.scrollTop)
+    if (currentSearchValue != "") {
+      console.log("fesfsef");
+      var foundIds = findSearchedIds(currentSearchValue);
+      fullListHtml = renderCurrentCluster(data.filter(d=>foundIds.includes(d.item.uuid)), listContainer.scrollTop)
+    }else {
+      fullListHtml = renderCurrentCluster(data, listContainer.scrollTop)
+    }
+
 
     return fullListHtml
   }
@@ -966,15 +974,20 @@ function showListMenu({
           <div data-id="${item[idProp]}" class="ui mini basic red circular icon button action_list_remove_item"><i data-id="${item[idProp]}" class="close icon action_list_remove_item"></i></div>
         </div>`
     }
-    var extraStyle = (index%2 == 0)?'style="background: #FCFCFC;"' :'style="background: #ffffff;"'   //if index is impair, add a background
+    var extraStyle = (index%2 == 0)?'style="background: #f9f9f9;"' :'style="background: #ffffff;"'   //if index is impair, add a background
     if (greyed || (ismoving && ismoving.dataset.id == item[idProp])) {
       extraStyle = 'style="background-color= lightgrey; opacity= 0.5;"'
     }
     if (multipleSelection &&  multipleSelection.includes(item[idProp])) {
-      extraStyle = "background-color: #DAF7A6; opacity: 0.8;"
+      // extraStyle = 'style="background-color: #f1ffd7; opacity: 0.8;"'
     }
     //define row elemet
-    html += `<div ${extraStyle}' data-id='${item[idProp]}' class='searchable ${theme.nestedListClass}'>`//Start of Searchable item
+    if (!singleItem) {
+      html += `<div ${extraStyle} data-id='${item[idProp]}' class='searchable ${theme.nestedListClass}'>`//Start of Searchable item
+
+    }else {
+      html += `<div style="flex-direction: row; flex-wrap: wrap;" data-id='${item[idProp]}' class='searchable ${theme.nestedListClass}'>`//Start of Searchable item
+    }
     //add list add helpers
     if (onAddFromPopup) {
       html += `<div data-id='${item[idProp]}' class='addMagnet'>
@@ -1177,15 +1190,23 @@ function showListMenu({
 
         if (!singleItem) {
           nestedHtml +=`
-          <div data-id="${item[idProp]}" class="column ${dropHtmlClass}">
-            <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
+            <div ${firstItemStyle} data-id="${item[idProp]}" class=" column content action_menu_select_option">
               ${propDisplay||""}
               ${goToHtml}
               ${pastableHtml}
               ${editHtml}
             </div>
-          </div>
           `
+          // nestedHtml +=`
+          // <div data-id="${item[idProp]}" class="column ${dropHtmlClass}">
+          //   <div ${firstItemStyle} data-id="${item[idProp]}" class="content action_menu_select_option">
+          //     ${propDisplay||""}
+          //     ${goToHtml}
+          //     ${pastableHtml}
+          //     ${editHtml}
+          //   </div>
+          // </div>
+          // `
         }else {
           nestedHtml +=`
           <div data-id="${item[idProp]}" class="">
@@ -1346,9 +1367,9 @@ function showListMenu({
       }
     }
     //searchItems if current search value
-    if (currentSearchValue != "") {
-       filterDataWithValue(currentSearchValue)
-    }
+    // if (currentSearchValue != "") { //not needed anymore as the culling system is taking care of it
+    //    filterDataWithValue(currentSearchValue)
+    // }
 
     triggerLoadAction()
   }
@@ -1374,6 +1395,25 @@ function showListMenu({
     for (item of searchedItems) {
       if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "flex"}else{item.style.display = "none"}
     }
+  }
+  function findSearchedIds(value) {
+    var filteredData = sourceData.filter((item) => {
+      for (rule of display) {
+        if (typeof item[rule.prop] === 'string' || item[rule.prop] instanceof String) {
+          //TODO allow array search
+          if (fuzzysearch (value, item[rule.prop]) && item[rule.prop] && !Array.isArray(item[rule.prop])) {
+            return true
+          }else if (item[rule.prop] && !Array.isArray(item[rule.prop]) && fuzzysearch (value, item[rule.prop].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) ) {
+            return true
+          }else if (item[rule.prop] && !Array.isArray(item[rule.prop]) && fuzzysearch (value, item[rule.prop].toLowerCase()) ) {
+            return true
+          }
+        }
+      }
+      return false
+    })
+    var filteredIds = filteredData.map(x => x.uuid);
+    return filteredIds
   }
 
   function colorFromLetters(letters, uniform) {
