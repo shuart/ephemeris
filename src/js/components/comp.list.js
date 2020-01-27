@@ -974,7 +974,8 @@ function showListMenu({
           <div data-id="${item[idProp]}" class="ui mini basic red circular icon button action_list_remove_item"><i data-id="${item[idProp]}" class="close icon action_list_remove_item"></i></div>
         </div>`
     }
-    var extraStyle = (index%2 == 0)?'style="background: #f9f9f9;"' :'style="background: #ffffff;"'   //if index is impair, add a background
+    // var extraStyle = (index%2 == 0)?'style="background: #f9f9f9;"' :'style="background: #ffffff;"'   //if index is impair, add a background
+    var extraStyle = (index%2 == 0)?'style="background: #f9f9f9;"' :''   //if index is impair, add a background
     if (greyed || (ismoving && ismoving.dataset.id == item[idProp])) {
       extraStyle = 'style="background-color= lightgrey; opacity= 0.5;"'
     }
