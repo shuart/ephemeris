@@ -268,24 +268,6 @@ var createTreeList = function ({
     // return renderTreeHTML(treeArray)
   }
 
-  function recursiveTreeSortSlower(roots,items, links) {
-    return roots.map(function (r) {
-      //get all the children of this element
-      let itemsChildren = items.filter((i) => {
-        return links.find((l)=> {
-          if (l.source[identifier]) {//check if links source is object
-            return l.source[identifier] == r[identifier] && l.target[identifier] == i[identifier]
-          }else { //or ID
-            return l.source == r[identifier] && l.target == i[identifier]
-          }
-        })
-      })
-      //recursively trandform them in leaf and branches
-      let thisitemBranches = recursiveTreeSort(itemsChildren,items, links)
-      let thisItemLeaf = {leaf:r, branches:thisitemBranches}
-      return thisItemLeaf
-    })
-  }
 
   function recursiveTreeSortInList(roots,items, links, level) {
 
@@ -366,65 +348,6 @@ var createTreeList = function ({
       //rootArray.push(r)
       rootArray = rootArray.concat(returnBranches(r, items, links, currentLevel))
       // rootArray.push(returnLeaf(r, items, links))
-    }
-    return rootArray
-
-  }
-
-  function recursiveTreeSort(roots,items, links) {
-
-    function arraySwapDelete (array, index) {
-          array[index] = array[array.length - 1];
-          array.pop();
-      }
-
-    function isLinked(source, target, links) {
-      for (var i = 0; i < links.length; i++) {
-        let l=links[i]
-        if (!l.resolved) {
-          if (l.source[identifier]) {//check if links source is object
-            if (l.source[identifier] == source[identifier] && l.target[identifier] == target[identifier]) {
-              //mark link visited
-              // l.resolved = true
-              arraySwapDelete(links,i)
-              return true
-            }
-          }else { //or ID
-            if (l.source == source[identifier] && l.target == target[identifier]) {
-              //mark link visited
-              // l.resolved = true
-              arraySwapDelete(links,i)
-              return true
-            }
-          }
-        }
-      }
-    }
-
-    function getChildren(currentLeaf, items, links) {
-      let childrenArray = []
-      for (var i = 0; i < items.length; i++) {
-        let currentItem = items[i]
-        if (isLinked(currentLeaf, currentItem, links)) {
-          childrenArray.push(currentItem)
-        }
-      }
-      return childrenArray
-    }
-
-    function returnLeaf(r, items, links) {
-      //get all the children of this element
-      let itemsChildren = getChildren(r, items, links)
-      //recursively trandform them in leaf and branches
-      let thisitemBranches = recursiveTreeSort(itemsChildren,items, links)
-      let thisItemLeaf = {leaf:r, branches:thisitemBranches}
-      return thisItemLeaf
-    }
-
-    let rootArray=[]
-    for (var i = 0; i < roots.length; i++) {
-      let r = roots[i]
-      rootArray.push(returnLeaf(r, items, links))
     }
     return rootArray
 
