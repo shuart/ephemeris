@@ -244,7 +244,7 @@ var createTreeList = function ({
     }
     function generateFakeElement(height) {
       if (height>0) {
-        return `<div style="height:${height}px; background-color:blue">${height}</div>`
+        return `<div style="height:${height}px; background-color:none">${height}</div>`
       }else {
          return ``
        }
