@@ -26,16 +26,32 @@ var createTreeList = function ({
   var theme = {}
 
   theme.item = function (i, visibility) {
-     html =`
-     <div style="height:auto" ${isDraggable? ' draggable="true" ondragstart="ephHelpers.drag(event)" ':""} data-id="${i[identifier]}" class="searchable_item list-item">
-       <div class="type-marker" style="${i.customColor? "":"display:none;"}position: relative;height: inherit;width: 2px;background:${i.customColor? i.customColor:"#01ffff"};right: 9px;opacity: 0.7;"></div>
-       <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
-       ${theme.itemExtraIcon(i)}
-       <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customEyeIconClass? customEyeIconClass:"far fa-eye"} ${customEyeActionClass}"></i>
-       <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
-     </div>`
+    if (i.parentInList) {//item is part of hierarchy
+      html =`
+      <div style="height:auto" ${isDraggable? ' draggable="true" ondragstart="ephHelpers.drag(event)" ':""} data-id="${i[identifier]}" class="searchable_item list-item">
+        <div class="type-marker" style="${i.customColor? "":"display:none;"}position: relative;height: inherit;width: 2px;background:${i.customColor? i.customColor:"#01ffff"};right: 9px;opacity: 0.7;"></div>
+        <span style="width:${i.levelInList*5}px;"></span>
+        <span>${getCartStyle(i.caret, i.caretStatusClosed)}</span>
+        <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
+        ${theme.itemExtraIcon(i)}
+        <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customEyeIconClass? customEyeIconClass:"far fa-eye"} ${customEyeActionClass}"></i>
+        <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
+      </div>`
 
-    return html
+     return html
+    }else {
+      html =`
+      <div style="height:auto" ${isDraggable? ' draggable="true" ondragstart="ephHelpers.drag(event)" ':""} data-id="${i[identifier]}" class="searchable_item list-item">
+        <div class="type-marker" style="${i.customColor? "":"display:none;"}position: relative;height: inherit;width: 2px;background:${i.customColor? i.customColor:"#01ffff"};right: 9px;opacity: 0.7;"></div>
+        <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
+        ${theme.itemExtraIcon(i)}
+        <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customEyeIconClass? customEyeIconClass:"far fa-eye"} ${customEyeActionClass}"></i>
+        <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
+      </div>`
+
+     return html
+    }
+
   }
 
   theme.itemSearchArea= function () {
@@ -130,26 +146,27 @@ var createTreeList = function ({
 
     domElement.onclick = function(event) {
         if (event.target.classList.contains("tree_caret")) {
-            console.log(event.target.parentNode.parentNode.parentNode.nextElementSibling);
-            let nextContainer =event.target.parentNode.parentNode.parentNode.nextElementSibling;
-            if (nextContainer.style.display == "none") {
+            console.log(event.target.parentNode.parentNode.dataset.id);
+            //let nextContainer =event.target.parentNode.parentNode.parentNode.nextElementSibling;
+            if (closedCaret.includes(event.target.parentNode.parentNode.dataset.id)) {
               //remove element from closed carret list
               var index = closedCaret.indexOf(event.target.parentNode.parentNode.dataset.id);
               if (index > -1) {
                 closedCaret.splice(index, 1);
               }
-              nextContainer.style.display="block"
-              event.target.classList.remove('fa-caret-right')
-              event.target.classList.add('fa-caret-down')
+              console.log(closedCaret);
+              // nextContainer.style.display="block"
+              // event.target.classList.remove('fa-caret-right')
+              // event.target.classList.add('fa-caret-down')
             }else {
               //add element to closed carret info
               closedCaret.push(event.target.parentNode.parentNode.dataset.id)
-              console.log(closedCaret);
-              nextContainer.style.display="none"
-              event.target.classList.remove('fa-caret-down')
-              event.target.classList.add('fa-caret-right')
+              //console.log(closedCaret);
+              // nextContainer.style.display="none"
+              // event.target.classList.remove('fa-caret-down')
+              // event.target.classList.add('fa-caret-right')
             }
-
+            update()
         }
     }
     domModeElement.onclick = function(event) {
@@ -175,7 +192,8 @@ var createTreeList = function ({
       domElement.innerHTML = list
     }else if (links) {
       let linkCopy = deepCopy(links)//deep copy the links to allow removing them
-      let list = renderRecursiveList(items, linkCopy)
+      let itemsCopy = deepCopy(items)//deep copy the links to allow removing them
+      let list = renderRecursiveList(itemsCopy, linkCopy)
       domElement.innerHTML = list
     }
     //onUpdate callBack
@@ -244,9 +262,10 @@ var createTreeList = function ({
       })
     })
     console.log(listRoots);
-    let treeArray = recursiveTreeSort(listRoots,items, links)
+    let treeArray = recursiveTreeSortInList(listRoots,items, links)
     console.log(treeArray);
-    return renderTreeHTML(treeArray)
+    return renderCurrentCluster(treeArray, domElement.scrollTop)
+    // return renderTreeHTML(treeArray)
   }
 
   function recursiveTreeSortSlower(roots,items, links) {
@@ -267,6 +286,91 @@ var createTreeList = function ({
       return thisItemLeaf
     })
   }
+
+  function recursiveTreeSortInList(roots,items, links, level) {
+
+    function arraySwapDelete (array, index) {
+          array[index] = array[array.length - 1];
+          array.pop();
+      }
+
+    function isLinked(source, target, links) {
+      for (var i = 0; i < links.length; i++) {
+        let l=links[i]
+        if (!l.resolved) {
+          if (l.source[identifier]) {//check if links source is object
+            if (l.source[identifier] == source[identifier] && l.target[identifier] == target[identifier]) {
+              //mark link visited
+              // l.resolved = true
+              arraySwapDelete(links,i)
+              return true
+            }
+          }else { //or ID
+            if (l.source == source[identifier] && l.target == target[identifier]) {
+              //mark link visited
+              // l.resolved = true
+              arraySwapDelete(links,i)
+              return true
+            }
+          }
+        }
+      }
+    }
+
+    function getChildren(currentLeaf, items, links) {
+      let childrenArray = []
+      let childrenIDArray = []
+      let parentCaret = false
+      let parentCaretStatusClosed = false
+      for (var i = 0; i < items.length; i++) {
+        let currentItem = items[i]
+        if (isLinked(currentLeaf, currentItem, links)) {
+          currentItem.parentInList = currentLeaf.uuid //set parent of item
+          parentCaret = true //set caret style
+          // currentLeaf.caret = true //set caret style
+          parentCaretStatusClosed = closedCaret.includes(currentLeaf[identifier])
+          // currentLeaf.caretStatusClosed = closedCaret.includes(currentLeaf[identifier])
+          childrenIDArray.push(currentItem.uuid)
+          if (!parentCaretStatusClosed) {
+              childrenArray.push(currentItem)// add element in list to render if carret is not closed
+          }
+        }
+      }
+      return {
+        childrenArray:childrenArray,
+        childrenIDArray:childrenIDArray,
+        parentCaret:parentCaret,
+        parentCaretStatusClosed:parentCaretStatusClosed
+      }
+    }
+
+    function returnBranches(r, items, links, level) {
+      //get all the children of this element
+      let partialArray = [r]
+      let childrenLists = getChildren(r, items, links)
+      let itemsChildren = childrenLists.childrenArray
+      r.childrendIds = childrenLists.childrenIDArray
+      r.caret = childrenLists.parentCaret
+      r.caretStatusClosed = childrenLists.parentCaretStatusClosed
+      r.levelInList = level
+      //recursively trandform them in leaf and branches
+      let thisitemBranches = recursiveTreeSortInList(itemsChildren,items, links, level+1)
+      partialArray =partialArray.concat(thisitemBranches)
+      return partialArray
+    }
+
+    let rootArray=[]
+    for (var i = 0; i < roots.length; i++) {
+      let r = roots[i]
+      let currentLevel = level || 0
+      //rootArray.push(r)
+      rootArray = rootArray.concat(returnBranches(r, items, links, currentLevel))
+      // rootArray.push(returnLeaf(r, items, links))
+    }
+    return rootArray
+
+  }
+
   function recursiveTreeSort(roots,items, links) {
 
     function arraySwapDelete (array, index) {

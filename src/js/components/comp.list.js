@@ -827,7 +827,7 @@ function showListMenu({
   }
 
   function renderCurrentCluster(items, scrollPosition) {
-    var clusteredElementHeight = 40
+    var clusteredElementHeight = 39
     var domElement = listContainer
 
     let currentElementHeight = domElement.clientHeight;
@@ -874,7 +874,7 @@ function showListMenu({
     }
     function generateFakeElement(height) {
       if (height>0) {
-        return `<div style="height:${height}px; background-color:blue">${height}</div>`
+        return `<div style="height:${height}px; background-color:white">${height}</div>`
       }else {
          return ``
        }
