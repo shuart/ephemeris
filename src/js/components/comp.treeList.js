@@ -20,22 +20,38 @@ var createTreeList = function ({
   var domSearchElement = undefined
   var searchResults = undefined
   var closedCaret = []
-  var flatMode = false
+  var flatMode = true
 
   var objectIsActive = false;
   var theme = {}
 
   theme.item = function (i, visibility) {
-     html =`
-     <div ${isDraggable? ' draggable="true" ondragstart="ephHelpers.drag(event)" ':""} data-id="${i[identifier]}" class="searchable_item list-item">
-       <div class="type-marker" style="${i.customColor? "":"display:none;"}position: relative;height: inherit;width: 2px;background:${i.customColor? i.customColor:"#01ffff"};right: 9px;opacity: 0.7;"></div>
-       <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
-       ${theme.itemExtraIcon(i)}
-       <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customEyeIconClass? customEyeIconClass:"far fa-eye"} ${customEyeActionClass}"></i>
-       <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
-     </div>`
+    if (i.parentInList) {//item is part of hierarchy
+      html =`
+      <div style="height:auto" ${isDraggable? ' draggable="true" ondragstart="ephHelpers.drag(event)" ':""} data-id="${i[identifier]}" class="searchable_item list-item">
+        <div class="type-marker" style="${i.customColor? "":"display:none;"}position: relative;height: inherit;width: 2px;background:${i.customColor? i.customColor:"#01ffff"};right: 9px;opacity: 0.7;"></div>
+        <span style="width:${i.levelInList*5}px;"></span>
+        <span>${getCartStyle(i.caret, i.caretStatusClosed)}</span>
+        <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
+        ${theme.itemExtraIcon(i)}
+        <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customEyeIconClass? customEyeIconClass:"far fa-eye"} ${customEyeActionClass}"></i>
+        <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
+      </div>`
 
-    return html
+     return html
+    }else {
+      html =`
+      <div style="height:auto" ${isDraggable? ' draggable="true" ondragstart="ephHelpers.drag(event)" ':""} data-id="${i[identifier]}" class="searchable_item list-item">
+        <div class="type-marker" style="${i.customColor? "":"display:none;"}position: relative;height: inherit;width: 2px;background:${i.customColor? i.customColor:"#01ffff"};right: 9px;opacity: 0.7;"></div>
+        <span class="relaxed ${customTextActionClass}" data-id="${i[identifier]}" >${valueFunction(i)}</span>
+        ${theme.itemExtraIcon(i)}
+        <i data-label="${i.labels? i.labels[0]:''}" data-id="${i[identifier]}" style="opacity:0.2" class="${customEyeIconClass? customEyeIconClass:"far fa-eye"} ${customEyeActionClass}"></i>
+        <div data-id="${i[identifier]}" >${contentFunction ? contentFunction(i):"" }</div>
+      </div>`
+
+     return html
+    }
+
   }
 
   theme.itemSearchArea= function () {
@@ -106,11 +122,15 @@ var createTreeList = function ({
 
     domElement = container.appendChild(document.createElement("div"))
     domElement.classList="tree_list_area"
+    domElement.style.height="100%"
+    domElement.style.overflow="auto"
     domModeElement = container.appendChild(document.createElement("div"))
     domModeElement.classList="tree_list_change_mode_area"
     if (links) {
       domModeElement.innerHTML=theme.flatModeToggle()
     }
+
+    setUpScrollEvent(domElement)
 
     //set up search if needed
     if (searchContainer) {
@@ -126,26 +146,27 @@ var createTreeList = function ({
 
     domElement.onclick = function(event) {
         if (event.target.classList.contains("tree_caret")) {
-            console.log(event.target.parentNode.parentNode.parentNode.nextElementSibling);
-            let nextContainer =event.target.parentNode.parentNode.parentNode.nextElementSibling;
-            if (nextContainer.style.display == "none") {
+            console.log(event.target.parentNode.parentNode.dataset.id);
+            //let nextContainer =event.target.parentNode.parentNode.parentNode.nextElementSibling;
+            if (closedCaret.includes(event.target.parentNode.parentNode.dataset.id)) {
               //remove element from closed carret list
               var index = closedCaret.indexOf(event.target.parentNode.parentNode.dataset.id);
               if (index > -1) {
                 closedCaret.splice(index, 1);
               }
-              nextContainer.style.display="block"
-              event.target.classList.remove('fa-caret-right')
-              event.target.classList.add('fa-caret-down')
+              console.log(closedCaret);
+              // nextContainer.style.display="block"
+              // event.target.classList.remove('fa-caret-right')
+              // event.target.classList.add('fa-caret-down')
             }else {
               //add element to closed carret info
               closedCaret.push(event.target.parentNode.parentNode.dataset.id)
-              console.log(closedCaret);
-              nextContainer.style.display="none"
-              event.target.classList.remove('fa-caret-down')
-              event.target.classList.add('fa-caret-right')
+              //console.log(closedCaret);
+              // nextContainer.style.display="none"
+              // event.target.classList.remove('fa-caret-down')
+              // event.target.classList.add('fa-caret-right')
             }
-
+            update()
         }
     }
     domModeElement.onclick = function(event) {
@@ -165,16 +186,68 @@ var createTreeList = function ({
       //searchResults = undefined //reset search result if reloading
     }else if (!links || flatMode) {
       console.log(items);
-      let list = items.map(i=>theme.item(i)).join("")
+      // let list = items.map(i=>theme.item(i)).join("")
+      console.log(items);
+      let list = renderCurrentCluster(items, domElement.scrollTop)
       domElement.innerHTML = list
     }else if (links) {
       let linkCopy = deepCopy(links)//deep copy the links to allow removing them
-      let list = renderRecursiveList(items, linkCopy)
+      let itemsCopy = deepCopy(items)//deep copy the links to allow removing them
+      let list = renderRecursiveList(itemsCopy, linkCopy)
       domElement.innerHTML = list
     }
     //onUpdate callBack
     if (onUpdate) {
       onUpdate()
+    }
+  }
+
+  function renderCurrentCluster(items, scrollPosition) {
+    var clusteredElementHeight = 32
+
+    let currentElementHeight = domElement.clientHeight;
+    //console.log( scrollPosition )
+    //console.log(currentElementHeight )
+
+    //clean element
+    domElement.innerHTML = ""
+
+    //calculation
+    let nbrOfElementToAdd = Math.floor(currentElementHeight/clusteredElementHeight)+5
+    let nbrOfHiddenTopElement = Math.floor(scrollPosition/clusteredElementHeight)
+    let startElementListPosition = nbrOfHiddenTopElement
+    let endElementListPosition = nbrOfHiddenTopElement+nbrOfElementToAdd
+    console.log(endElementListPosition);
+    let clusteredHTML = ""
+    //add padding element
+    let startPadderSize = nbrOfHiddenTopElement*clusteredElementHeight
+    clusteredHTML += generateFakeElement(startPadderSize)
+    //add current cluster
+    clusteredHTML += insertElementsB(items, startElementListPosition, endElementListPosition)
+    //add end padding element
+    let endPadderSize = (items.length-endElementListPosition)*clusteredElementHeight
+    clusteredHTML += generateFakeElement(endPadderSize)
+
+    return clusteredHTML
+
+    function insertElementsB (items, startElement, endElement) {
+      let clusterHTML=""
+      for (let i = startElement; i < endElement; i++) {
+        //console.log("add" + list[i])
+        if (items[i]) {
+          clusterHTML +=theme.item(items[i]) ||""
+        }
+
+        //domTarget.insertAdjacentHTML("beforeend", list[i])
+      }
+       return clusterHTML
+    }
+    function generateFakeElement(height) {
+      if (height>0) {
+        return `<div style="height:${height}px; background-color:none">${height}</div>`
+      }else {
+         return ``
+       }
     }
   }
 
@@ -189,30 +262,14 @@ var createTreeList = function ({
       })
     })
     console.log(listRoots);
-    let treeArray = recursiveTreeSort(listRoots,items, links)
+    let treeArray = recursiveTreeSortInList(listRoots,items, links)
     console.log(treeArray);
-    return renderTreeHTML(treeArray)
+    return renderCurrentCluster(treeArray, domElement.scrollTop)
+    // return renderTreeHTML(treeArray)
   }
 
-  function recursiveTreeSortSlower(roots,items, links) {
-    return roots.map(function (r) {
-      //get all the children of this element
-      let itemsChildren = items.filter((i) => {
-        return links.find((l)=> {
-          if (l.source[identifier]) {//check if links source is object
-            return l.source[identifier] == r[identifier] && l.target[identifier] == i[identifier]
-          }else { //or ID
-            return l.source == r[identifier] && l.target == i[identifier]
-          }
-        })
-      })
-      //recursively trandform them in leaf and branches
-      let thisitemBranches = recursiveTreeSort(itemsChildren,items, links)
-      let thisItemLeaf = {leaf:r, branches:thisitemBranches}
-      return thisItemLeaf
-    })
-  }
-  function recursiveTreeSort(roots,items, links) {
+
+  function recursiveTreeSortInList(roots,items, links, level) {
 
     function arraySwapDelete (array, index) {
           array[index] = array[array.length - 1];
@@ -244,28 +301,53 @@ var createTreeList = function ({
 
     function getChildren(currentLeaf, items, links) {
       let childrenArray = []
+      let childrenIDArray = []
+      let parentCaret = false
+      let parentCaretStatusClosed = false
       for (var i = 0; i < items.length; i++) {
         let currentItem = items[i]
         if (isLinked(currentLeaf, currentItem, links)) {
-          childrenArray.push(currentItem)
+          currentItem.parentInList = currentLeaf.uuid //set parent of item
+          parentCaret = true //set caret style
+          // currentLeaf.caret = true //set caret style
+          parentCaretStatusClosed = closedCaret.includes(currentLeaf[identifier])
+          // currentLeaf.caretStatusClosed = closedCaret.includes(currentLeaf[identifier])
+          childrenIDArray.push(currentItem.uuid)
+          if (!parentCaretStatusClosed) {
+              childrenArray.push(currentItem)// add element in list to render if carret is not closed
+          }
         }
       }
-      return childrenArray
+      return {
+        childrenArray:childrenArray,
+        childrenIDArray:childrenIDArray,
+        parentCaret:parentCaret,
+        parentCaretStatusClosed:parentCaretStatusClosed
+      }
     }
 
-    function returnLeaf(r, items, links) {
+    function returnBranches(r, items, links, level) {
       //get all the children of this element
-      let itemsChildren = getChildren(r, items, links)
+      let partialArray = [r]
+      let childrenLists = getChildren(r, items, links)
+      let itemsChildren = childrenLists.childrenArray
+      r.childrendIds = childrenLists.childrenIDArray
+      r.caret = childrenLists.parentCaret
+      r.caretStatusClosed = childrenLists.parentCaretStatusClosed
+      r.levelInList = level
       //recursively trandform them in leaf and branches
-      let thisitemBranches = recursiveTreeSort(itemsChildren,items, links)
-      let thisItemLeaf = {leaf:r, branches:thisitemBranches}
-      return thisItemLeaf
+      let thisitemBranches = recursiveTreeSortInList(itemsChildren,items, links, level+1)
+      partialArray =partialArray.concat(thisitemBranches)
+      return partialArray
     }
 
     let rootArray=[]
     for (var i = 0; i < roots.length; i++) {
       let r = roots[i]
-      rootArray.push(returnLeaf(r, items, links))
+      let currentLevel = level || 0
+      //rootArray.push(r)
+      rootArray = rootArray.concat(returnBranches(r, items, links, currentLevel))
+      // rootArray.push(returnLeaf(r, items, links))
     }
     return rootArray
 
@@ -313,6 +395,13 @@ var createTreeList = function ({
       //   if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "block"}else{item.style.display = "none"}
       // }
     });
+  }
+
+  function setUpScrollEvent(domElement) {
+    domElement.addEventListener('scroll', function (event) {
+            //console.log(event)
+            render()
+    })
   }
 
   var update = function () {

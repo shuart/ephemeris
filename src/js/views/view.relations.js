@@ -1092,6 +1092,9 @@ var createRelationsView = function () {
       customExtraActionClass:"fas fa-link action_toogle_diag_relations_options",
       customTextActionClass:"action_LM_project_tree_show_item_popup"//works because event listener is specified in leftmenu.projectTree
     })
+    setTimeout(function () {
+      udapteSideListe()//todo, force a redraw quickly to prenvent glitch
+    }, 10);
     //updateSideListeVisibility()
   }
 

@@ -567,7 +567,7 @@ textarea {
 .flexTable {
   width: 100%;
   position: relative;
-  transform: translate3d(0, 0, 0);
+  /* transform: translate3d(0, 0, 0); */
 }
 .flexTable .table{
   overflow: hidden;
@@ -583,8 +583,8 @@ textarea {
 
 .flexTable .row {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  /* flex-direction: row;
+  flex-wrap: wrap; */
   width: 100%;
   /* padding-top: 10px;
   padding-bottom: 10px;
@@ -593,22 +593,22 @@ textarea {
   border-bottom-width: 1px;
   border-bottom-color: #eaeaea;
    */
-   position: relative;
+   /* position: relative; */
 }
 .flexTable .row .column{
   padding: 10px;
-  border-bottom-style: solid;
+  /* border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #eaeaea;
-  position: relative;
+  position: relative; */
 }
 .flexTable .row .right.floated.content{
-  padding-left:1px;
+  /* padding-left:1px; */
   padding-top: 5px;
 }
-.flexTable .row:nth-child(even)  {
+/* .flexTable .row:nth-child(even)  {
   background: #FCFCFC;
-}
+} */
 
 .flexTable .row .title {
   display: flex;
@@ -660,17 +660,17 @@ textarea {
   font-weight: bold;
 }
 .flexTable .column {
+  /* display: flex;
+  flex-direction: column;
+  flex-basis: 100%; */
+  flex: 1;
+}
+/* .flexTable .column {
   display: flex;
   flex-direction: column;
   flex-basis: 100%;
   flex: 1;
-}
-.flexTable .column {
-  display: flex;
-  flex-direction: column;
-  flex-basis: 100%;
-  flex: 1;
-}
+} */
 .flexTable .column .content .edit.icon{
   opacity: 0.1;
 }
