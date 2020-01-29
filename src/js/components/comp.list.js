@@ -815,7 +815,6 @@ function showListMenu({
     // }
     //console.log(listContainer.scrollTop);
     if (currentSearchValue != "") {
-      console.log("fesfsef");
       var foundIds = findSearchedIds(currentSearchValue);
       fullListHtml = renderCurrentCluster(data.filter(d=>foundIds.includes(d.item.uuid)), listContainer.scrollTop)
     }else {
@@ -831,8 +830,6 @@ function showListMenu({
     var domElement = listContainer
 
     let currentElementHeight = domElement.clientHeight;
-    //console.log( scrollPosition )
-    //console.log(currentElementHeight )
 
     //clean element
     domElement.innerHTML = ""
@@ -874,7 +871,7 @@ function showListMenu({
     }
     function generateFakeElement(height) {
       if (height>0) {
-        return `<div style="height:${height}px; background-color:white">${height}</div>`
+        return `<div style="height:${height}px; background-color:white"></div>`
       }else {
          return ``
        }
