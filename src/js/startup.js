@@ -49,7 +49,7 @@ function createStartUp() {
         }
         if (event.target.classList.contains("action_startup_load_user")) {
           persist.getUser(event.target.dataset.id).then(function (user) {
-            app.store.projects = user.projects; //TODO use actions
+            // app.store.projects = user.projects; //TODO use actions //DBCHANGE
             app.store.userData = user.userData; //TODO use actions
             app.state.currentUser = user.uuid; //TODO use actions
             //setup profile if Needed

@@ -30,9 +30,8 @@ var createLeftMenuProjectTree = function () {
     render()
   }
 
-  var renderSideListe = function () {
-    var store = JSON.stringify(query.currentProject())
-    store = JSON.parse(store)
+  var renderSideListe = async function () {
+    var store = await query.currentProject()
 
     var itemsToDisplay =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
     var relations = store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
@@ -51,10 +50,9 @@ var createLeftMenuProjectTree = function () {
     // updateSideListeVisibility()
   }
 
-  var udapteSideListe = function () {
+  var udapteSideListe = async function () {
     document.querySelector(".left-menu-area .title").innerHTML = "Overview"
-    var store = JSON.stringify(query.currentProject())
-    store = JSON.parse(store)
+    var store = await query.currentProject()
     var itemsToDisplay =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
     var relations = store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
 

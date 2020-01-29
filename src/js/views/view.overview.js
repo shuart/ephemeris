@@ -127,16 +127,17 @@ var createOverview = function (targetSelector) {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     if (store) {
-      clearUncompleteLinks()//clean all uncomplete metalink of the project
-      updateFileForRetroCompatibility() //check file for retrocompatbiity
-      //create a PBS and current user stakholder if first opening of project
-      if (!store.currentPbs.items[0]) {
-        createPBS()
-        createUserStakeholder()
-      }
+      alert("uncoment here")
+      await clearUncompleteLinks()//clean all uncomplete metalink of the project
+      // updateFileForRetroCompatibility() //check file for retrocompatbiity
+      // //create a PBS and current user stakholder if first opening of project
+      // if (!store.currentPbs.items[0]) {
+      //   createPBS()
+      //   createUserStakeholder()
+      // }
 
       var headerHtml =`
       <h2 class="ui center aligned icon header">
@@ -197,7 +198,7 @@ var createOverview = function (targetSelector) {
         </div>
 
         <div class="ui center aligned basic segment">
-          ${checkIfCurrentUserIsInStakeholders() ? theme.quickstart():theme.quickstartForeignProject()}
+          ${checkIfCurrentUserIsInStakeholders(store) ? theme.quickstart():theme.quickstartForeignProject()}
         </div>
 
       </div>
@@ -223,8 +224,8 @@ var createOverview = function (targetSelector) {
     }
   }
 
-  function checkIfCurrentUserIsInStakeholders() {
-    return query.currentProject().stakeholders.items.find(s=>s.uuid == app.store.userData.info.userUuid)
+  function checkIfCurrentUserIsInStakeholders(store) {
+    return store.stakeholders.items.find(s=>s.uuid == app.store.userData.info.userUuid)
   }
 
   function createPBS() {

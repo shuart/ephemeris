@@ -281,16 +281,20 @@ function getCategoryFromItemUuid(sourceItemId) {//todo limit metalinks type
 }
 
 //clear links with missing items
-var clearUncompleteLinks = function () {
-  var store = query.currentProject().metaLinks.items
-  for (link of store) {
-    //check if item is complete
-    if (!query.items("all", i=> i.uuid == link.source)[0]) {
-      push(act.remove("metaLinks",{uuid:link.uuid}))
-    }else if (!query.items("all", i=> i.uuid == link.target)[0]) {
-      push(act.remove("metaLinks",{uuid:link.uuid}))
-    }
-  }
+var clearUncompleteLinks = async function () {
+  var collection = await query.collection("metaLinks")
+  var store = collection.items
+  console.log(collection);
+  console.log(store);
+  alert ("finish here uncoment rest")
+  // for (link of store) {
+  //   //check if item is complete
+  //   if (!query.items("all", i=> i.uuid == link.source)[0]) {
+  //     push(act.remove("metaLinks",{uuid:link.uuid}))
+  //   }else if (!query.items("all", i=> i.uuid == link.target)[0]) {
+  //     push(act.remove("metaLinks",{uuid:link.uuid}))
+  //   }
+  // }
 }
 
 //utility to parse html

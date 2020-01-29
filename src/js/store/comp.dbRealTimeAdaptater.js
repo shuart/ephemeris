@@ -115,11 +115,41 @@ var createDbRealTimeAdaptater = function () {
   }
 
   function getUserProjectList() {
-
+    return new Promise(function(resolve, reject) {
+        projects.find({}, function (err, docs) {
+          console.log(docs);
+          resolve(docs)
+        })
+      }).catch(function(err) {
+        reject(err)
+      });
   }
 
   function getProjects() {
 
+  }
+  function getProject(uuid) {
+    return new Promise(function(resolve, reject) {
+        projects.find({uuid: uuid}, function (err, docs) {
+          console.log(docs);
+          resolve(docs[0])
+        })
+      }).catch(function(err) {
+        reject(err)
+      });
+  }
+  function getProjectCollection(uuid, collectionName) {
+    let projection = {}
+    projection[collectionName] = 1
+    return new Promise(function(resolve, reject) {
+        projects.find({uuid: uuid}, projection, function (err, docs) {
+          console.log("projection");
+          console.log(docs);
+          resolve(docs[0][collectionName])
+        })
+      }).catch(function(err) {
+        reject(err)
+      });
   }
 
 
@@ -145,6 +175,8 @@ var createDbRealTimeAdaptater = function () {
   self.addUserProject = addUserProject
   self.getUserProjectList = getUserProjectList
   self.getProjects = getProjects
+  self.getProject = getProject
+  self.getProjectCollection = getProjectCollection
   self.setProject = setProject
   self.removeProject = removeProject
   self.init = init
