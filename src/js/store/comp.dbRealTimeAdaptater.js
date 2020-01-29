@@ -128,6 +128,16 @@ var createDbRealTimeAdaptater = function () {
   function getProjects() {
 
   }
+  function addProject(newProject) {
+    return new Promise(function(resolve, reject) {
+        projects.insert(newProject, function (err, docs) {
+          console.log(docs);
+          resolve(docs)
+        })
+      }).catch(function(err) {
+        reject(err)
+      });
+  }
   function getProject(uuid) {
     return new Promise(function(resolve, reject) {
         projects.find({uuid: uuid}, function (err, docs) {
@@ -177,6 +187,7 @@ var createDbRealTimeAdaptater = function () {
   self.getProjects = getProjects
   self.getProject = getProject
   self.getProjectCollection = getProjectCollection
+  self.addProject = addProject
   self.setProject = setProject
   self.removeProject = removeProject
   self.init = init

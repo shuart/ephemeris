@@ -14,8 +14,8 @@ var createPbsView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
 
     var displayRules = [
       {prop:"name", displayAs:"Name", edit:"true"},
