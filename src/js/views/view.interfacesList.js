@@ -19,8 +19,8 @@ var createInterfacesListView = function () {
     }
   }
 
-  var readifyInterfaces = function () {
-    var originalLinks = query.currentProject().interfaces.items
+  var readifyInterfaces = function (store) {
+    var originalLinks = store.interfaces.items
     let data = originalLinks.map(function (l) {
 
       let newItem = {uuid:l.uuid,//TODO check if still necessary
@@ -35,11 +35,11 @@ var createInterfacesListView = function () {
     return data
   }
 
-  var render = function () {
-    var store = query.currentProject()
-    console.log(readifyInterfaces());
+  var render = async function () {
+    var store = await query.currentProject()
+    // console.log(readifyInterfaces());
     showListMenu({
-      sourceData:readifyInterfaces(),
+      sourceData:readifyInterfaces(store),
       targetDomContainer:".center-container",
       fullScreen:true,
       displayProp:"name",
@@ -115,8 +115,8 @@ var createInterfacesListView = function () {
     })
   }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async function startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
@@ -217,8 +217,8 @@ var createInterfacesListView = function () {
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = readifyInterfaces().map(i=>{
-      let linkToTextTags = getRelatedItems(i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
-      let linkToTextTypes = getRelatedItems(i, "interfacesTypes", {metalinksType:"interfacesType"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextTags = getRelatedItems(store, i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextTypes = getRelatedItems(store, i, "interfacesTypes", {metalinksType:"interfacesType"}).map(s=> s[0]? s[0].name : "").join(",")
 
       return {id:i.uuid, type:linkToTextTypes||"Interface", description:i.description, source:i.source, target:i.target, tags:linkToTextTags}
     })
@@ -229,7 +229,7 @@ var createInterfacesListView = function () {
   var createInterfaceMatrix = function () {
     let store  = query.currentProject()
     let data = readifyInterfaces().map(i=>{
-      let linkToTextTags = getRelatedItems(i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextTags = getRelatedItems(store, i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
 
       return {id:i.uuid, type:i.type, description:i.description, source:i.source, target:i.target, tags:linkToTextTags}
     })

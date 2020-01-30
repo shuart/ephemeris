@@ -54,7 +54,7 @@ var createPbsView = function () {
         fullScreen:true,
         displayProp:"name",
         display:displayRules,
-        extraFields: generateExtraFieldsList(),
+        extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,
         onEditItem: (ev)=>{
@@ -217,10 +217,10 @@ var createPbsView = function () {
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = store.currentPbs.items.map(i=>{
-      let linkToTextFunc = getRelatedItems(i, "functions").map(s=> s[0] ? s[0].name:"").join(",")
-      let linkToTextReq = getRelatedItems(i, "requirements").map(s=> s[0] ? s[0].name:"").join(",")
-      let linkToTextSpaces = getRelatedItems(i, "physicalSpaces",{objectIs:"target", metalinksType:"contains"}).map(s=> s[0]? s[0].name : '').join(",")
-      let linkToTextWorkpackages = getRelatedItems(i, "workPackages",{objectIs:"target", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToTextFunc = getRelatedItems(store, i, "functions").map(s=> s[0] ? s[0].name:"").join(",")
+      let linkToTextReq = getRelatedItems(store, i, "requirements").map(s=> s[0] ? s[0].name:"").join(",")
+      let linkToTextSpaces = getRelatedItems(store, i, "physicalSpaces",{objectIs:"target", metalinksType:"contains"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToTextWorkpackages = getRelatedItems(store, i, "workPackages",{objectIs:"target", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
 
 
       return {id:i.uuid, name:i.name, description:i.desc, functions:linkToTextFunc, requirements:linkToTextReq, physicalSpaces: linkToTextSpaces, workPackages:linkToTextWorkpackages}
@@ -373,65 +373,8 @@ var createPbsView = function () {
     })
   }
 
-  // function showPbsTree(sourceList) {
-  //   var store = query.currentProject()
-  //   var tree = renderDTree(store.db)
-  //   console.log(tree);
-  //   var data =undefined
-  //   if (store.currentPbs.items[0]) {
-  //     data = hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0]
-  //     console.log(data);
-  //   }
-  //   displayThree({
-  //     data:data,
-  //     edit:true,
-  //     onClose:(e)=>{
-  //       renderCDC()
-  //       sourceList.select.update()
-  //       sourceList.select.updateData(store.currentPbs.items)
-  //       sourceList.select.updateLinks(store.currentPbs.links)
-  //       sourceList.select.refreshList()
-  //     },
-  //     onAdd:(ev)=>{
-  //       var uuid = genuuid()
-  //       var newName = prompt("Name?")
-  //       push(addPbs({uuid:uuid, name:newName}))
-  //       push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-  //       ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-  //       //ev.sourceTree.updateFromRoot(ev.element)
-  //     },
-  //     onMove:(ev)=>{
-  //       push(removePbsLink({source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
-  //       push(addPbsLink({source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
-  //       ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-  //
-  //     },
-  //     onRemove:(ev)=>{
-  //       if (confirm("Keep Childs?")) {
-  //         var originalLinks = store.currentPbs.links.filter(e=>e.source == ev.element.data.uuid)
-  //         for (link of originalLinks) {
-  //           push(addPbsLink({source:ev.element.parent.data.uuid, target:link.target}))
-  //         }
-  //       }
-  //       //remove all links
-  //       push(removePbsLink({source:ev.element.data.uuid}))
-  //       //addNewLinks
-  //       push(removePbs({uuid:ev.element.data.uuid}))
-  //       //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-  //       ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-  //     },
-  //     onLabelClicked:(originev)=>{
-  //       showSingleItemService.showById(originev.element.data.uuid)
-  //     },
-  //     onStoreUpdate:(originev)=>{
-  //       originev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-  //     }
-  //   })
-  // }
-
-  function generateExtraFieldsList() {
+  function generateExtraFieldsList(store) {
     if (isExtraFieldsVisible) {
-      var store = query.currentProject()
       let extras = store.extraFields.items.filter(i=>(i.type == "currentPbs" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
         if (confirm("No custom Fields yet. Add one?")) {

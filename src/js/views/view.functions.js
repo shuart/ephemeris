@@ -12,8 +12,8 @@ var createFunctionsView = function () {
 
   }
 
-  var render = function () {
-      var store = query.currentProject()
+  var render = async function () {
+      var store = await query.currentProject()
       showListMenu({
         sourceData:store.functions.items,
         sourceLinks:store.functions.links,
@@ -27,7 +27,7 @@ var createFunctionsView = function () {
           {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
           {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
         ],
-        extraFields: generateExtraFieldsList(),
+        extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,
         onEditItem: (ev)=>{
@@ -159,8 +159,8 @@ var createFunctionsView = function () {
       })
   }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async function startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var batch = ev.batch;
@@ -250,11 +250,11 @@ var createFunctionsView = function () {
     })
   }
 
-  var exportToCSV = function () {
-    let store = query.currentProject()
+  var exportToCSV = async function () {
+    let store = await query.currentProject()
     let data = store.functions.items.map(i=>{
-      let linkToText = getRelatedItems(i, "requirements").map(s=> s[0] ? s[0].name:'').join(",")
-      let linkToTextPbs = getRelatedItems(i, "currentPbs",{objectIs:"target", metalinksType:"originFunction"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToText = getRelatedItems(store, i, "requirements").map(s=> s[0] ? s[0].name:'').join(",")
+      let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"target", metalinksType:"originFunction"}).map(s=> s[0]? s[0].name : '').join(",")
       return {id:i.uuid, name:i.name, description:i.desc, Requirements:linkToText, Products:linkToTextPbs}
     })
     JSONToCSVConvertor(data, 'Functions', true)
@@ -274,9 +274,8 @@ var createFunctionsView = function () {
     objectIsActive = false;
   }
 
-  function generateExtraFieldsList() {
+  function generateExtraFieldsList(store) {
     if (isExtraFieldsVisible) {
-      var store = query.currentProject()
       let extras = store.extraFields.items.filter(i=>(i.type == "functions" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
         if (confirm("No custom Fields yet. Add one?")) {

@@ -12,10 +12,11 @@ var createImportUsersFromProjects = function (targetSelector) {
 
   }
 
-  var render = function () {
-    var allUsers = getAllUsers()
+  var render = async function () {
+    var store = await query.currentProject()
+    var allUsers = await getAllUsers(store)
     //var html = generateUsersViewHtml(allUsers)
-    generateUsersViewList(allUsers)
+    generateUsersViewList(store, allUsers)
     //container.innerHTML = html
   }
 
@@ -32,9 +33,9 @@ var createImportUsersFromProjects = function (targetSelector) {
     objectIsActive = false;
   }
 
-  var getAllUsers = function () {
-    var store = query.currentProject()
-    var ownerTable = query.items("projects")
+  var getAllUsers = async function (store) {
+    var allProjectsList= await query.items("projects")
+    var ownerTable = allProjectsList
         .filter(p=> p.uuid!=store.uuid)
         .map(e =>{
           return e.stakeholders.items.map(i => Object.assign({projectId:e.uuid, projectName:e.name}, i)) //add project prop to all items
@@ -55,7 +56,7 @@ var createImportUsersFromProjects = function (targetSelector) {
     return html
   }
 
-  var generateUsersViewList = function (owners) {
+  var generateUsersViewList = function (store, owners) {
     showListMenu({
       sourceData:owners,
       targetDomContainer:".center-container",
@@ -75,7 +76,6 @@ var createImportUsersFromProjects = function (targetSelector) {
         {name:"Import", class:"iufp_import", prop:"projectId", action: (orev)=>{
           // generateUsersFusionList(owners, orev.dataset.id, orev.dataset.extra )
           console.log(orev);
-          var store = query.currentProject()
           let project = query.items("projects").find(p=>p.uuid == orev.dataset.extra)
           let userToImport= project.stakeholders.items.find(s=>s.uuid == orev.dataset.id)
           console.log(userToImport)

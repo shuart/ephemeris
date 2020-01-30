@@ -10,8 +10,8 @@ var createWorkPhysicalSpacesView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     showListMenu({
       sourceData:store.physicalSpaces.items,
       sourceLinks:store.physicalSpaces.links,
@@ -130,8 +130,8 @@ var createWorkPhysicalSpacesView = function () {
     })
   }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async function startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
@@ -213,7 +213,7 @@ var createWorkPhysicalSpacesView = function () {
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = store.physicalSpaces.items.map(i=>{
-      let linkToTextPbs = getRelatedItems(i, "currentPbs", {metalinksType:"contains"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextPbs = getRelatedItems(store, i, "currentPbs", {metalinksType:"contains"}).map(s=> s[0]? s[0].name : "").join(",")
       return {id:i.uuid, name:i.name, description:i.desc, products:linkToTextPbs}
     })
     JSONToCSVConvertor(data, 'PhysicalSpaces', true)

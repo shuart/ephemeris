@@ -78,8 +78,8 @@ var createChangeManagerView = function () {
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = store.changes.items.map(i=>{
-      let linkToTextsh = getRelatedItems(i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
-      let linkToTextReq = getRelatedItems(i, "requirements",{objectIs:"target", metalinksType:"reqChangedBy"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToTextsh = getRelatedItems(store, i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
+      let linkToTextReq = getRelatedItems(store, i, "requirements",{objectIs:"target", metalinksType:"reqChangedBy"}).map(s=> s[0]? s[0].name : '').join(",")
 
       return {id:i.uuid, name:i.name, description:i.desc, Owner:linkToTextsh,  requirements:linkToTextReq}
     })

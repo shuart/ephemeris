@@ -247,7 +247,7 @@ var getOrderedProjectList= function (list, displayOrder) {
 }
 
 //get related item
-function getRelatedItems(sourceItem, groupToSearch, paramOptions) {//todo limit metalinks type
+function getRelatedItems(store, sourceItem, groupToSearch, paramOptions) {//todo limit metalinks type
   var paramOptions = paramOptions || {}
   let options ={
     objectIs :paramOptions.objectIs || "source",
@@ -255,7 +255,7 @@ function getRelatedItems(sourceItem, groupToSearch, paramOptions) {//todo limit 
   }
   let linkTotextItemType = options.objectIs == "source"? "target" : "source"
 
-  var store = query.currentProject()
+  // var store = query.currentProject()
   let metaLinksToSearch = store.metaLinks.items
   if (options.metalinksType) {
     metaLinksToSearch =store.metaLinks.items.filter(e=>e.type == options.metalinksType)

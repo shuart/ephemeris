@@ -13,7 +13,7 @@ query.collection = async function (collectionName) {
 
  query.items = async (group, condition) => {
   //var store = store;
-  var store = query.currentProject() || app.store.projects[0] //TODO remove super ugly
+  var store = await query.currentProject() || app.store.projects[0] //TODO remove super ugly
   var storeGroup = undefined
 
   if (group == 'all') {//il looking in all groups

@@ -78,18 +78,18 @@ var createExportProjectInfoView = function () {
       if (productStyle == "tree") {
         //generate a tree of the products
         let productTree = renderRecursiveList(store.currentPbs.items,store.currentPbs.links)
-        let treeHTML = renderTreeHTML(productTree, 3)
+        let treeHTML = renderTreeHTML(productTree, 3, store)
         appendHtml(container, treeHTML)
       }else {
         for (product of store.currentPbs.items) {
-          let linkToText = getRelatedItems(i, patate, {metalinksType:"originFunction"}).map(s=> s[0]? s[0].name : "").join(",")
-          + "," +getRelatedItems(i, "requirements", {metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : "").join(",")
+          let linkToText = getRelatedItems(store, i, patate, {metalinksType:"originFunction"}).map(s=> s[0]? s[0].name : "").join(",")
+          + "," +getRelatedItems(store, i, "requirements", {metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : "").join(",")
           appendHtml(container, theme.item(product.name,product.uuid, product.desc, linkToText))
         }
       }
       appendHtml(container, theme.section("functions","All project functions"))
       for (item of store.functions.items) {
-        let linkToText = getRelatedItems(item, "requirements").reduce(function (acc, item) {
+        let linkToText = getRelatedItems(store, item, "requirements").reduce(function (acc, item) {
           if (item[0]) {
             return acc += item[0].name +","
           }
@@ -98,7 +98,7 @@ var createExportProjectInfoView = function () {
       }
       appendHtml(container, theme.section("requirements","All project requirements"))
       for (requirement of store.requirements.items) {
-        let linkToText = getRelatedItems(requirement, "stakeholders").reduce(function (acc, item) {
+        let linkToText = getRelatedItems(store, requirement, "stakeholders").reduce(function (acc, item) {
           if (item[0]) {
             return acc += item[0].name +" "+item[0].lastName+" "
           }
@@ -151,14 +151,14 @@ var createExportProjectInfoView = function () {
       return thisItemLeaf
     })
   }
-  function renderTreeHTML(treeArray, level) {
+  function renderTreeHTML(treeArray, level, store) {
     let currentLevel = level || 1
     let identifier = "uuid"
     return treeArray.map(function (t) {
-      let branchesHTML = renderTreeHTML(t.branches, currentLevel+1)
+      let branchesHTML = renderTreeHTML(t.branches, currentLevel+1, store)
       // let caret = (branchesHTML != "") ? true :false;
-      let linkToTextFunc = getRelatedItems(t.leaf, "functions", {metalinksType:"originFunction"}).map(l=>l[0] ? l[0].name :"").join(", ")
-      let linkToTextReq = getRelatedItems(t.leaf, "requirements", {metalinksType:"originNeed"}).map(l=>l[0] ? l[0].name :"").join(", ")
+      let linkToTextFunc = getRelatedItems(store, t.leaf, "functions", {metalinksType:"originFunction"}).map(l=>l[0] ? l[0].name :"").join(", ")
+      let linkToTextReq = getRelatedItems(store, t.leaf, "requirements", {metalinksType:"originNeed"}).map(l=>l[0] ? l[0].name :"").join(", ")
 
       let leafHTML = theme.itemLeaf(t.leaf, branchesHTML, currentLevel, linkToTextFunc + ", "+ linkToTextReq)
       return leafHTML

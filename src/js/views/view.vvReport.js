@@ -368,8 +368,8 @@ var createVvReport = function ({
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = generateRelevantActions(currentReportUuid).map(i=>{
-      let linkToTextReq = getRelatedItems(i, "requirements", {metalinksType:"vvReportNeed"}).map(s=> s[0]? s[0].name : "").join(",")
-      let linkToTextInt= getRelatedItems(i, "interfaces", {metalinksType:"vvReportInterface"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextReq = getRelatedItems(store, i, "requirements", {metalinksType:"vvReportNeed"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextInt= getRelatedItems(store, i, "interfaces", {metalinksType:"vvReportInterface"}).map(s=> s[0]? s[0].name : "").join(",")
       let linkToTextVerif = listOptions.vv_verification_type[i.verificationMethod]? listOptions.vv_verification_type[i.verificationMethod].name:listOptions.vv_verification_type[0].name
       let linkToTextStatus = listOptions.vv_status[i.status] ? listOptions.vv_status[i.status].name : listOptions.vv_status[0].name
       return {id:i.uuid, name:i.name, ReportNeed:linkToTextReq, ReportInterface:linkToTextInt, shallStatement:i.shallStatement, successCriteria:i.successCriteria,verificationMethod:linkToTextVerif, result:i.result, Status:linkToTextStatus}
