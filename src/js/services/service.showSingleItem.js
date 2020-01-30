@@ -82,8 +82,8 @@ var createShowSingleItemService = function () {
     })
   }
 
-  function startSelectionFromParametersView(ev) {
-    var store = query.currentProject()
+  async function startSelectionFromParametersView(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
@@ -243,7 +243,6 @@ var createShowSingleItemService = function () {
   }
 
   function checkIfTargetIsReachable(uuid, store){
-    // var store = query.currentProject()
     if (store.currentPbs.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.requirements.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.functions.items.find(i=>i.uuid == uuid)) { return true}
@@ -260,7 +259,6 @@ var createShowSingleItemService = function () {
   }
 
   function generateRulesFromNodeType(type, store) {
-    // var store = query.currentProject()
     if (type == "Functions") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},

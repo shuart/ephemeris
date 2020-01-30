@@ -34,8 +34,8 @@ var createCscViewer = function () {
       }
       update()
     })
-    connect(".action_toogle_add","click",(e)=>{
-      var store = query.currentProject()
+    connect(".action_toogle_add","click",async (e)=>{
+      var store = await query.currentProject()
       console.log(e.target.dataset.id);
       if (!store.currentCDC.items.includes(e.target.dataset.id)) {
         store.currentCDC.items.push(e.target.dataset.id)

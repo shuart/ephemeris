@@ -10,8 +10,8 @@ var createCategoriesView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     showListMenu({
       sourceData:store.categories.items,
       displayProp:"name",

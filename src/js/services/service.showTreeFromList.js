@@ -14,10 +14,10 @@ var createShowTreeFromListService = function () {
     renderMindmapTree(storeName, callback)
   }
 
-  var renderMindmapTree = function (storeName, callback) {
+  var renderMindmapTree = async function (storeName, callback) {
     var callbackFunction = callback || undefined;
     var storeGroup = storeName || undefined;
-    var store = query.currentProject()
+    var store = await query.currentProject()
 
     if (true) {
       function generateDataSource(storeGroup) {
@@ -66,7 +66,7 @@ var createShowTreeFromListService = function () {
           let sourceUuid= ev.element.data.uuid
           let targetUuid = ev.newParent.data.uuid
 
-          if (checkIfSourceIsParent(sourceUuid,targetUuid, storeGroup)) { //check if the target is a child of the source
+          if (checkIfSourceIsParent(sourceUuid,targetUuid, storeGroup, store)) { //check if the target is a child of the source
             alert("The node you are moving is a parent of your target")
             ev.sourceTree.setData(generateDataSource(storeGroup))
           }else {
@@ -114,8 +114,7 @@ var createShowTreeFromListService = function () {
   }
 
 
-  function checkIfSourceIsParent(sourceUuid,targetUuid, storeGroup){
-    var store = query.currentProject()
+  function checkIfSourceIsParent(sourceUuid,targetUuid, storeGroup, store){
     var storeLinks = store[storeGroup].links
     function getParentUuid(uuid, storeLinks) {
       let parentLink = storeLinks.find(l=>l.target == uuid)
@@ -145,18 +144,6 @@ var createShowTreeFromListService = function () {
 
     }
 
-  }
-
-
-  function checkIfTargetIsReachable(uuid){
-    var store = query.currentProject()
-    if (store.currentPbs.items.find(i=>i.uuid == uuid)) {return true }
-    else if (store.requirements.items.find(i=>i.uuid == uuid)) {return true }
-    else if (store.functions.items.find(i=>i.uuid == uuid)) { return true}
-    else if (store.stakeholders.items.find(i=>i.uuid == uuid)) {return true }
-    else {
-      return false
-    }
   }
 
 

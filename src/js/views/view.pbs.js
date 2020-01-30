@@ -243,8 +243,8 @@ var createPbsView = function () {
     objectIsActive = false;
   }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async function startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var batch = ev.batch;

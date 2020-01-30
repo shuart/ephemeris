@@ -13,8 +13,8 @@ var createShowSingleEventService = function () {
   var render = function (uuid, callback) {
     showEditMenu(uuid, callback)
   }
-  var showEditMenu = function (uuid, callback) {
-    var store = query.currentProject()
+  var showEditMenu = async function (uuid, callback) {
+    var store = await query.currentProject()
 
 
     var storeGroup=undefined
@@ -35,7 +35,7 @@ var createShowSingleEventService = function () {
     }
 
     if (label == "timeTracks") {
-      originItem = prepareEventDataFromTrack(uuid)
+      originItem = prepareEventDataFromTrack(uuid,store)
     }
 
     showListMenu({
@@ -64,7 +64,7 @@ var createShowSingleEventService = function () {
       },
       onLabelClick: (ev)=>{
         //check if label as a target or difined as a target in func checkIfTargetIsReachable
-        if (checkIfTargetIsReachable(ev.target.dataset.id)) {
+        if (checkIfTargetIsReachable(ev.target.dataset.id, store)) {
           showSingleItemService.showById(ev.target.dataset.id)
           ev.select.remove()//TODO add history
         }else {
@@ -91,8 +91,8 @@ var createShowSingleEventService = function () {
     })
   }
 
-  function startSelectionFromParametersView(ev) {
-    var store = query.currentProject()
+  async function startSelectionFromParametersView(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
@@ -241,8 +241,7 @@ var createShowSingleEventService = function () {
     })
   }
 
-  function checkIfTargetIsReachable(uuid){
-    var store = query.currentProject()
+  function checkIfTargetIsReachable(uuid, store){
     if (store.currentPbs.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.requirements.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.functions.items.find(i=>i.uuid == uuid)) { return true}
@@ -257,7 +256,6 @@ var createShowSingleEventService = function () {
   }
 
   function generateRulesFromNodeType(type, store) {
-    var store = query.currentProject()
     if (type == "Functions") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
@@ -340,8 +338,7 @@ var createShowSingleEventService = function () {
     }
   }
 
-  var prepareEventDataFromTrack = function (trackUuid) {
-    var store = query.currentProject()
+  var prepareEventDataFromTrack = function (trackUuid, store) {
     let relevantTimeTracks = store.timeTracks.items.filter(l => l.uuid == trackUuid)
     if (!relevantTimeTracks || !relevantTimeTracks[0]) {
       return []

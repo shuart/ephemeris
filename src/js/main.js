@@ -212,9 +212,9 @@ var reparse = false;
   })
 
 
-  connect(".action_toogle_stakeholders","click",(e)=>{
+  connect(".action_toogle_stakeholders","click",async (e)=>{
     //e.target.dataset.id
-    var store = query.currentProject()
+    var store = await query.currentProject()
     showListMenu({
       sourceData:store.stakeholders.items,
       sourceLinks:store.stakeholders.links,

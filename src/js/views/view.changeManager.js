@@ -10,8 +10,8 @@ var createChangeManagerView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     showListMenu({
       sourceData:store.changes.items,
       displayProp:"name",
@@ -86,8 +86,8 @@ var createChangeManagerView = function () {
     JSONToCSVConvertor(data, 'Changes', true)
   }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async function  startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)

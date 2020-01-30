@@ -55,8 +55,8 @@ var createExportProjectInfoView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     if (store) {
       //setUpFragment
       var fragment = document.createDocumentFragment()
