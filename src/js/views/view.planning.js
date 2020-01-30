@@ -82,8 +82,8 @@ var createPlanningView = function () {
     })
   }
 
-  var preparePlanningData = function (planningUuid) {
-    var store = query.currentProject()
+  var preparePlanningData = async function (planningUuid) {
+    var store = await query.currentProject()
     let relevantTimeLinks = store.timeLinks.items.filter(l=>l.type == "planning" && l.source == planningUuid)
     let relevantTimeTracksUuid = relevantTimeLinks.map(r => r.target)
     console.log(relevantTimeTracksUuid);
@@ -106,7 +106,9 @@ var createPlanningView = function () {
     return planningData
   }
 
-  var render = function () {
+  var render = async function () {
+
+      var store = await query.currentProject()
       document.querySelector(".center-container").innerHTML=theme.noPlanning()
       let treeContainer = document.querySelector(".left-menu-area")
       let planningTitleArea = document.querySelector(".left-menu-area .title")
@@ -115,17 +117,16 @@ var createPlanningView = function () {
       if (planningPreviewArea && searchArea) { //reuse what is already setup
         planningTitleArea.innerHTML = theme.planningPreviewTitle()
         searchArea.innerHTML=theme.planningSearchArea()
-        updatePlanningTree(planningPreviewArea)
+        updatePlanningTree(planningPreviewArea, store)
       //update search event
-      setUpSearch(document.querySelector(".planning_search_input"), query.currentProject().plannings.items)
+      setUpSearch(document.querySelector(".planning_search_input"), store.plannings.items)
     }else {
       alert("elemet missing")
     }
 
   }
 
-  var updatePlanningTree = function(container) {
-    var store = query.currentProject()
+  var updatePlanningTree = async function(container, store) {
     let html = ""
     store.plannings.items.slice()
     .sort(function(a, b) {
@@ -149,11 +150,11 @@ var createPlanningView = function () {
   }
 
 
-  var renderPlanning = function () {
-      var store = query.currentProject()
-      console.log(preparePlanningData(currentPlanning.uuid));
+  var renderPlanning = async function () {
+      var store = await query.currentProject()
+      console.log(await preparePlanningData(currentPlanning.uuid));
       showListMenu({
-        sourceData:preparePlanningData(currentPlanning.uuid),
+        sourceData:await preparePlanningData(currentPlanning.uuid),
         // sourceLinks:store.plannings.items[0].links,
         targetDomContainer:".center-container",
         fullScreen:true,
@@ -166,40 +167,44 @@ var createPlanningView = function () {
           {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
         ],
         idProp:"uuid",
-        onEditItem: (ev)=>{
+        onEditItem: async(ev)=>{
           console.log("Edit");
           var newValue = prompt("Edit Item",ev.target.dataset.value)
           if (newValue) {
             if (ev.target.dataset.prop=="duration") {
               push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-              ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+              var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+              ev.select.updateData(newPlanningData)
             }else {
               let eventsUuid = store.timeTracks.items.find(t => t.uuid == ev.target.dataset.id).relatedEvent
               console.log(eventsUuid);
               push(act.edit("events",{uuid:eventsUuid, prop:ev.target.dataset.prop, value:newValue}))
-              ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+              var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+              ev.select.updateData(newPlanningData)
             }
           }
-          if (ganttObject) {  ganttObject.update(prepareGanttData())}
+          if (ganttObject) {  ganttObject.update(await prepareGanttData())}
         },
-        onEditItemTime: (ev)=>{
+        onEditItemTime: async(ev)=>{
           push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
-          ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+          var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+          ev.select.updateData(newPlanningData)
 
-          if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
+          if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
         },
-        onRemove: (ev)=>{
+        onRemove: async(ev)=>{
           console.log("remove");
           if (confirm("remove item ?")) {
             // push(act.add("events",{uuid:eventUuid, name:newReq}))
             push(act.remove("timeTracks",{uuid:ev.target.dataset.id}))
             // push(act.add("timeLinks",{type:"planning", source:currentPlanning.uuid, target:trackUuid}))
-            ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+            var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+            ev.select.updateData(newPlanningData)
 
-            if (ganttObject) {  ganttObject.update(prepareGanttData())}
+            if (ganttObject) {  ganttObject.update(await prepareGanttData())}
           }
         },
-        onMove: (ev)=>{
+        onMove: async(ev)=>{
           console.log("move");
           if (confirm("move item ?")) {
             push(act.move("timeTracks", {origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
@@ -208,9 +213,10 @@ var createPlanningView = function () {
             if (ev.targetParentId && ev.targetParentId != "undefined") {
               push(act.addLink("timeTracks",{source:ev.targetParentId, target:ev.originTarget.dataset.id}))
             }
-            ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+            var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+            ev.select.updateData(newPlanningData)
 
-            if (ganttObject) {  ganttObject.update(prepareGanttData())}
+            if (ganttObject) {  ganttObject.update(await prepareGanttData())}
           }
         },
         // onMove: (ev)=>{
@@ -226,7 +232,7 @@ var createPlanningView = function () {
         //     ev.select.updateLinks(store.plannings.items[0].links)
         //   }
         // },
-        onAdd: (ev)=>{
+        onAdd: async(ev)=>{
           var newReq = prompt("New track")
           if (newReq) {
             let eventUuid = uuid()
@@ -234,11 +240,12 @@ var createPlanningView = function () {
             push(act.add("events",{uuid:eventUuid, name:newReq}))
             push(act.add("timeTracks",{uuid:trackUuid,relatedEvent:eventUuid, duration:5}))
             push(act.add("timeLinks",{type:"planning", source:currentPlanning.uuid, target:trackUuid}))
-            ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+            var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+            ev.select.updateData(newPlanningData)
           }
           console.log(store);
 
-          if (ganttObject) {  ganttObject.update(prepareGanttData())}
+          if (ganttObject) {  ganttObject.update(await prepareGanttData())}
         },
         onEditChoiceItem: (ev)=>{
           startSelection(ev)
@@ -246,11 +253,12 @@ var createPlanningView = function () {
         onLabelClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id)
         },
-        onClick: (ev)=>{
-          showSingleEventService.showById(ev.target.dataset.id, function (e) {
-            ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+        onClick: async (ev)=>{
+          showSingleEventService.showById(ev.target.dataset.id, async function (e) {
+            var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+            ev.select.updateData(newPlanningData)
             ev.select.refreshList()
-            if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
+            if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
 
           })
         },
@@ -315,18 +323,18 @@ var createPlanningView = function () {
           },
           {
             name:"Gantt",
-            action:(ev)=>{
+            action: async (ev)=>{
               if (ganttObject) {
                 document.querySelector(".center-container").innerHTML=""
                 ganttObject = undefined
               }else {
-                let ganttData = prepareGanttData()
+                let ganttData = await prepareGanttData()
                 ganttObject = createGanttView({
                   targetSelector:".center-container",
                   initialData:ganttData,
                   elementDefaultColor :"rgb(104, 185, 181)",
                   elementDefaultTextColor :"#fff",
-                  onChangeLengthEnd:function (e) {
+                  onChangeLengthEnd: async function (e) {
                     console.log(e);
 
                     var a = moment(e.mouseTime);
@@ -335,31 +343,33 @@ var createPlanningView = function () {
 
                     // push(editPlanning({uuid:e.target.id, prop:'duration', value:dayDiff}))
                     push(act.edit("timeTracks",{uuid:e.target.id, prop:'duration', value:dayDiff}))
-
-                    ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+                    var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+                    ev.select.updateData(newPlanningData)
                     // ev.select.updateLinks(store.plannings.items[0].links)
                     ev.select.update()
-                    if (ganttObject) {  ganttObject.update(prepareGanttData())}
+                    if (ganttObject) {  ganttObject.update(await prepareGanttData())}
                     changeListSize()
 
                   },
-                  onChangeStartEnd:function (e) {
+                  onChangeStartEnd:async function (e) {
                     console.log(e);
                     // push(editPlanning({uuid:e.target.id, prop:'start', value:e.mouseTime}))
 
                     push(act.edit("timeTracks",{uuid:e.target.id, prop:'start', value:e.mouseTime}))
-                    ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+                    var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+                    ev.select.updateData(newPlanningData)
                     // ev.select.updateLinks(store.plannings.items[0].links)
                     ev.select.update()
-                    if (ganttObject) {  ganttObject.update(prepareGanttData())}
+                    if (ganttObject) {  ganttObject.update(await prepareGanttData())}
                     changeListSize()
 
                   },
-                  onElementClicked : function (e) {
-                    showSingleEventService.showById(e.id, function (e) {
-                      ev.select.updateData(preparePlanningData(currentPlanning.uuid))
+                  onElementClicked : async function (e) {
+                    showSingleEventService.showById(e.id, async function (e) {
+                      var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+                      ev.select.updateData(newPlanningData)
                       ev.select.refreshList()
-                      if (ganttObject) {  ganttObject.update(prepareGanttData()); changeListSize()}//TODO why needed?
+                      if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
 
                     })
 
@@ -382,9 +392,10 @@ var createPlanningView = function () {
     }, 700);
   }
 
-  var prepareGanttData = function () {
-    var store = query.currentProject()
-    let ganttData = preparePlanningData(currentPlanning.uuid).map(function (i) {
+  var prepareGanttData = async function () {
+    var store = await query.currentProject()
+    var newPlanningData =  await preparePlanningData(currentPlanning.uuid)
+    let ganttData = newPlanningData.map(function (i) {
       return {
         startDate: i.start|| Date.now(),
         duration: [i.duration, 'days'],
@@ -400,8 +411,8 @@ var createPlanningView = function () {
     return ganttData
   }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async  function startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id; //alredy modified by defferedIdProp rule
     // var sourceTriggerId = store.timeTracks.items.find(t => t.uuid == ev.target.dataset.id).relatedEvent;

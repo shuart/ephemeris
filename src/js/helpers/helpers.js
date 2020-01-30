@@ -267,8 +267,8 @@ function getRelatedItems(store, sourceItem, groupToSearch, paramOptions) {//todo
   return linkToText
 }
 //get related item
-function getCategoryFromItemUuid(sourceItemId) {//todo limit metalinks type
-  var store = query.currentProject()
+function getCategoryFromItemUuid(sourceItemId, store) {//todo limit metalinks type
+  // var store = query.currentProject()
   let category = undefined
   let categoryLink = store.metaLinks.items.find(m=>(m.type=="category" && m.source == sourceItemId))
   console.log(sourceItemId);
@@ -346,8 +346,7 @@ var getObjectNameByUuid = function (uuid) {
     return "Missing item"
   }
 }
-var getObjectGroupByUuid = function (uuid) {
-  var store = query.currentProject()
+var getObjectGroupByUuid = function (uuid, store) {
   let storeGroup = undefined
   if (store.currentPbs.items.find(i=>i.uuid == uuid)) { storeGroup = "currentPbs"; }
   else if (store.requirements.items.find(i=>i.uuid == uuid)) { storeGroup = "requirements"; }

@@ -269,7 +269,7 @@ var createRelationsView = function () {
 
       update()
     }, listContainer)
-    bind(".action_relations_show_all_nodes_in_view","click",(e)=>{
+    bind(".action_relations_show_all_nodes_in_view","click",async (e)=>{
 
       // let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
       // for (var i = 0; i < children.length; i++) {
@@ -278,11 +278,11 @@ var createRelationsView = function () {
       //   let isVisible = !hiddenItemsFromSideView.includes(linkedChildId)
       //   if (!isVisible) {  hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, linkedChildId)  }
       // }
-      updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+      await updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
       hiddenItemsFromSideView = []
       update()
     }, container)
-    bind(".action_relations_hide_all_nodes_in_view","click",(e)=>{
+    bind(".action_relations_hide_all_nodes_in_view","click",async (e)=>{
 
       // let children = document.querySelector('.left-list').querySelectorAll('.action_tree_list_relations_toogle_visibility')
       // for (var i = 0; i < children.length; i++) {
@@ -290,7 +290,7 @@ var createRelationsView = function () {
       //   if (isVisible && child.dataset.label) {hiddenItemsFromSideView.push(linkedChildId)}
       // }
 
-      updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+      await updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
       hiddenItemsFromSideView = itemsToDisplay.map(i=>i.uuid)
       update()
     }, container)
@@ -335,11 +335,11 @@ var createRelationsView = function () {
       addLinkMode = !addLinkMode
       renderMenu()
     }, container)
-    bind(".action_interface_add_new_metalink","click",(e)=>{
-      addLinkMode = !addLinkMode
-      linkNodes(lastSelectedNode,previousSelectedNode)
-      update()
-    }, container)
+    // bind(".action_interface_add_new_metalink","click",(e)=>{
+    //   addLinkMode = !addLinkMode
+    //   linkNodes(lastSelectedNode,previousSelectedNode)
+    //   update()
+    // }, container)
     bind(".action_interface_add_pbs","click",(e)=>{
       addItemMode = 'currentPbs'
       document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
@@ -470,7 +470,7 @@ var createRelationsView = function () {
       }
       selectedNodes.forEach(function (node) {
         if (node.uuid) {
-          let storeGroup = getObjectGroupByUuid(node.uuid)
+          let storeGroup = getObjectGroupByUuid(node.uuid, store)
           let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
           if (elementToDuplicate) {
             var id = convertUuid(node.uuid)
@@ -524,8 +524,8 @@ var createRelationsView = function () {
 
       // isolateSelectedNodes(selectedNodes, false)
     }, container)
-    bind(".action_relations_store_nodes_as_templates","click",(e)=>{
-      let store = query.currentProject()
+    bind(".action_relations_store_nodes_as_templates","click",async (e)=>{
+      let store = await query.currentProject()
       let selectedNodes = activeGraph.getSelectedNodes()
       let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
       let selectedNodesUuidConversion = selectedNodes.map(n=>[n.uuid, genuuid()])
@@ -545,7 +545,7 @@ var createRelationsView = function () {
       let extraText = "";
       selectedNodes.forEach(function (node) {
         if (node.uuid) {
-          let storeGroup = getObjectGroupByUuid(node.uuid)
+          let storeGroup = getObjectGroupByUuid(node.uuid, store)
           let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
           if (elementToDuplicate) {
             var id = convertUuid(node.uuid)
@@ -724,9 +724,10 @@ var createRelationsView = function () {
       showExtraLabels = !showExtraLabels
       update()
     }, container)
-    bind(".action_relations_show_current_matrix","click",(e)=>{
+    bind(".action_relations_show_current_matrix","click",async(e)=>{
+      var store = await query.currentProject()
       let nodes = itemsToDisplay.filter(i=> !hiddenItemsFromSideView.includes(i.uuid))
-      showOccurrenceDiagramService.show(nodes.filter(r=>getObjectGroupByUuid(r.uuid) == "currentPbs"), relations.filter(r=>r.type=="Physical connection"))
+      showOccurrenceDiagramService.show(nodes.filter(r=>getObjectGroupByUuid(r.uuid, store) == "currentPbs"), relations.filter(r=>r.type=="Physical connection"))
 
     }, container)
     bind(".action_relations_toogle_links_text","click",(e)=>{
@@ -780,7 +781,7 @@ var createRelationsView = function () {
 
   }
 
-  var quickstartConnections = function (container) {
+  var quickstartConnections = async function (container) {
     bind(".action_relations_qs_show_snapshot","click",(e)=>{
       setTimeout(function () {
         setSnapshot(e.target.dataset.id)
@@ -795,8 +796,8 @@ var createRelationsView = function () {
     bind(".action_relations_qs_show_last_view","click",(e)=>{
       update()
     }, container)
-    bind(".action_relations_qs_start_from_element","click",(e)=>{
-      let store = query.currentProject()
+    bind(".action_relations_qs_start_from_element","click",async (e)=>{
+      let store = await query.currentProject()
       let elements = store.currentPbs.items
       let elementsLinks = store.currentPbs.links
       showListMenu({
@@ -812,7 +813,7 @@ var createRelationsView = function () {
         ],
         idProp:"uuid",
         extraButtons : [
-          {name:"show", class:"show", prop:"uuid", closeAfter:true, action: (orev)=>{
+          {name:"show", class:"show", prop:"uuid", closeAfter:true, action: async (orev)=>{
             if (activeMode=="interfaces") {//TODO should use default
               elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
             }else {
@@ -829,7 +830,7 @@ var createRelationsView = function () {
             fixedValues = false
             hiddenItemsFromSideView= []
             currentSnapshot = undefined
-            updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+            await updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
             isolateSelectedNodes([{uuid:orev.dataset.extra}], true)
 
           }}
@@ -866,7 +867,7 @@ var createRelationsView = function () {
         }, 1900);
       }, 1);
     }, container)
-    bind(".action_relations_qs_create_new_empty","click",(e)=>{
+    bind(".action_relations_qs_create_new_empty","click",async (e)=>{
       if (activeMode=="interfaces") {//TODO should use default
         elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
       }else {
@@ -882,7 +883,7 @@ var createRelationsView = function () {
         }
       }
 
-      updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+      await updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
       hiddenItemsFromSideView = itemsToDisplay.map(i=>i.uuid)
       update()
       setTimeout(function () {
@@ -893,7 +894,7 @@ var createRelationsView = function () {
     }, container)
   }
 
-  var render = function () {
+  var render = async function () {
 
     container = document.createElement("div")
     container.style.height = "100%"
@@ -903,8 +904,7 @@ var createRelationsView = function () {
     connections(container)
     //update all connections at each render. otherwise multiple views share the updae
 
-    var store = JSON.stringify(query.currentProject())
-    store = JSON.parse(store)
+    var store = await query.currentProject()
     container.innerHTML=`
       <div class='menuArea'></div>
       <div style="height: calc(100% - 45px); position: relative" class='graphArea'>
@@ -951,7 +951,7 @@ var createRelationsView = function () {
     //render graph
     //reset items to display component var
 
-    updateItemsToDisplayAndRelations(elementVisibility)
+    await updateItemsToDisplayAndRelations(elementVisibility)
 
     //remove hidden items from tree
 
@@ -1229,12 +1229,12 @@ var createRelationsView = function () {
     })
     update()
   }
-  var deleteSelectedNodes = function (currentSelected, showChildren) {
-    var store = query.currentProject()
+  var deleteSelectedNodes = async function (currentSelected, showChildren) {
+    var store = await query.currentProject()
     let selectedNodes = currentSelected
 
     selectedNodes.forEach(function (n) {
-      let nodeType = getObjectGroupByUuid(n.uuid)
+      let nodeType = getObjectGroupByUuid(n.uuid, store)
       if (nodeType) {
         let object = store[nodeType].items.find(i=>i.uuid == n.uuid)
         if (confirm("Delete "+ object.name)) {
@@ -1253,21 +1253,20 @@ var createRelationsView = function () {
     }
 
   }
-  var getSvgPathFromItemId = function (uuid) {
-    let cat = getCategoryFromItemUuid(uuid)
+  var getSvgPathFromItemId = function (uuid, store) {
+    let cat = getCategoryFromItemUuid(uuid, store)
     if (cat) { return cat.svgPath
     }else { return undefined}
   }
-  var getCustomColorFromItemId = function (uuid) {
-    let cat = getCategoryFromItemUuid(uuid)
+  var getCustomColorFromItemId = function (uuid, store) {
+    let cat = getCategoryFromItemUuid(uuid, store)
     if (cat) { return cat.color
     }else { return undefined}
   }
-  var updateItemsToDisplayAndRelations= function (elementVisibility) {//only side effect TODO: find a better way?
-    var store = JSON.stringify(query.currentProject())
-    store = JSON.parse(store)// TODO used multiple time. Should do it only once
+  var updateItemsToDisplayAndRelations= async function (elementVisibility) {//only side effect TODO: find a better way?
+    var store = await query.currentProject()
     var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
-    var array2 =store.currentPbs.items.map((e) => {e.customColor=getCustomColorFromItemId(e.uuid)||"#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid); return e})
+    var array2 =store.currentPbs.items.map((e) => {e.customColor=getCustomColorFromItemId(e.uuid, store)||"#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid, store); return e})
     var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
     var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
     var array5 = store.physicalSpaces.items.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
@@ -1316,12 +1315,14 @@ var createRelationsView = function () {
     }
   }
 
-  var renderQuickstart = function () {
+  var renderQuickstart = async function () {
     let quickstartContainer = document.createElement("div")
     quickstartContainer.style.height = "100%"
 
     //Add viewSelectionMenu
-    let relationViews = query.currentProject().graphs.items
+    let graphCollection= await query.collection("graphs")
+    console.log(graphCollection);
+    let relationViews = graphCollection.items
     console.log(relationViews);
     let viewMenuObjects =relationViews.slice()
     if (activeMode=="interfaces") {
@@ -1356,7 +1357,7 @@ var createRelationsView = function () {
     }
   }
 
-  var setActive =function (options) {
+  var setActive =async function (options) {
     if (options && options.param) {
       if (options.param.context && options.param.context == "extract") {
         elementVisibility = {
@@ -1373,7 +1374,7 @@ var createRelationsView = function () {
         fixedValues = false
         hiddenItemsFromSideView= []
         currentSnapshot = undefined
-        updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+        await updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
         isolateSelectedNodes([{uuid:options.param.uuid}], true)
         //fix graph after a few seconds
         setTimeout(function () {
@@ -1384,8 +1385,8 @@ var createRelationsView = function () {
       }
       if (options.param.context && options.param.context == "quickstart") {
         objectIsActive = true;
-        updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
-        renderQuickstart()
+        await updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+        await renderQuickstart()
       }
     }else {
       objectIsActive = true;
@@ -1407,7 +1408,8 @@ var createRelationsView = function () {
     objectIsActive = false;
   }
 
-  var renderMenu=function (container) {
+  var renderMenu= async function (container) {
+    let interfaceListItems =  await query.collection("interfacesTypes")
     let commonMenuHTML = `
 
 
@@ -1560,7 +1562,7 @@ var createRelationsView = function () {
         Types
         <i class="dropdown icon"></i>
         <div class="menu" style="margin-top:0px;">
-          ${theme.viewInterfaceList(query.currentProject().interfacesTypes.items)}
+          ${theme.viewInterfaceList(interfaceListItems.items)}
         </div>
       </div>
     </div>`
@@ -1804,16 +1806,16 @@ var createRelationsView = function () {
       onNodeDragEnd:function (node) {
         if (fixedValues) {
           //TODO test to clean
-          if (!query.currentProject().graphs ) {//backward compatibility
+          if (!query.currentProject().graphs ) {//backward compatibility DBCHANGE
             query.currentProject().graphs = {}
             query.currentProject().graphs.items =[]
           }
           let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
           //append to graph DB
           if (activeMode=="relations") {
-            query.currentProject().graphs.default = graphItem//TODO use actions
+            query.currentProject().graphs.default = graphItem//TODO use actions DBCHANGE
           }else if (activeMode == "interfaces") {
-            query.currentProject().graphs.interfaces = graphItem//TODO use actions
+            query.currentProject().graphs.interfaces = graphItem//TODO use actions DBCHANGE
           }
         }
       },
@@ -1861,9 +1863,9 @@ var createRelationsView = function () {
           //         break;
           // }
       },
-      onLinkingEnd :function (e) {
+      onLinkingEnd :async function (e) {
         console.log(e);
-        linkNodes(e[0],e[1])
+        await linkNodes(e[0],e[1])
         update()
       },
       onCanvasDoubleClick:function (e) {//TODO finish implementation
@@ -1896,8 +1898,8 @@ var createRelationsView = function () {
     })
   }
 
-  function linkNodes(lastSelectedNode, previousSelectedNode) {
-    var store = query.currentProject() //TODO ugly
+  async function linkNodes(lastSelectedNode, previousSelectedNode) {
+    var store = await query.currentProject() //TODO ugly
     var nodeTypes = [lastSelectedNode.labels[0],previousSelectedNode.labels[0]]
     console.log(nodeTypes);
     console.log(nodeTypes[0] =="Requirements" && nodeTypes[1] == "User");

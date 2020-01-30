@@ -10,8 +10,8 @@ var createWorkPackagesView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     showListMenu({
       sourceData:store.workPackages.items,
       displayProp:"name",
@@ -84,8 +84,8 @@ var createWorkPackagesView = function () {
     JSONToCSVConvertor(data, 'Pbs', true)
   }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async function startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)

@@ -10,8 +10,8 @@ var createTagsView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     showListMenu({
       sourceData:store.tags.items,
       displayProp:"name",

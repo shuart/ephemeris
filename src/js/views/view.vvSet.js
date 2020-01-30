@@ -41,7 +41,8 @@ var createVvSet = function ({
     })
   }
 
-  var render = function (uuid) {
+  var render = async function (uuid) {
+    var store = await query.currentProject()
     sourceOccElement = document.createElement('div');
     sourceOccElement.style.height = "100%"
     sourceOccElement.style.width = "100%"
@@ -84,33 +85,31 @@ var createVvSet = function ({
     mainEl.appendChild(menuArea)
     mainEl.appendChild(container)
 
-    menuArea.appendChild(toNode(renderMenu(uuid)))
+    menuArea.appendChild(toNode(renderMenu(uuid, store)))
     // container.appendChild(toNode(renderSet(uuid)))
     document.body.appendChild(sourceOccElement)
     renderSet()
   }
 
-  var renderSet =function (){
-    var store = query.currentProject()
-    let relevantSet = generateRelevantSet(currentSetUuid)
+  var renderSet = async function (){
+    let relevantSet = await generateRelevantSet(currentSetUuid)
     let workSet = deepCopy(relevantSet)
-    displayWorkSet(workSet, ".vvDefinitionsArea")
+    await displayWorkSet(workSet, ".vvDefinitionsArea")
   }
-  var renderMenu =function (uuid){
-    var store = query.currentProject()
+  var renderMenu =function (uuid, store){
     let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
     return theme.menu(currentSet.name)
   }
 
   //UTILS
 
-  var generateRelevantSet = function (currentSetUuid) {
-    var store = query.currentProject()
+  var generateRelevantSet = async function (currentSetUuid) {
+    var store = await query.currentProject()
     return store.vvDefinitions.items.filter(i=>i.sourceSet == currentSetUuid)
   }
 
-  var displayWorkSet = function (workSet, container) {
-    var store = query.currentProject()
+  var displayWorkSet = async function (workSet, container) {
+    var store = await query.currentProject()
     showListMenu({
       sourceData:workSet,
       metaLinks:store.metaLinks.items,
@@ -176,19 +175,18 @@ var createVvSet = function ({
         {
           name:"Generate-Requirements",
           action:(ev)=>{
-            generateFromRequirements()
+            generateFromRequirements(store)
           }
         },
         {
           name:"Generate-Interfaces",
           action:(ev)=>{
-            generateFromInterfaces()
+            generateFromInterfaces(store)
           }
         },
         {
           name:"Rename",
           action:(ev)=>{
-            var store = query.currentProject()
             let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
             let newName = prompt("Change Set Name", currentSet.name)
             if (newName) {
@@ -204,8 +202,7 @@ var createVvSet = function ({
     })
   }
 
-  function generateFromRequirements() {
-    var store = query.currentProject()
+  function generateFromRequirements(store) {
     showListMenu({
       sourceData:store.requirements.items,
       sourceLinks:store.requirements.links,
@@ -254,8 +251,7 @@ var createVvSet = function ({
       ]
     })
   }
-  function generateFromInterfaces() {
-    var store = query.currentProject()
+  function generateFromInterfaces(store) {
     showListMenu({
       sourceData:store.interfaces.items,
       sourceLinks:store.interfaces.links,
@@ -309,8 +305,8 @@ var createVvSet = function ({
 
 
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async function  startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var batch = ev.batch;
