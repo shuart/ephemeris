@@ -1253,20 +1253,27 @@ var createRelationsView = function () {
     }
 
   }
-  var getSvgPathFromItemId = function (uuid, store) {
-    let cat = getCategoryFromItemUuid(uuid, store)
+  var getSvgPathFromItemId = function (uuid, store, categoryStore) {
+    let cat = getCategoryFromItemUuid(uuid, store, categoryStore)
     if (cat) { return cat.svgPath
     }else { return undefined}
   }
-  var getCustomColorFromItemId = function (uuid, store) {
-    let cat = getCategoryFromItemUuid(uuid, store)
+  var getCustomColorFromItemId = function (uuid, store, categoryStore) {
+    let cat = getCategoryFromItemUuid(uuid, store, categoryStore)
     if (cat) { return cat.color
     }else { return undefined}
   }
   var updateItemsToDisplayAndRelations= async function (elementVisibility) {//only side effect TODO: find a better way?
     var store = await query.currentProject()
+    var categoryStore = {}
+    for (var i = 0; i < store.metaLinks.length; i++) {
+      let metaType = store.metaLinks[i].type
+      if (metaType == "category") {
+        categoryStore[store.metaLinks[i].source] = store.metaLinks[i].target
+      }
+    }
     var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
-    var array2 =store.currentPbs.items.map((e) => {e.customColor=getCustomColorFromItemId(e.uuid, store)||"#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid, store); return e})
+    var array2 =store.currentPbs.items.map((e) => {e.customColor=getCustomColorFromItemId(e.uuid, store, categoryStore)||"#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid, store, categoryStore); return e})
     var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
     var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
     var array5 = store.physicalSpaces.items.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
@@ -1295,24 +1302,43 @@ var createRelationsView = function () {
       groupLinks = []//TODO WHat is the point?
     }
     //check if some relation are on the same nodes;
-    var duplicates = []
-    function isOverlap(ra, rb) {
-      if (ra != rb) {
-        return ((ra.source== rb.source && ra.target== rb.target ) || (ra.target== rb.source && ra.source== rb.target ))
+    let overlapObject = {}
+    for (var i = 0; i < relations.length; i++) {
+      let relation = relations[i]
+      let relationCode = relation.source+relation.target
+      let relationCodeReverse = relation.target+relation.source
+      //check if item is overlap
+      if (overlapObject[relationCode]) {//overlap exist
+        relation.displacement = 6*overlapObject[relationCode]
+        overlapObject[relationCode] +=1 //add an overlap
+      }else if (overlapObject[relationCodeReverse]) {
+        relation.displacement = 6*overlapObject[relationCodeReverse]
+        overlapObject[relationCodeReverse] +=1 //add an overlap
+      }else {
+        overlapObject[relationCode] =1 //
       }
     }
-    for (relation of relations) {
-      if ( relations.find(e=>isOverlap(relation, e)) ) {
-        var previouslyStored = duplicates.find(e=>isOverlap(relation, e))
-        if (!previouslyStored) {
-          duplicates.push({source:relation.source, target:relation.target, qty:1})
-          relation.displacement = 6
-        }else {//Why is it activated so much
-          previouslyStored.qty ++
-          relation.displacement = 6*previouslyStored.qty
-        }
-      }
-    }
+
+
+    // var duplicates = []
+    // function isOverlap(ra, rb) {
+    //   if (ra != rb) {
+    //     return ((ra.source== rb.source && ra.target== rb.target ) || (ra.target== rb.source && ra.source== rb.target ))
+    //   }
+    // }
+    //
+    // for (relation of relations) {
+    //   if ( relations.find(e=>isOverlap(relation, e)) ) {
+    //     var previouslyStored = duplicates.find(e=>isOverlap(relation, e))
+    //     if (!previouslyStored) {
+    //       duplicates.push({source:relation.source, target:relation.target, qty:1})
+    //       relation.displacement = 6
+    //     }else {//Why is it activated so much
+    //       previouslyStored.qty ++
+    //       relation.displacement = 6*previouslyStored.qty
+    //     }
+    //   }
+    // }
   }
 
   var renderQuickstart = async function () {
@@ -1409,7 +1435,8 @@ var createRelationsView = function () {
   }
 
   var renderMenu= async function (container) {
-    let interfaceListItems =  await query.collection("interfacesTypes")
+    let store =  await query.currentProject()
+    let interfaceListItems =  store.interfacesTypes
     let commonMenuHTML = `
 
 
@@ -1660,7 +1687,7 @@ var createRelationsView = function () {
     </div>
     `
     //Add viewSelectionMenu
-    let relationViews = query.currentProject().graphs.items
+    let relationViews = store.graphs.items
     // if (query.currentProject().graphs && query.currentProject().graphs.items[0]) {
     //   relationViews = query.currentProject().graphs.items[0] //check if graph is in DB
     //   // fixedValuesList = query.currentProject().graphs.items[0] //check if graph is in DB

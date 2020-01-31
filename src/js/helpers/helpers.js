@@ -267,16 +267,17 @@ function getRelatedItems(store, sourceItem, groupToSearch, paramOptions) {//todo
   return linkToText
 }
 //get related item
-function getCategoryFromItemUuid(sourceItemId, store) {//todo limit metalinks type
+function getCategoryFromItemUuid(sourceItemId, store, catStore) {//todo limit metalinks type
   // var store = query.currentProject()
   let category = undefined
-  let categoryLink = store.metaLinks.items.find(m=>(m.type=="category" && m.source == sourceItemId))
-  console.log(sourceItemId);
-  console.log(categoryLink);
+  // let categoryLink = store.metaLinks.items.find(m=>(m.type=="category" && m.source == sourceItemId))
+  let categoryLink = catStore[sourceItemId]
+  // console.log(sourceItemId);
+  // console.log(categoryLink);
   if (categoryLink) {
     category = store.categories.items.find(c=>c.uuid == categoryLink.target)
   }
-  console.log(category);
+  // console.log(category);
   return category
 }
 
