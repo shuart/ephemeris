@@ -186,6 +186,28 @@ var createDbRealTimeAdaptater = function () {
         reject(err)
       });
   }
+  function updateProjectItem(projectUuid, collectionName, itemId, prop, value) {
+
+    return new Promise(async function(resolve, reject) {
+
+      await projects.find({uuid: projectUuid}, async function (err, docs) {
+        let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
+        let selector = {}
+        selector[collectionName+".items."+indexToChange+"."+prop] = value
+        await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function () {
+            logCallback(item)
+            resolve(item)
+          });
+        });
+      });
+
+      //   projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function () {
+      //     logCallback(item)
+      //   });
+      // }).catch(function(err) {
+      //   reject(err)
+      // });
+  }
   function getProject(uuid) {
     return new Promise(function(resolve, reject) {
         projects.find({uuid: uuid}, function (err, docs) {
@@ -242,6 +264,7 @@ var createDbRealTimeAdaptater = function () {
   self.addProjectLink = addProjectLink
   self.removeProjectItem = removeProjectItem
   self.removeProjectLink = removeProjectLink
+  self.updateProjectItem = updateProjectItem
   self.setProject = setProject
   self.removeProject = removeProject
   self.init = init

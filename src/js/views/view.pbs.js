@@ -181,7 +181,7 @@ var createPbsView = function () {
           {
             name:"Fields",
             action:(ev)=>{
-              ephHelpers.startSelectionToShowFields(ev,extraFields, "pbsListViewVisibleFields", "Visible Fields in Product list", function () {
+                ephHelpers.startSelectionToShowFields(ev,extraFields, "pbsListViewVisibleFields", "Visible Fields in Product list", function () {
                 document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
                 update()
               })

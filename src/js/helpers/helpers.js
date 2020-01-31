@@ -402,9 +402,9 @@ ephHelpers.drag = function(ev) {
         ev.dataTransfer.setData('text', ev.target.dataset.id);
     }
 
-ephHelpers.startSelectionToShowFields = function (ev,sourceList, settingsType, settingsName, callback) {
+ephHelpers.startSelectionToShowFields = async function (ev,sourceList, settingsType, settingsName, callback) {
   // setup option if not exist
-  let store = query.currentProject()
+  let store = await query.currentProject()
   let settingsUuid = undefined
   if (!store.settings.items.find(s=>s.type == settingsType)) {
     settingsUuid = uuid()

@@ -60,10 +60,13 @@ function reducer(action, store) {
     var sourceItem = storeGroup.items.filter((item)=>item.uuid == pl.origin)[0]
     var targetItem = storeGroup.items.filter((item)=>item.uuid == pl.target)[0]
     storeGroup.items = moveElementInArray(storeGroup.items,sourceItem,targetItem)
+    
   }else if (type == "modifyItem") { //MODIFY ITEM
-    var itemToEdit = storeGroup.items.filter((item)=>item.uuid == pl.uuid)
-    itemToEdit[0][pl.prop] = pl.value
+    // var itemToEdit = storeGroup.items.filter((item)=>item.uuid == pl.uuid)
+    // itemToEdit[0][pl.prop] = pl.value
+    dbConnector.updateProjectItem(projectUuid, storeGroup, pl.uuid, pl.prop, pl.value).then(notifyChange)
     recordChangeInStore(type, store, group, pl)
+
   }else if (type == "addLink") { //ADD A LINK
     dbConnector.addProjectLink(projectUuid, storeGroup ,{uuid:pl.uuid, source:pl.source, target:pl.target}).then(notifyChange)
     recordChangeInStore(type, store, group, pl)
