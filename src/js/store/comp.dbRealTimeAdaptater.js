@@ -128,12 +128,60 @@ var createDbRealTimeAdaptater = function () {
   function getProjects() {
 
   }
+  function logCallback(item) {
+    console.log("item added to DB");
+    console.log(item);
+  }
   function addProject(newProject) {
     return new Promise(function(resolve, reject) {
         projects.insert(newProject, function (err, docs) {
           console.log(docs);
           resolve(docs)
         })
+      }).catch(function(err) {
+        reject(err)
+      });
+  }
+  function addProjectItem(projectUuid, collectionName, item) {
+    let selector = {}
+    selector[collectionName+".items"] = item
+    return new Promise(function(resolve, reject) {
+        projects.update({ uuid: projectUuid }, { $addToSet: selector }, {}, function () {
+          logCallback(item)
+        });
+      }).catch(function(err) {
+        reject(err)
+      });
+  }
+  function addProjectLink(projectUuid, collectionName, link) {
+    let selector = {}
+    selector[collectionName+".links"] = link
+    return new Promise(function(resolve, reject) {
+        projects.update({ uuid: projectUuid }, { $addToSet: selector }, {}, function () {
+          logCallback(item)
+        });
+      }).catch(function(err) {
+        reject(err)
+      });
+  }
+  function removeProjectItem(projectUuid, collectionName, item) {
+    let selector = {}
+    selector[collectionName+".items"] = {uuid:item}
+    return new Promise(function(resolve, reject) {
+        projects.update({ uuid: projectUuid }, { $pull: selector }, {}, function () {
+          logCallback(item)
+        });
+      }).catch(function(err) {
+        reject(err)
+      });
+  }
+  function removeProjectLink(projectUuid, collectionName, link) {
+    let selector = {}
+    selector[collectionName+".links"] = link
+    return new Promise(function(resolve, reject) {
+        projects.update({ uuid: projectUuid }, { $pull: selector }, {}, function () {
+          logCallback(item)
+        });
       }).catch(function(err) {
         reject(err)
       });
@@ -174,6 +222,8 @@ var createDbRealTimeAdaptater = function () {
       });
     });
   }
+
+
   function removeProject() {
 
   }
@@ -188,6 +238,10 @@ var createDbRealTimeAdaptater = function () {
   self.getProject = getProject
   self.getProjectCollection = getProjectCollection
   self.addProject = addProject
+  self.addProjectItem = addProjectItem
+  self.addProjectLink = addProjectLink
+  self.removeProjectItem = removeProjectItem
+  self.removeProjectLink = removeProjectLink
   self.setProject = setProject
   self.removeProject = removeProject
   self.init = init

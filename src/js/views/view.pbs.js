@@ -4,6 +4,7 @@ var createPbsView = function () {
   var simpleView = true;
   var isExtraFieldsVisible =false;
   var extraFields = undefined
+  var currentVisibleList = undefined
 
   var init = function () {
     connections()
@@ -11,12 +12,20 @@ var createPbsView = function () {
 
   }
   var connections =function () {
-
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:store.currentPbs.items,
+          links:store.currentPbs.links,
+          metaLinks:store.metaLinks.items,
+          displayRules:setDisplayRules(store)
+        })
+      }
+    })
   }
 
-  var render = async function () {
-    var store = await query.currentProject()
-
+  var setDisplayRules = function (store) {
     var displayRules = [
       {prop:"name", displayAs:"Name", edit:"true"},
       {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
@@ -42,18 +51,20 @@ var createPbsView = function () {
       displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
       //displayRules = extraFields
     }
+    return displayRules
+  }
 
-
-
+  var render = async function () {
+    var store = await query.currentProject()
     console.log(store.currentPbs.items);
-      showListMenu({
+      currentVisibleList = showListMenu({
         sourceData:store.currentPbs.items,
         sourceLinks:store.currentPbs.links,
         metaLinks:store.metaLinks.items,
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
-        display:displayRules,
+        display:setDisplayRules(store),
         extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,
@@ -107,7 +118,7 @@ var createPbsView = function () {
           var newReq = prompt("New Product")
           if (newReq) {
             push(addPbs({uuid:id, name:newReq}))
-            push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+            push(addPbsLink({source:store.currentPbs.items[0].uuid, target:id}))
           }
         },
         onAddFromPopup: (ev)=>{

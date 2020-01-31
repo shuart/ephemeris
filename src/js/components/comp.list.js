@@ -1496,6 +1496,9 @@ function showListMenu({
   function updateLinks(links) {
     sourceLinks = links
   }
+  function updateDisplayRules(rules) {
+    display = rules
+  }
   function updateMetaLinks(links) {
     metaLinks = links
   }
@@ -1542,6 +1545,7 @@ function showListMenu({
   self.updateData = updateData
   self.refreshList = refreshList
   self.updateLinks = updateLinks
+  self.updateDisplayRules = updateDisplayRules
   self.updateMetaLinks = updateMetaLinks
   self.remove = removeList
   self.update = update

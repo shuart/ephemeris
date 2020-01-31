@@ -4,6 +4,7 @@ var createRequirementsView = function () {
   var simpleView = true;
   var isExtraFieldsVisible =false;
   var extraFields = undefined
+  var currentVisibleList = undefined
 
   var init = function () {
     connections()
@@ -11,11 +12,20 @@ var createRequirementsView = function () {
 
   }
   var connections =function () {
-
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:store.requirements.items,
+          links:store.requirements.links,
+          metaLinks:store.metaLinks.items,
+          displayRules:setDisplayRules(store)
+        })
+      }
+    })
   }
 
-  var render = async function () {
-    var store = await query.currentProject()
+  var setDisplayRules = function (store) {
     var displayRules = [
         {prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
@@ -40,17 +50,19 @@ var createRequirementsView = function () {
       displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
       //displayRules = extraFields
     }
+    return displayRules
+  }
 
-
-
-      showListMenu({
+  var render = async function () {
+    var store = await query.currentProject()
+      currentVisibleList = showListMenu({
         sourceData:store.requirements.items,
         sourceLinks:store.requirements.links,
         metaLinks:store.metaLinks.items,
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
-        display:displayRules,
+        display:setDisplayRules(store),
         extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,

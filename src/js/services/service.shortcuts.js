@@ -15,17 +15,18 @@ var createShortcutsService = function () {
       event.preventDefault();
       return false;
     })
-    document.addEventListener("keydown", function(event) {
+    document.addEventListener("keydown", async function(event) {
       if (!( event.key == 'g' && event.ctrlKey) ) return true;
 
+      let store = await query.currentProject()
       //document.querySelector('#topmenu_project_saver').click()
       //A bit ugly TODO: check for a better way
 
       for (var i = 0; i < 10; i++) {
         if (true) {
           let thisID = genuuid()
-          push(addPbs({uuid:thisID, name:"newReq "+i+ Date.now()}))
-          push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:thisID}))
+          dbConnector.addProjectItem(app.state.currentProject, "currentPbs", {uuid:thisID, name:"newReq "+i+ Date.now()})
+          dbConnector.addProjectLink(app.state.currentProject, "currentPbs", {source:store.currentPbs.items[0].uuid, target:thisID})
         }
       }
 
