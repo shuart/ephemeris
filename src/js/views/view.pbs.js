@@ -87,7 +87,8 @@ var createPbsView = function () {
           // }
         },
         onEditChoiceItem: (ev)=>{
-          startSelection(ev)
+          // startSelection(ev)
+          showUpdateLinksService.show(ev,"currentPbs")
         },
         onRemove: (ev)=>{
           console.log("remove");
