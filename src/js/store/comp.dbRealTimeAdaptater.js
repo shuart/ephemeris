@@ -146,8 +146,9 @@ var createDbRealTimeAdaptater = function () {
     let selector = {}
     selector[collectionName+".items"] = item
     return new Promise(function(resolve, reject) {
-        projects.update({ uuid: projectUuid }, { $addToSet: selector }, {}, function () {
+        projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
           logCallback(item)
+          resolve(affectedDocuments[0])
         });
       }).catch(function(err) {
         reject(err)
@@ -157,8 +158,9 @@ var createDbRealTimeAdaptater = function () {
     let selector = {}
     selector[collectionName+".links"] = link
     return new Promise(function(resolve, reject) {
-        projects.update({ uuid: projectUuid }, { $addToSet: selector }, {}, function () {
+        projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
           logCallback(item)
+          resolve(affectedDocuments[0])
         });
       }).catch(function(err) {
         reject(err)
@@ -168,8 +170,9 @@ var createDbRealTimeAdaptater = function () {
     let selector = {}
     selector[collectionName+".items"] = {uuid:item}
     return new Promise(function(resolve, reject) {
-        projects.update({ uuid: projectUuid }, { $pull: selector }, {}, function () {
+        projects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
           logCallback(item)
+          resolve(affectedDocuments[0])
         });
       }).catch(function(err) {
         reject(err)
@@ -179,8 +182,9 @@ var createDbRealTimeAdaptater = function () {
     let selector = {}
     selector[collectionName+".links"] = link
     return new Promise(function(resolve, reject) {
-        projects.update({ uuid: projectUuid }, { $pull: selector }, {}, function () {
+        projects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
           logCallback(item)
+          resolve(affectedDocuments[0])
         });
       }).catch(function(err) {
         reject(err)
@@ -194,9 +198,9 @@ var createDbRealTimeAdaptater = function () {
         let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
         let selector = {}
         selector[collectionName+".items."+indexToChange+"."+prop] = value
-        await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function () {
+        await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
             logCallback(item)
-            resolve(item)
+            resolve(affectedDocuments[0])
           });
         });
       });
