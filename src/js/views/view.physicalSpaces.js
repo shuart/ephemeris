@@ -71,7 +71,7 @@ var createWorkPhysicalSpacesView = function () {
         }
       },
       onEditChoiceItem: (ev)=>{
-        startSelection(ev)
+        showUpdateLinksService.show(ev,"physicalSpaces")
       },
       onLabelClick: (ev)=>{
         showSingleItemService.showById(ev.target.dataset.id)
@@ -130,85 +130,85 @@ var createWorkPhysicalSpacesView = function () {
     })
   }
 
-  async function startSelection(ev) {
-    var store = await query.currentProject()
-    var metalinkType = ev.target.dataset.prop;
-    var sourceTriggerId = ev.target.dataset.id;
-    var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-    var sourceData = undefined
-    var invert = false
-    var source = "source"
-    var target = "target"
-    var sourceLinks= undefined
-    var displayRules= undefined
-    if (metalinkType == "assignedTo") {
-      sourceData=store.stakeholders.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"lastName", displayAs:"Last name", edit:false}
-      ]
-    }else if (metalinkType == "WpOwn") {
-      sourceData=store.currentPbs.items
-      sourceLinks=store.currentPbs.links
-      displayRules = [
-        {prop:"name", displayAs:"First name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-      ]
-    }else if (metalinkType == "WpOwnNeed") {
-      sourceData=store.requirements.items
-      sourceLinks=store.requirements.links
-      displayRules = [
-        {prop:"name", displayAs:"First name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-      ]
-    }else if (metalinkType == "contains") {
-      sourceData=store.currentPbs.items
-      sourceLinks=store.currentPbs.links
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-      ]
-    }else if (metalinkType == "originNeed") {
-      invert = true;
-      sourceData=store.currentPbs.items
-      source = "target"//invert link order for after
-      target = "source"
-      sourceLinks=store.currentPbs.links
-      displayRules = [
-        {prop:"name", displayAs:"First name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-      ]
-    }else if (metalinkType == "tags") {
-      sourceData=store.tags.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }
-    showListMenu({
-      sourceData:sourceData,
-      sourceLinks:sourceLinks,
-      parentSelectMenu:ev.select ,
-      multipleSelection:currentLinksUuidFromDS,
-      displayProp:"name",
-      searchable : true,
-      display:displayRules,
-      idProp:"uuid",
-      onCloseMenu: (ev)=>{
-        console.log(ev.select);
-        ev.select.getParent().refreshList()
-      },
-      onChangeSelect: (ev)=>{
-        batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-        batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-
-        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-        ev.select.getParent().refreshList()
-      },
-      onClick: (ev)=>{
-        console.log("select");
-      }
-    })
-  }
+  // async function startSelection(ev) {
+  //   var store = await query.currentProject()
+  //   var metalinkType = ev.target.dataset.prop;
+  //   var sourceTriggerId = ev.target.dataset.id;
+  //   var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+  //   var sourceData = undefined
+  //   var invert = false
+  //   var source = "source"
+  //   var target = "target"
+  //   var sourceLinks= undefined
+  //   var displayRules= undefined
+  //   if (metalinkType == "assignedTo") {
+  //     sourceData=store.stakeholders.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false},
+  //       {prop:"lastName", displayAs:"Last name", edit:false}
+  //     ]
+  //   }else if (metalinkType == "WpOwn") {
+  //     sourceData=store.currentPbs.items
+  //     sourceLinks=store.currentPbs.links
+  //     displayRules = [
+  //       {prop:"name", displayAs:"First name", edit:false},
+  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+  //     ]
+  //   }else if (metalinkType == "WpOwnNeed") {
+  //     sourceData=store.requirements.items
+  //     sourceLinks=store.requirements.links
+  //     displayRules = [
+  //       {prop:"name", displayAs:"First name", edit:false},
+  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+  //     ]
+  //   }else if (metalinkType == "contains") {
+  //     sourceData=store.currentPbs.items
+  //     sourceLinks=store.currentPbs.links
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false},
+  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+  //     ]
+  //   }else if (metalinkType == "originNeed") {
+  //     invert = true;
+  //     sourceData=store.currentPbs.items
+  //     source = "target"//invert link order for after
+  //     target = "source"
+  //     sourceLinks=store.currentPbs.links
+  //     displayRules = [
+  //       {prop:"name", displayAs:"First name", edit:false},
+  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+  //     ]
+  //   }else if (metalinkType == "tags") {
+  //     sourceData=store.tags.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false}
+  //     ]
+  //   }
+  //   showListMenu({
+  //     sourceData:sourceData,
+  //     sourceLinks:sourceLinks,
+  //     parentSelectMenu:ev.select ,
+  //     multipleSelection:currentLinksUuidFromDS,
+  //     displayProp:"name",
+  //     searchable : true,
+  //     display:displayRules,
+  //     idProp:"uuid",
+  //     onCloseMenu: (ev)=>{
+  //       console.log(ev.select);
+  //       ev.select.getParent().refreshList()
+  //     },
+  //     onChangeSelect: (ev)=>{
+  //       batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+  //       batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+  //
+  //       ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+  //       ev.select.getParent().refreshList()
+  //     },
+  //     onClick: (ev)=>{
+  //       console.log("select");
+  //     }
+  //   })
+  // }
 
   var exportToCSV = function () {
     let store = query.currentProject()

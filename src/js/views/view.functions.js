@@ -38,7 +38,7 @@ var createFunctionsView = function () {
           }
         },
         onEditChoiceItem: (ev)=>{
-          startSelection(ev)
+          showUpdateLinksService.show(ev,"functions")
         },
         onRemove: (ev)=>{
           console.log("remove");

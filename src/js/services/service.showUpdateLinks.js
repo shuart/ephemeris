@@ -49,7 +49,7 @@ var createShowUpdateLinksService = function () {
         {prop:"lastName", displayAs:"Last name", fullText:true, edit:false}
       ];
     }else if (metalinkType == "contains") {
-      if (callerType == "currentPbs") {
+      if (callerType != "physicalSpaces") {
         sourceGroup="physicalSpaces"
         invert = true;
         source = "target"//invert link order for after
@@ -61,8 +61,8 @@ var createShowUpdateLinksService = function () {
         ]
       }else{
         sourceGroup="currentPbs";
-        sourceLinks=store.physicalSpaces.links
-        sourceData=store.physicalSpaces.items
+        sourceLinks=store.currentPbs.links
+        sourceData=store.currentPbs.items
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false},
           {prop:"desc", displayAs:"Description", fullText:true, edit:false}
@@ -86,8 +86,7 @@ var createShowUpdateLinksService = function () {
         {prop:"name", displayAs:"Name", edit:false}
       ];
     }else if (metalinkType == "WpOwn") {
-      if (callerType == "currentPbs") {
-        alert("efsfsds")
+      if (callerType != "workPackages") {
         sourceGroup="workPackages"
         invert = true;
         source = "target"//invert link order for after
@@ -98,17 +97,38 @@ var createShowUpdateLinksService = function () {
           {prop:"name", displayAs:"Name", edit:false}
         ]
       }else {
-        sourceGroup="currentPbs";
+        alert("fefsefs")
+        sourceGroup='currentPbs';
+        sourceData=store.currentPbs.items
+        sourceLinks=store.currentPbs.links
         displayRules = [
-          {prop:"name", displayAs:"Name", edit:false}
+          {prop:"name", displayAs:"Name", edit:false},
+          {prop:"desc", displayAs:"Description", fullText:true, edit:false}
         ];
       }
 
     }else if (metalinkType == "WpOwnNeed") {
-      sourceGroup="requirements";
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ];
+      if (callerType != "workPackages") {
+        sourceGroup="workPackages"
+        invert = true;
+        source = "target"//invert link order for after
+        target = "source"
+        sourceLinks=store.workPackages.links
+        sourceData=store.workPackages.items
+        displayRules = [
+          {prop:"name", displayAs:"Name", edit:false},
+          {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+        ]
+      }else{
+        sourceGroup="requirements";
+        sourceData=store.requirements.items
+        sourceLinks=store.requirements.links
+        displayRules = [
+          {prop:"name", displayAs:"Name", edit:false},
+          {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+        ];
+      }
+
     }else if (metalinkType == "reqChangedBy") {
       sourceGroup="changes"
       sourceLinks=store.changes.links

@@ -80,7 +80,7 @@ var createRequirementsView = function () {
           })
         },
         onEditChoiceItem: (ev)=>{
-          startSelection(ev)
+          showUpdateLinksService.show(ev,"requirements")
         },
         onRemove: (ev)=>{
           console.log("remove");
@@ -222,147 +222,147 @@ var createRequirementsView = function () {
     objectIsActive = false;
   }
 
-  async function startSelection(ev) {
-    var store = await query.currentProject()
-    var metalinkType = ev.target.dataset.prop;
-    var sourceTriggerId = ev.target.dataset.id;
-    var batch = ev.batch;
-    var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-    var sourceGroup = undefined
-    var sourceData = undefined
-    var invert = false
-    var source = "source"
-    var target = "target"
-    var sourceLinks= undefined
-    var displayRules= undefined
-    var showColoredIconsRule = undefined
-    var prependContent=undefined
-    var onLoaded = undefined
-    if (metalinkType == "origin") {
-      sourceGroup="stakeholders";
-      sourceData=store.stakeholders.items
-      showColoredIconsRule= lettersFromNames,
-      displayRules = [
-        {prop:"name", displayAs:"First Name", edit:false},
-        {prop:"lastName", displayAs:"Last name", edit:false}
-      ]
-    }else if (metalinkType == "originNeed") {
-      sourceGroup="currentPbs"
-      invert = true;
-      sourceData=store.currentPbs.items
-      source = "target"//invert link order for after
-      target = "source"
-      sourceLinks=store.currentPbs.links
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-      ]
-    }else if (metalinkType == "tags") {
-      sourceGroup="tags";
-      sourceData=store.tags.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }else if (metalinkType == "WpOwnNeed") {
-      sourceGroup="workPackages"
-      invert = true;
-      source = "target"//invert link order for after
-      target = "source"
-      sourceLinks=store.workPackages.links
-      sourceData=store.workPackages.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }else if (metalinkType == "reqChangedBy") {
-      sourceGroup="changes"
-      sourceLinks=store.changes.links
-      sourceData=store.changes.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"desc", displayAs:"Description", edit:false}
-      ]
-    }else if (metalinkType == "documentsNeed") {
-      if (typeof nw !== "undefined") {//if using node webkit
-        prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
-        onLoaded = function (ev) {
-          dropAreaService.setDropZone(".prepend", function () {
-            ev.select.updateData(store.documents.items)
-            ev.select.refreshList()
-          })
-        }
-      }
-      sourceGroup="documents"
-      sourceLinks=store.documents.links
-      sourceData=store.documents.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }
-    showListMenu({
-      sourceData:sourceData,
-      sourceLinks:sourceLinks,
-      parentSelectMenu:ev.select ,
-      multipleSelection:currentLinksUuidFromDS,
-      displayProp:"name",
-      searchable : true,
-      display:displayRules,
-      showColoredIcons:showColoredIconsRule,
-      prependContent:prependContent,
-      onLoaded:onLoaded,
-      idProp:"uuid",
-      onAdd:(ev)=>{//TODO experimental, replace with common service
-        var uuid = genuuid()
-        var linkUuid = genuuid()
-        push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
-        if (sourceGroup == "currentPbs") {
-          push(addPbsLink({uuid:linkUuid,source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
-        }
-        if (sourceGroup == "changes") {
-          push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
-        }
-        ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
-          onLeave: (ev)=>{
-            push(act.remove(sourceGroup,{uuid:uuid}))
-            if (sourceGroup == "currentPbs") {
-              push(removePbsLink({target:uuid}))
-            }
-            ev.select.updateData(store[sourceGroup].items)
-            ev.select.updateLinks(store[sourceGroup].links)
-          }
-        })
-      },
-      onEditItem: (ev)=>{
-        var newValue = prompt("Edit Item",ev.target.dataset.value)
-        if (newValue) {
-          push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-        }
-      },
-      onCloseMenu: (ev)=>{
-        console.log(ev.select);
-        ev.select.getParent().refreshList()
-      },
-      onChangeSelect: (ev)=>{
-        var changeProp = function (sourceTriggerId) {
-          batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-          batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-
-          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-          ev.select.getParent().refreshList()
-        }
-        if (batch[0]) { //check if batch action is needed
-          batch.forEach(function (sourceTriggerId) {
-            changeProp(sourceTriggerId)
-          })
-        }else {
-          changeProp(sourceTriggerId)
-        }
-      },
-      onClick: (ev)=>{
-        console.log("select");
-      }
-    })
-  }
+  // async function startSelection(ev) {
+  //   var store = await query.currentProject()
+  //   var metalinkType = ev.target.dataset.prop;
+  //   var sourceTriggerId = ev.target.dataset.id;
+  //   var batch = ev.batch;
+  //   var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+  //   var sourceGroup = undefined
+  //   var sourceData = undefined
+  //   var invert = false
+  //   var source = "source"
+  //   var target = "target"
+  //   var sourceLinks= undefined
+  //   var displayRules= undefined
+  //   var showColoredIconsRule = undefined
+  //   var prependContent=undefined
+  //   var onLoaded = undefined
+  //   if (metalinkType == "origin") {
+  //     sourceGroup="stakeholders";
+  //     sourceData=store.stakeholders.items
+  //     showColoredIconsRule= lettersFromNames,
+  //     displayRules = [
+  //       {prop:"name", displayAs:"First Name", edit:false},
+  //       {prop:"lastName", displayAs:"Last name", edit:false}
+  //     ]
+  //   }else if (metalinkType == "originNeed") {
+  //     sourceGroup="currentPbs"
+  //     invert = true;
+  //     sourceData=store.currentPbs.items
+  //     source = "target"//invert link order for after
+  //     target = "source"
+  //     sourceLinks=store.currentPbs.links
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false},
+  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+  //     ]
+  //   }else if (metalinkType == "tags") {
+  //     sourceGroup="tags";
+  //     sourceData=store.tags.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false}
+  //     ]
+  //   }else if (metalinkType == "WpOwnNeed") {
+  //     sourceGroup="workPackages"
+  //     invert = true;
+  //     source = "target"//invert link order for after
+  //     target = "source"
+  //     sourceLinks=store.workPackages.links
+  //     sourceData=store.workPackages.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false}
+  //     ]
+  //   }else if (metalinkType == "reqChangedBy") {
+  //     sourceGroup="changes"
+  //     sourceLinks=store.changes.links
+  //     sourceData=store.changes.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false},
+  //       {prop:"desc", displayAs:"Description", edit:false}
+  //     ]
+  //   }else if (metalinkType == "documentsNeed") {
+  //     if (typeof nw !== "undefined") {//if using node webkit
+  //       prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
+  //       onLoaded = function (ev) {
+  //         dropAreaService.setDropZone(".prepend", function () {
+  //           ev.select.updateData(store.documents.items)
+  //           ev.select.refreshList()
+  //         })
+  //       }
+  //     }
+  //     sourceGroup="documents"
+  //     sourceLinks=store.documents.links
+  //     sourceData=store.documents.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false}
+  //     ]
+  //   }
+  //   showListMenu({
+  //     sourceData:sourceData,
+  //     sourceLinks:sourceLinks,
+  //     parentSelectMenu:ev.select ,
+  //     multipleSelection:currentLinksUuidFromDS,
+  //     displayProp:"name",
+  //     searchable : true,
+  //     display:displayRules,
+  //     showColoredIcons:showColoredIconsRule,
+  //     prependContent:prependContent,
+  //     onLoaded:onLoaded,
+  //     idProp:"uuid",
+  //     onAdd:(ev)=>{//TODO experimental, replace with common service
+  //       var uuid = genuuid()
+  //       var linkUuid = genuuid()
+  //       push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+  //       if (sourceGroup == "currentPbs") {
+  //         push(addPbsLink({uuid:linkUuid,source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+  //       }
+  //       if (sourceGroup == "changes") {
+  //         push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
+  //       }
+  //       ev.select.setEditItemMode({
+  //         item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+  //         onLeave: (ev)=>{
+  //           push(act.remove(sourceGroup,{uuid:uuid}))
+  //           if (sourceGroup == "currentPbs") {
+  //             push(removePbsLink({target:uuid}))
+  //           }
+  //           ev.select.updateData(store[sourceGroup].items)
+  //           ev.select.updateLinks(store[sourceGroup].links)
+  //         }
+  //       })
+  //     },
+  //     onEditItem: (ev)=>{
+  //       var newValue = prompt("Edit Item",ev.target.dataset.value)
+  //       if (newValue) {
+  //         push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+  //       }
+  //     },
+  //     onCloseMenu: (ev)=>{
+  //       console.log(ev.select);
+  //       ev.select.getParent().refreshList()
+  //     },
+  //     onChangeSelect: (ev)=>{
+  //       var changeProp = function (sourceTriggerId) {
+  //         batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+  //         batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+  //
+  //         ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+  //         ev.select.getParent().refreshList()
+  //       }
+  //       if (batch[0]) { //check if batch action is needed
+  //         batch.forEach(function (sourceTriggerId) {
+  //           changeProp(sourceTriggerId)
+  //         })
+  //       }else {
+  //         changeProp(sourceTriggerId)
+  //       }
+  //     },
+  //     onClick: (ev)=>{
+  //       console.log("select");
+  //     }
+  //   })
+  // }
 
   function generateExtraFieldsList(store) {
     if (isExtraFieldsVisible) {
