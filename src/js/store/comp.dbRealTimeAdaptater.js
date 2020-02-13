@@ -14,6 +14,7 @@ var createDbRealTimeAdaptater = function () {
     // users = localforage.createInstance({name: "ephemerisUsers"});
     // projects = new Nedb({ filename: 'ephemeris_local_projects', autoload: true });   // Create an in-memory only datastore
     projects = new Nedb();   // Create an in-memory only datastore
+    localUsers = new Nedb();   // Create an in-memory only datastore
 
     projects.find({}, function (err, docs) {
       console.log(docs);
@@ -44,32 +45,58 @@ var createDbRealTimeAdaptater = function () {
   }
 
   function transfertDBfromOldVersion(users) {
+    startupScreen.showLoader()
     for (var i = 0; i < users.length; i++) {
       persist.getUser(users[i].uuid).then(function (user) {
+        user.relatedProjects = []
+        console.log(user.projects);
         user.projects.forEach((project, i) => {
+          user.relatedProjects.push(project.uuid)
+
           projects.insert(project, (err,docs)=>console.log(docs))
         });
-
+        localUsers.insert(user, (err,docs)=>console.log(docs))
       }).catch(function(err) {
           console.log(err);
       });
     }
+    setTimeout(function () {
+      startupScreen.update()
+    }, 4000);
   }
 
-  function getUser(uuid) {
-    return users.getItem(uuid)
-  }
-
-  function getUsers() {
+  function getUser(id) {
     return new Promise(function(resolve, reject) {
-      users.keys().then(function (keys) {
-        console.log(keys);
-        var promises  = keys.map(function(item) { return users.getItem(item); });
-        resolve(Promise.all(promises))
+        localUsers.find({uuid:id}, function (err, docs) {
+          console.log(docs);
+          resolve(docs[0])
+        })
       }).catch(function(err) {
         reject(err)
       });
-    });
+  }
+
+  // function getUsers() {
+  //   return new Promise(function(resolve, reject) {
+  //     users.keys().then(function (keys) {
+  //       console.log(keys);
+  //       var promises  = keys.map(function(item) { return users.getItem(item); });
+  //       resolve(Promise.all(promises))
+  //     }).catch(function(err) {
+  //       reject(err)
+  //     });
+  //   });
+  // }
+
+  function getUsers() {
+    return new Promise(function(resolve, reject) {
+        localUsers.find({}, function (err, docs) {
+          console.log(docs);
+          resolve(docs)
+        })
+      }).catch(function(err) {
+        reject(err)
+      });
   }
 
   function setUser(data) { //name
