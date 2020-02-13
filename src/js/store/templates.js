@@ -196,9 +196,32 @@ var store = {
 }
 
 var projectTemplate = JSON.stringify(store)
-var createNewProject = function (name) {
+var createNewProject = function (name, optionsData) {
+  var options = optionsData || {}
   var secondProject = JSON.parse(projectTemplate)
   secondProject.uuid =genuuid()
   secondProject.name =name
+  if (options.placeholder) {
+    secondProject = createPBS(secondProject)
+  }
+  secondProject = createUserStakeholder(store)
   return secondProject
+}
+
+function createPBS(store) {
+  store.currentPbs.items.push({name: store.reference+store.name, uuid: "ita2215151-a50f-4dd3-904e-146118d5d444"})
+  store.currentPbs.items.push({name: "A linked product", uuid:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
+  store.currentPbs.items.push({name: "Another linked product", uuid:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
+  store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
+  store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
+  return store
+}
+
+function createUserStakeholder(store) {
+  if (app.store) {
+    let i = app.store.userData.info
+    store.stakeholders.items[0] = {uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""}
+
+  }
+  return store
 }

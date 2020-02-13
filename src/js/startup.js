@@ -93,7 +93,7 @@ function createStartUp() {
         if (event.target.classList.contains("action_startup_add_user")) {
           var userName = prompt("Add a user")
           if (userName != "") {
-            persist.setUser({name:userName,projects:[createNewProject("New Project"),createNewProject("Another Project")]}).then(function () {
+            persist.setUser({name:userName,projects:[createNewProject("New Project", {placeholder:true}),createNewProject("Another Project", {placeholder:true})]}).then(function () {
               renderUserSessionView()
             })
           }
