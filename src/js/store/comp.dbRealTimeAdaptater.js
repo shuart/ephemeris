@@ -12,7 +12,8 @@ var createDbRealTimeAdaptater = function () {
   var connectDB =function () {
     // projects = localforage.createInstance({name: "ephemerisProjects"});
     // users = localforage.createInstance({name: "ephemerisUsers"});
-    projects = new Nedb({ filename: 'ephemeris_local_projects', autoload: true });   // Create an in-memory only datastore
+    // projects = new Nedb({ filename: 'ephemeris_local_projects', autoload: true });   // Create an in-memory only datastore
+    projects = new Nedb();   // Create an in-memory only datastore
 
     projects.find({}, function (err, docs) {
       console.log(docs);
@@ -33,6 +34,11 @@ var createDbRealTimeAdaptater = function () {
         // This code runs if there were any errors
             console.log(err);
         });
+      }else {
+        // // index the DB
+        // db.ensureIndex({ fieldName: 'somefield', unique: true }, function (err) {
+        //   console.log(err);
+        // });
       }
     });
   }
