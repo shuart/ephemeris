@@ -1,27 +1,46 @@
 var createWorkPhysicalSpacesView = function () {
   var self ={};
   var objectIsActive = false;
+  var isExtraFieldsVisible = false
+  var extraFields = undefined
+  var currentVisibleList = undefined
 
   var init = function () {
     connections()
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:store.physicalSpaces.items,
+          links:store.physicalSpaces.links,
+          metaLinks:store.metaLinks.items,
+          displayRules:setDisplayRules(store)
+        })
+      }
+    })
+  }
 
+  var setDisplayRules = function (store) {
+    var displayRules = [
+      {prop:"name", displayAs:"Name", edit:true},
+      {prop:"desc", displayAs:"Description", fullText:true, edit:true},
+      {prop:"contains", displayAs:"Products contained", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+    ]
+    return displayRules
   }
 
   var render = async function () {
     var store = await query.currentProject()
-    showListMenu({
+    currentVisibleList = showListMenu({
       sourceData:store.physicalSpaces.items,
       sourceLinks:store.physicalSpaces.links,
       displayProp:"name",
       targetDomContainer:".center-container",
       fullScreen:true,// TODO: perhaps not full screen?
-      display:[
-        {prop:"name", displayAs:"Name", edit:true},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:true},
-        {prop:"contains", displayAs:"Products contained", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}      ],
+      display:setDisplayRules(store),
       idProp:"uuid",
       onEditItem: (ev)=>{
         console.log("Edit");

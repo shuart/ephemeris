@@ -34,13 +34,45 @@ var createShowUpdateLinksService = function () {
     var prependContent=undefined
     var onLoaded = undefined
     if (metalinkType == "originNeed") {
-      sourceGroup="requirements"
-      sourceData=store.requirements.items
-      sourceLinks= store.requirements.links
+      if (callerType != "requirements") {
+        sourceGroup="requirements"
+        sourceLinks=store.requirements.links
+        sourceData=store.requirements.items
+        displayRules = [
+          {prop:"name", displayAs:"Name", edit:false}
+        ]
+      }else{
+        sourceGroup="currentPbs";
+        invert = true;
+        source = "target"//invert link order for after
+        target = "source"
+        sourceLinks=store.currentPbs.links
+        sourceData=store.currentPbs.items
+        displayRules = [
+          {prop:"name", displayAs:"Name", edit:false},
+          {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+        ]
+      }
     }else if (metalinkType == "originFunction") {
-      sourceGroup="functions"
-      sourceData=store.functions.items
-      sourceLinks=store.functions.links
+      if (callerType != "functions") {
+        sourceGroup="functions"
+        sourceLinks=store.functions.links
+        sourceData=store.functions.items
+        displayRules = [
+          {prop:"name", displayAs:"Name", edit:false}
+        ]
+      }else{
+        sourceGroup="currentPbs";
+        invert = true;
+        source = "target"//invert link order for after
+        target = "source"
+        sourceLinks=store.currentPbs.links
+        sourceData=store.currentPbs.items
+        displayRules = [
+          {prop:"name", displayAs:"Name", edit:false},
+          {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+        ]
+      }
     }else if (metalinkType == "origin") {
       sourceGroup="stakeholders";
       showColoredIconsRule= lettersFromNames,
@@ -225,9 +257,10 @@ var createShowUpdateLinksService = function () {
         ev.select.getParent().update()
       },
       onChangeSelect: (ev)=>{
-        var changeProp = function (sourceTriggerId) {
-          batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-          batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+        var changeProp = async function (sourceTriggerId) {
+          var store = await query.currentProject()
+          await batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+          await batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
 
           ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
           ev.select.getParent().refreshList()

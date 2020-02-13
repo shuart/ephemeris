@@ -2,6 +2,8 @@ var createFunctionsView = function () {
   var self ={};
   var objectIsActive = false;
   var isExtraFieldsVisible = false
+  var extraFields = undefined
+  var currentVisibleList = undefined
 
   var init = function () {
     connections()
@@ -9,24 +11,52 @@ var createFunctionsView = function () {
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:store.functions.items,
+          links:store.functions.links,
+          metaLinks:store.metaLinks.items,
+          displayRules:setDisplayRules(store)
+        })
+      }
+    })
+  }
 
+  var setDisplayRules = function (store) {
+    var displayRules = [
+      {prop:"name", displayAs:"Name", edit:"true"},
+      {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
+      {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
+      {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+    ]
+
+    extraFields = [
+      {prop:"name", displayAs:"Name", edit:"true"},
+      {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
+      {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
+      {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+    ]
+
+    // let storeSettings = store.settings.items.find(s=>s.type == "requirementsListViewVisibleFields")
+    // if (storeSettings && storeSettings.value[0]) { //if store settings exist and array is populated
+    //   displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
+    //   //displayRules = extraFields
+    //}
+    return displayRules
   }
 
   var render = async function () {
       var store = await query.currentProject()
-      showListMenu({
+      currentVisibleList = showListMenu({
         sourceData:store.functions.items,
         sourceLinks:store.functions.links,
         metaLinks:store.metaLinks.items,
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
-        display:[
-          {prop:"name", displayAs:"Name", edit:"true"},
-          {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-          {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
-          {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
-        ],
+        display:setDisplayRules(store),
         extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,
@@ -159,96 +189,96 @@ var createFunctionsView = function () {
       })
   }
 
-  async function startSelection(ev) {
-    var store = await query.currentProject()
-    var metalinkType = ev.target.dataset.prop;
-    var sourceTriggerId = ev.target.dataset.id;
-    var batch = ev.batch;
-    var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-    var sourceGroup = undefined
-    var sourceData = undefined
-    var invert = false
-    var source = "source"
-    var target = "target"
-    var sourceLinks= undefined
-    var displayRules= undefined
-    if (metalinkType == "originNeed") {
-      sourceGroup="requirements";
-      sourceData=store.requirements.items
-      sourceLinks=store.requirements.links
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"desc", displayAs:"Description",fullText:true, edit:false}
-      ]
-    }else if (metalinkType == "originFunction") {
-      sourceGroup="currentPbs";
-      invert = true;
-      sourceData=store.currentPbs.items
-      source = "target"//invert link order for after
-      target = "source"
-      sourceLinks=store.currentPbs.links
-      displayRules = [
-        {prop:"name", displayAs:"First name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-      ]
-    }else if (metalinkType == "tags") {
-      sourceGroup="tags";
-      sourceData=store.tags.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }
-    showListMenu({
-      sourceData:sourceData,
-      sourceLinks:sourceLinks,
-      parentSelectMenu:ev.select ,
-      multipleSelection:currentLinksUuidFromDS,
-      displayProp:"name",
-      searchable : true,
-      display:displayRules,
-      idProp:"uuid",
-      onAdd:(ev)=>{//TODO experimental, replace with common service
-        var uuid = genuuid()
-        push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
-        ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
-          onLeave: (ev)=>{
-            push(act.remove(sourceGroup,{uuid:uuid}))
-            ev.select.updateData(store[sourceGroup].items)
-          }
-        })
-      },
-      onEditItem: (ev)=>{
-        var newValue = prompt("Edit Item",ev.target.dataset.value)
-        if (newValue) {
-          push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-        }
-      },
-      onCloseMenu: (ev)=>{
-        console.log(ev.select);
-        ev.select.getParent().refreshList()
-      },
-      onChangeSelect: (ev)=>{
-        var changeProp = function (sourceTriggerId) {
-          batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-          batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-
-          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-          ev.select.getParent().refreshList()
-        }
-        if (batch[0]) { //check if batch action is needed
-          batch.forEach(function (sourceTriggerId) {
-            changeProp(sourceTriggerId)
-          })
-        }else {
-          changeProp(sourceTriggerId)
-        }
-      },
-      onClick: (ev)=>{
-        console.log("select");
-      }
-    })
-  }
+  // async function startSelection(ev) {
+  //   var store = await query.currentProject()
+  //   var metalinkType = ev.target.dataset.prop;
+  //   var sourceTriggerId = ev.target.dataset.id;
+  //   var batch = ev.batch;
+  //   var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+  //   var sourceGroup = undefined
+  //   var sourceData = undefined
+  //   var invert = false
+  //   var source = "source"
+  //   var target = "target"
+  //   var sourceLinks= undefined
+  //   var displayRules= undefined
+  //   if (metalinkType == "originNeed") {
+  //     sourceGroup="requirements";
+  //     sourceData=store.requirements.items
+  //     sourceLinks=store.requirements.links
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false},
+  //       {prop:"desc", displayAs:"Description",fullText:true, edit:false}
+  //     ]
+  //   }else if (metalinkType == "originFunction") {
+  //     sourceGroup="currentPbs";
+  //     invert = true;
+  //     sourceData=store.currentPbs.items
+  //     source = "target"//invert link order for after
+  //     target = "source"
+  //     sourceLinks=store.currentPbs.links
+  //     displayRules = [
+  //       {prop:"name", displayAs:"First name", edit:false},
+  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+  //     ]
+  //   }else if (metalinkType == "tags") {
+  //     sourceGroup="tags";
+  //     sourceData=store.tags.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false}
+  //     ]
+  //   }
+  //   showListMenu({
+  //     sourceData:sourceData,
+  //     sourceLinks:sourceLinks,
+  //     parentSelectMenu:ev.select ,
+  //     multipleSelection:currentLinksUuidFromDS,
+  //     displayProp:"name",
+  //     searchable : true,
+  //     display:displayRules,
+  //     idProp:"uuid",
+  //     onAdd:(ev)=>{//TODO experimental, replace with common service
+  //       var uuid = genuuid()
+  //       push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+  //       ev.select.setEditItemMode({
+  //         item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+  //         onLeave: (ev)=>{
+  //           push(act.remove(sourceGroup,{uuid:uuid}))
+  //           ev.select.updateData(store[sourceGroup].items)
+  //         }
+  //       })
+  //     },
+  //     onEditItem: (ev)=>{
+  //       var newValue = prompt("Edit Item",ev.target.dataset.value)
+  //       if (newValue) {
+  //         push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+  //       }
+  //     },
+  //     onCloseMenu: (ev)=>{
+  //       console.log(ev.select);
+  //       ev.select.getParent().refreshList()
+  //     },
+  //     onChangeSelect: (ev)=>{
+  //       var changeProp = function (sourceTriggerId) {
+  //         batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+  //         batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+  //
+  //         ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+  //         ev.select.getParent().refreshList()
+  //       }
+  //       if (batch[0]) { //check if batch action is needed
+  //         batch.forEach(function (sourceTriggerId) {
+  //           changeProp(sourceTriggerId)
+  //         })
+  //       }else {
+  //         changeProp(sourceTriggerId)
+  //       }
+  //     },
+  //     onClick: (ev)=>{
+  //       console.log("select");
+  //     }
+  //   })
+  // }
 
   var exportToCSV = async function () {
     let store = await query.currentProject()
