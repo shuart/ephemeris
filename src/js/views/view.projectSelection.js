@@ -115,7 +115,7 @@ var createProjectSelectionView = function (targetSelector) {
       var newReq = prompt("Add a new Project")
       //TODO Bad
       if (newReq) {
-        app.store.projects.push(createNewProject(newReq, {placeholder:true}))
+        dbConnector.addProject(createNewProject(newReq, {placeholder:true}))
         setTimeout(function () {update()}, 1000);
       }
     })

@@ -4,6 +4,7 @@ var createDbRealTimeAdaptater = function () {
 
   var users
   var projects
+  var localProjects
 
 
   var init = function () {
@@ -13,10 +14,18 @@ var createDbRealTimeAdaptater = function () {
     // projects = localforage.createInstance({name: "ephemerisProjects"});
     // users = localforage.createInstance({name: "ephemerisUsers"});
     // projects = new Nedb({ filename: 'ephemeris_local_projects', autoload: true });   // Create an in-memory only datastore
-    projects = new Nedb();   // Create an in-memory only datastore
-    localUsers = new Nedb();   // Create an in-memory only datastore
+    localProjects = new Nedb({ filename: 'ephemeris_local_projects_testground', autoload: true });   // Create an indedDB  datastore
+    //erase deb for // DEBUG:
+    // localProjects.remove({ }, { multi: true }, function (err, numRemoved) {
+    //   localProjects.loadDatabase(function (err) {
+    //     // done
+    //   });
+    // });
 
-    projects.find({}, function (err, docs) {
+    projects = new Nedb();   // Create an in-memory only datastore
+    localUsers = new Nedb({ filename: 'ephemeris_local_users_testground', autoload: true });   // Create an in-memory only datastore
+
+    localProjects.find({}, function (err, docs) {
       console.log(docs);
       console.log("indexedDB is loaded");
       if (!docs[0]) {
@@ -36,6 +45,14 @@ var createDbRealTimeAdaptater = function () {
             console.log(err);
         });
       }else {
+        localProjects.find({}, function (err, docs) {
+          projects.insert(docs, function (err, newDocs) {
+            console.log(docs);
+            setTimeout(function () {
+              startupScreen.update()
+            }, 4000);
+          });
+        });
         // // index the DB
         // db.ensureIndex({ fieldName: 'somefield', unique: true }, function (err) {
         //   console.log(err);
@@ -54,6 +71,7 @@ var createDbRealTimeAdaptater = function () {
           user.relatedProjects.push(project.uuid)
 
           projects.insert(project, (err,docs)=>console.log(docs))
+          localProjects.insert(project, (err,docs)=>console.log(docs))
         });
         localUsers.insert(user, (err,docs)=>console.log(docs))
       }).catch(function(err) {
@@ -166,12 +184,18 @@ var createDbRealTimeAdaptater = function () {
     console.log(item);
   }
   function addProject(newProject) {
+    alert("dedsef")
+    addProjectToUser(app.state.currentUser, newProject.uuid)
     return new Promise(function(resolve, reject) {
+
         projects.insert(newProject, function (err, docs) {
+          alert("dedsef")
           console.log(docs);
+          localProjects.insert(newProject, function (err, docs) {})
           resolve(docs)
         })
       }).catch(function(err) {
+        console.log(err);
         reject(err)
       });
   }
@@ -181,6 +205,9 @@ var createDbRealTimeAdaptater = function () {
     return new Promise(function(resolve, reject) {
         projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
           logCallback(item)
+          localProjects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+            console.log("persisted");
+          });
           resolve(affectedDocuments[0])
         });
       }).catch(function(err) {
@@ -193,6 +220,9 @@ var createDbRealTimeAdaptater = function () {
     return new Promise(function(resolve, reject) {
         projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
           logCallback(item)
+          localProjects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+            console.log("persisted");
+          });
           resolve(affectedDocuments[0])
         });
       }).catch(function(err) {
@@ -205,6 +235,9 @@ var createDbRealTimeAdaptater = function () {
     return new Promise(function(resolve, reject) {
         projects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
           logCallback(item)
+          localProjects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+            console.log("persisted");
+          });
           resolve(affectedDocuments[0])
         });
       }).catch(function(err) {
@@ -217,6 +250,9 @@ var createDbRealTimeAdaptater = function () {
     return new Promise(function(resolve, reject) {
         projects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
           logCallback(item)
+          localProjects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+            console.log("persisted");
+          });
           resolve(affectedDocuments[0])
         });
       }).catch(function(err) {
@@ -233,6 +269,9 @@ var createDbRealTimeAdaptater = function () {
         selector[collectionName+".items."+indexToChange+"."+prop] = value
         await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
             logCallback(item)
+            localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+                console.log("persisted");
+              });
             resolve(affectedDocuments[0])
           });
         });
@@ -264,6 +303,19 @@ var createDbRealTimeAdaptater = function () {
           console.log(docs);
           resolve(docs[0][collectionName])
         })
+      }).catch(function(err) {
+        reject(err)
+      });
+  }
+
+  function addProjectToUser(userUuid, projectUuid) {
+    let selector = {}
+    selector["relatedProjects"] = projectUuid
+    return new Promise(function(resolve, reject) {
+        localUsers.update({ uuid: userUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+          console.log(affectedDocuments);
+          resolve(affectedDocuments[0])
+        });
       }).catch(function(err) {
         reject(err)
       });
