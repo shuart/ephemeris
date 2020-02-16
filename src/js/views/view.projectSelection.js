@@ -9,6 +9,16 @@ var createProjectSelectionView = function (targetSelector) {
   var filterClosedDaysAgo = 1;
 
   var theme = {}
+  theme.noProject = function () {
+    return `
+    <div style="width: 80%;left: 10%;margin-top: 5%;" class="ui placeholder segment">
+      <div class="ui icon header">
+        <i class="city icon"></i>
+        No project yet
+      </div>
+      <div class="ui primary button action_project_selection_add_project">Add Project</div>
+    </div>`
+  }
   theme.generateProjectTitleHTML = function (projectId, title, reference) {
     return `
     <h2 data-id="${projectId}" class="ui header action-load-project">
@@ -170,20 +180,26 @@ var createProjectSelectionView = function (targetSelector) {
   var renderList = async function (container) {
     let allProjects = await query.items("projects")
     console.log(allProjects);
-    let relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
-    let sortedProject = getOrderedProjectList(relevantProjects, app.store.userData.preferences.projectDisplayOrder)
-    let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
-    var html = sortedVisibleProject.filter(e=> fuzzysearch(filterText,e.name) || fuzzysearch(filterText,e.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))).reduce((acc,i)=>{
-      let projectInfos = {
-        currentPbsNbr  : (i.currentPbs.items.length - 1),
-        requirementsNbr  : (i.requirements.items.length),
-        stakeholdersNbr  : (i.stakeholders.items.length)
-      }
-      let projectImage = i.coverImage || undefined
-      acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description.short || 'A new project', projectInfos, projectImage)
-      return acc
-    },'')
-    container.querySelector('.cardSelectionlist').innerHTML = html
+
+    if (app.store.relatedProjects && app.store.relatedProjects[0]) {
+      let relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+      let sortedProject = getOrderedProjectList(relevantProjects, app.store.userData.preferences.projectDisplayOrder)
+      let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
+      var html = sortedVisibleProject.filter(e=> fuzzysearch(filterText,e.name) || fuzzysearch(filterText,e.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))).reduce((acc,i)=>{
+        let projectInfos = {
+          currentPbsNbr  : (i.currentPbs.items.length - 1),
+          requirementsNbr  : (i.requirements.items.length),
+          stakeholdersNbr  : (i.stakeholders.items.length)
+        }
+        let projectImage = i.coverImage || undefined
+        acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description.short || 'A new project', projectInfos, projectImage)
+        return acc
+      },'')
+      container.querySelector('.cardSelectionlist').innerHTML = html
+    }else {
+      app.store.relatedProjects= []
+      container.querySelector('.cardSelectionlist').innerHTML = theme.noProject()
+    }
   }
 
 
