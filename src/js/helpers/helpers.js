@@ -287,7 +287,7 @@ var clearUncompleteLinks = async function () {
   var store = collection.items
   console.log(collection);
   console.log(store);
-  alert ("finish here uncoment rest")
+  console.log('Warning link should be cleaned');
   // for (link of store) {
   //   //check if item is complete
   //   if (!query.items("all", i=> i.uuid == link.source)[0]) {

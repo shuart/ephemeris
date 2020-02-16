@@ -130,7 +130,7 @@ var createOverview = function (targetSelector) {
   var render = async function () {
     var store = await query.currentProject()
     if (store) {
-      alert("uncoment here")
+      // alert("uncoment here")
       await clearUncompleteLinks()//clean all uncomplete metalink of the project
       // updateFileForRetroCompatibility() //check file for retrocompatbiity
       // //create a PBS and current user stakholder if first opening of project
