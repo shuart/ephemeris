@@ -354,6 +354,22 @@ var createDbRealTimeAdaptater = function () {
     });
   }
 
+  //custom action to refactor
+  function setProjectData(uuid, prop, newValue) {
+    return new Promise(async function(resolve, reject) {
+      await projects.find({uuid: uuid}, async function (err, docs) {
+        let selector = {}
+        selector[prop] = newValue
+        await projects.update({ uuid: uuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+            localProjects.update({ uuid: uuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+                console.log("persisted");
+              });
+            resolve(affectedDocuments)
+          });
+        });
+      });
+  }
+
 
   function removeProject() {
 
@@ -375,6 +391,7 @@ var createDbRealTimeAdaptater = function () {
   self.removeProjectLink = removeProjectLink
   self.updateProjectItem = updateProjectItem
   self.setProject = setProject
+  self.setProjectData = setProjectData
   self.removeProject = removeProject
   self.init = init
 

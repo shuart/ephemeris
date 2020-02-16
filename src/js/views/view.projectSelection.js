@@ -121,7 +121,6 @@ var createProjectSelectionView = function (targetSelector) {
     })
     connect(".action_project_selection_change_info","click",(e)=>{
       setProjectData(e.target.dataset.id)
-      setTimeout(function () {update()}, 1000);
     })
     connect(".action_project_selection_change_image","click",(e)=>{
       setProjectImage(e.target.dataset.id, function () {
@@ -210,17 +209,21 @@ var createProjectSelectionView = function (targetSelector) {
     });
   }
 
-  var setProjectData = function (uuid) {
-    let currentProject = app.store.projects.filter(e=> e.uuid == uuid)[0]//TODO USe reducer
+  var setProjectData = async function (uuid) {
+    let allProjects = await query.items("projects")
+    let currentProject = allProjects.filter(e=> e.uuid == uuid)[0]//TODO USe reducer
     if (currentProject) {
       let newName = prompt("Change Project Name?", currentProject.name)
       let newRef = prompt("Change Project Reference?", currentProject.reference)
       let newDesc = prompt("Change Project Description?", currentProject.description.short)
 
-      if (newName) { act.setProjectData(uuid, 'name',newName) }
-      if (newRef) { act.setProjectData(uuid, 'reference',newRef) }
-      if (newDesc) { act.setProjectData(uuid, 'description',{short:newDesc}) }
+      if (newName) { dbConnector.setProjectData(uuid, 'name',newName) }
+      if (newRef) { dbConnector.setProjectData(uuid, 'reference',newRef) }
+      if (newDesc) { dbConnector.setProjectData(uuid, 'description',{short:newDesc}) }
     }
+    setTimeout(function () {
+      update()
+    }, 1000);
   }
 
   var setProjectImage = function (uuid, callback) {
@@ -253,7 +256,7 @@ var createProjectSelectionView = function (targetSelector) {
         canvas.height=150;
         ctx.drawImage(img,0,0,iwScaled,ihScaled);
         let dataUrl = canvas.toDataURL("image/jpeg",0.5);
-        act.setProjectData(uuid, 'coverImage',dataUrl)
+        dbConnector.setProjectData(uuid, 'coverImage',dataUrl)
         if (callback) {
           callback()
         }
@@ -262,7 +265,7 @@ var createProjectSelectionView = function (targetSelector) {
     }
   }
   var removeProjectImage = function (uuid) {
-    act.setProjectData(uuid, 'coverImage',undefined)
+    dbConnector.setProjectData(uuid, 'coverImage',undefined)
   }
 
 
