@@ -45,12 +45,13 @@ var createDbRealTimeAdaptater = function () {
             console.log(err);
         });
       }else {
+        startupScreen.showLoader()
         localProjects.find({}, function (err, docs) {
           projects.insert(docs, function (err, newDocs) {
             console.log(docs);
             setTimeout(function () {
               startupScreen.update()
-            }, 4000);
+            }, 0);
           });
         });
         // // index the DB
@@ -120,7 +121,7 @@ var createDbRealTimeAdaptater = function () {
   function setUser(data) { //name
     var newUuid = uuid()
     var newNoteUuid = uuid()
-    return users.setItem(newUuid,{
+    var userObject = {
       uuid:newUuid,
       name:data.name || "new user",
       userData:{
@@ -154,11 +155,28 @@ var createDbRealTimeAdaptater = function () {
         }
       },
       projects:data.projects||[]
-    })
+    }
+    return new Promise(function(resolve, reject) {
+        localUsers.insert(userObject, function (err, docs) {
+          console.log(docs);
+          resolve(docs)
+        })
+      }).catch(function(err) {
+        console.log(err);
+        reject(err)
+      });
   }
 
   function removeUser(uuid) {
-    return users.removeItem(uuid)
+    return new Promise(function(resolve, reject) {
+        localUsers.remove({uuid:uuid}, function (err, docs) {
+          console.log(docs);
+          resolve(docs)
+        })
+      }).catch(function(err) {
+        console.log(err);
+        reject(err)
+      });
   }
 
   function addUserProject() {
@@ -184,12 +202,10 @@ var createDbRealTimeAdaptater = function () {
     console.log(item);
   }
   function addProject(newProject) {
-    alert("dedsef")
     addProjectToUser(app.state.currentUser, newProject.uuid)
     return new Promise(function(resolve, reject) {
 
         projects.insert(newProject, function (err, docs) {
-          alert("dedsef")
           console.log(docs);
           localProjects.insert(newProject, function (err, docs) {})
           resolve(docs)

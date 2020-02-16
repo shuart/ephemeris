@@ -94,14 +94,14 @@ function createStartUp() {
         if (event.target.classList.contains("action_startup_add_user")) {
           var userName = prompt("Add a user")
           if (userName != "") {
-            persist.setUser({name:userName,projects:[createNewProject("New Project", {placeholder:true}),createNewProject("Another Project", {placeholder:true})]}).then(function () {
+            dbConnector.setUser({name:userName,projects:[]}).then(function () {
               renderUserSessionView()
             })
           }
         }//end event
         if (event.target.classList.contains("action_startup_remove_user")) {
             if (confirm("This will remove the user and all it's projects")) {
-              persist.removeUser(event.target.dataset.id).then(function () {
+              dbConnector.removeUser(event.target.dataset.id).then(function () {
                 renderUserSessionView()
               })
             }
