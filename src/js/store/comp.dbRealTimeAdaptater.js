@@ -202,7 +202,11 @@ var createDbRealTimeAdaptater = function () {
     console.log(item);
   }
   function addProject(newProject) {
-    addProjectToUser(app.state.currentUser, newProject.uuid)
+    if (app.state.currentUser) {
+      addProjectToUser(app.state.currentUser, newProject.uuid)
+      app.store.relatedProjects.push(newProject.uuid)
+    }
+
     return new Promise(function(resolve, reject) {
 
         projects.insert(newProject, function (err, docs) {
