@@ -371,8 +371,18 @@ var createDbRealTimeAdaptater = function () {
   }
 
 
-  function removeProject() {
-
+  function removeProject(uuid) {
+    return new Promise(function(resolve, reject) {
+        projects.remove({uuid:uuid}, function (err, docs) {
+          localProjects.remove({uuid:uuid}, function (err, docs) {
+          })
+          console.log(docs);
+          resolve(docs)
+        })
+      }).catch(function(err) {
+        console.log(err);
+        reject(err)
+      });
   }
 
   self.getUser = getUser
