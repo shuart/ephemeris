@@ -292,7 +292,7 @@ var createDbRealTimeAdaptater = function () {
             localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
                 console.log("persisted");
               });
-            resolve(affectedDocuments[0])
+            resolve(affectedDocuments)
           });
         });
       });

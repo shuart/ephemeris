@@ -457,10 +457,12 @@ ephHelpers.promptSingleDatePicker = function (currentSelectedDate, callback) {
 }
 
 ephHelpers.updateListElements = function(list, data) {
+  console.log(data);
   if (data.items) {list.updateData(data.items)}
   if (data.links) {list.updateLinks(data.links)}
   if (data.metaLinks) {list.updateMetaLinks(data.metaLinks)}
   if (data.displayRules) {list.updateDisplayRules(data.displayRules)}
+  if (data.singleElement) {list.updateSingleElement(data.singleElement)}
   list.refreshList()
   console.log("view refreshed");
 }

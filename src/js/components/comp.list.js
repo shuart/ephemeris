@@ -1499,6 +1499,10 @@ function showListMenu({
   function updateDisplayRules(rules) {
     display = rules
   }
+  function updateSingleElement(elem) {
+    singleElement = elem
+    alert("fefse")
+  }
   function updateMetaLinks(links) {
     metaLinks = links
   }
@@ -1547,6 +1551,7 @@ function showListMenu({
   self.updateLinks = updateLinks
   self.updateDisplayRules = updateDisplayRules
   self.updateMetaLinks = updateMetaLinks
+  self.updateSingleElement = updateSingleElement
   self.remove = removeList
   self.update = update
   return self

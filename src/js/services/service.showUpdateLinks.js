@@ -254,7 +254,10 @@ var createShowUpdateLinksService = function () {
       },
       onCloseMenu: (ev)=>{
         console.log(ev.select);
-        ev.select.getParent().update()
+        if (callback) {
+          callback(ev)
+        }
+        // ev.select.getParent().update()
       },
       onChangeSelect: (ev)=>{
         var changeProp = async function (sourceTriggerId) {
