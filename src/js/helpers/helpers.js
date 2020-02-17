@@ -462,6 +462,7 @@ ephHelpers.updateListElements = function(list, data) {
   if (data.links) {list.updateLinks(data.links)}
   if (data.metaLinks) {list.updateMetaLinks(data.metaLinks)}
   if (data.displayRules) {list.updateDisplayRules(data.displayRules)}
+  if (data.rulesToDisplaySingleElement) {list.updateRulesToDisplaySingleElement(data.rulesToDisplaySingleElement)}
   if (data.singleElement) {list.updateSingleElement(data.singleElement)}
   list.refreshList()
   console.log("view refreshed");

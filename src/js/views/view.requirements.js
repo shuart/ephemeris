@@ -134,9 +134,9 @@ var createRequirementsView = function () {
         },
         onClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id, function (e) {
-            ev.select.updateData(store.requirements.items)
-            ev.select.updateLinks(store.requirements.links)
-            ev.select.refreshList()
+            // ev.select.updateData(store.requirements.items)
+            // ev.select.updateLinks(store.requirements.links)
+            // ev.select.refreshList()
           })
         },
         extraActions:[

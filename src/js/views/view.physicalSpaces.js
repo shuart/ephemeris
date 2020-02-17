@@ -97,9 +97,9 @@ var createWorkPhysicalSpacesView = function () {
       },
       onClick: (ev)=>{
         showSingleItemService.showById(ev.target.dataset.id, function (e) {
-          ev.select.updateData(store.physicalSpaces.items)
-          ev.select.updateLinks(store.physicalSpaces.links)
-          ev.select.refreshList()
+          // ev.select.updateData(store.physicalSpaces.items)
+          // ev.select.updateLinks(store.physicalSpaces.links)
+          // ev.select.refreshList()
         })
         //mutations
         // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)

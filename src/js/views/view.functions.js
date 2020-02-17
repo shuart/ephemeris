@@ -137,9 +137,9 @@ var createFunctionsView = function () {
         },
         onClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id, function (e) {
-            ev.select.updateData(store.functions.items)
-            ev.select.updateLinks(store.functions.links)
-            ev.select.refreshList()
+            // ev.select.updateData(store.functions.items)
+            // ev.select.updateLinks(store.functions.links)
+            // ev.select.refreshList()
           })
         },
         extraActions:[
