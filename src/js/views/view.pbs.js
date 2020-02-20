@@ -151,9 +151,9 @@ var createPbsView = function () {
         },
         onClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id, function (e) {
-            ev.select.updateData(store.currentPbs.items)
-            ev.select.updateLinks(store.currentPbs.links)
-            ev.select.refreshList()
+            // ev.select.updateData(store.currentPbs.items)
+            // ev.select.updateLinks(store.currentPbs.links)
+            // ev.select.refreshList()
           })
         },
         extraActions:[
