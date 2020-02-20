@@ -895,7 +895,7 @@ var createRelationsView = function () {
   }
 
   var render = async function () {
-
+    var store = await query.currentProject()
     container = document.createElement("div")
     container.style.height = "100%"
 
@@ -904,7 +904,7 @@ var createRelationsView = function () {
     connections(container)
     //update all connections at each render. otherwise multiple views share the updae
 
-    var store = await query.currentProject()
+
     container.innerHTML=`
       <div class='menuArea'></div>
       <div style="height: calc(100% - 45px); position: relative" class='graphArea'>
@@ -943,10 +943,7 @@ var createRelationsView = function () {
 
     renderMenu(container)
 
-    //append container and add graph afterward //TODO should be reveresed
 
-    document.querySelector(".center-container").innerHTML=''
-    document.querySelector(".center-container").appendChild(container)
 
     //render graph
     //reset items to display component var
@@ -989,6 +986,11 @@ var createRelationsView = function () {
       groupLinks.splice(-1,1)
     }
 
+    //append container and add graph afterward //TODO should be reveresed
+
+    document.querySelector(".center-container").innerHTML=''
+    document.querySelector(".center-container").appendChild(container)
+
     if (displayType == "state") {
       var state = createStateDiagram({container:".interfaceGraph",data:concatData, links:store.metaLinks.items,positions :undefined, groupLinks:groupLinks})
       state.init()
@@ -996,7 +998,7 @@ var createRelationsView = function () {
       var fixedValuesList = []
       if (fixedValues) { //check if network is fixed or dynamic
         if (currentSnapshot) {// has a snapshot been activated
-          fixedValuesList = query.currentProject().graphs.items.find(i=>i.uuid == currentSnapshot).nodesPositions
+          fixedValuesList = store.graphs.items.find(i=>i.uuid == currentSnapshot).nodesPositions
           console.log(filteredItemsToDisplay.length, fixedValuesList.length);
           if (fixedValuesList && itemsToDisplay && filteredItemsToDisplay.length-fixedValuesList.length > -1 ) {// if element to display are note the same as the snapshot
             if (!confirm("Update this snapshot with " + (filteredItemsToDisplay.length-fixedValuesList.length +1) +" newly added items?")) {//TODO why is the +1 needed?
@@ -1832,17 +1834,17 @@ var createRelationsView = function () {
       unpinNodeOnClick:!fixedValues,//disable node unpin when fixedgraph mode
       onNodeDragEnd:function (node) {
         if (fixedValues) {
-          //TODO test to clean
-          if (!query.currentProject().graphs ) {//backward compatibility DBCHANGE
-            query.currentProject().graphs = {}
-            query.currentProject().graphs.items =[]
-          }
+          // //TODO test to clean
+          // if (!query.currentProject().graphs ) {//backward compatibility DBCHANGE
+          //   query.currentProject().graphs = {}
+          //   query.currentProject().graphs.items =[]
+          // }
           let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
           //append to graph DB
           if (activeMode=="relations") {
-            query.currentProject().graphs.default = graphItem//TODO use actions DBCHANGE
+            // query.currentProject().graphs.default = graphItem//TODO use actions DBCHANGE
           }else if (activeMode == "interfaces") {
-            query.currentProject().graphs.interfaces = graphItem//TODO use actions DBCHANGE
+            // query.currentProject().graphs.interfaces = graphItem//TODO use actions DBCHANGE
           }
         }
       },
@@ -2032,8 +2034,9 @@ var createRelationsView = function () {
     }
   }
 
-  function setSnapshot(uuid) {
-    let graph = query.currentProject().graphs.items.find(i=> i.uuid == uuid)
+  async function setSnapshot(uuid) {
+    let store = await query.currentProject()
+    let graph = store.graphs.items.find(i=> i.uuid == uuid)
     fixedValues = true
     hiddenItemsFromSideView= graph.hiddenItems || []
     if (graph.elementVisibility) {
@@ -2045,16 +2048,16 @@ var createRelationsView = function () {
     //regsiter la position also TODO put in own fuction as it's used by stellae dragend
     if (fixedValues) {
       //TODO test to clean
-      if (!query.currentProject().graphs ) {//backward compatibility
-        query.currentProject().graphs = {}
-        query.currentProject().graphs.items =[]
-      }
+      // if (!query.currentProject().graphs ) {//backward compatibility
+      //   query.currentProject().graphs = {}
+      //   query.currentProject().graphs.items =[]
+      // }
       let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
       //append to graph DB
       if (activeMode=="relations") {
-        query.currentProject().graphs.default = graphItem//TODO use actions
+        // query.currentProject().graphs.default = graphItem//TODO use actions
       }else if (activeMode == "interfaces") {
-        query.currentProject().graphs.interfaces = graphItem//TODO use actions
+        // query.currentProject().graphs.interfaces = graphItem//TODO use actions
       }
     }
 
