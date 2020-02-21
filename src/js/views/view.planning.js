@@ -142,8 +142,9 @@ var createPlanningView = function () {
     container.innerHTML = html
   }
 
-  var setCurrentPlanning = function (uuid) {
-    currentPlanning = query.currentProject().plannings.items.find(p=>p.uuid == uuid)//TODO remove
+  var setCurrentPlanning = async function (uuid) {
+    let store = await query.currentProject()
+    currentPlanning = store.plannings.items.find(p=>p.uuid == uuid)//TODO remove
     if (currentPlanning) {
       renderPlanning()
     }
