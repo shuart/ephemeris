@@ -3,6 +3,7 @@ var createPlanningView = function () {
   var objectIsActive = false;
   var ganttObject = undefined
   var currentPlanning = undefined
+  var currentList = undefined
 
   let theme = {}
   theme.noPlanning = function () {
@@ -71,6 +72,17 @@ var createPlanningView = function () {
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentList) {
+        var store = await query.currentProject()
+        let updatedData = await preparePlanningData(currentPlanning.uuid)
+        ephHelpers.updateListElements(currentList,{
+          items:updatedData,
+          metaLinks:store.metaLinks.items,
+          displayRules:prepareListDisplay(store),
+        })
+      }
+    })
     connect(".action_planning_manager_load_planning", "click", (e)=>{
       console.log(e.target.dataset.id);
       let planningId = e.target.dataset.id
@@ -155,23 +167,25 @@ var createPlanningView = function () {
     }
   }
 
-
+  var prepareListDisplay = function (store) {
+    return [
+      {prop:"name", displayAs:"name", edit:"true"},
+      {prop:"desc", displayAs:"Description", edit:"true"},
+      {prop:"start", displayAs:"Début", edit:"true", time:true},
+      {prop:"duration", displayAs:"Durée", edit:"true"},
+      {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+    ]
+  }
   var renderPlanning = async function () {
       var store = await query.currentProject()
-      console.log(await preparePlanningData(currentPlanning.uuid));
-      showListMenu({
-        sourceData:await preparePlanningData(currentPlanning.uuid),
+      var planningData = await preparePlanningData(currentPlanning.uuid);
+      currentList= showListMenu({
+        sourceData:planningData,
         // sourceLinks:store.plannings.items[0].links,
         targetDomContainer:".planning-list-area",
         fullScreen:true,
         displayProp:"name",
-        display:[
-          {prop:"name", displayAs:"name", edit:"true"},
-          {prop:"desc", displayAs:"Description", edit:"true"},
-          {prop:"start", displayAs:"Début", edit:"true", time:true},
-          {prop:"duration", displayAs:"Durée", edit:"true"},
-          {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
-        ],
+        display:prepareListDisplay(store),
         idProp:"uuid",
         onEditItem: async(ev)=>{
           console.log("Edit");
@@ -387,11 +401,27 @@ var createPlanningView = function () {
                   let data = await prepareGanttData()
                   ganttObject.update(data)
                    changeListSize()
+                   updateComponents()
                }
             }
           }
         ]
       })
+      updateComponents()
+  }
+
+  var updateComponents = function () {
+    setTimeout(async function () {
+      if (true) { //TODO dirty bugfix
+        var store = await query.currentProject()
+        let updatedData = await preparePlanningData(currentPlanning.uuid)
+        ephHelpers.updateListElements(currentList,{
+          items:updatedData,
+          metaLinks:store.metaLinks.items,
+          displayRules:prepareListDisplay(store),
+        })
+      }
+    }, 100);
   }
 
   var changeListSize = function () {
