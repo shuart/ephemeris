@@ -14,6 +14,11 @@ var createPlanningView = function () {
       </div>
     </div>`
   }
+  theme.planningVisible = function () {
+    return `
+      <div class="planning-gantt-area"></div>
+      <div class="planning-list-area"></div>`
+  }
   theme.planningPreviewItem = function (i) {
      html =`
      <div data-id="${i.uuid}" class="searchable_planning list-item action_planning_manager_load_planning">
@@ -69,7 +74,7 @@ var createPlanningView = function () {
     connect(".action_planning_manager_load_planning", "click", (e)=>{
       console.log(e.target.dataset.id);
       let planningId = e.target.dataset.id
-      document.querySelector(".center-container").innerHTML=""
+      document.querySelector(".center-container").innerHTML=theme.planningVisible()
       ganttObject = undefined
       setCurrentPlanning(planningId)
     })
@@ -157,7 +162,7 @@ var createPlanningView = function () {
       showListMenu({
         sourceData:await preparePlanningData(currentPlanning.uuid),
         // sourceLinks:store.plannings.items[0].links,
-        targetDomContainer:".center-container",
+        targetDomContainer:".planning-list-area",
         fullScreen:true,
         displayProp:"name",
         display:[
@@ -190,7 +195,7 @@ var createPlanningView = function () {
           push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
           var newPlanningData = await preparePlanningData(currentPlanning.uuid)
           ev.select.updateData(newPlanningData)
-
+          alert('"ffesfesfs"')
           if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
         },
         onRemove: async(ev)=>{
@@ -326,12 +331,12 @@ var createPlanningView = function () {
             name:"Gantt",
             action: async (ev)=>{
               if (ganttObject) {
-                document.querySelector(".center-container").innerHTML=""
+                document.querySelector(".planning-gantt-area").innerHTML=""
                 ganttObject = undefined
               }else {
                 let ganttData = await prepareGanttData()
                 ganttObject = createGanttView({
-                  targetSelector:".center-container",
+                  targetSelector:".planning-gantt-area",
                   initialData:ganttData,
                   elementDefaultColor :"rgb(104, 185, 181)",
                   elementDefaultTextColor :"#fff",
@@ -379,6 +384,8 @@ var createPlanningView = function () {
               }
 
                if (ganttObject) {//change siz of list if gant is activated
+                  let data = await prepareGanttData()
+                  ganttObject.update(data)
                    changeListSize()
                }
             }
