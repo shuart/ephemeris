@@ -7,6 +7,7 @@ var createVvReport = function ({
   var objectIsActive = false;
 
   let currentReportUuid = undefined
+  let currentReportList = undefined
 
   let theme = {
     menu : function () {
@@ -34,12 +35,27 @@ var createVvReport = function ({
     connections()
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", async function () {
+      console.log(objectIsActive,currentReportList);
+      if (objectIsActive && currentReportList) {
+        var store = await query.currentProject()
+        let updatedWorkSet = await generateRelevantActions(currentReportUuid)
+        console.log(updatedWorkSet);
+        ephHelpers.updateListElements(currentReportList,{
+          items:updatedWorkSet,
+          metaLinks:store.metaLinks.items,
+          displayRules:generateDisplayRules(store),
+        })
+      }
+    })
     connect(".action_vv_report_close","click",(e)=>{
+      objectIsActive = false;
       sourceOccElement.remove()
     })
   }
 
   var render = function (uuid) {
+    objectIsActive = true;
     sourceOccElement = document.createElement('div');
     sourceOccElement.style.height = "100%"
     sourceOccElement.style.width = "100%"
@@ -88,11 +104,11 @@ var createVvReport = function ({
     renderSet()
   }
 
-  var renderSet =function (){
-    var store = query.currentProject()
-    let relevantSet = generateRelevantActions(currentReportUuid)
-    let workSet = deepCopy(relevantSet)
-    displayWorkSet(workSet, ".vvActionsArea")
+  var renderSet = async function (){
+    let relevantSet = await generateRelevantActions(currentReportUuid)
+    // let workSet = deepCopy(relevantSet)
+    console.log(relevantSet);
+    displayWorkSet(relevantSet, ".vvActionsArea")
   }
   var renderMenu =function (uuid){
     return theme.menu()
@@ -100,44 +116,51 @@ var createVvReport = function ({
 
   //UTILS
 
-  var generateRelevantActions = function (currentReportUuid) {
-    var store = query.currentProject()
+  var generateRelevantActions = async function (currentReportUuid) {
+    var store = await query.currentProject()
+    console.log(currentReportUuid)
+    console.log(store.vvActions.items.filter(i=>i.sourceReport == currentReportUuid));
     return store.vvActions.items.filter(i=>i.sourceReport == currentReportUuid)
   }
 
-  var displayWorkSet = function (workSet, container) {
-    var store = query.currentProject()
-    showListMenu({
+  var generateDisplayRules = function (store) {
+    return [
+      {prop:"name", displayAs:"Name", edit:false},
+      {prop:"vvReportNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
+      {prop:"vvReportInterface", displayAs:"Related Interfaces", meta:()=>store.metaLinks.items, choices:()=>store.interfaces.items, edit:false},
+      {prop:"shallStatement", displayAs:"Shall Statement", edit:false},
+      {prop:"successCriteria", displayAs:"Success Criteria", edit:false},
+      {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:false},
+      {prop:"documents", displayAs:"Documents",droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true},
+      {prop:"result", displayAs:"Result", edit:true},
+      {prop:"status", displayAs:"Status", options:listOptions.vv_status,edit:true}
+    ]
+  }
+
+  var displayWorkSet = async function (workSet, container) {
+    console.log(workSet);
+    var store = await query.currentProject()
+    currentReportList = showListMenu({
       sourceData:workSet,
       metaLinks:store.metaLinks.items,
       displayProp:"name",
       targetDomContainer:container,
       fullScreen:true,// TODO: perhaps not full screen?
-      display:[
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"vvReportNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
-        {prop:"vvReportInterface", displayAs:"Related Interfaces", meta:()=>store.metaLinks.items, choices:()=>store.interfaces.items, edit:false},
-        {prop:"shallStatement", displayAs:"Shall Statement", edit:false},
-        {prop:"successCriteria", displayAs:"Success Criteria", edit:false},
-        {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:false},
-        {prop:"documents", displayAs:"Documents",droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true},
-        {prop:"result", displayAs:"Result", edit:true},
-        {prop:"status", displayAs:"Status", options:listOptions.vv_status,edit:true}
-      ],
+      display:generateDisplayRules(store),
       idProp:"uuid",
       onEditItem: (ev)=>{
         console.log("Edit");
         var newValue = prompt("Edit Item",ev.target.dataset.value)
         if (newValue) {
           push(act.edit("vvActions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-          ev.select.updateData(generateRelevantActions(currentReportUuid))
+          // ev.select.updateData(generateRelevantActions(currentReportUuid))
         }
       },
       onEditOptionsItem: (ev)=>{
         console.log("Edit_option");
           let newValue = ev.value
           push(act.edit("vvActions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-          ev.select.updateData(generateRelevantActions(currentReportUuid))
+          // ev.select.updateData(generateRelevantActions(currentReportUuid))
       },
       onEditChoiceItem: (ev)=>{
         startSelection(ev)
@@ -146,13 +169,13 @@ var createVvReport = function ({
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("vvActions",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(generateRelevantActions(currentReportUuid))
+          // ev.select.updateData(generateRelevantActions(currentReportUuid))
         }
       },
       onAdd: (ev)=>{
         let definitionName = prompt("New Defintion")
         push(act.add("vvActions",{uuid:genuuid(), sourceReport:currentReportUuid, name:definitionName, color:"#ffffff"}))
-        ev.select.updateData(generateRelevantActions(currentReportUuid))
+        // ev.select.updateData(generateRelevantActions(currentReportUuid))
       },
       onLabelClick: (ev)=>{
         showSingleItemService.showById(ev.target.dataset.id)
@@ -348,8 +371,8 @@ var createVvReport = function ({
           // }
           batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
 
-          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-          ev.select.getParent().refreshList()
+          // ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          // ev.select.getParent().refreshList()
         }
         if (batch[0]) { //check if batch action is needed
           batch.forEach(function (sourceTriggerId) {
@@ -392,6 +415,7 @@ var createVvReport = function ({
   }
 
   var setActive =function () {
+    objectIsActive = true;
     update()
   }
 
