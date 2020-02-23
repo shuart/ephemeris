@@ -56,7 +56,7 @@ var createUnifiedView = function (targetSelector) {
       if (focusOnProject) {
         focusOnProject = undefined
       }else {
-        focusOnProject = query.currentProject().uuid
+        focusOnProject = app.state.currentProject
       }
       update()
     })
