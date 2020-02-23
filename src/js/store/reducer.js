@@ -1,5 +1,4 @@
 // STORE REDUCER
-
 function reducer(action, store) {
   var type = action.type;
   var pl = action.payload;
@@ -10,25 +9,10 @@ function reducer(action, store) {
   var storeGroup = undefined; //find where to apply the action
   var storeArray = undefined;
 
-  //Set correct Project Store
-  // if (group == "projects") { //TODO redo everything here
-  //   store = app.store.projects
-  // }else if (group == "actions") {//handle actions
-  //   if (pl.project) {
-  //     store = app.store.projects.filter(p => p.uuid == pl.project)[0]
-  //   }else{
-  //     store = app.store.projects.filter(e => e.actions.items.find(e => pl.uuid == e.uuid))[0].actions
-  //   }
-  // }else {
-  //   store = undefined //TODO remove DBCHANGE
-  // }
-  //Set correct group
-
-  if (group == "actions") { //special case for actions in all actions view
-    if (pl.project) {
-      projectUuid = pl.project
-    }
+  if (pl.project) { //special case for actions in all actions view
+    projectUuid = pl.project
   }
+
   if (typeof group == "string") {
     storeGroup = group;
   }else if (Array.isArray(group)) {

@@ -87,12 +87,16 @@ var createUnifiedView = function (targetSelector) {
         }
       })
     })
-    connect(".action_unified_list_select_item_assigned","click",(e)=>{
+    connect(".action_unified_list_select_item_assigned","click",async (e)=>{
+      var allProjects = await query.items("projects")
+
       var metalinkType = e.target.dataset.prop;
       var sourceTriggerId = e.target.dataset.id;
-      var projectStore = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0];
-      var metaLinks = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+      var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
+      var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
+
+      // showUpdateLinksService.show(ev,"requirements")
       showListMenu({
         sourceData:projectStore.stakeholders.items,
         parentSelectMenu:e.select ,
@@ -109,16 +113,36 @@ var createUnifiedView = function (targetSelector) {
         onCloseMenu: (ev)=>{
           update()
         },
+        // onChangeSelect: (ev)=>{
+        //   console.log(ev.select.getSelected());
+        //   console.log(projectStore.metaLinks.items);
+        //   projectStore.metaLinks.items = projectStore.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
+        //   for (newSelected of ev.select.getSelected()) {
+        //     projectStore.metaLinks.items.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
+        //   }
+        //   // console.log(projectStore.metaLinks.items);
+        //   // saveDB()
+        //   // update()
+        // },
         onChangeSelect: (ev)=>{
-          console.log(ev.select.getSelected());
-          console.log(projectStore.metaLinks.items);
-          projectStore.metaLinks.items = projectStore.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
-          for (newSelected of ev.select.getSelected()) {
-            projectStore.metaLinks.items.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
+          var changeProp = async function (sourceTriggerId) {
+            var allProjects = await query.items("projects")
+            //update store
+            var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
+            var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+
+            await batchRemoveMetaLinks(projectStore, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), "source", sourceTriggerId, projectStore.uuid)
+            await batchAddMetaLinks(projectStore, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), "source", sourceTriggerId, projectStore.uuid)
+
           }
-          console.log(projectStore.metaLinks.items);
-          saveDB()
-          update()
+          changeProp(sourceTriggerId)
+          // if (batch && batch[0]) { //check if batch action is needed
+          //   batch.forEach(function (sourceTriggerId) {
+          //     changeProp(sourceTriggerId)
+          //   })
+          // }else {
+          //   changeProp(sourceTriggerId)
+          // }
         },
         onClick: (ev)=>{
           console.log("select");
@@ -253,6 +277,7 @@ var createUnifiedView = function (targetSelector) {
   var generateTaskOwnershipHTML = function (allProjects,actions, owners) {
     var html =""
     console.log(owners);
+    console.log(allProjects);
     //get owners relevant infos
     var ownerTable = allProjects
         .map(e => e.stakeholders.items)
@@ -277,7 +302,7 @@ var createUnifiedView = function (targetSelector) {
               </h5>
               <div class="description">
                 Created ${moment(i.created).fromNow() }, ${generateCloseInfo(i.closedOn)}  assigned to
-                ${generateListeFromMeta("assignedTo",i.uuid, query.items("projects",e=>e.uuid == i.projectuuid)[0].stakeholders.items, i.projectuuid)}
+                ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectuuid).stakeholders.items, i.projectuuid)}
                 ${generateTimeFromMeta("dueDate", i.uuid, i.dueDate, i.projectuuid)}
               </div>
             </div>

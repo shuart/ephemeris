@@ -363,7 +363,7 @@ var getObjectGroupByUuid = function (uuid, store) {
   return storeGroup
 }
 
-var batchRemoveMetaLinks = function (store, type, originalSet, targetSet, initiatorType, initId) {
+var batchRemoveMetaLinks = function (store, type, originalSet, targetSet, initiatorType, initId, projectUuid) {
   let idsToRemove = originalSet.filter(os=>!targetSet.includes(os))
   console.log(idsToRemove);
   let relatedMetaLinks =[]
@@ -373,10 +373,10 @@ var batchRemoveMetaLinks = function (store, type, originalSet, targetSet, initia
     relatedMetaLinks= store.metaLinks.items.filter(l => l.type==type && l.target== initId && idsToRemove.includes(l.source))
   }
   relatedMetaLinks.forEach(d=>{
-    push(act.remove("metaLinks",{uuid:d.uuid}))
+    push(act.remove("metaLinks",{uuid:d.uuid,project:projectUuid }))
   })
 }
-var batchAddMetaLinks = function (store, type, originalSet, targetSet, initiatorType, initId) {
+var batchAddMetaLinks = function (store, type, originalSet, targetSet, initiatorType, initId, projectUuid) {
   console.log(originalSet);
   console.log(targetSet);
 
@@ -390,9 +390,9 @@ var batchAddMetaLinks = function (store, type, originalSet, targetSet, initiator
     console.log(idsToAdd);
   idsToAdd.forEach(id=>{
     if (initiatorType == "source") {
-      push(act.add("metaLinks",{type:type, source:initId, target:id}))
+      push(act.add("metaLinks",{type:type, source:initId, target:id,project:projectUuid }))
     }else {
-      push(act.add("metaLinks",{type:type, source:id, target:initId}))
+      push(act.add("metaLinks",{type:type, source:id, target:initId,project:projectUuid }))
     }
   })
 }
