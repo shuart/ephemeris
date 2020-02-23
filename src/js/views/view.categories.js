@@ -1,6 +1,7 @@
 var createCategoriesView = function () {
   var self ={};
   var objectIsActive = false;
+  var currentVisibleList= undefined;
 
   var init = function () {
     connections()
@@ -10,9 +11,18 @@ var createCategoriesView = function () {
 
   }
 
+  var updateList =  function () {
+    setTimeout(async function () {
+      var store = await query.currentProject()
+      ephHelpers.updateListElements(currentVisibleList,{
+        items:store.categories.items
+      })
+    }, 1500);
+  }
+
   var render = async function () {
     var store = await query.currentProject()
-    showListMenu({
+    currentVisibleList= showListMenu({
       sourceData:store.categories.items,
       displayProp:"name",
       // targetDomContainer:".center-container",
@@ -35,25 +45,29 @@ var createCategoriesView = function () {
             push(act.edit("categories", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
           }
         }
+        updateList()
 
       },
       onEditColorItem: (ev)=>{
         if (ev.color && ev.color.hex) {
           push(act.edit("categories", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:(ev.color.hex+"").slice(0,-2)}))
         }
+        updateList()
       },
       onRemoveColorItem: (ev)=>{
           push(act.edit("categories", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:undefined}))
+          updateList()
       },
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("categories",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.categories.items)
+          updateList()
         }
       },
       onAdd: (ev)=>{
         let catName = prompt("New Category")
         push(act.add("categories",{uuid:genuuid(), name:catName, svgPath:"M560 448h-16V96H32v352H16.02c-8.84 0-16 7.16-16 16v32c0 8.84 7.16 16 16 16H176c8.84 0 16-7.16 16-16V320c0-53.02 42.98-96 96-96s96 42.98 96 96l.02 160v16c0 8.84 7.16 16 16 16H560c8.84 0 16-7.16 16-16v-32c0-8.84-7.16-16-16-16zm0-448H16C7.16 0 0 7.16 0 16v32c0 8.84 7.16 16 16 16h544c8.84 0 16-7.16 16-16V16c0-8.84-7.16-16-16-16z"}))
+        updateList()
       },
       onClick: (ev)=>{
         //mutations
@@ -76,6 +90,7 @@ var createCategoriesView = function () {
   }
 
   var setInactive = function () {
+    currentVisibleList = undefined
     objectIsActive = false;
   }
 
