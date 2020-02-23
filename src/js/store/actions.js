@@ -20,8 +20,8 @@ function setCurrentProject(project) {
     // var currentProjectListIndex = app.store.projects.findIndex(e=> e.uuid == store.uuid)
     // app.store.projects[currentProjectListIndex]= store;
     // store = app.store.projects[projectListIndex]
-    saveDB()
-    renderCDC()
+    // saveDB()
+    // renderCDC()
   }
 }
 function setCurrentPage(page) {

@@ -11,18 +11,24 @@ function reducer(action, store) {
   var storeArray = undefined;
 
   //Set correct Project Store
-  if (group == "projects") { //TODO redo everything here
-    store = app.store.projects
-  }else if (group == "actions") {//handle actions
-    if (pl.project) {
-      store = app.store.projects.filter(p => p.uuid == pl.project)[0]
-    }else{
-      store = app.store.projects.filter(e => e.actions.items.find(e => pl.uuid == e.uuid))[0].actions
-    }
-  }else {
-    store = undefined //TODO remove DBCHANGE
-  }
+  // if (group == "projects") { //TODO redo everything here
+  //   store = app.store.projects
+  // }else if (group == "actions") {//handle actions
+  //   if (pl.project) {
+  //     store = app.store.projects.filter(p => p.uuid == pl.project)[0]
+  //   }else{
+  //     store = app.store.projects.filter(e => e.actions.items.find(e => pl.uuid == e.uuid))[0].actions
+  //   }
+  // }else {
+  //   store = undefined //TODO remove DBCHANGE
+  // }
   //Set correct group
+
+  if (group == "actions") { //special case for actions in all actions view
+    if (pl.project) {
+      projectUuid = pl.project
+    }
+  }
   if (typeof group == "string") {
     storeGroup = group;
   }else if (Array.isArray(group)) {
@@ -60,7 +66,7 @@ function reducer(action, store) {
     var sourceItem = storeGroup.items.filter((item)=>item.uuid == pl.origin)[0]
     var targetItem = storeGroup.items.filter((item)=>item.uuid == pl.target)[0]
     storeGroup.items = moveElementInArray(storeGroup.items,sourceItem,targetItem)
-    
+
   }else if (type == "modifyItem") { //MODIFY ITEM
     // var itemToEdit = storeGroup.items.filter((item)=>item.uuid == pl.uuid)
     // itemToEdit[0][pl.prop] = pl.value

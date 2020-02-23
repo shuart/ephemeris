@@ -304,6 +304,8 @@ var createDbRealTimeAdaptater = function () {
       //   reject(err)
       // });
   }
+  //SPECIAL CASES
+
   function getProject(uuid) {
     return new Promise(function(resolve, reject) {
         projects.find({uuid: uuid}, function (err, docs) {
