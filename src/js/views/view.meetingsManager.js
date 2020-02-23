@@ -21,8 +21,7 @@ var createMeetingsManager = function (targetSelector) {
       </div>
     </div>`
   }
-  theme.editor = function (e) {//editor start point
-    var store = query.currentProject()
+  theme.editor = function (e, store) {//editor start point
 
      html =`
      <div style="width:80%; margin-left:10%;" id="meetingAreaEditor" class="meetingAreaEditor">
@@ -37,8 +36,8 @@ var createMeetingsManager = function (targetSelector) {
 
         ${theme.meetingInfoArea(e)}
         ${theme.meetingParticipantsArea(e)}
-        ${theme.meetingContentArea(e)}
-        ${theme.meetingArchived(e)}
+        ${theme.meetingContentArea(store, e)}
+        ${theme.meetingArchived(store, e)}
      </div>
     `
     return html
@@ -108,16 +107,16 @@ var createMeetingsManager = function (targetSelector) {
     `
     return html
   }
-  theme.meetingContentArea= function (meeting) {
+  theme.meetingContentArea= function (store, meeting) {
 
      html =`
      <h2 class="ui header">Content</h2>
-     ${meeting.chapters.map(i=>theme.meetingChapter(i)).join(" ")}
+     ${meeting.chapters.map(i=>theme.meetingChapter(store, i)).join(" ")}
      <button data-id="${currentOpenedMeeting}" class="ui basic mini button action_meeting_manager_add_chapter">Add a Chapter</button>
     `
     return html
   }
-  theme.meetingChapter= function (chapter) {
+  theme.meetingChapter= function (store, chapter) {
 
      html =`
      <h3 class="ui header">
@@ -125,13 +124,13 @@ var createMeetingsManager = function (targetSelector) {
       <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${chapter.name}" data-chapter="${chapter.uuid}" class="edit icon action_meetingmanager_list_edit_chapter" style="display:inline-block; opacity:0.2;font-size: 13px;vertical-align: top;"></i>
       <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${chapter.name}" data-chapter="${chapter.uuid}" class="times icon action_meetingmanager_list_delete_chapter" style="display:inline-block; opacity:0.2;font-size: 13px;vertical-align: top;"></i>
      </h3>
-     ${chapter.topics.filter(t=>!t.archived).map(i=>theme.meetingTopicArea(i, chapter)).join(" ")}
+     ${chapter.topics.filter(t=>!t.archived).map(i=>theme.meetingTopicArea(store, i, chapter)).join(" ")}
      <button data-meeting="${currentOpenedMeeting}" data-chapter="${chapter.uuid}"  class="ui basic mini button action_meeting_manager_add_topic">Add a Topic</button>
     `
     return html
   }
 
-  theme.meetingTopicArea= function (topic, chapter) {
+  theme.meetingTopicArea= function (store, topic, chapter) {
     let colType = undefined
      html =`
      <h4 class="ui header">
@@ -142,7 +141,7 @@ var createMeetingsManager = function (targetSelector) {
      </h4>
      <div style="width:90%; margin-left:5%;" class='flexTable'>
        <div class="meeting-table">
-       ${topic.items.map(i=>theme.meetingItems(i)).join(" ")}
+       ${topic.items.map(i=>theme.meetingItems(store, i)).join(" ")}
        </div>
      </div>
      <div style='margin-left: 16px;opacity: 0.5;margin-bottom: 9px;margin-top: 8px;' class="topic-menu">
@@ -159,32 +158,32 @@ var createMeetingsManager = function (targetSelector) {
     `
     return html
   }
-  theme.meetingArchived= function (meeting) {
+  theme.meetingArchived= function (store,meeting) {
 
      html =`
      <h3 class="ui header">
       Archived
      </h3>
-     ${meeting.chapters.map(c=>c.topics.filter(t=>t.archived).map(i=>theme.meetingTopicArea(i, c)).join(" ")).join(" ")}
+     ${meeting.chapters.map(c=>c.topics.filter(t=>t.archived).map(i=>theme.meetingTopicArea(store, i, c)).join(" ")).join(" ")}
     `
     return html
   }
-  theme.meetingItems= function (item) {
+  theme.meetingItems= function (store, item) {
     if (item.type == "action") {
-      return theme.meetingItemAction(item)
+      return theme.meetingItemAction(store, item)
     }else if (item.type == "info") {
       return theme.meetingItemInfo(item)
     }else if (item.type == "requirement") {
-      return theme.meetingItemRequirement(item)
+      return theme.meetingItemRequirement(store, item)
     }
   }
-  theme.meetingItemConnection=function (item) {
+  theme.meetingItemConnection=function (store, item) {
 
     let html = ''
     var isObjectMissing = false
     let linkObject = currentMeetingObject.relations.find(r=>r.source == item.uuid)
     if (linkObject) { //check if taget still exist first
-      isObjectMissing = !checkIfTargetIsReachable(linkObject.target)
+      isObjectMissing = !checkIfTargetIsReachable(store, linkObject.target)
       if (isObjectMissing) {
         if (confirm("One or more items related to this meeting are missing. Remove missing link?")) {
           console.log(currentMeetingObject.relations);
@@ -198,11 +197,11 @@ var createMeetingsManager = function (targetSelector) {
     if (linkObject && !isObjectMissing) {
       let elementName= undefined
       if (item.type == 'action') {
-        elementName = query.items("actions", i=>i.uuid == linkObject.target)[0].name
+        elementName = store.actions.items.find(i=>i.uuid == linkObject.target).name
       } else {
         console.log(isObjectMissing);
         console.log(linkObject.target);
-        elementName = query.items("requirements", i=>i.uuid == linkObject.target)[0].name
+        elementName = store.requirements.items.find(i=>i.uuid == linkObject.target).name
       }
 
       html= `
@@ -219,11 +218,11 @@ var createMeetingsManager = function (targetSelector) {
 
     return html
   }
-  theme.meetingItemResolved=function (item) {
+  theme.meetingItemResolved=function (store, item) {
     let html = ''
     if (!item.resolved) {
       let linkObject = currentMeetingObject.relations.find(r=>r.source == item.uuid)
-      if (linkObject && !query.items("actions", i=>i.uuid == linkObject.target)[0].open) {
+      if (linkObject && !store.actions.items.find( i=>i.uuid == linkObject.target).open) {
         html= `
         <div data-id="${item.uuid}" class="ui mini basic circular icon button action_meeting_manager_set_resolved_partial" data-tooltip="The linked item has been resolved. Click to mark the item resolved here">
           <i data-id="${item.uuid}" class="flag checkered icon"></i>
@@ -242,7 +241,7 @@ var createMeetingsManager = function (targetSelector) {
     }
     return html
   }
-  theme.meetingItemAction= function (item) {
+  theme.meetingItemAction= function (store, item) {
     let colType=undefined
     let isEditable = !item.freeze
      html =`
@@ -276,8 +275,8 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 90px;" class='orange-column'>
            ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
-           ${theme.meetingItemResolved(item)}
-           ${theme.meetingItemConnection(item)}
+           ${theme.meetingItemResolved(store, item)}
+           ${theme.meetingItemConnection(store, item)}
            <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.1;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
            <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="calendar icon action_meetingmanager_list_edit_item_creation_time" style="display:inline-block;opacity:0.1;font-size: 13px;vertical-align: top; position: absolute;left: -33px;top: 36px;"></i>
 
@@ -356,7 +355,7 @@ var createMeetingsManager = function (targetSelector) {
     `
     return html
   }
-  theme.meetingItemRequirement= function (item) {
+  theme.meetingItemRequirement= function (store, item) {
     let colType=undefined
     let isEditable = !item.freeze
      html =`
@@ -388,7 +387,7 @@ var createMeetingsManager = function (targetSelector) {
        <div style="flex-grow: 0;" class='${colType||"column"}'>
          <div style="width: 90px;" class='orange-column'>
          ${item.createdOn? new Date(item.createdOn).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 10):""}
-         ${theme.meetingItemConnection(item)}
+         ${theme.meetingItemConnection(store, item)}
          <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="times icon action_meetingmanager_list_delete_item" style="display:inline-block;opacity:0.1;font-size: 13px;vertical-align: top; position: absolute;left: -10px;top: 36px;"></i>
          <i data-meeting="${currentOpenedMeeting}" data-prop="name" data-value="${item.name}" data-id="${item.uuid}" class="calendar icon action_meetingmanager_list_edit_item_creation_time" style="display:inline-block;opacity:0.1;font-size: 13px;vertical-align: top; position: absolute;left: -33px;top: 36px;"></i>
 
@@ -826,7 +825,7 @@ var createMeetingsManager = function (targetSelector) {
       }
     })
     connect(".action_meeting_manager_add_meeting", "click", (e)=>{
-      store.meetings.items.push({//TODO create a reducer
+      let newMeeting = {//TODO create a reducer
         uuid:uuid(),
         relations:[],
         title:"Meeting exemple",
@@ -852,8 +851,12 @@ var createMeetingsManager = function (targetSelector) {
             ]
           }
         ]
-      })
-      update()
+      }
+      push(act.add("meetings",newMeeting))
+      setTimeout(function () {
+        currentOpenedMeeting = undefined
+        update()
+      }, 2000);
     })
     connect(".action_meeting_manager_add_meeting_follow_up", "click", (e)=>{
 
@@ -869,8 +872,11 @@ var createMeetingsManager = function (targetSelector) {
             })
           })
         })
-        store.meetings.items.push(newMeeting)//TODO add reducer
-        update()
+        push(act.add("meetings",newMeeting))
+        setTimeout(function () {
+          currentOpenedMeeting = undefined
+          update()
+        }, 2000);
       }
       update()
     })
@@ -954,6 +960,11 @@ var createMeetingsManager = function (targetSelector) {
                       push(act.add("metaLinks",{type:"origin", source:targetId, target:newSelected}))
                     }
                   }
+                  if (i.relatedTo) {
+                    for (newSelected of i.relatedTo) {
+                      push(act.add("metaLinks",{type:"originNeed", source:newSelected, target:targetId}))
+                    }
+                  }
                   confirm("Requirement "+i.content+" will be created")
                   addRelationToMeetingData(i.uuid,targetId,i.type)
                 }else if (i.type == "action") {
@@ -963,7 +974,7 @@ var createMeetingsManager = function (targetSelector) {
                   push(act.add("actions",newAction))
                   if (i.assignedTo) {
                     for (newSelected of i.assignedTo) {
-                      store.metaLinks.items.push({type:"assignedTo", source:targetId, target:newSelected})//TODO remove this side effect
+                      push(act.add("metaLinks",{type:"assignedTo", source:targetId, target:newSelected}))
                     }
                   }
                   addRelationToMeetingData(i.uuid,targetId,i.type)
@@ -1009,7 +1020,7 @@ var createMeetingsManager = function (targetSelector) {
             push(act.add("actions",newAction))
             if (i.assignedTo) {
               for (newSelected of i.assignedTo) {
-                store.metaLinks.items.push({type:"assignedTo", source:targetId, target:newSelected})//TODO remove this side effect
+                push(act.add("metaLinks",{type:"assignedTo", source:targetId, target:newSelected}))
               }
             }
             addRelationToMeetingData(i.uuid,targetId,i.type)
@@ -1087,7 +1098,8 @@ var createMeetingsManager = function (targetSelector) {
     })
   }
 
-  var render = function () {
+  var render = async function () {
+    store =  await query.currentProject()
     container.innerHTML = theme.noMeeting()
     let treeContainer = document.querySelector(".left-menu-area")
     let noteTitleArea = document.querySelector(".left-menu-area .title")
@@ -1124,8 +1136,9 @@ var createMeetingsManager = function (targetSelector) {
     container.innerHTML = html
   }
 
-  function renderMeeting(e) {
-    container.innerHTML = theme.editor(e)
+  async function renderMeeting(e) {
+    var store = await query.currentProject()
+    container.innerHTML = theme.editor(e, store)
     // container.querySelector(".tag_list").innerHTML= renderTagList(e)
     console.log(e.content);
     // easyMDE = new EasyMDE({
@@ -1284,8 +1297,7 @@ var createMeetingsManager = function (targetSelector) {
     return html
   }
 
-  function checkIfTargetIsReachable(uuid){
-    var store = query.currentProject()
+  function checkIfTargetIsReachable(store, uuid){
     if (store.actions.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.requirements.items.find(i=>i.uuid == uuid)) {return true }
     // else if (store.functions.items.find(i=>i.uuid == uuid)) { return true}
@@ -1296,17 +1308,34 @@ var createMeetingsManager = function (targetSelector) {
     }
   }
 
-  var update = function () {
-    saveDB() //TODO move all to actions!
-    render()
+  async function saveCurrentMeetingToDB() {
     if (currentOpenedMeeting) {
-      loadMeetingByUuid(currentOpenedMeeting)
+      let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+      if (meeting) {
+        await dbConnector.replaceProjectItem(app.state.currentProject,"meetings",currentOpenedMeeting, meeting)
+      }else {
+        alert("Meeting could not be saved")
+      }
+
     }
   }
 
-  var setActive =function () {
+  var update = async function () {
+    // saveDB() //TODO move all to actions!
+
+    if (currentOpenedMeeting) {
+      await saveCurrentMeetingToDB()
+      loadMeetingByUuid(currentOpenedMeeting)
+    }else {
+      render()
+    }
+
+  }
+
+  var setActive = async function () {
     objectIsActive = true;
-    store =  query.currentProject()
+    store =  await query.currentProject()
+    currentOpenedMeeting = undefined
     update()
   }
 

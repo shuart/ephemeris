@@ -288,7 +288,7 @@ var createDbRealTimeAdaptater = function () {
         let selector = {}
         selector[collectionName+".items."+indexToChange+"."+prop] = value
         await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-            logCallback(item)
+            logCallback(upsert)
             localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
                 console.log("persisted");
               });
@@ -303,6 +303,24 @@ var createDbRealTimeAdaptater = function () {
       // }).catch(function(err) {
       //   reject(err)
       // });
+  }
+  function replaceProjectItem(projectUuid, collectionName, itemId, value) {
+
+    return new Promise(async function(resolve, reject) {
+
+      await projects.find({uuid: projectUuid}, async function (err, docs) {
+        let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
+        let selector = {}
+        selector[collectionName+".items."+indexToChange] = value
+        await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+            logCallback(upsert)
+            localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+                console.log("persisted");
+              });
+            resolve(affectedDocuments)
+          });
+        });
+      });
   }
   //SPECIAL CASES
 
@@ -402,6 +420,7 @@ var createDbRealTimeAdaptater = function () {
   self.removeProjectItem = removeProjectItem
   self.removeProjectLink = removeProjectLink
   self.updateProjectItem = updateProjectItem
+  self.replaceProjectItem = replaceProjectItem
   self.setProject = setProject
   self.setProjectData = setProjectData
   self.removeProject = removeProject
