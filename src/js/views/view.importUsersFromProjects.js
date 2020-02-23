@@ -2,6 +2,7 @@ var createImportUsersFromProjects = function (targetSelector) {
   var self ={};
   var objectIsActive = false;
   var container = document.querySelector(targetSelector)
+  var currentVisibleList = undefined
 
   var init = function () {
     connections()
@@ -9,6 +10,14 @@ var createImportUsersFromProjects = function (targetSelector) {
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:getAllUsers(store)
+        })
+      }
+    })
 
   }
 
@@ -57,7 +66,7 @@ var createImportUsersFromProjects = function (targetSelector) {
   }
 
   var generateUsersViewList = function (store, owners) {
-    showListMenu({
+    currentVisibleList = showListMenu({
       sourceData:owners,
       targetDomContainer:".center-container",
       fullScreen:true,
@@ -73,19 +82,21 @@ var createImportUsersFromProjects = function (targetSelector) {
       ],
       idProp:"uuid",
       extraButtons : [
-        {name:"Import", class:"iufp_import", prop:"projectId", action: (orev)=>{
+        {name:"Import", class:"iufp_import", prop:"projectId", action: async (orev)=>{
           // generateUsersFusionList(owners, orev.dataset.id, orev.dataset.extra )
           console.log(orev);
-          let project = query.items("projects").find(p=>p.uuid == orev.dataset.extra)
+          var allProjectsList= await query.items("projects")
+          let project = allProjectsList.find(p=>p.uuid == orev.dataset.extra)
           let userToImport= project.stakeholders.items.find(s=>s.uuid == orev.dataset.id)
           console.log(userToImport)
-          if(store.stakeholders.items.find(s=> s.uuid == userToImport.uuid)){
+          var storeChecked = await query.currentProject()
+          if(storeChecked.stakeholders.items.find(s=> s.uuid == userToImport.uuid)){
             alert("This user already exist in the current project")
           }else if (confirm("add user"+ userToImport.name+" "+userToImport.lastName+ " from project "+ project.name+ "?")) {
             push(act.add("stakeholders",deepCopy(userToImport)))
-            setTimeout(function () {
-              render()
-            }, 1000);
+            // setTimeout(function () {
+            //   render()
+            // }, 1000);
           }
         }}
       ],
