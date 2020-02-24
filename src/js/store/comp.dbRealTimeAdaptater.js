@@ -322,6 +322,20 @@ var createDbRealTimeAdaptater = function () {
         });
       });
   }
+  function addProjectCollection(projectUuid, collectionName, value) {
+
+    return new Promise(async function(resolve, reject) {
+      let selector = {}
+      selector[collectionName] = value
+      await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+          logCallback(upsert)
+          localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+              console.log("persisted");
+            });
+          resolve(affectedDocuments)
+        });
+    });
+  }
   //SPECIAL CASES
 
   function getProject(uuid) {
@@ -421,6 +435,7 @@ var createDbRealTimeAdaptater = function () {
   self.removeProjectLink = removeProjectLink
   self.updateProjectItem = updateProjectItem
   self.replaceProjectItem = replaceProjectItem
+  self.addProjectCollection = addProjectCollection
   self.setProject = setProject
   self.setProjectData = setProjectData
   self.removeProject = removeProject

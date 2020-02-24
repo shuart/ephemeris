@@ -132,7 +132,7 @@ var createOverview = function (targetSelector) {
     if (store) {
       // alert("uncoment here")
       await clearUncompleteLinks()//clean all uncomplete metalink of the project
-      // updateFileForRetroCompatibility() //check file for retrocompatbiity
+      updateFileForRetroCompatibility(store) //check file for retrocompatbiity
       // //create a PBS and current user stakholder if first opening of project
       // if (!store.currentPbs.items[0]) {
       //   createPBS()
@@ -247,12 +247,11 @@ var createOverview = function (targetSelector) {
     store.stakeholders.items.push({uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""})
   }
 
-  function updateFileForRetroCompatibility() {
+  function updateFileForRetroCompatibility(store) {
     function alertAboutUpdate(extraInfos) {
       alert("This project was created with an earlier version and was updated. " +extraInfos)
     }
     //Tags from 1.7.2
-    var store = query.currentProject()
     if (!store.tags) {
       store.tags = {
         items:[
@@ -261,6 +260,7 @@ var createOverview = function (targetSelector) {
           {uuid: uuid(), name: "Rejected", color: "#ffffff"}
         ]
       }
+      dbConnector.addProjectCollection(store.uuid, "tags", store.tags)
       alertAboutUpdate("Tags feature has been added.")
     }
     if (!store.workPackages) {
@@ -269,6 +269,7 @@ var createOverview = function (targetSelector) {
           {uuid: uuid(), name: "A work package"}
         ]
       }
+      dbConnector.addProjectCollection(store.uuid, "workPackages", store.workPackages)
       alertAboutUpdate("Work Packages feature has been added.")
     }
     if (!store.meetings) {
@@ -287,12 +288,14 @@ var createOverview = function (targetSelector) {
           }]
         }]
       },
+      dbConnector.addProjectCollection(store.uuid, "meetings", store.meetings)
       alertAboutUpdate("Meetings feature has been added.")
     }
     if (!store.extraFields) {
       store.extraFields={
         items:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "extraFields", store.extraFields)
       alertAboutUpdate("Extra Fields feature has been added.")
     }
     if (!store.physicalSpaces) {
@@ -302,6 +305,7 @@ var createOverview = function (targetSelector) {
         ],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "physicalSpaces", store.physicalSpaces)
       alertAboutUpdate("Physical Spaces feature has been added.")
     }
     if (store.interfaces.items.find(i=>(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )) {
@@ -320,6 +324,7 @@ var createOverview = function (targetSelector) {
           {uuid: uuid(), name: "Architecture", svgPath: "M560 448h-16V96H32v352H16.02c-8.84 0-16 7.16-16 16v32c0 8.84 7.16 16 16 16H176c8.84 0 16-7.16 16-16V320c0-53.02 42.98-96 96-96s96 42.98 96 96l.02 160v16c0 8.84 7.16 16 16 16H560c8.84 0 16-7.16 16-16v-32c0-8.84-7.16-16-16-16zm0-448H16C7.16 0 0 7.16 0 16v32c0 8.84 7.16 16 16 16h544c8.84 0 16-7.16 16-16V16c0-8.84-7.16-16-16-16z"}
         ]
       },
+      dbConnector.addProjectCollection(store.uuid, "categories", store.categories)
       alertAboutUpdate("Categories feature has been added.")
     }
     if (!store.templates) {
@@ -327,6 +332,7 @@ var createOverview = function (targetSelector) {
         items:[],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "templates", store.templates)
       alertAboutUpdate("Templates management feature has been added.")
     }
     if (!store.documents) {
@@ -336,6 +342,7 @@ var createOverview = function (targetSelector) {
         ],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "documents", store.documents)
       alertAboutUpdate("Documents management feature has been added.")
     }
     if (!store.history) {
@@ -343,6 +350,7 @@ var createOverview = function (targetSelector) {
         items:[],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "history", store.history)
       alertAboutUpdate("activities history feature has been added.")
     }
     if (!store.events) {
@@ -350,6 +358,7 @@ var createOverview = function (targetSelector) {
         items:[],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "events", store.events)
       alertAboutUpdate("planning feature has been added.")
     }
     if (!store.timeTracks) {
@@ -357,6 +366,7 @@ var createOverview = function (targetSelector) {
         items:[],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "timeTracks", store.timeTracks)
       alertAboutUpdate("planning feature has been added.")
     }
     if (!store.timeLinks) {
@@ -364,6 +374,7 @@ var createOverview = function (targetSelector) {
         items:[],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "timeLinks", store.timeLinks)
       alertAboutUpdate("planning feature has been added.")
     }
     if (!store.vvSets) {
@@ -371,6 +382,7 @@ var createOverview = function (targetSelector) {
         items:[],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "vvSets", store.vvSets)
       alertAboutUpdate("Verification feature (V&V sets) has been added.")
     }
     if (!store.vvDefinitions) {
@@ -378,13 +390,15 @@ var createOverview = function (targetSelector) {
         items:[],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "vvDefinitions", store.vvDefinitions)
       alertAboutUpdate("Verification feature (V&V definitions) has been added.")
     }
-    if (!store.vvReports) {
+    if (!store.vvDefinitions) {
       store.vvReports={
         items:[],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "vvDefinitions", store.vvDefinitions)
       alertAboutUpdate("Verification feature (V&V reports) has been added.")
     }
     if (!store.vvActions) {
@@ -392,6 +406,7 @@ var createOverview = function (targetSelector) {
         items:[],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "vvActions", store.vvActions)
       alertAboutUpdate("Verification feature (V&V actions) has been added.")
     }
     if (!store.settings) {
@@ -399,6 +414,7 @@ var createOverview = function (targetSelector) {
         items:[],
         links:[]
       }
+      dbConnector.addProjectCollection(store.uuid, "settings", store.settings)
       alertAboutUpdate("Project Settings view has been added.")
     }
     if (!store.interfacesTypes) {
@@ -413,6 +429,7 @@ var createOverview = function (targetSelector) {
           {uuid: uuid(), name: "Mechanical connection", color: "#ffffff"}
         ]
       },
+      dbConnector.addProjectCollection(store.uuid, "interfacesTypes", store.interfacesTypes)
       alertAboutUpdate("Interfaces types have been added.")
     }
     if (!store.changes) {
@@ -421,6 +438,7 @@ var createOverview = function (targetSelector) {
 
         ]
       },
+      dbConnector.addProjectCollection(store.uuid, "changes", store.changes)
       alertAboutUpdate("Changes have been added.")
     }
 
