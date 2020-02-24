@@ -1,13 +1,37 @@
 var createDocumentsView = function () {
   var self ={};
   var objectIsActive = false;
+  var currentVisibleList = undefined
 
   var init = function () {
     connections()
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:store.documents.items,
+          metaLinks:store.metaLinks.items,
+          displayRules:displayRules(store)
+        })
+      }
+    })
 
+  }
+
+  var displayRules = function (store) {
+    return [
+      {prop:"name", displayAs:"Name", edit:true},
+      {prop:"osPath", displayAs:"Local", fullText:true, localPath:true, edit:false},
+      {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true},
+      {prop:"documents",isTarget:true, displayAs:"Products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
+      {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
+
+      // {prop:"documented", displayAs:"Products documented", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
+      // {prop:"documented", displayAs:"Requirements documented", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
+    ]
   }
 
   var render = async function () {
@@ -28,23 +52,14 @@ var createDocumentsView = function () {
       }
     }
 
-    showListMenu({
+    currentVisibleList = showListMenu({
       sourceData:store.documents.items,
       displayProp:"name",
       targetDomContainer:".center-container",
       fullScreen:true,// TODO: perhaps not full screen?
       prependContent:prependContent,
       onLoaded:onLoaded,
-      display:[
-        {prop:"name", displayAs:"Name", edit:true},
-        {prop:"osPath", displayAs:"Local", fullText:true, localPath:true, edit:false},
-        {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true},
-        {prop:"documents",isTarget:true, displayAs:"Products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-        {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
-
-        // {prop:"documented", displayAs:"Products documented", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
-        // {prop:"documented", displayAs:"Requirements documented", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
-      ],
+      display:displayRules(store),
       idProp:"uuid",
       onEditItem: (ev)=>{
         console.log("Edit");
@@ -260,6 +275,7 @@ var createDocumentsView = function () {
   }
 
   var setInactive = function () {
+    currentVisibleList = undefined;
     objectIsActive = false;
   }
 
