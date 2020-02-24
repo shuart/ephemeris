@@ -20,7 +20,8 @@ var createShowTreeFromListService = function () {
     var store = await query.currentProject()
 
     if (true) {
-      function generateDataSource(storeGroup) {
+      async function generateDataSource(storeGroup) {
+        var store = await query.currentProject()
         var placeholder = false
         var data =undefined
         if (store[storeGroup].items[0]) {
@@ -44,14 +45,14 @@ var createShowTreeFromListService = function () {
       }
 
       displayThree({
-        data:generateDataSource(storeGroup),
+        data:await generateDataSource(storeGroup),
         edit:true,
         onClose:(e)=>{
           if (callbackFunction) {
             callbackFunction(e)
           }
         },
-        onAdd:(ev)=>{
+        onAdd:async (ev)=>{
           var uuid = genuuid()
           var newName = prompt("Name?")
           push(act.add(storeGroup,{uuid:uuid, name:newName}))
@@ -59,26 +60,29 @@ var createShowTreeFromListService = function () {
           if (ev.element.data.uuid != "placeholder") {
             push(act.addLink(storeGroup,{source:ev.element.data.uuid, target:uuid}))
           }
-          ev.sourceTree.setData(generateDataSource(storeGroup))
+          let newData = await generateDataSource(storeGroup)
+          ev.sourceTree.setData(newData)
           //ev.sourceTree.updateFromRoot(ev.element)
         },
-        onMove:(ev)=>{
+        onMove:async(ev)=>{
           let sourceUuid= ev.element.data.uuid
           let targetUuid = ev.newParent.data.uuid
 
           if (checkIfSourceIsParent(sourceUuid,targetUuid, storeGroup, store)) { //check if the target is a child of the source
             alert("The node you are moving is a parent of your target")
-            ev.sourceTree.setData(generateDataSource(storeGroup))
+            let newData = await generateDataSource(storeGroup)
+            ev.sourceTree.setData(newData)
           }else {
             push(act.removeLink(storeGroup,{source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
 
             if (ev.newParent.data.uuid != "placeholder") {
               push(act.addLink(storeGroup,{source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
             }
-            ev.sourceTree.setData(generateDataSource(storeGroup))
+            let newData = await generateDataSource(storeGroup)
+            ev.sourceTree.setData(newData)
           }
         },
-        onRemove:(ev)=>{
+        onRemove:async (ev)=>{
           if (confirm("Remove?")) {
             if (true) {
               console.log(ev);
@@ -100,14 +104,16 @@ var createShowTreeFromListService = function () {
             //addNewLinks
             push(act.remove(storeGroup,{uuid:ev.element.data.uuid}))
             //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-            ev.sourceTree.setData(generateDataSource(storeGroup))
+            let newData = await generateDataSource(storeGroup)
+            ev.sourceTree.setData(newData)
           }
         },
         onLabelClicked:(originev)=>{
           showSingleItemService.showById(originev.element.data.uuid)
         },
-        onStoreUpdate:(originev)=>{
-          originev.sourceTree.setData(generateDataSource(storeGroup))
+        onStoreUpdate:async (originev)=>{
+          let newData = await generateDataSource(storeGroup)
+          originev.sourceTree.setData(newData)
         }
       })
     }
