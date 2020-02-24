@@ -52,8 +52,8 @@ var createExtraFieldsView = function () {
       return 0;})
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     showListMenu({
       sourceData:readifyExtraLinks(),
       displayProp:"name",
@@ -114,7 +114,6 @@ var createExtraFieldsView = function () {
             update()//TODO close first view
 
           }
-          // var store = query.currentProject()
           // let project = query.items("projects").find(p=>p.uuid == orev.dataset.extra)
           // let userToImport= project.stakeholders.items.find(s=>s.uuid == orev.dataset.id)
           // console.log(userToImport)

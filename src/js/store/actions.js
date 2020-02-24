@@ -20,8 +20,8 @@ function setCurrentProject(project) {
     // var currentProjectListIndex = app.store.projects.findIndex(e=> e.uuid == store.uuid)
     // app.store.projects[currentProjectListIndex]= store;
     // store = app.store.projects[projectListIndex]
-    saveDB()
-    renderCDC()
+    // saveDB()
+    // renderCDC()
   }
 }
 function setCurrentPage(page) {
@@ -124,14 +124,3 @@ var addPbsLink = createAddLink("currentPbs")//shloud also remove links
 var removePbs = createRemoveItem("currentPbs")//shloud also remove links
 var movePbs = createMoveItem("currentPbs")//shloud also remove links
 var removePbsLink = createRemoveLink("currentPbs")//shloud also remove links
-
-
-//custom action to refactor
-act.setProjectData = function (uuid, prop, newValue) {
-  var originItem = app.store.projects.filter(e=> e.uuid == uuid)[0]//TODO USe reducer
-  if (originItem) {
-    originItem[prop] = newValue
-  }
-  saveDB()
-
-}

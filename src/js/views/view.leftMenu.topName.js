@@ -32,8 +32,8 @@ var createLeftMenuTopName = function () {
     `
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject() //TODO no need to download everything DBCHANGE
     let currentView = app.state.currentView;
     if (store) {
       //update document title

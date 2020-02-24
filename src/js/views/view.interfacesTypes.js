@@ -1,6 +1,7 @@
 var createInterfacesTypesView = function () {
   var self ={};
   var objectIsActive = false;
+  currentVisibleList = undefined
 
   var init = function () {
     connections()
@@ -10,9 +11,18 @@ var createInterfacesTypesView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
-    showListMenu({
+  var updateList =  function (ev) {
+    setTimeout(async function () {
+      var store = await query.currentProject()
+      ephHelpers.updateListElements(currentVisibleList,{
+        items:store.interfacesTypes.items
+      })
+    }, 2000);
+  }
+
+  var render = async function () {
+    var store = await query.currentProject()
+    currentVisibleList = showListMenu({
       sourceData:store.interfacesTypes.items,
       displayProp:"name",
       // targetDomContainer:".center-container",
@@ -29,22 +39,24 @@ var createInterfacesTypesView = function () {
         if (newValue) {
           push(act.edit("interfacesTypes", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
         }
+        updateList(ev)
       },
       onEditOptionsItem: (ev)=>{
         console.log("Edit_option");
           let newValue = ev.value
           push(act.edit("interfacesTypes", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-          ev.select.updateData(store.interfacesTypes.items)
+          updateList(ev)
       },
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("interfacesTypes",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.interfacesTypes.items)
+          updateList(ev)
         }
       },
       onAdd: (ev)=>{
         let typeName = prompt("New interfaces Type")
         push(act.add("interfacesTypes",{uuid:genuuid(), name:typeName, color:"#ffffff"}))
+        updateList(ev)
       },
       onClick: (ev)=>{
         //mutations
@@ -67,6 +79,7 @@ var createInterfacesTypesView = function () {
   }
 
   var setInactive = function () {
+    currentVisibleList = undefined
     objectIsActive = false;
   }
 

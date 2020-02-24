@@ -72,10 +72,10 @@ var createActivityFeed = function ({
     }, document.querySelector(container))
   }
 
-  var render = function () {
+  var render = async function () {
     console.log(container);
     if (container) {
-      let html = renderFeed(originalData)
+      let html = await renderFeed(originalData)
       console.log(html);
       console.log(container);
       document.querySelector(container).innerHTML=html
@@ -109,8 +109,8 @@ var createActivityFeed = function ({
     return out
   }
 
-  var renderFeed = function (originalData) {
-    var store = query.currentProject()
+  var renderFeed = async function (originalData) {
+    var store = await query.currentProject()
     if (store.history.items[0]) {
       let formatedData = deepCopy(store.history.items)
       .reverse()

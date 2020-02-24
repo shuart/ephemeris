@@ -1,20 +1,37 @@
 var createShowSingleItemService = function () {
   var self ={};
   var objectIsActive = false;
+  var lastUuid = undefined
+  var lastStoreGroup = undefined
+  var lastLabel = undefined
+  var currentVisibleElement = undefined
 
   var init = function () {
     connections()
 
   }
   var connections =function () {
-
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleElement) {
+        var store = await query.currentProject()
+        var newSingleElement = store[lastStoreGroup].items.find(e=> e.uuid == lastUuid)
+        ephHelpers.updateListElements(currentVisibleElement,{
+          items:store[lastStoreGroup].items,
+          links:store[lastStoreGroup].links,
+          metaLinks:store.metaLinks.items,
+          rulesToDisplaySingleElement : generateRulesFromNodeType(lastLabel,store),
+          singleElement:newSingleElement
+        })
+      }
+    })
   }
 
   var render = function (uuid, callback) {
     showEditMenu(uuid, callback)
   }
-  var showEditMenu = function (uuid, callback) {
-    var store = query.currentProject()
+  var showEditMenu = async function (uuid, callback) {
+    objectIsActive = true;
+    var store = await query.currentProject()
 
 
     var storeGroup=undefined
@@ -34,8 +51,11 @@ var createShowSingleItemService = function () {
       console.log("no group available");
       return
     }
+
+    lastStoreGroup = storeGroup
+    lastLabel = label
     var originItem = store[storeGroup].items.filter(e=> e.uuid == uuid)
-    showListMenu({
+    currentVisibleElement = showListMenu({
       sourceData:store[storeGroup].items,
       sourceLinks:store[storeGroup].links,
       displayProp:"name",
@@ -47,16 +67,21 @@ var createShowSingleItemService = function () {
       ],
       idProp:"uuid",
       onCloseMenu: (ev)=>{
+        objectIsActive = false;
         if (callback) {
           callback(ev)
         }
       },
       onEditChoiceItem: (ev)=>{
-        startSelectionFromParametersView(ev)
+        startSelectionFromParametersView(ev, function () {
+          // setTimeout(function () {
+          //   update()
+          // }, 1000);
+        })
       },
       onLabelClick: (ev)=>{
         //check if label as a target or difined as a target in func checkIfTargetIsReachable
-        if (checkIfTargetIsReachable(ev.target.dataset.id)) {
+        if (checkIfTargetIsReachable(ev.target.dataset.id, store)) {
           showSingleItemService.showById(ev.target.dataset.id)
           ev.select.remove()//TODO add history
         }else {
@@ -68,11 +93,13 @@ var createShowSingleItemService = function () {
           originalData:ev.target.dataset.value || "",
           onSave:e =>{
             push(act.edit(storeGroup,{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:e}))
-            ev.select.update()
+            // ev.select.update()
           },
           onClose:e =>{
             push(act.edit(storeGroup,{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:e}))
-            ev.select.update()
+            //ev.select.update()
+
+            // objectIsActive = true;
           }
         })
       },
@@ -82,8 +109,8 @@ var createShowSingleItemService = function () {
     })
   }
 
-  function startSelectionFromParametersView(ev) {
-    var store = query.currentProject()
+  async function startSelectionFromParametersView(ev, callback) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
@@ -201,21 +228,39 @@ var createShowSingleItemService = function () {
       onLoaded:onLoaded,
       onAdd:(ev)=>{
         var uuid = genuuid()
-        push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
-        //special rules
-        if (sourceGroup == "changes") {
-          push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
-        }
-        // setTimeout(function () {
-        //   ev.select.scrollDown()
-        // }, 100);
-        ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
-          onLeave: (ev)=>{
-            push(act.remove(sourceGroup,{uuid:uuid}))
-            ev.select.updateData(store[sourceGroup].items)
+        var newItem = prompt("New item name")
+        if (newItem) {
+
+          //special rules
+          if (sourceGroup == "changes") {
+            push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
+          }else {
+            push(act.add(sourceGroup, {uuid:uuid,name:newItem}))
           }
-        })
+        }
+
+        setTimeout(async function () {
+          var store = await query.currentProject()
+          ev.select.updateData(store[sourceGroup].items)//TODO remove extra call
+          ev.select.updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          ev.select.refreshList()
+        }, 2000);
+        // var uuid = genuuid()
+        // push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+        // //special rules
+        // if (sourceGroup == "changes") {
+        //   push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
+        // }
+        // // setTimeout(function () {
+        // //   ev.select.scrollDown()
+        // // }, 100);
+        // ev.select.setEditItemMode({
+        //   item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+        //   onLeave: (ev)=>{
+        //     push(act.remove(sourceGroup,{uuid:uuid}))
+        //     ev.select.updateData(store[sourceGroup].items)
+        //   }
+        // })
       },
       onEditItem: (ev)=>{
         var newValue = prompt("Edit Item",ev.target.dataset.value)
@@ -225,7 +270,10 @@ var createShowSingleItemService = function () {
       },
       onCloseMenu: (ev)=>{
         console.log(ev.select);
-        ev.select.getParent().update()
+        // ev.select.getParent().update()
+        if (callback) {
+          callback(ev)
+        }
       },
       onChangeSelect: (ev)=>{
         console.log(ev.select.getSelected());
@@ -242,8 +290,7 @@ var createShowSingleItemService = function () {
     })
   }
 
-  function checkIfTargetIsReachable(uuid){
-    var store = query.currentProject()
+  function checkIfTargetIsReachable(uuid, store){
     if (store.currentPbs.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.requirements.items.find(i=>i.uuid == uuid)) {return true }
     else if (store.functions.items.find(i=>i.uuid == uuid)) { return true}
@@ -260,7 +307,6 @@ var createShowSingleItemService = function () {
   }
 
   function generateRulesFromNodeType(type, store) {
-    var store = query.currentProject()
     if (type == "Functions") {
       return [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
@@ -354,9 +400,18 @@ var createShowSingleItemService = function () {
   }
 
   var update = function () {
-    render()
+    if (currentVisibleElement) {
+      console.log(currentVisibleElement);
+      currentVisibleElement.remove()
+    }
+    if (lastUuid) {
+      render(lastUuid)
+    }else {
+      render()
+    }
   }
   var showById = function (id, callback) {
+    lastUuid = id
     render(id, callback)
   }
 

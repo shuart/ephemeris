@@ -4,6 +4,7 @@ var createPbsView = function () {
   var simpleView = true;
   var isExtraFieldsVisible =false;
   var extraFields = undefined
+  var currentVisibleList = undefined
 
   var init = function () {
     connections()
@@ -11,12 +12,20 @@ var createPbsView = function () {
 
   }
   var connections =function () {
-
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:store.currentPbs.items,
+          links:store.currentPbs.links,
+          metaLinks:store.metaLinks.items,
+          displayRules:setDisplayRules(store)
+        })
+      }
+    })
   }
 
-  var render = function () {
-    var store = query.currentProject()
-
+  var setDisplayRules = function (store) {
     var displayRules = [
       {prop:"name", displayAs:"Name", edit:"true"},
       {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
@@ -42,19 +51,21 @@ var createPbsView = function () {
       displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
       //displayRules = extraFields
     }
+    return displayRules
+  }
 
-
-
+  var render = async function () {
+    var store = await query.currentProject()
     console.log(store.currentPbs.items);
-      showListMenu({
+      currentVisibleList = showListMenu({
         sourceData:store.currentPbs.items,
         sourceLinks:store.currentPbs.links,
         metaLinks:store.metaLinks.items,
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
-        display:displayRules,
-        extraFields: generateExtraFieldsList(),
+        display:setDisplayRules(store),
+        extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,
         onEditItem: (ev)=>{
@@ -76,7 +87,8 @@ var createPbsView = function () {
           // }
         },
         onEditChoiceItem: (ev)=>{
-          startSelection(ev)
+          // startSelection(ev)
+          showUpdateLinksService.show(ev,"currentPbs")
         },
         onRemove: (ev)=>{
           console.log("remove");
@@ -107,7 +119,7 @@ var createPbsView = function () {
           var newReq = prompt("New Product")
           if (newReq) {
             push(addPbs({uuid:id, name:newReq}))
-            push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+            push(addPbsLink({source:store.currentPbs.items[0].uuid, target:id}))
           }
         },
         onAddFromPopup: (ev)=>{
@@ -139,9 +151,9 @@ var createPbsView = function () {
         },
         onClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id, function (e) {
-            ev.select.updateData(store.currentPbs.items)
-            ev.select.updateLinks(store.currentPbs.links)
-            ev.select.refreshList()
+            // ev.select.updateData(store.currentPbs.items)
+            // ev.select.updateLinks(store.currentPbs.links)
+            // ev.select.refreshList()
           })
         },
         extraActions:[
@@ -170,7 +182,7 @@ var createPbsView = function () {
           {
             name:"Fields",
             action:(ev)=>{
-              ephHelpers.startSelectionToShowFields(ev,extraFields, "pbsListViewVisibleFields", "Visible Fields in Product list", function () {
+                ephHelpers.startSelectionToShowFields(ev,extraFields, "pbsListViewVisibleFields", "Visible Fields in Product list", function () {
                 document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
                 update()
               })
@@ -217,10 +229,10 @@ var createPbsView = function () {
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = store.currentPbs.items.map(i=>{
-      let linkToTextFunc = getRelatedItems(i, "functions").map(s=> s[0] ? s[0].name:"").join(",")
-      let linkToTextReq = getRelatedItems(i, "requirements").map(s=> s[0] ? s[0].name:"").join(",")
-      let linkToTextSpaces = getRelatedItems(i, "physicalSpaces",{objectIs:"target", metalinksType:"contains"}).map(s=> s[0]? s[0].name : '').join(",")
-      let linkToTextWorkpackages = getRelatedItems(i, "workPackages",{objectIs:"target", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToTextFunc = getRelatedItems(store, i, "functions").map(s=> s[0] ? s[0].name:"").join(",")
+      let linkToTextReq = getRelatedItems(store, i, "requirements").map(s=> s[0] ? s[0].name:"").join(",")
+      let linkToTextSpaces = getRelatedItems(store, i, "physicalSpaces",{objectIs:"target", metalinksType:"contains"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToTextWorkpackages = getRelatedItems(store, i, "workPackages",{objectIs:"target", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
 
 
       return {id:i.uuid, name:i.name, description:i.desc, functions:linkToTextFunc, requirements:linkToTextReq, physicalSpaces: linkToTextSpaces, workPackages:linkToTextWorkpackages}
@@ -243,195 +255,8 @@ var createPbsView = function () {
     objectIsActive = false;
   }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
-    var metalinkType = ev.target.dataset.prop;
-    var sourceTriggerId = ev.target.dataset.id;
-    var batch = ev.batch;
-    var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-    var sourceGroup = undefined
-    var invert = false
-    var source = "source"
-    var target = "target"
-    var sourceData = undefined
-    var sourceLinks= undefined
-    var displayRules=[
-      {prop:"name", displayAs:"Name", edit:false},
-      {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-    ]
-    var prependContent=undefined
-    var onLoaded = undefined
-    if (metalinkType == "originNeed") {
-      sourceGroup="requirements"
-      sourceData=store.requirements.items
-      sourceLinks= store.requirements.links
-    }else if (metalinkType == "originFunction") {
-      sourceGroup="functions"
-      sourceData=store.functions.items
-      sourceLinks=store.functions.links
-    }else if (metalinkType == "tags") {
-      sourceGroup="tags"
-      sourceData=store.tags.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }else if (metalinkType == "category") {
-      sourceGroup="categories"
-      sourceData=store.categories.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }else if (metalinkType == "contains") {
-      sourceGroup="physicalSpaces"
-      invert = true;
-      source = "target"//invert link order for after
-      target = "source"
-      sourceLinks=store.physicalSpaces.links
-      sourceData=store.physicalSpaces.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }else if (metalinkType == "WpOwn") {
-      sourceGroup="workPackages"
-      invert = true;
-      source = "target"//invert link order for after
-      target = "source"
-      sourceLinks=store.workPackages.links
-      sourceData=store.workPackages.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }else if (metalinkType == "documents") {
-      if (typeof nw !== "undefined") {//if using node webkit
-        prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
-        onLoaded = function (ev) {
-          dropAreaService.setDropZone(".prepend", function () {
-            ev.select.updateData(store.documents.items)
-            ev.select.refreshList()
-          })
-        }
-      }
-      sourceGroup="documents"
-      sourceLinks=store.documents.links
-      sourceData=store.documents.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }
-    showListMenu({
-      sourceData:sourceData,
-      sourceLinks:sourceLinks,
-      parentSelectMenu:ev.select ,
-      multipleSelection:currentLinksUuidFromDS,
-      displayProp:"name",
-      searchable : true,
-      display:displayRules,
-      prependContent:prependContent,
-      onLoaded:onLoaded,
-      idProp:"uuid",
-      onAdd:(ev)=>{//TODO experimental, replace with common service
-        var uuid = genuuid()
-        push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
-        ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
-          onLeave: (ev)=>{
-            push(act.remove(sourceGroup,{uuid:uuid}))
-            ev.select.updateData(store[sourceGroup].items)
-          }
-        })
-      },
-      onEditItem: (ev)=>{
-        var newValue = prompt("Edit Item",ev.target.dataset.value)
-        if (newValue) {
-          push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-        }
-      },
-      onCloseMenu: (ev)=>{
-        console.log(ev.select);
-        ev.select.getParent().refreshList()
-      },
-      onChangeSelect: (ev)=>{
-        //prepare func to changeItems
-        var changeProp = function (sourceTriggerId) {
-          batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-          batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-
-          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-          ev.select.getParent().refreshList()
-        }
-        if (batch[0]) { //check if batch action is needed
-          batch.forEach(function (sourceTriggerId) {
-            changeProp(sourceTriggerId)
-          })
-        }else {
-          changeProp(sourceTriggerId)
-        }
-      },
-      onClick: (ev)=>{
-        console.log("select");
-      }
-    })
-  }
-
-  // function showPbsTree(sourceList) {
-  //   var store = query.currentProject()
-  //   var tree = renderDTree(store.db)
-  //   console.log(tree);
-  //   var data =undefined
-  //   if (store.currentPbs.items[0]) {
-  //     data = hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0]
-  //     console.log(data);
-  //   }
-  //   displayThree({
-  //     data:data,
-  //     edit:true,
-  //     onClose:(e)=>{
-  //       renderCDC()
-  //       sourceList.select.update()
-  //       sourceList.select.updateData(store.currentPbs.items)
-  //       sourceList.select.updateLinks(store.currentPbs.links)
-  //       sourceList.select.refreshList()
-  //     },
-  //     onAdd:(ev)=>{
-  //       var uuid = genuuid()
-  //       var newName = prompt("Name?")
-  //       push(addPbs({uuid:uuid, name:newName}))
-  //       push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-  //       ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-  //       //ev.sourceTree.updateFromRoot(ev.element)
-  //     },
-  //     onMove:(ev)=>{
-  //       push(removePbsLink({source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
-  //       push(addPbsLink({source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
-  //       ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-  //
-  //     },
-  //     onRemove:(ev)=>{
-  //       if (confirm("Keep Childs?")) {
-  //         var originalLinks = store.currentPbs.links.filter(e=>e.source == ev.element.data.uuid)
-  //         for (link of originalLinks) {
-  //           push(addPbsLink({source:ev.element.parent.data.uuid, target:link.target}))
-  //         }
-  //       }
-  //       //remove all links
-  //       push(removePbsLink({source:ev.element.data.uuid}))
-  //       //addNewLinks
-  //       push(removePbs({uuid:ev.element.data.uuid}))
-  //       //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-  //       ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-  //     },
-  //     onLabelClicked:(originev)=>{
-  //       showSingleItemService.showById(originev.element.data.uuid)
-  //     },
-  //     onStoreUpdate:(originev)=>{
-  //       originev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
-  //     }
-  //   })
-  // }
-
-  function generateExtraFieldsList() {
+  function generateExtraFieldsList(store) {
     if (isExtraFieldsVisible) {
-      var store = query.currentProject()
       let extras = store.extraFields.items.filter(i=>(i.type == "currentPbs" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
         if (confirm("No custom Fields yet. Add one?")) {

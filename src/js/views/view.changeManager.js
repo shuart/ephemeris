@@ -10,8 +10,8 @@ var createChangeManagerView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     showListMenu({
       sourceData:store.changes.items,
       displayProp:"name",
@@ -78,16 +78,16 @@ var createChangeManagerView = function () {
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = store.changes.items.map(i=>{
-      let linkToTextsh = getRelatedItems(i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
-      let linkToTextReq = getRelatedItems(i, "requirements",{objectIs:"target", metalinksType:"reqChangedBy"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToTextsh = getRelatedItems(store, i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
+      let linkToTextReq = getRelatedItems(store, i, "requirements",{objectIs:"target", metalinksType:"reqChangedBy"}).map(s=> s[0]? s[0].name : '').join(",")
 
       return {id:i.uuid, name:i.name, description:i.desc, Owner:linkToTextsh,  requirements:linkToTextReq}
     })
     JSONToCSVConvertor(data, 'Changes', true)
   }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async function  startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)

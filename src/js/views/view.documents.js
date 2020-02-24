@@ -1,17 +1,41 @@
 var createDocumentsView = function () {
   var self ={};
   var objectIsActive = false;
+  var currentVisibleList = undefined
 
   var init = function () {
     connections()
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:store.documents.items,
+          metaLinks:store.metaLinks.items,
+          displayRules:displayRules(store)
+        })
+      }
+    })
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var displayRules = function (store) {
+    return [
+      {prop:"name", displayAs:"Name", edit:true},
+      {prop:"osPath", displayAs:"Local", fullText:true, localPath:true, edit:false},
+      {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true},
+      {prop:"documents",isTarget:true, displayAs:"Products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
+      {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
+
+      // {prop:"documented", displayAs:"Products documented", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
+      // {prop:"documented", displayAs:"Requirements documented", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
+    ]
+  }
+
+  var render = async function () {
+    var store = await query.currentProject()
     let prependContent =undefined;
     let onLoaded =undefined;
 
@@ -28,23 +52,14 @@ var createDocumentsView = function () {
       }
     }
 
-    showListMenu({
+    currentVisibleList = showListMenu({
       sourceData:store.documents.items,
       displayProp:"name",
       targetDomContainer:".center-container",
       fullScreen:true,// TODO: perhaps not full screen?
       prependContent:prependContent,
       onLoaded:onLoaded,
-      display:[
-        {prop:"name", displayAs:"Name", edit:true},
-        {prop:"osPath", displayAs:"Local", fullText:true, localPath:true, edit:false},
-        {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true},
-        {prop:"documents",isTarget:true, displayAs:"Products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-        {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
-
-        // {prop:"documented", displayAs:"Products documented", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
-        // {prop:"documented", displayAs:"Requirements documented", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
-      ],
+      display:displayRules(store),
       idProp:"uuid",
       onEditItem: (ev)=>{
         console.log("Edit");
@@ -124,9 +139,9 @@ var createDocumentsView = function () {
   // var exportToCSV = function () {
   //   let store = query.currentProject()
   //   let data = store.workPackages.items.map(i=>{
-  //     let linkToTextsh = getRelatedItems(i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
-  //     let linkToTextPbs = getRelatedItems(i, "currentPbs",{objectIs:"source", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
-  //     let linkToTextReq = getRelatedItems(i, "requirements",{objectIs:"source", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
+  //     let linkToTextsh = getRelatedItems(store, i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
+  //     let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"source", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
+  //     let linkToTextReq = getRelatedItems(store, i, "requirements",{objectIs:"source", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
   //
   //
   //     return {id:i.uuid, name:i.name, Owner:linkToTextsh, requirements:linkToTextReq, Products: linkToTextPbs}
@@ -134,8 +149,8 @@ var createDocumentsView = function () {
   //   JSONToCSVConvertor(data, 'Pbs', true)
   // }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async function startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
@@ -260,6 +275,7 @@ var createDocumentsView = function () {
   }
 
   var setInactive = function () {
+    currentVisibleList = undefined;
     objectIsActive = false;
   }
 

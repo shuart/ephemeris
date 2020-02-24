@@ -12,8 +12,12 @@ var createProjectsView = function () {
 
 
 
-  var render = function () {
-    let sortedProject = getOrderedProjectList(app.store.projects, app.store.userData.preferences.projectDisplayOrder)
+  var render = async function () {
+    document.querySelector(".center-container").innerHTML=""
+    let allProjects = await query.items("projects")
+
+    let relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+    let sortedProject = getOrderedProjectList(relevantProjects, app.store.userData.preferences.projectDisplayOrder)
     showListMenu({
       sourceData:sortedProject,
       sourceLinks:undefined,
@@ -26,17 +30,14 @@ var createProjectsView = function () {
         {prop:"reference", displayAs:"Reference", edit:"true"}
       ],
       idProp:"uuid",
-      onEditItem: (ev)=>{
+      onEditItem: async (ev)=>{
         console.log("Edit");
         var newValue = prompt("Edit Item",ev.target.dataset.value)
         if (newValue) {
           // push(editRequirement({uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-          var originItem = app.store.projects.filter(e=> e.uuid == ev.target.dataset.id)[0]//TODO USe reducer
-          console.log(originItem);
-          console.log(originItem[ev.target.dataset.prop]);
-          originItem[ev.target.dataset.prop] = newValue
-          originItem[ev.target.dataset.prop]
-          ev.select.updateData(app.store.projects)
+          await dbConnector.setProjectData(ev.target.dataset.id, ev.target.dataset.prop ,newValue)
+          update()
+          // ev.select.updateData(app.store.projects)
         }
       },
       onEditChoiceItem: (ev)=>{
@@ -74,13 +75,15 @@ var createProjectsView = function () {
         //   }
         // })
       },
-      onRemove: (ev)=>{
+      onRemove: async (ev)=>{
         console.log("remove");
         if (confirm("remove item ?")) {
           //push(removeRequirement({uuid:ev.target.dataset.id}))
           //ev.select.updateData(store.requirements.items)
-          var indexToRemove = app.store.projects.findIndex(p=>p.uuid == ev.target.dataset.id)
-          app.store.projects.splice(indexToRemove, 1)//TODO do that with actions
+          // var indexToRemove = app.store.projects.findIndex(p=>p.uuid == ev.target.dataset.id)
+          // app.store.projects.splice(indexToRemove, 1)//TODO do that with actions
+          await dbConnector.removeProject(ev.target.dataset.id)
+          update()
         }
       },
       onMove: (ev)=>{

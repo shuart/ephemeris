@@ -134,7 +134,8 @@ var createImportXMLService = function () {
     console.log(projectRelations);
 
     //send to current project
-    let store = query.currentProject()
+    //let store = query.currentProject() //DBCHANGE
+    let store = false //DBCHANGE
     // create archimate interface Types
     if (store) {
       alert("loading into project")
@@ -234,7 +235,8 @@ var createImportXMLService = function () {
             newProjectFromXml.metaLinks.items.push({uuid:genuuid(),type:"interfacesType", source:interfaceUuid, target:interfaceTypeTargetId})
           }
         })
-        app.store.projects.push(newProjectFromXml)
+        dbConnector.addProject(newProjectFromXml)//use actions DBCHANGE
+        // app.store.projects.push(newProjectFromXml)//use actions DBCHANGE
         setTimeout(function () {pageManager.setActivePage("projectSelection")}, 2000);
       }
     }

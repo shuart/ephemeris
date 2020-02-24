@@ -5,8 +5,8 @@ var createVvManager = function (targetSelector) {
 
   var theme={}
 
-  theme.vvSetArea = function (sets) {
-    let stats = getGlobalStatistics()
+  theme.vvSetArea = function (sets, store) {
+    let stats = getGlobalStatistics(store)
     return`
     <h2>Verification & Validation Sets</h2>
     <button class="action_vv_manager_add_set ui right labeled icon green mini button">
@@ -23,20 +23,20 @@ var createVvManager = function (targetSelector) {
     </div>
 
     <div class="ui link cards" style="padding:5px;">
-      ${sets.map(set=> theme.vvSet(set)).join('')}
+      ${sets.map(set=> theme.vvSet(set, store)).join('')}
     </div>
     `
   }
-  theme.vvReportArea = function (reports) {
+  theme.vvReportArea = function (reports, store) {
     return`
     <h2>Reports</h2>
     <div class="ui link cards" style="padding:5px;">
-      ${reports.map(report=> theme.vvReport(report)).join('')}
+      ${reports.map(report=> theme.vvReport(report, store)).join('')}
     </div>
     `
   }
-  theme.vvSet = function (set) {
-    let stats = getSetStatistics(set)
+  theme.vvSet = function (set, store) {
+    let stats = getSetStatistics(set, store)
     return `
     <div class="ui card">
       <div class="content">
@@ -68,8 +68,8 @@ var createVvManager = function (targetSelector) {
     </div>
     `
   }
-  theme.vvReport= function (report) {
-    let stats = getReportStatistics(report)
+  theme.vvReport= function (report, store) {
+    let stats = getReportStatistics(report, store)
     return `
     <div class="ui card">
       <div class="content">
@@ -124,10 +124,10 @@ var createVvManager = function (targetSelector) {
         render()
       }
     })
-    connect(".action_vv_manager_remove_set", "click", function (e) {
+    connect(".action_vv_manager_remove_set", "click", async function (e) {
       var bRemove = confirm("Do you want to remove this set and all it's definitions?")
       if (bRemove) {
-        var store = query.currentProject()
+        var store = await query.currentProject()
         let definitions= store.vvDefinitions.items.filter(d=>d.sourceSet == e.target.dataset.id)
         let definitionsUuids= definitions.map(d=>d.uuid)
         let relatedMetaLinks = store.metaLinks.items.filter(l => (l.type=="vvDefinitionNeed"||l.type=="vvDefinitionInterface")  && definitionsUuids.includes(l.source))
@@ -137,10 +137,10 @@ var createVvManager = function (targetSelector) {
         render()
       }
     })
-    connect(".action_vv_manager_remove_report", "click", function (e) {
+    connect(".action_vv_manager_remove_report", "click", async function (e) {
       var bRemove = confirm("Do you want to remove this report and all it's definitions?")
       if (bRemove) {
-        var store = query.currentProject()
+        var store = await query.currentProject()
         let actions= store.vvActions.items.filter(d=>d.sourceReport == e.target.dataset.id)
         let actionsUuids= actions.map(d=>d.uuid)
         let relatedMetaLinks = store.metaLinks.items.filter(l => (l.type=="vvReportNeed"||l.type=="vvReportInterface") && actionsUuids.includes(l.source))
@@ -150,8 +150,8 @@ var createVvManager = function (targetSelector) {
         render()
       }
     })
-    connect(".action_vv_manager_add_report_from_set", "click", function (e) {
-      var store = query.currentProject()
+    connect(".action_vv_manager_add_report_from_set", "click", async function (e) {
+      var store = await query.currentProject()
       let reportUuid = genuuid()
       push(act.add("vvReports",{uuid:reportUuid, name:"Report based on "+ e.target.dataset.name}))
       //generate the report action based on the set
@@ -191,18 +191,18 @@ var createVvManager = function (targetSelector) {
     })
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     container.innerHTML = ""
     if (store) {
       // let vvSetsList = [1,2,3,4]
       let vvSetsList = store.vvSets.items
       container.appendChild(
-        toNode(theme.vvSetArea(vvSetsList))
+        toNode(theme.vvSetArea(vvSetsList, store))
       )
       let vvReportsList = store.vvReports.items
       container.appendChild(
-        toNode(theme.vvReportArea(vvReportsList))
+        toNode(theme.vvReportArea(vvReportsList, store))
       )
       // vvSetsList.forEach(set =>{
       //   container.appendChild(toNode(theme.vvSet()))
@@ -212,8 +212,7 @@ var createVvManager = function (targetSelector) {
 
   }
 
-  var getGlobalStatistics = function (set) {
-    let store = query.currentProject()
+  var getGlobalStatistics = function (store) {
     // let requirementsConvered= store.vvDefinitions.items.map().filter(d=>d.sourceSet == set.uuid)
     // let definitionsUuids= definitions.map(d=>d.uuid)
     let coveredNeedsRawList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed").map(l=>l.target)
@@ -225,16 +224,14 @@ var createVvManager = function (targetSelector) {
     // let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
     return {coveredNeeds: coveredNeedList, percentOfCoveredNeeds:percentOfCoveredNeeds,percentOfCoveredInterfaces:percentOfCoveredInterfaces}
   }
-  var getSetStatistics = function (set) {
-    let store = query.currentProject()
+  var getSetStatistics = function (set, store) {
     let definitions= store.vvDefinitions.items.filter(d=>d.sourceSet == set.uuid)
     let definitionsUuids= definitions.map(d=>d.uuid)
     let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
     let coveredInterfacesList = store.metaLinks.items.filter(l => l.type=="vvDefinitionInterface" && definitionsUuids.includes(l.source))
     return {numberOfDefinitions: definitions.length, coveredNeeds: coveredNeedsList,coveredInterfaces: coveredInterfacesList}
   }
-  var getReportStatistics = function (report) {
-    let store = query.currentProject()
+  var getReportStatistics = function (report, store) {
     let actions= store.vvActions.items.filter(d=>d.sourceReport == report.uuid)
     let completedActions= actions.filter(d=>d.status == 2)
     let failedActions= actions.filter(d=>d.status == 1)
@@ -248,7 +245,7 @@ var createVvManager = function (targetSelector) {
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = store.physicalSpaces.items.map(i=>{
-      let linkToTextPbs = getRelatedItems(i, "currentPbs", {metalinksType:"contains"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextPbs = getRelatedItems(store, i, "currentPbs", {metalinksType:"contains"}).map(s=> s[0]? s[0].name : "").join(",")
       return {id:i.uuid, name:i.name, description:i.desc, products:linkToTextPbs}
     })
     JSONToCSVConvertor(data, 'PhysicalSpaces', true)

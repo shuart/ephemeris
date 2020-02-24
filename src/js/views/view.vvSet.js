@@ -9,6 +9,7 @@ var createVvSet = function ({
   let currentSetUuid = undefined
   let currentSetGenerateBuffer = []
   let currentSetGenerateInterfaceBuffer = []
+  let currentSetList = undefined
 
   let theme = {
     menu : function (name) {
@@ -36,12 +37,28 @@ var createVvSet = function ({
     connections()
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", async function () {
+      console.log(objectIsActive,currentSetList);
+      if (objectIsActive && currentSetList) {
+        var store = await query.currentProject()
+        let updatedWorkSet = await generateRelevantSet(currentSetUuid)
+        console.log(updatedWorkSet);
+        ephHelpers.updateListElements(currentSetList,{
+          items:updatedWorkSet,
+          metaLinks:store.metaLinks.items,
+          displayRules:generateDisplayRules(store),
+        })
+      }
+    })
     connect(".action_vv_set_close","click",(e)=>{
+      objectIsActive = false;
       sourceOccElement.remove()
     })
   }
 
-  var render = function (uuid) {
+  var render = async function (uuid) {
+    objectIsActive = true;
+    var store = await query.currentProject()
     sourceOccElement = document.createElement('div');
     sourceOccElement.style.height = "100%"
     sourceOccElement.style.width = "100%"
@@ -84,62 +101,64 @@ var createVvSet = function ({
     mainEl.appendChild(menuArea)
     mainEl.appendChild(container)
 
-    menuArea.appendChild(toNode(renderMenu(uuid)))
+    menuArea.appendChild(toNode(renderMenu(uuid, store)))
     // container.appendChild(toNode(renderSet(uuid)))
     document.body.appendChild(sourceOccElement)
     renderSet()
   }
 
-  var renderSet =function (){
-    var store = query.currentProject()
-    let relevantSet = generateRelevantSet(currentSetUuid)
+  var renderSet = async function (){
+    let relevantSet = await generateRelevantSet(currentSetUuid)
     let workSet = deepCopy(relevantSet)
-    displayWorkSet(workSet, ".vvDefinitionsArea")
+    await displayWorkSet(workSet, ".vvDefinitionsArea")
   }
-  var renderMenu =function (uuid){
-    var store = query.currentProject()
+  var renderMenu =function (uuid, store){
     let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
     return theme.menu(currentSet.name)
   }
 
   //UTILS
 
-  var generateRelevantSet = function (currentSetUuid) {
-    var store = query.currentProject()
+  var generateRelevantSet = async function (currentSetUuid) {
+    var store = await query.currentProject()
     return store.vvDefinitions.items.filter(i=>i.sourceSet == currentSetUuid)
   }
 
-  var displayWorkSet = function (workSet, container) {
-    var store = query.currentProject()
-    showListMenu({
+  var generateDisplayRules = function (store) {
+    return [
+      {prop:"name", displayAs:"Name", edit:"true"},
+      {prop:"vvDefinitionNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
+      {prop:"vvDefinitionInterface", displayAs:"Related Interface", meta:()=>store.metaLinks.items, choices:()=>store.interfaces.items, edit:true},
+      {prop:"shallStatement", displayAs:"Shall Statement", edit:true},
+      {prop:"successCriteria", displayAs:"Success Criteria", edit:true},
+      {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:true},
+      {uuid:"documents", prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
+    ]
+  }
+
+  var displayWorkSet = async function (workSet, container) {
+    var store = await query.currentProject()
+    currentSetList = showListMenu({
       sourceData:workSet,
       metaLinks:store.metaLinks.items,
       displayProp:"name",
       targetDomContainer:container,
       fullScreen:true,// TODO: perhaps not full screen?
-      display:[
-        {prop:"name", displayAs:"Name", edit:"true"},
-        {prop:"vvDefinitionNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
-        {prop:"vvDefinitionInterface", displayAs:"Related Interface", meta:()=>store.metaLinks.items, choices:()=>store.interfaces.items, edit:true},
-        {prop:"shallStatement", displayAs:"Shall Statement", edit:true},
-        {prop:"successCriteria", displayAs:"Success Criteria", edit:true},
-        {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:true},
-        {uuid:"documents", prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
-      ],
+      display:generateDisplayRules(store),
       idProp:"uuid",
       onEditItem: (ev)=>{
         console.log("Edit");
         var newValue = prompt("Edit Item",ev.target.dataset.value)
         if (newValue) {
           push(act.edit("vvDefinitions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-          ev.select.updateData(generateRelevantSet(currentSetUuid))
+          // ev.select.updateData(generateRelevantSet(currentSetUuid))
         }
       },
       onEditOptionsItem: (ev)=>{
         console.log("Edit_option");
           let newValue = ev.value
           push(act.edit("vvDefinitions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-          ev.select.updateData(generateRelevantSet(currentSetUuid))
+          // ev.select.updateData(generateRelevantSet(currentSetUuid))
       },
       onEditChoiceItem: (ev)=>{
         startSelection(ev)
@@ -147,13 +166,13 @@ var createVvSet = function ({
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("vvDefinitions",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(generateRelevantSet(currentSetUuid))
+          // ev.select.updateData(generateRelevantSet(currentSetUuid))
         }
       },
       onAdd: (ev)=>{
         let definitionName = prompt("New Defintion")
         push(act.add("vvDefinitions",{uuid:genuuid(), sourceSet:currentSetUuid, name:definitionName, color:"#ffffff"}))
-        ev.select.updateData(generateRelevantSet(currentSetUuid))
+        // ev.select.updateData(generateRelevantSet(currentSetUuid))
       },
       onLabelClick: (ev)=>{
         showSingleItemService.showById(ev.target.dataset.id)
@@ -176,19 +195,18 @@ var createVvSet = function ({
         {
           name:"Generate-Requirements",
           action:(ev)=>{
-            generateFromRequirements()
+            generateFromRequirements(store)
           }
         },
         {
           name:"Generate-Interfaces",
           action:(ev)=>{
-            generateFromInterfaces()
+            generateFromInterfaces(store)
           }
         },
         {
           name:"Rename",
           action:(ev)=>{
-            var store = query.currentProject()
             let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
             let newName = prompt("Change Set Name", currentSet.name)
             if (newName) {
@@ -204,8 +222,7 @@ var createVvSet = function ({
     })
   }
 
-  function generateFromRequirements() {
-    var store = query.currentProject()
+  function generateFromRequirements(store) {
     showListMenu({
       sourceData:store.requirements.items,
       sourceLinks:store.requirements.links,
@@ -254,8 +271,7 @@ var createVvSet = function ({
       ]
     })
   }
-  function generateFromInterfaces() {
-    var store = query.currentProject()
+  function generateFromInterfaces(store) {
     showListMenu({
       sourceData:store.interfaces.items,
       sourceLinks:store.interfaces.links,
@@ -309,8 +325,8 @@ var createVvSet = function ({
 
 
 
-  function startSelection(ev) {
-    var store = query.currentProject()
+  async function  startSelection(ev) {
+    var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id;
     var batch = ev.batch;
@@ -464,8 +480,8 @@ var createVvSet = function ({
           // }
           batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
 
-          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-          ev.select.getParent().refreshList()
+          // ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          // ev.select.getParent().refreshList()
         }
         if (batch[0]) { //check if batch action is needed
           batch.forEach(function (sourceTriggerId) {
@@ -484,8 +500,8 @@ var createVvSet = function ({
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = generateRelevantSet(currentSetUuid).map(i=>{
-      let linkToTextReq = getRelatedItems(i, "requirements", {metalinksType:"vvDefinitionNeed"}).map(s=> s[0]? s[0].name : "").join(",")
-      let linkToTextInt= getRelatedItems(i, "interfaces", {metalinksType:"vvDefinitionInterface"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextReq = getRelatedItems(store, i, "requirements", {metalinksType:"vvDefinitionNeed"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextInt= getRelatedItems(store, i, "interfaces", {metalinksType:"vvDefinitionInterface"}).map(s=> s[0]? s[0].name : "").join(",")
       let linkToTextVerif = listOptions.vv_verification_type[i.verificationMethod]? listOptions.vv_verification_type[i.verificationMethod].name:listOptions.vv_verification_type[0].name
       return {id:i.uuid, name:i.name, ReportNeed:linkToTextReq, ReportInterfaces:linkToTextInt, shallStatement:i.shallStatement, successCriteria:i.successCriteria,verificationMethod:linkToTextVerif}
     })
@@ -506,6 +522,7 @@ var createVvSet = function ({
   }
 
   var setActive =function () {
+    objectIsActive = true;
     update()
   }
 

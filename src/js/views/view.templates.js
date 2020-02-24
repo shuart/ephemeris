@@ -10,8 +10,8 @@ var createTemplatesView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     showListMenu({
       sourceData:store.templates.items,
       displayProp:"name",
