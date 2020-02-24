@@ -1,6 +1,7 @@
 var createTagsView = function () {
   var self ={};
   var objectIsActive = false;
+  var currentVisibleList = undefined
 
   var init = function () {
     connections()
@@ -10,16 +11,25 @@ var createTagsView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
-    showListMenu({
+  var updateList =  function () {
+    setTimeout(async function () {
+      var store = await query.currentProject()
+      ephHelpers.updateListElements(currentVisibleList,{
+        items:store.tags.items
+      })
+    }, 1500);
+  }
+
+  var render = async function () {
+    var store = await query.currentProject()
+    currentVisibleList = showListMenu({
       sourceData:store.tags.items,
       displayProp:"name",
       // targetDomContainer:".center-container",
       // fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"name", displayAs:"Name", edit:"true"},
-        {prop:"color", displayAs:"Color", edit:"true"}
+        {prop:"color", displayAs:"Color", color:true, edit:"true"}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{
@@ -28,16 +38,28 @@ var createTagsView = function () {
         if (newValue) {
           push(act.edit("tags", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
         }
+        updateList()
+      },
+      onEditColorItem: (ev)=>{
+        if (ev.color && ev.color.hex) {
+          push(act.edit("tags", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:(ev.color.hex+"").slice(0,-2)}))
+        }
+        updateList()
+      },
+      onRemoveColorItem: (ev)=>{
+          push(act.edit("tags", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:undefined}))
+          updateList()
       },
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("tags",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.tags.items)
         }
+        updateList()
       },
       onAdd: (ev)=>{
         let tagName = prompt("New tag")
         push(act.add("tags",{uuid:genuuid(), name:tagName, color:"#ffffff"}))
+        updateList()
       },
       onClick: (ev)=>{
         //mutations
@@ -60,6 +82,7 @@ var createTagsView = function () {
   }
 
   var setInactive = function () {
+    currentVisibleList = undefined
     objectIsActive = false;
   }
 

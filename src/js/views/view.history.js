@@ -10,8 +10,8 @@ var createHistoryView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     let formatedData = store.history.items.map(i=>({
       uuid:i.uuid,
       id:i.id,

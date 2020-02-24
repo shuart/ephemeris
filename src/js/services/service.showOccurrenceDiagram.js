@@ -17,7 +17,7 @@ var createShowOccurrenceDiagramService = function () {
   var createInterfaceMatrix = function (nodesToShow, relations) {
     // let store  = query.currentProject()
     // let data = readifyInterfaces().map(i=>{
-    //   let linkToTextTags = getRelatedItems(i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
+    //   let linkToTextTags = getRelatedItems(store, i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
     //
     //   return {id:i.uuid, type:i.type, description:i.description, source:i.source, target:i.target, tags:linkToTextTags}
     // })

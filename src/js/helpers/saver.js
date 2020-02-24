@@ -123,13 +123,14 @@ function createSingleProjectSaver({
     reader.readAsText(input.files[0]);
   }
   let create = document.getElementById(targetID)
-  create.addEventListener("click", function () {
+  create.addEventListener("click", async function () {
     if (query.currentProject()) {
       var link = document.createElement("a");
-      let extraName = "_" +query.currentProject().name
+      let projectToSave = await query.currentProject()
+      let extraName = "_" +projectToSave.name
       let currentDate = "_" + new Date(Date.now()).toLocaleString()
       link.setAttribute("download", filename + extraName + currentDate + fileExtensions);
-      var json = createJSONFile(JSON.stringify({type:type, data:query.currentProject()}));//TODO closure issue again
+      var json = createJSONFile(JSON.stringify({type:type, data:projectToSave}));//TODO closure issue again
       // var json = createJSONFile(JSON.stringify(object));
       //var json = createJSONFile(JSON.stringify(store.db));
       if (json !== "Invalid JSON") {
@@ -149,7 +150,7 @@ function createSingleProjectSaver({
 };
 createSingleProjectSaver({targetID:"topmenu_project_saver", type:"project", data:app.store.projects, fileExtension:".json", filename:"ephemeris_project"})
 
-function loadSavedData(data, callback) {
+async function loadSavedData(data, callback) {
   var jsonContent = JSON.parse(data);
   if (jsonContent.type == "session") {
     if (!app.state.currentUser) {
@@ -163,18 +164,29 @@ function loadSavedData(data, callback) {
       alert("Session files can only be loaded in user selection view")
     }
   }else if (jsonContent.type == "project") {
+    if (jsonContent.data._id) {
+      delete jsonContent.data._id;
+    }
+    let allProjects = await query.items("projects")
     if (app.state.currentUser) {
-      if (app.store.projects.find(e=> e.uuid == jsonContent.data.uuid )) {
+      if (allProjects.find(e=> e.uuid == jsonContent.data.uuid )) {
         if (confirm("This project exist already. Do you want to replace it?")) {
-          var projectIndex = app.store.projects.findIndex(e=> e.uuid == jsonContent.data.uuid )
-          app.store.projects[projectIndex] = jsonContent.data
-          renderCDC()
+          // var projectIndex = app.store.projects.findIndex(e=> e.uuid == jsonContent.data.uuid )
+          // app.store.projects[projectIndex] = jsonContent.data
+          // renderCDC()
+          await dbConnector.removeProject(ev.target.dataset.id)
+          await dbConnector.addProject(jsonContent.data)
+          pageManager.setActivePage("projectSelection")
+        }else if(confirm("Create a copy?")){
+          jsonContent.data.uuid=genuuid()
+          jsonContent.data.name +="_copy"
+          console.log(jsonContent.data);
+          await dbConnector.addProject(jsonContent.data)
           pageManager.setActivePage("projectSelection")
         }
       }else {
         if (confirm("Import this project?")) {
-          app.store.projects.push(jsonContent.data)
-          renderCDC()
+          dbConnector.addProject(jsonContent.data)
           pageManager.setActivePage("projectSelection")
         }
       }

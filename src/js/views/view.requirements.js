@@ -4,6 +4,7 @@ var createRequirementsView = function () {
   var simpleView = true;
   var isExtraFieldsVisible =false;
   var extraFields = undefined
+  var currentVisibleList = undefined
 
   var init = function () {
     connections()
@@ -11,11 +12,20 @@ var createRequirementsView = function () {
 
   }
   var connections =function () {
-
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:store.requirements.items,
+          links:store.requirements.links,
+          metaLinks:store.metaLinks.items,
+          displayRules:setDisplayRules(store)
+        })
+      }
+    })
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var setDisplayRules = function (store) {
     var displayRules = [
         {prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
@@ -40,18 +50,20 @@ var createRequirementsView = function () {
       displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
       //displayRules = extraFields
     }
+    return displayRules
+  }
 
-
-
-      showListMenu({
+  var render = async function () {
+    var store = await query.currentProject()
+      currentVisibleList = showListMenu({
         sourceData:store.requirements.items,
         sourceLinks:store.requirements.links,
         metaLinks:store.metaLinks.items,
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
-        display:displayRules,
-        extraFields: generateExtraFieldsList(),
+        display:setDisplayRules(store),
+        extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,
         onEditItem: (ev)=>{
@@ -68,7 +80,7 @@ var createRequirementsView = function () {
           })
         },
         onEditChoiceItem: (ev)=>{
-          startSelection(ev)
+          showUpdateLinksService.show(ev,"requirements")
         },
         onRemove: (ev)=>{
           console.log("remove");
@@ -122,9 +134,9 @@ var createRequirementsView = function () {
         },
         onClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id, function (e) {
-            ev.select.updateData(store.requirements.items)
-            ev.select.updateLinks(store.requirements.links)
-            ev.select.refreshList()
+            // ev.select.updateData(store.requirements.items)
+            // ev.select.updateLinks(store.requirements.links)
+            // ev.select.refreshList()
           })
         },
         extraActions:[
@@ -183,13 +195,13 @@ var createRequirementsView = function () {
       })
   }
 
-  var exportToCSV = function () {
-    let store = query.currentProject()
+  var exportToCSV = async function () {
+    let store = await query.currentProject()
     let data = store.requirements.items.map(i=>{
-      let linkToText = getRelatedItems(i, "stakeholders", {metalinksType:"origin"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
-      let linkToTextPbs = getRelatedItems(i, "currentPbs",{objectIs:"target", metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : '').join(",")
-      let linkToTextTags = getRelatedItems(i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
-      let linkToTextWorkpackages = getRelatedItems(i, "workPackages",{objectIs:"target", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToText = getRelatedItems(store, i, "stakeholders", {metalinksType:"origin"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
+      let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"target", metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToTextTags = getRelatedItems(store, i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextWorkpackages = getRelatedItems(store, i, "workPackages",{objectIs:"target", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
       return {id:i.uuid, name:i.name, description:i.desc, stakeholders:linkToText, products:linkToTextPbs, tags:linkToTextTags, workPackages:linkToTextWorkpackages}
     })
     JSONToCSVConvertor(data, 'Requirements', true)
@@ -210,151 +222,151 @@ var createRequirementsView = function () {
     objectIsActive = false;
   }
 
-  function startSelection(ev) {
-    var store = query.currentProject()
-    var metalinkType = ev.target.dataset.prop;
-    var sourceTriggerId = ev.target.dataset.id;
-    var batch = ev.batch;
-    var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-    var sourceGroup = undefined
-    var sourceData = undefined
-    var invert = false
-    var source = "source"
-    var target = "target"
-    var sourceLinks= undefined
-    var displayRules= undefined
-    var showColoredIconsRule = undefined
-    var prependContent=undefined
-    var onLoaded = undefined
-    if (metalinkType == "origin") {
-      sourceGroup="stakeholders";
-      sourceData=store.stakeholders.items
-      showColoredIconsRule= lettersFromNames,
-      displayRules = [
-        {prop:"name", displayAs:"First Name", edit:false},
-        {prop:"lastName", displayAs:"Last name", edit:false}
-      ]
-    }else if (metalinkType == "originNeed") {
-      sourceGroup="currentPbs"
-      invert = true;
-      sourceData=store.currentPbs.items
-      source = "target"//invert link order for after
-      target = "source"
-      sourceLinks=store.currentPbs.links
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-      ]
-    }else if (metalinkType == "tags") {
-      sourceGroup="tags";
-      sourceData=store.tags.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }else if (metalinkType == "WpOwnNeed") {
-      sourceGroup="workPackages"
-      invert = true;
-      source = "target"//invert link order for after
-      target = "source"
-      sourceLinks=store.workPackages.links
-      sourceData=store.workPackages.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }else if (metalinkType == "reqChangedBy") {
-      sourceGroup="changes"
-      sourceLinks=store.changes.links
-      sourceData=store.changes.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false},
-        {prop:"desc", displayAs:"Description", edit:false}
-      ]
-    }else if (metalinkType == "documentsNeed") {
-      if (typeof nw !== "undefined") {//if using node webkit
-        prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
-        onLoaded = function (ev) {
-          dropAreaService.setDropZone(".prepend", function () {
-            ev.select.updateData(store.documents.items)
-            ev.select.refreshList()
-          })
-        }
-      }
-      sourceGroup="documents"
-      sourceLinks=store.documents.links
-      sourceData=store.documents.items
-      displayRules = [
-        {prop:"name", displayAs:"Name", edit:false}
-      ]
-    }
-    showListMenu({
-      sourceData:sourceData,
-      sourceLinks:sourceLinks,
-      parentSelectMenu:ev.select ,
-      multipleSelection:currentLinksUuidFromDS,
-      displayProp:"name",
-      searchable : true,
-      display:displayRules,
-      showColoredIcons:showColoredIconsRule,
-      prependContent:prependContent,
-      onLoaded:onLoaded,
-      idProp:"uuid",
-      onAdd:(ev)=>{//TODO experimental, replace with common service
-        var uuid = genuuid()
-        var linkUuid = genuuid()
-        push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
-        if (sourceGroup == "currentPbs") {
-          push(addPbsLink({uuid:linkUuid,source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
-        }
-        if (sourceGroup == "changes") {
-          push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
-        }
-        ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
-          onLeave: (ev)=>{
-            push(act.remove(sourceGroup,{uuid:uuid}))
-            if (sourceGroup == "currentPbs") {
-              push(removePbsLink({target:uuid}))
-            }
-            ev.select.updateData(store[sourceGroup].items)
-            ev.select.updateLinks(store[sourceGroup].links)
-          }
-        })
-      },
-      onEditItem: (ev)=>{
-        var newValue = prompt("Edit Item",ev.target.dataset.value)
-        if (newValue) {
-          push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-        }
-      },
-      onCloseMenu: (ev)=>{
-        console.log(ev.select);
-        ev.select.getParent().refreshList()
-      },
-      onChangeSelect: (ev)=>{
-        var changeProp = function (sourceTriggerId) {
-          batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-          batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+  // async function startSelection(ev) {
+  //   var store = await query.currentProject()
+  //   var metalinkType = ev.target.dataset.prop;
+  //   var sourceTriggerId = ev.target.dataset.id;
+  //   var batch = ev.batch;
+  //   var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
+  //   var sourceGroup = undefined
+  //   var sourceData = undefined
+  //   var invert = false
+  //   var source = "source"
+  //   var target = "target"
+  //   var sourceLinks= undefined
+  //   var displayRules= undefined
+  //   var showColoredIconsRule = undefined
+  //   var prependContent=undefined
+  //   var onLoaded = undefined
+  //   if (metalinkType == "origin") {
+  //     sourceGroup="stakeholders";
+  //     sourceData=store.stakeholders.items
+  //     showColoredIconsRule= lettersFromNames,
+  //     displayRules = [
+  //       {prop:"name", displayAs:"First Name", edit:false},
+  //       {prop:"lastName", displayAs:"Last name", edit:false}
+  //     ]
+  //   }else if (metalinkType == "originNeed") {
+  //     sourceGroup="currentPbs"
+  //     invert = true;
+  //     sourceData=store.currentPbs.items
+  //     source = "target"//invert link order for after
+  //     target = "source"
+  //     sourceLinks=store.currentPbs.links
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false},
+  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
+  //     ]
+  //   }else if (metalinkType == "tags") {
+  //     sourceGroup="tags";
+  //     sourceData=store.tags.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false}
+  //     ]
+  //   }else if (metalinkType == "WpOwnNeed") {
+  //     sourceGroup="workPackages"
+  //     invert = true;
+  //     source = "target"//invert link order for after
+  //     target = "source"
+  //     sourceLinks=store.workPackages.links
+  //     sourceData=store.workPackages.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false}
+  //     ]
+  //   }else if (metalinkType == "reqChangedBy") {
+  //     sourceGroup="changes"
+  //     sourceLinks=store.changes.links
+  //     sourceData=store.changes.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false},
+  //       {prop:"desc", displayAs:"Description", edit:false}
+  //     ]
+  //   }else if (metalinkType == "documentsNeed") {
+  //     if (typeof nw !== "undefined") {//if using node webkit
+  //       prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
+  //       onLoaded = function (ev) {
+  //         dropAreaService.setDropZone(".prepend", function () {
+  //           ev.select.updateData(store.documents.items)
+  //           ev.select.refreshList()
+  //         })
+  //       }
+  //     }
+  //     sourceGroup="documents"
+  //     sourceLinks=store.documents.links
+  //     sourceData=store.documents.items
+  //     displayRules = [
+  //       {prop:"name", displayAs:"Name", edit:false}
+  //     ]
+  //   }
+  //   showListMenu({
+  //     sourceData:sourceData,
+  //     sourceLinks:sourceLinks,
+  //     parentSelectMenu:ev.select ,
+  //     multipleSelection:currentLinksUuidFromDS,
+  //     displayProp:"name",
+  //     searchable : true,
+  //     display:displayRules,
+  //     showColoredIcons:showColoredIconsRule,
+  //     prependContent:prependContent,
+  //     onLoaded:onLoaded,
+  //     idProp:"uuid",
+  //     onAdd:(ev)=>{//TODO experimental, replace with common service
+  //       var uuid = genuuid()
+  //       var linkUuid = genuuid()
+  //       push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
+  //       if (sourceGroup == "currentPbs") {
+  //         push(addPbsLink({uuid:linkUuid,source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+  //       }
+  //       if (sourceGroup == "changes") {
+  //         push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
+  //       }
+  //       ev.select.setEditItemMode({
+  //         item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+  //         onLeave: (ev)=>{
+  //           push(act.remove(sourceGroup,{uuid:uuid}))
+  //           if (sourceGroup == "currentPbs") {
+  //             push(removePbsLink({target:uuid}))
+  //           }
+  //           ev.select.updateData(store[sourceGroup].items)
+  //           ev.select.updateLinks(store[sourceGroup].links)
+  //         }
+  //       })
+  //     },
+  //     onEditItem: (ev)=>{
+  //       var newValue = prompt("Edit Item",ev.target.dataset.value)
+  //       if (newValue) {
+  //         push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
+  //       }
+  //     },
+  //     onCloseMenu: (ev)=>{
+  //       console.log(ev.select);
+  //       ev.select.getParent().refreshList()
+  //     },
+  //     onChangeSelect: (ev)=>{
+  //       var changeProp = function (sourceTriggerId) {
+  //         batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+  //         batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
+  //
+  //         ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+  //         ev.select.getParent().refreshList()
+  //       }
+  //       if (batch[0]) { //check if batch action is needed
+  //         batch.forEach(function (sourceTriggerId) {
+  //           changeProp(sourceTriggerId)
+  //         })
+  //       }else {
+  //         changeProp(sourceTriggerId)
+  //       }
+  //     },
+  //     onClick: (ev)=>{
+  //       console.log("select");
+  //     }
+  //   })
+  // }
 
-          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-          ev.select.getParent().refreshList()
-        }
-        if (batch[0]) { //check if batch action is needed
-          batch.forEach(function (sourceTriggerId) {
-            changeProp(sourceTriggerId)
-          })
-        }else {
-          changeProp(sourceTriggerId)
-        }
-      },
-      onClick: (ev)=>{
-        console.log("select");
-      }
-    })
-  }
-
-  function generateExtraFieldsList() {
+  function generateExtraFieldsList(store) {
     if (isExtraFieldsVisible) {
-      var store = query.currentProject()
+
       let extras = store.extraFields.items.filter(i=>(i.type == "requirements" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
         if (confirm("No custom Fields yet. Add one?")) {

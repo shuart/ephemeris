@@ -10,9 +10,9 @@ var createInterfacesView = function () {
 
   }
 
-  var render = function () {
-    var store = query.currentProject()
-    
+  var render = async function () {
+    var store = await query.currentProject()
+
     var array1 =store.functions.items.map((e) => {e.color="#3da4ab"; return e})
     var array2 =store.currentPbs.items.map((e) => {e.color="#2ebf91"; return e})
     var array3 = store.requirements.items.map((e) => {e.color="#e6e6ea"; return e})

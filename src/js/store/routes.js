@@ -1,10 +1,19 @@
 var query = {}
-query.currentProject = function () {
-  return app.store.projects.find(e=>e.uuid==app.state.currentProject);
+query.currentProject = async function () {
+  let currentProjectUuid = app.state.currentProject
+  let currentProjectToReturn = await dbConnector.getProject(currentProjectUuid)
+  return currentProjectToReturn
 }
-query.items = (group, condition) => {
+
+query.collection = async function (collectionName) {
+  let currentProjectUuid = app.state.currentProject
+  let currentCollectionToReturn = await dbConnector.getProjectCollection(currentProjectUuid, collectionName)
+  return currentCollectionToReturn
+}
+
+ query.items = async (group, condition) => {
   //var store = store;
-  var store = query.currentProject() || app.store.projects[0] //TODO remove super ugly
+  var store = await query.currentProject() || app.store.projects[0] //TODO remove super ugly
   var storeGroup = undefined
 
   if (group == 'all') {//il looking in all groups
@@ -21,8 +30,10 @@ query.items = (group, condition) => {
   }else {// else group is specified
     //#corner cases
     if (group == "projects") {
-      console.log(app.store.projects);
-      storeGroup = app.store.projects
+      //console.log(app.store.projects);
+      // storeGroup = app.store.projects //DBCHANGE
+      storeGroup = await dbConnector.getUserProjectList()
+      console.log(storeGroup);
     }
     //#general cases
 

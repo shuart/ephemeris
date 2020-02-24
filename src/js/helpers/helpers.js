@@ -247,7 +247,7 @@ var getOrderedProjectList= function (list, displayOrder) {
 }
 
 //get related item
-function getRelatedItems(sourceItem, groupToSearch, paramOptions) {//todo limit metalinks type
+function getRelatedItems(store, sourceItem, groupToSearch, paramOptions) {//todo limit metalinks type
   var paramOptions = paramOptions || {}
   let options ={
     objectIs :paramOptions.objectIs || "source",
@@ -255,42 +255,48 @@ function getRelatedItems(sourceItem, groupToSearch, paramOptions) {//todo limit 
   }
   let linkTotextItemType = options.objectIs == "source"? "target" : "source"
 
-  var store = query.currentProject()
+  // var store = query.currentProject()
   let metaLinksToSearch = store.metaLinks.items
   if (options.metalinksType) {
     metaLinksToSearch =store.metaLinks.items.filter(e=>e.type == options.metalinksType)
   }
   let linkedTo = metaLinksToSearch.filter(e=>e[options.objectIs] == sourceItem.uuid)
-  let linkToText = linkedTo.map(e=>query.items(groupToSearch, function (i) {
+  let linkToText = linkedTo.map(e=>store[groupToSearch].items.find(function (i) {
     return i.uuid == e[linkTotextItemType]
   }))
+  console.log(linkToText);
   return linkToText
 }
 //get related item
-function getCategoryFromItemUuid(sourceItemId) {//todo limit metalinks type
-  var store = query.currentProject()
+function getCategoryFromItemUuid(sourceItemId, store, catStore) {//todo limit metalinks type
+  // var store = query.currentProject()
   let category = undefined
-  let categoryLink = store.metaLinks.items.find(m=>(m.type=="category" && m.source == sourceItemId))
-  console.log(sourceItemId);
-  console.log(categoryLink);
+  // let categoryLink = store.metaLinks.items.find(m=>(m.type=="category" && m.source == sourceItemId))
+  let categoryLink = catStore[sourceItemId]
+  // console.log(sourceItemId);
+  // console.log(categoryLink);
   if (categoryLink) {
     category = store.categories.items.find(c=>c.uuid == categoryLink.target)
   }
-  console.log(category);
+  // console.log(category);
   return category
 }
 
 //clear links with missing items
-var clearUncompleteLinks = function () {
-  var store = query.currentProject().metaLinks.items
-  for (link of store) {
-    //check if item is complete
-    if (!query.items("all", i=> i.uuid == link.source)[0]) {
-      push(act.remove("metaLinks",{uuid:link.uuid}))
-    }else if (!query.items("all", i=> i.uuid == link.target)[0]) {
-      push(act.remove("metaLinks",{uuid:link.uuid}))
-    }
-  }
+var clearUncompleteLinks = async function () {
+  var collection = await query.collection("metaLinks")
+  var store = collection.items
+  console.log(collection);
+  console.log(store);
+  console.log('Warning link should be cleaned');
+  // for (link of store) {
+  //   //check if item is complete
+  //   if (!query.items("all", i=> i.uuid == link.source)[0]) {
+  //     push(act.remove("metaLinks",{uuid:link.uuid}))
+  //   }else if (!query.items("all", i=> i.uuid == link.target)[0]) {
+  //     push(act.remove("metaLinks",{uuid:link.uuid}))
+  //   }
+  // }
 }
 
 //utility to parse html
@@ -342,8 +348,7 @@ var getObjectNameByUuid = function (uuid) {
     return "Missing item"
   }
 }
-var getObjectGroupByUuid = function (uuid) {
-  var store = query.currentProject()
+var getObjectGroupByUuid = function (uuid, store) {
   let storeGroup = undefined
   if (store.currentPbs.items.find(i=>i.uuid == uuid)) { storeGroup = "currentPbs"; }
   else if (store.requirements.items.find(i=>i.uuid == uuid)) { storeGroup = "requirements"; }
@@ -359,7 +364,7 @@ var getObjectGroupByUuid = function (uuid) {
   return storeGroup
 }
 
-var batchRemoveMetaLinks = function (store, type, originalSet, targetSet, initiatorType, initId) {
+var batchRemoveMetaLinks = function (store, type, originalSet, targetSet, initiatorType, initId, projectUuid) {
   let idsToRemove = originalSet.filter(os=>!targetSet.includes(os))
   console.log(idsToRemove);
   let relatedMetaLinks =[]
@@ -369,10 +374,10 @@ var batchRemoveMetaLinks = function (store, type, originalSet, targetSet, initia
     relatedMetaLinks= store.metaLinks.items.filter(l => l.type==type && l.target== initId && idsToRemove.includes(l.source))
   }
   relatedMetaLinks.forEach(d=>{
-    push(act.remove("metaLinks",{uuid:d.uuid}))
+    push(act.remove("metaLinks",{uuid:d.uuid,project:projectUuid }))
   })
 }
-var batchAddMetaLinks = function (store, type, originalSet, targetSet, initiatorType, initId) {
+var batchAddMetaLinks = function (store, type, originalSet, targetSet, initiatorType, initId, projectUuid) {
   console.log(originalSet);
   console.log(targetSet);
 
@@ -386,9 +391,9 @@ var batchAddMetaLinks = function (store, type, originalSet, targetSet, initiator
     console.log(idsToAdd);
   idsToAdd.forEach(id=>{
     if (initiatorType == "source") {
-      push(act.add("metaLinks",{type:type, source:initId, target:id}))
+      push(act.add("metaLinks",{type:type, source:initId, target:id,project:projectUuid }))
     }else {
-      push(act.add("metaLinks",{type:type, source:id, target:initId}))
+      push(act.add("metaLinks",{type:type, source:id, target:initId,project:projectUuid }))
     }
   })
 }
@@ -398,9 +403,9 @@ ephHelpers.drag = function(ev) {
         ev.dataTransfer.setData('text', ev.target.dataset.id);
     }
 
-ephHelpers.startSelectionToShowFields = function (ev,sourceList, settingsType, settingsName, callback) {
+ephHelpers.startSelectionToShowFields = async function (ev,sourceList, settingsType, settingsName, callback) {
   // setup option if not exist
-  let store = query.currentProject()
+  let store = await query.currentProject()
   let settingsUuid = undefined
   if (!store.settings.items.find(s=>s.type == settingsType)) {
     settingsUuid = uuid()
@@ -450,6 +455,18 @@ ephHelpers.promptSingleDatePicker = function (currentSelectedDate, callback) {
     callback(datepicker)
   }
   datepicker.show()
+}
+
+ephHelpers.updateListElements = function(list, data) {
+  console.log(data);
+  if (data.items) {list.updateData(data.items)}
+  if (data.links) {list.updateLinks(data.links)}
+  if (data.metaLinks) {list.updateMetaLinks(data.metaLinks)}
+  if (data.displayRules) {list.updateDisplayRules(data.displayRules)}
+  if (data.rulesToDisplaySingleElement) {list.updateRulesToDisplaySingleElement(data.rulesToDisplaySingleElement)}
+  if (data.singleElement) {list.updateSingleElement(data.singleElement)}
+  list.refreshList()
+  console.log("view refreshed");
 }
 
 

@@ -9,6 +9,16 @@ var createProjectSelectionView = function (targetSelector) {
   var filterClosedDaysAgo = 1;
 
   var theme = {}
+  theme.noProject = function () {
+    return `
+    <div style="width: 80%;left: 10%;margin-top: 5%;" class="ui placeholder segment">
+      <div class="ui icon header">
+        <i class="city icon"></i>
+        No project yet
+      </div>
+      <div class="ui primary button action_project_selection_add_project">Add Project</div>
+    </div>`
+  }
   theme.generateProjectTitleHTML = function (projectId, title, reference) {
     return `
     <h2 data-id="${projectId}" class="ui header action-load-project">
@@ -115,13 +125,12 @@ var createProjectSelectionView = function (targetSelector) {
       var newReq = prompt("Add a new Project")
       //TODO Bad
       if (newReq) {
-        app.store.projects.push(createNewProject(newReq))
+        dbConnector.addProject(createNewProject(newReq, {placeholder:true}))
         setTimeout(function () {update()}, 1000);
       }
     })
     connect(".action_project_selection_change_info","click",(e)=>{
       setProjectData(e.target.dataset.id)
-      setTimeout(function () {update()}, 1000);
     })
     connect(".action_project_selection_change_image","click",(e)=>{
       setProjectImage(e.target.dataset.id, function () {
@@ -168,20 +177,29 @@ var createProjectSelectionView = function (targetSelector) {
     objectIsActive = false;
   }
 
-  var renderList = function (container) {
-    let sortedProject = getOrderedProjectList(query.items("projects"), app.store.userData.preferences.projectDisplayOrder)
-    let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
-    var html = sortedVisibleProject.filter(e=> fuzzysearch(filterText,e.name) || fuzzysearch(filterText,e.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))).reduce((acc,i)=>{
-      let projectInfos = {
-        currentPbsNbr  : (i.currentPbs.items.length - 1),
-        requirementsNbr  : (i.requirements.items.length),
-        stakeholdersNbr  : (i.stakeholders.items.length)
-      }
-      let projectImage = i.coverImage || undefined
-      acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description.short || 'A new project', projectInfos, projectImage)
-      return acc
-    },'')
-    container.querySelector('.cardSelectionlist').innerHTML = html
+  var renderList = async function (container) {
+    let allProjects = await query.items("projects")
+    console.log(allProjects);
+
+    if (app.store.relatedProjects && app.store.relatedProjects[0]) {
+      let relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+      let sortedProject = getOrderedProjectList(relevantProjects, app.store.userData.preferences.projectDisplayOrder)
+      let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
+      var html = sortedVisibleProject.filter(e=> fuzzysearch(filterText,e.name) || fuzzysearch(filterText,e.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))).reduce((acc,i)=>{
+        let projectInfos = {
+          currentPbsNbr  : (i.currentPbs.items.length - 1),
+          requirementsNbr  : (i.requirements.items.length),
+          stakeholdersNbr  : (i.stakeholders.items.length)
+        }
+        let projectImage = i.coverImage || undefined
+        acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description.short || 'A new project', projectInfos, projectImage)
+        return acc
+      },'')
+      container.querySelector('.cardSelectionlist').innerHTML = html
+    }else {
+      app.store.relatedProjects= []
+      container.querySelector('.cardSelectionlist').innerHTML = theme.noProject()
+    }
   }
 
 
@@ -207,17 +225,21 @@ var createProjectSelectionView = function (targetSelector) {
     });
   }
 
-  var setProjectData = function (uuid) {
-    let currentProject = app.store.projects.filter(e=> e.uuid == uuid)[0]//TODO USe reducer
+  var setProjectData = async function (uuid) {
+    let allProjects = await query.items("projects")
+    let currentProject = allProjects.filter(e=> e.uuid == uuid)[0]//TODO USe reducer
     if (currentProject) {
       let newName = prompt("Change Project Name?", currentProject.name)
       let newRef = prompt("Change Project Reference?", currentProject.reference)
       let newDesc = prompt("Change Project Description?", currentProject.description.short)
 
-      if (newName) { act.setProjectData(uuid, 'name',newName) }
-      if (newRef) { act.setProjectData(uuid, 'reference',newRef) }
-      if (newDesc) { act.setProjectData(uuid, 'description',{short:newDesc}) }
+      if (newName) { dbConnector.setProjectData(uuid, 'name',newName) }
+      if (newRef) { dbConnector.setProjectData(uuid, 'reference',newRef) }
+      if (newDesc) { dbConnector.setProjectData(uuid, 'description',{short:newDesc}) }
     }
+    setTimeout(function () {
+      update()
+    }, 1000);
   }
 
   var setProjectImage = function (uuid, callback) {
@@ -250,7 +272,7 @@ var createProjectSelectionView = function (targetSelector) {
         canvas.height=150;
         ctx.drawImage(img,0,0,iwScaled,ihScaled);
         let dataUrl = canvas.toDataURL("image/jpeg",0.5);
-        act.setProjectData(uuid, 'coverImage',dataUrl)
+        dbConnector.setProjectData(uuid, 'coverImage',dataUrl)
         if (callback) {
           callback()
         }
@@ -259,7 +281,7 @@ var createProjectSelectionView = function (targetSelector) {
     }
   }
   var removeProjectImage = function (uuid) {
-    act.setProjectData(uuid, 'coverImage',undefined)
+    dbConnector.setProjectData(uuid, 'coverImage',undefined)
   }
 
 

@@ -56,7 +56,7 @@ var createUnifiedView = function (targetSelector) {
       if (focusOnProject) {
         focusOnProject = undefined
       }else {
-        focusOnProject = query.currentProject().uuid
+        focusOnProject = app.state.currentProject
       }
       update()
     })
@@ -64,7 +64,7 @@ var createUnifiedView = function (targetSelector) {
       setCurrentProject(e.target.dataset.id)
       pageManager.setActivePage("overview")
     })
-    connect(".action_unified_toogle_old_items","change",(e)=>{
+    connect(".action_unified_toogle_old_items","change", (e)=>{
       console.log(e.target.value);
       displayRecentlyClosedItems = !displayRecentlyClosedItems
       if (displayRecentlyClosedItems) {
@@ -73,8 +73,8 @@ var createUnifiedView = function (targetSelector) {
         filterClosedDaysAgo = 1
       }
       console.log(filterClosedDaysAgo);
-      setTimeout(function () {
-        renderList(container);
+      setTimeout(async function () {
+        await renderList(container);
       }, 100);
     })
     connect(".action_unified_list_edit_time_item","click",(e)=>{
@@ -87,12 +87,16 @@ var createUnifiedView = function (targetSelector) {
         }
       })
     })
-    connect(".action_unified_list_select_item_assigned","click",(e)=>{
+    connect(".action_unified_list_select_item_assigned","click",async (e)=>{
+      var allProjects = await query.items("projects")
+
       var metalinkType = e.target.dataset.prop;
       var sourceTriggerId = e.target.dataset.id;
-      var projectStore = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0];
-      var metaLinks = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+      var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
+      var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
+
+      // showUpdateLinksService.show(ev,"requirements")
       showListMenu({
         sourceData:projectStore.stakeholders.items,
         parentSelectMenu:e.select ,
@@ -109,16 +113,36 @@ var createUnifiedView = function (targetSelector) {
         onCloseMenu: (ev)=>{
           update()
         },
+        // onChangeSelect: (ev)=>{
+        //   console.log(ev.select.getSelected());
+        //   console.log(projectStore.metaLinks.items);
+        //   projectStore.metaLinks.items = projectStore.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
+        //   for (newSelected of ev.select.getSelected()) {
+        //     projectStore.metaLinks.items.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
+        //   }
+        //   // console.log(projectStore.metaLinks.items);
+        //   // saveDB()
+        //   // update()
+        // },
         onChangeSelect: (ev)=>{
-          console.log(ev.select.getSelected());
-          console.log(projectStore.metaLinks.items);
-          projectStore.metaLinks.items = projectStore.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
-          for (newSelected of ev.select.getSelected()) {
-            projectStore.metaLinks.items.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
+          var changeProp = async function (sourceTriggerId) {
+            var allProjects = await query.items("projects")
+            //update store
+            var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
+            var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+
+            await batchRemoveMetaLinks(projectStore, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), "source", sourceTriggerId, projectStore.uuid)
+            await batchAddMetaLinks(projectStore, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), "source", sourceTriggerId, projectStore.uuid)
+
           }
-          console.log(projectStore.metaLinks.items);
-          saveDB()
-          update()
+          changeProp(sourceTriggerId)
+          // if (batch && batch[0]) { //check if batch action is needed
+          //   batch.forEach(function (sourceTriggerId) {
+          //     changeProp(sourceTriggerId)
+          //   })
+          // }else {
+          //   changeProp(sourceTriggerId)
+          // }
         },
         onClick: (ev)=>{
           console.log("select");
@@ -135,10 +159,11 @@ var createUnifiedView = function (targetSelector) {
     })
   }
 
-  var render = function () {
+  var render = async function () {
+    var store = await query.currentProject()
     container.innerHTML ='<div class="ui container"><div class="umenu"></div><div class="ui divider"></div><div class="ulist"></div></div>'
-    renderSearchArea(container);
-    renderList(container);
+    renderSearchArea(container, store);
+    await renderList(container);
 
   }
 
@@ -146,10 +171,10 @@ var createUnifiedView = function (targetSelector) {
     render()
   }
 
-  var setActive =function () {
+  var setActive = async function () {
     objectIsActive = true;
     // setCurrentProject(undefined)
-    var store = query.currentProject()
+    var store = await query.currentProject()
     if (store) {
       focusOnProject = store.uuid
     }else {
@@ -163,15 +188,19 @@ var createUnifiedView = function (targetSelector) {
     objectIsActive = false;
   }
 
-  var renderList = function (container) {
+  var renderList = async function (container) {
+    let allProjects = await query.items("projects")
+    if (app.store.relatedProjects && app.store.relatedProjects[0]) {
+      allProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+    }
     if (!showTaskOwnership) {
-      renderOverview(container)
+      await renderOverview(container, allProjects)
     }else {
-      renderActionRepartition(container)
+      await renderActionRepartition(container, allProjects)
     }
   }
-  var renderOverview = function (container) {
-    let sortedVisibleSearchedProject = getProjectListForActionExtraction()
+  var renderOverview = function (container, allProjects) {
+    let sortedVisibleSearchedProject = getProjectListForActionExtraction(allProjects)
 
     var html = sortedVisibleSearchedProject.reduce((acc,i)=>{
 
@@ -179,22 +208,22 @@ var createUnifiedView = function (targetSelector) {
       acc += generateAddTaskArea(i.uuid)
       var items = i.actions.items.filter( e => fuzzysearch(filterText, e.name))
       items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
-      acc += generateTasksHTML(items.reverse() , i.uuid)
+      acc += generateTasksHTML(items.reverse() , i.uuid, allProjects)
       return acc
     },'')
     container.querySelector('.ulist').innerHTML = html
   }
 
-  var renderActionRepartition = function (container) {
+  var renderActionRepartition = function (container, allProjects) {
 
-    let sortedVisibleSearchedProject = getProjectListForActionExtraction()
+    let sortedVisibleSearchedProject = getProjectListForActionExtraction(allProjects)
 
     var allActions = sortedVisibleSearchedProject.reduce((acc,i)=>{
       var items = i.actions.items.filter( e => fuzzysearch(filterText, e.name))
       items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
       for (action of items.reverse()) {
         //find if
-        let taskStakeholders = getIdsOfTargets(i.uuid,"assignedTo", action.uuid)
+        let taskStakeholders = getIdsOfTargets(allProjects,i.uuid,"assignedTo", action.uuid)
         acc.tasks.push({action, project:i.uuid, assignedTo:taskStakeholders})
         for (target of taskStakeholders) {
           console.log(acc.stakeholders.includes(target));
@@ -206,22 +235,22 @@ var createUnifiedView = function (targetSelector) {
       return acc
     },{tasks:[], stakeholders:[]})
     console.log(allActions);
-    var html = generateTaskOwnershipHTML(allActions.tasks, allActions.stakeholders)
+    var html = generateTaskOwnershipHTML(allProjects, allActions.tasks, allActions.stakeholders)
     container.querySelector('.ulist').innerHTML = html
     //container.querySelector('.ulist').innerHTML = html
   }
 
-  var getProjectListForActionExtraction = function () {
+  var getProjectListForActionExtraction = function (allProjects) {
     let sortedProject = undefined
     let sortedVisibleProject = undefined
     let sortedVisibleSearchedProject = undefined
 
     if (focusOnProject) {
-      sortedVisibleProject = query.items("projects").find(p=>p.uuid == focusOnProject)
+      sortedVisibleProject = allProjects.find(p=>p.uuid == focusOnProject)
       sortedVisibleSearchedProject= [sortedVisibleProject]
 
     }else {
-      sortedProject = getOrderedProjectList(query.items("projects"), app.store.userData.preferences.projectDisplayOrder)
+      sortedProject = getOrderedProjectList(allProjects, app.store.userData.preferences.projectDisplayOrder)
       sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
       sortedVisibleSearchedProject= sortedVisibleProject.filter(e=> fuzzysearch(filterProject,e.name))
     }
@@ -245,11 +274,12 @@ var createUnifiedView = function (targetSelector) {
     </h2>`
   }
 
-  var generateTaskOwnershipHTML = function (actions, owners) {
+  var generateTaskOwnershipHTML = function (allProjects,actions, owners) {
     var html =""
     console.log(owners);
+    console.log(allProjects);
     //get owners relevant infos
-    var ownerTable = query.items("projects")
+    var ownerTable = allProjects
         .map(e => e.stakeholders.items)
         .reduce((a, b) => {return a.concat(b)},[])
         .map((e) => {return {uuid:e.uuid, name:e.name}});
@@ -272,7 +302,7 @@ var createUnifiedView = function (targetSelector) {
               </h5>
               <div class="description">
                 Created ${moment(i.created).fromNow() }, ${generateCloseInfo(i.closedOn)}  assigned to
-                ${generateListeFromMeta("assignedTo",i.uuid, query.items("projects",e=>e.uuid == i.projectuuid)[0].stakeholders.items, i.projectuuid)}
+                ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectuuid).stakeholders.items, i.projectuuid)}
                 ${generateTimeFromMeta("dueDate", i.uuid, i.dueDate, i.projectuuid)}
               </div>
             </div>
@@ -283,7 +313,7 @@ var createUnifiedView = function (targetSelector) {
     return html
   }
 
-  var generateTasksHTML = function (actions, projectUuid) {
+  var generateTasksHTML = function (actions, projectUuid, allProjects) {
     var html = `<div class="ui very relaxed list">`
     html += actions.reduce((acc,i) => {
       return acc +=`
@@ -296,7 +326,7 @@ var createUnifiedView = function (targetSelector) {
             </h5>
             <div class="description">
               Created ${moment(i.created).fromNow() }, ${generateCloseInfo(i.closedOn)}  assigned to
-              ${generateListeFromMeta("assignedTo",i.uuid, query.items("projects",e=>e.uuid == projectUuid)[0].stakeholders.items, projectUuid)}
+              ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.filter(e=>e.uuid == projectUuid)[0].stakeholders.items, projectUuid)}
               ${generateTimeFromMeta("dueDate", i.uuid, i.dueDate, projectUuid)}
             </div>
           </div>
@@ -306,7 +336,7 @@ var createUnifiedView = function (targetSelector) {
     return html
   }
 
-  var renderSearchArea =function (container) {
+  var renderSearchArea = async function (container, store) {
     var addSearch = document.createElement('div');
     addSearch.classList="ui mini menu"
     addSearch.innerHTML =`
@@ -316,7 +346,7 @@ var createUnifiedView = function (targetSelector) {
             <i class="search icon"></i>
         </div>
       </div>
-      ${renderSwitchBetweenProjects()}
+      ${renderSwitchBetweenProjects(store)}
       <div class="item">
         <div class="ui button action_unified_toogle_ownership">${!showTaskOwnership? "Actions ownership":"Actions overview"}</div>
       </div>
@@ -339,7 +369,7 @@ var createUnifiedView = function (targetSelector) {
       `
     container.querySelector(".umenu").appendChild(addSearch)
 
-    addSearch.addEventListener('keyup', function(e){
+    addSearch.addEventListener('keyup', async function(e){
       //e.stopPropagation()
       var value = container.querySelector(".list-search-input").value
       var tag = getHashTags(value)
@@ -351,12 +381,11 @@ var createUnifiedView = function (targetSelector) {
         value = value.replace('#'+tag[0],'');
       }
       filterText = value;
-      renderList(container)
+      await renderList(container)
     });
   }
-  var renderSwitchBetweenProjects = function () {
+  var renderSwitchBetweenProjects = function (store) {
     let html =""
-    var store = query.currentProject()
     if (store) {
       html =`
       <div class="item">
@@ -382,13 +411,13 @@ var createUnifiedView = function (targetSelector) {
     return html;
   }
 
-  var getIdsOfTargets = function (projectuuid,propName, sourceId) {
-    var meta = query.items("projects").filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
+  var getIdsOfTargets = function (allProjects, projectuuid,propName, sourceId) {
+    var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
     return meta.filter(e => (e.type == propName && e.source == sourceId )).map(e => e.target)
   }
 
-  var generateListeFromMeta = function (propName, sourceId, targetList, projectuuid, isEditable) {
-    var meta = query.items("projects").filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
+  var generateListeFromMeta = function (allProjects, propName, sourceId, targetList, projectuuid, isEditable) {
+    var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
     var metalist = meta.filter(e => (e.type == propName && e.source == sourceId )).map(e => e.target)
     var editHtml = `<i data-prop="${propName}" data-value='${JSON.stringify(metalist)}' data-id="${sourceId}" data-project="${projectuuid}" class="edit icon action_unified_list_select_item_assigned" style="opacity:0.2"></i>`
     function reduceChoices(acc, e) {

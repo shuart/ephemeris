@@ -46,8 +46,8 @@ var createExtraGraphsView = function (targetSelector) {
     })
   }
 
-  var render = function () {
-    var store = query.currentProject()
+  var render = async function () {
+    var store = await query.currentProject()
     if (store) {
       container.innerHTML = theme.startSection()
       let mermaidTarget = container.querySelector(".mermaid")
@@ -57,7 +57,7 @@ var createExtraGraphsView = function (targetSelector) {
       //  B-->C[fa:fa-ban forbidden]\n
       //  B-->D(fa:fa-spinner);
       // `
-      mermaidTarget.innerHTML=createGraphEDR()
+      mermaidTarget.innerHTML=createGraphEDR(store)
 
       // mermaid.init({theme: "forest"}, $(".mermaid"));
       mermaid.initialize({theme: "neutral"})
@@ -81,8 +81,8 @@ var createExtraGraphsView = function (targetSelector) {
     document.body.removeChild(downloadLink);
 }
 
-  function createGraphEDROld() {
-    var store = query.currentProject()
+  async function createGraphEDROld() {
+    var store = await query.currentProject()
 
     let allObjects = []
           .concat(store.currentPbs.items)
@@ -103,9 +103,7 @@ var createExtraGraphsView = function (targetSelector) {
     return header+links
 
   }
-  function createGraphEDR() {
-    var store = query.currentProject()
-
+  function createGraphEDR(store) {
     let allObjects = []
           .concat(store.currentPbs.items)
           .concat(store.requirements.items)
@@ -127,8 +125,15 @@ var createExtraGraphsView = function (targetSelector) {
     for (var i = 0; i < store.currentPbs.items.length; i++) {
       let p = store.currentPbs.items[i]
 
-      let relatedReq = getRelatedItems(p, "requirements", {metalinksType:"originNeed"}).map(l=>l[0] ? cleanName(p.name)+": -"+l[0].name :"")
-      definitions = definitions.concat(relatedReq)
+      let relatedReq = getRelatedItems(store, p, "requirements", {metalinksType:"originNeed"})
+      console.log(relatedReq);
+      cleanedRelatedReq =[""]
+      if (relatedReq[0] && p) {
+        console.log(p);
+        cleanedRelatedReq= relatedReq.map(l=>cleanName(p.name)+": -"+l.name )
+      }
+      console.log(cleanedRelatedReq);
+      definitions = definitions.concat(cleanedRelatedReq)
     }
     console.log(definitions);
     definitions = definitions.join('\n')

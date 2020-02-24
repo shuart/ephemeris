@@ -1496,6 +1496,15 @@ function showListMenu({
   function updateLinks(links) {
     sourceLinks = links
   }
+  function updateDisplayRules(rules) {
+    display = rules
+  }
+  function updateRulesToDisplaySingleElement(rules) {
+    rulesToDisplaySingleElement = rules
+  }
+  function updateSingleElement(elem) {
+    singleElement = elem
+  }
   function updateMetaLinks(links) {
     metaLinks = links
   }
@@ -1503,20 +1512,36 @@ function showListMenu({
     editItemMode = {item:data.item, onLeave:data.onLeave}
   }
   function refreshList() {
-    if (listIsExpanded) {
-      listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
-    }
-    reBuildList()
-    //focus on search
-    if (focusSearchOnRender) {
-      let listInput = sourceEl.querySelector(".list-search-input")
-      if (listInput) {
-        listInput.focus()
+    if (!singleElement) {
+      if (listIsExpanded) {
+        listContainerFirstCol.innerHTML= theme.listFirstColWrapper(buildSingle(sourceData, sourceLinks))
+      }
+      reBuildList()
+      //focus on search
+      if (focusSearchOnRender) {
+        let listInput = sourceEl.querySelector(".list-search-input")
+        if (listInput) {
+          listInput.focus()
+        }
+      }
+      //searchItems if current search value
+      if (currentSearchValue != "") {
+         filterDataWithValue(currentSearchValue)
       }
     }
-    //searchItems if current search value
-    if (currentSearchValue != "") {
-       filterDataWithValue(currentSearchValue)
+    if (singleElement) {
+      // alert("efefesf")
+      setTimeout(function () {
+        console.log(listContainer);
+        var arrayToBuild = buildSingle(sourceData, sourceLinks, singleElement)
+        // listContainer.innerHTML =theme.listWrapper(
+        //   "<div class='"+ theme.singleElementsListClass + "'>"+ generateFullList(arrayToBuild)+"</div>"
+        // )
+        console.log(listContainer);
+        console.log(singleElement);
+        // console.log(generateFullList(arrayToBuild));
+        listContainer.innerHTML =generateFullList(arrayToBuild)
+      }, 1000);
     }
   }
   function scrollDown() {
@@ -1542,7 +1567,10 @@ function showListMenu({
   self.updateData = updateData
   self.refreshList = refreshList
   self.updateLinks = updateLinks
+  self.updateDisplayRules = updateDisplayRules
+  self.updateRulesToDisplaySingleElement = updateRulesToDisplaySingleElement
   self.updateMetaLinks = updateMetaLinks
+  self.updateSingleElement = updateSingleElement
   self.remove = removeList
   self.update = update
   return self

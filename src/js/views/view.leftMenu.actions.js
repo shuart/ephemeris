@@ -51,7 +51,7 @@ var createLeftMenuActions = function () {
     render()
   }
 
-  var render = function () {
+  var render = async function () {
     // document.querySelector(".left-menu-area").innerHTML=`
     //   <div class="title">Next actions</div>
     //   <div class="left-list">
@@ -62,7 +62,7 @@ var createLeftMenuActions = function () {
       document.querySelector(".current-area").innerHTML = ""
       document.querySelector(".pbsFlatView-area").innerHTML = ""
       document.querySelector(".left-menu-area .title").innerHTML = theme.actionPreviewTitle()
-      document.querySelector(".left-menu-area .left-list").innerHTML = generateNextActionList()
+      document.querySelector(".left-menu-area .left-list").innerHTML = await generateNextActionList()
     }
   }
 
@@ -77,12 +77,12 @@ var createLeftMenuActions = function () {
 
   //general functions
 
-  function generateNextActionList() {
-
+  async function generateNextActionList() {
     var filterText = ""
     var filterClosedDaysAgo = -2
     let allActions = []
-    query.items("projects").forEach(function (store) {
+    let allProjects = await query.items("projects")
+    allProjects.forEach(function (store) {
       let formatedActions = store.actions.items.map(a=>{
         let copy = deepCopy(a)
         copy.projectName = store.name;

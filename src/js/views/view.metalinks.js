@@ -10,8 +10,16 @@ var createMetalinksView = function () {
 
   }
 
-  var getObjectNameByUuid = function (uuid) {
-    let foundItem = query.items("all", i=> i.uuid == uuid)[0]
+  var getObjectNameByUuid = function (uuid, store) {
+    let allItems = []
+    for (var keys in store) {
+      if (store.hasOwnProperty(keys)) {
+        if (store[keys].items) {
+          allItems = allItems.concat(store[keys].items)
+        }
+      }
+    }
+    let foundItem = allItems.filter(i=> i.uuid == uuid)[0]
     if (foundItem) {
       return foundItem.name
     }else {
@@ -19,13 +27,13 @@ var createMetalinksView = function () {
     }
   }
 
-  var readifyMetalinks = function () {
-    var originalLinks = query.currentProject().metaLinks.items
+  var readifyMetalinks = function (store) {
+    var originalLinks =store.metaLinks.items
     let data = originalLinks.map(function (l) {
 
       let newItem = {uuid:l.uuid,
-        source: getObjectNameByUuid(l.source),
-        target:getObjectNameByUuid(l.target),
+        source: getObjectNameByUuid(l.source, store),
+        target:getObjectNameByUuid(l.target, store),
         type:l.type
       };
       return newItem
@@ -33,11 +41,10 @@ var createMetalinksView = function () {
     return data
   }
 
-  var render = function () {
-    var store = query.currentProject()
-    console.log(readifyMetalinks());
+  var render = async function () {
+    var store = await query.currentProject()
     showListMenu({
-      sourceData:readifyMetalinks(),
+      sourceData:readifyMetalinks(store),
       displayProp:"name",
       // targetDomContainer:".center-container",
       // fullScreen:true,// TODO: perhaps not full screen?
