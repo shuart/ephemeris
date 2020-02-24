@@ -125,8 +125,15 @@ var createExtraGraphsView = function (targetSelector) {
     for (var i = 0; i < store.currentPbs.items.length; i++) {
       let p = store.currentPbs.items[i]
 
-      let relatedReq = getRelatedItems(store, p, "requirements", {metalinksType:"originNeed"}).map(l=>l[0] ? cleanName(p.name)+": -"+l[0].name :"")
-      definitions = definitions.concat(relatedReq)
+      let relatedReq = getRelatedItems(store, p, "requirements", {metalinksType:"originNeed"})
+      console.log(relatedReq);
+      cleanedRelatedReq =[""]
+      if (relatedReq[0] && p) {
+        console.log(p);
+        cleanedRelatedReq= relatedReq.map(l=>cleanName(p.name)+": -"+l.name )
+      }
+      console.log(cleanedRelatedReq);
+      definitions = definitions.concat(cleanedRelatedReq)
     }
     console.log(definitions);
     definitions = definitions.join('\n')

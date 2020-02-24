@@ -261,9 +261,10 @@ function getRelatedItems(store, sourceItem, groupToSearch, paramOptions) {//todo
     metaLinksToSearch =store.metaLinks.items.filter(e=>e.type == options.metalinksType)
   }
   let linkedTo = metaLinksToSearch.filter(e=>e[options.objectIs] == sourceItem.uuid)
-  let linkToText = linkedTo.map(e=>query.items(groupToSearch, function (i) {
+  let linkToText = linkedTo.map(e=>store[groupToSearch].items.find(function (i) {
     return i.uuid == e[linkTotextItemType]
   }))
+  console.log(linkToText);
   return linkToText
 }
 //get related item
