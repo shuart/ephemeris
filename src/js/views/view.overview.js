@@ -308,12 +308,12 @@ var createOverview = function (targetSelector) {
       dbConnector.addProjectCollection(store.uuid, "physicalSpaces", store.physicalSpaces)
       alertAboutUpdate("Physical Spaces feature has been added.")
     }
-    if (store.interfaces.items.find(i=>(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )) {
-
-      store.interfaces.items = store.interfaces.items.filter(i=>!(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )
-
-      alertAboutUpdate("Interfaces list feature has been added.")
-    }
+    // if (store.interfaces.items.find(i=>(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )) {
+    //
+    //   store.interfaces.items = store.interfaces.items.filter(i=>!(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )
+    //
+    //   alertAboutUpdate("Interfaces list feature has been added.")
+    // }
     if (!store.categories) {
       store.categories={
         items:[
