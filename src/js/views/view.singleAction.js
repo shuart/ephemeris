@@ -91,15 +91,16 @@ var createSingleActionView = function ({
       let currentCommentUuid = undefined
       createInputPopup({
         originalData:"",
-        onSave:e =>{
+        onSave:async e =>{
+          var allProjects = await query.items("projects")
           if (!currentCommentUuid) {
             currentCommentUuid = uuid()
-            let action = getActionObjectCopyFromUuid(currentActionUuid)
+            let action = getActionObjectCopyFromUuid(allProjects, currentActionUuid)
             let currentComments = (action.comments ? action.comments:[]);
             currentComments.push({uuid:currentCommentUuid, content:e, addedOn:Date.now()})
             push(act.edit("actions",{project:action.projectUuid, uuid:action.uuid, prop:"comments", value:currentComments}))
           }else {
-            let action = getActionObjectCopyFromUuid(currentActionUuid)
+            let action = getActionObjectCopyFromUuid(allProjects, currentActionUuid)
             let currentComments = (action.comments ? action.comments:[]);
             currentComments.find(c=>c.uuid == currentCommentUuid).content = e
             push(act.edit("actions",{project:action.projectUuid, uuid:action.uuid, prop:"comments", value:currentComments}))
@@ -113,9 +114,10 @@ var createSingleActionView = function ({
         }
       })
     })
-    connect(".action_single_action_modify_comment","click",(e)=>{
+    connect(".action_single_action_modify_comment","click",async (e)=>{
+      var allProjects = await query.items("projects")
       let currentCommentUuid = e.target.dataset.id
-      let action = getActionObjectCopyFromUuid(currentActionUuid)
+      let action = getActionObjectCopyFromUuid(allProjects, currentActionUuid)
       let currentComments = (action.comments ? action.comments:[]);
       let editedComment = currentComments.find(c=>c.uuid == currentCommentUuid)
 
@@ -136,10 +138,11 @@ var createSingleActionView = function ({
         }
       })
     })
-    connect(".action_single_action_remove_comment","click",(e)=>{
+    connect(".action_single_action_remove_comment","click",async (e)=>{
+      var allProjects = await query.items("projects")
       if (confirm("Delete this comment?")) {
         let currentCommentUuid = e.target.dataset.id
-        let action = getActionObjectCopyFromUuid(currentActionUuid)
+        let action = getActionObjectCopyFromUuid(allProjects, currentActionUuid)
         let currentComments = (action.comments ? action.comments:[]);
         currentComments = currentComments.filter(c=>c.uuid != currentCommentUuid)
         push(act.edit("actions",{project:action.projectUuid, uuid:action.uuid, prop:"comments", value:currentComments}))
@@ -163,11 +166,12 @@ var createSingleActionView = function ({
       })
 
     })
-    connect(".action_single_action_select_item_assigned","click",(e)=>{
+    connect(".action_single_action_select_item_assigned","click",async (e)=>{
+      var allProjects = await query.items("projects")
       var metalinkType = e.target.dataset.prop;
       var sourceTriggerId = e.target.dataset.id;
-      var projectStore = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0];
-      var metaLinks = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+      var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
+      var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
       showListMenu({
         sourceData:projectStore.stakeholders.items,
@@ -176,25 +180,47 @@ var createSingleActionView = function ({
         displayProp:"name",
         searchable : true,
         display:[
-          {prop:"name", displayAs:"Name", edit:false},
-          {prop:"desc", displayAs:"Description", edit:false}
+          {prop:"name", displayAs:"First name", edit:false},
+          {prop:"lastName", displayAs:"Last Name", edit:false},
+          {prop:"role", displayAs:"Role", edit:false}
         ],
         idProp:"uuid",
+        showColoredIcons: lettersFromNames,
         onCloseMenu: (ev)=>{
           sourceOccElement.remove()
           update()
         },
+        // onChangeSelect: (ev)=>{
+        //   console.log(ev.select.getSelected());
+        //   console.log(projectStore.metaLinks.items);
+        //   projectStore.metaLinks.items = projectStore.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
+        //   for (newSelected of ev.select.getSelected()) {
+        //     projectStore.metaLinks.items.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
+        //   }
+        //   console.log(projectStore.metaLinks.items);
+        //   saveDB()
+        //   sourceOccElement.remove()
+        //   update()
+        // },
         onChangeSelect: (ev)=>{
-          console.log(ev.select.getSelected());
-          console.log(projectStore.metaLinks.items);
-          projectStore.metaLinks.items = projectStore.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
-          for (newSelected of ev.select.getSelected()) {
-            projectStore.metaLinks.items.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
+          var changeProp = async function (sourceTriggerId) {
+            var allProjects = await query.items("projects")
+            //update store
+            var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
+            var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+
+            await batchRemoveMetaLinks(projectStore, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), "source", sourceTriggerId, projectStore.uuid)
+            await batchAddMetaLinks(projectStore, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), "source", sourceTriggerId, projectStore.uuid)
+
           }
-          console.log(projectStore.metaLinks.items);
-          saveDB()
-          sourceOccElement.remove()
-          update()
+          changeProp(sourceTriggerId)
+          // if (batch && batch[0]) { //check if batch action is needed
+          //   batch.forEach(function (sourceTriggerId) {
+          //     changeProp(sourceTriggerId)
+          //   })
+          // }else {
+          //   changeProp(sourceTriggerId)
+          // }
         },
         onClick: (ev)=>{
           console.log("select");
@@ -203,7 +229,9 @@ var createSingleActionView = function ({
     })
   }
 
-  var render = function (uuid) {
+  var render = async function (uuid) {
+    var allProjects = await query.items("projects")
+
     sourceOccElement = document.createElement('div');
     sourceOccElement.style.height = "100%"
     sourceOccElement.style.width = "100%"
@@ -243,17 +271,17 @@ var createSingleActionView = function ({
     sourceOccElement.appendChild(mainEl)
     mainEl.appendChild(menuArea)
     mainEl.appendChild(container)
-
-    menuArea.appendChild(toNode(renderMenu(uuid)))
-    container.appendChild(toNode(renderAction(uuid)))
+    console.log(allProjects);
+    menuArea.appendChild(toNode(renderMenu(allProjects,uuid)))
+    container.appendChild(toNode(renderAction(allProjects,uuid)))
 
     document.body.appendChild(sourceOccElement)
 
   }
 
-  var renderAction =function (uuid){
+  var renderAction =function (allProjects, uuid){
 
-    let i = getActionObjectCopyFromUuid(uuid)
+    let i = getActionObjectCopyFromUuid(allProjects, uuid)
 
     let html =`
     <h2 class="header">
@@ -268,7 +296,7 @@ var createSingleActionView = function ({
 
         <h3 class="header">Assigned to</h3>
         <p>
-          ${generateListeFromMeta("assignedTo",i.uuid, query.items("projects",e=>e.uuid == i.projectUuid)[0].stakeholders.items, i.projectUuid)}
+          ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectUuid).stakeholders.items, i.projectUuid)}
         </p>
         <div class="ui divider"></div>
 
@@ -285,9 +313,9 @@ var createSingleActionView = function ({
     `
     return html
   }
-  var renderMenu =function (uuid){
+  var renderMenu =function (allProjects, uuid){
 
-    let i = getActionObjectCopyFromUuid(uuid)
+    let i = getActionObjectCopyFromUuid(allProjects,uuid)
     return theme.menu(i)
   }
 
@@ -302,9 +330,10 @@ var createSingleActionView = function ({
   }
 
   //UTILS
-  var getActionObjectCopyFromUuid = function (uuid) {
+  var getActionObjectCopyFromUuid = function (allProjects, uuid) {
+    console.log(allProjects);
     let allActions = []
-    query.items("projects").forEach(function (store) {
+    allProjects.forEach(function (store) {
       let formatedActions = store.actions.items.map(a=>{//TODO only check open action
         let copy = deepCopy(a)
         copy.projectName = store.name;
@@ -316,8 +345,8 @@ var createSingleActionView = function ({
     })
     return allActions.find(a=>a.uuid == uuid)
   }
-  var generateListeFromMeta = function (propName, sourceId, targetList, projectuuid, isEditable) {
-    var meta = query.items("projects").filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
+  var generateListeFromMeta = function (allProjects, propName, sourceId, targetList, projectuuid, isEditable) {
+    var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
     var metalist = meta.filter(e => (e.type == propName && e.source == sourceId )).map(e => e.target)
     var editHtml = `<i data-prop="${propName}" data-value='${JSON.stringify(metalist)}' data-id="${sourceId}" data-project="${projectuuid}" class="edit icon action_single_action_select_item_assigned" style="opacity:0.2"></i>`
     function reduceChoices(acc, e) {
