@@ -230,21 +230,37 @@ var createShowUpdateLinksService = function () {
       onLoaded:onLoaded,
       onAdd:(ev)=>{
         var uuid = genuuid()
-        push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
-        //special rules
-        if (sourceGroup == "changes") {
-          push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
+        var newItem = prompt("New item name")
+        if (newItem) {
+
+          //special rules
+          if (sourceGroup == "changes") {
+            push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
+          }else {
+            push(act.add(sourceGroup, {uuid:uuid,name:newItem}))
+          }
         }
+
+        setTimeout(async function () {
+          var store = await query.currentProject()
+          ev.select.updateData(store[sourceGroup].items)//TODO remove extra call
+          ev.select.updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          ev.select.refreshList()
+        }, 2000);
+
+
+
         // setTimeout(function () {
         //   ev.select.scrollDown()
         // }, 100);
-        ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
-          onLeave: (ev)=>{
-            push(act.remove(sourceGroup,{uuid:uuid}))
-            ev.select.updateData(store[sourceGroup].items)
-          }
-        })
+
+        // ev.select.setEditItemMode({
+        //   item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+        //   onLeave: (ev)=>{
+        //     push(act.remove(sourceGroup,{uuid:uuid}))
+        //     ev.select.updateData(store[sourceGroup].items)
+        //   }
+        // })
       },
       onEditItem: (ev)=>{
         var newValue = prompt("Edit Item",ev.target.dataset.value)
