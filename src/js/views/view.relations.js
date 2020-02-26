@@ -80,6 +80,20 @@ var createRelationsView = function () {
         ).join('')
       return html
     },
+    viewItemsList:()=> {
+      items=[
+        {name:'Products', type:'currentPbs', icon:"dolly"},
+        {name:'Stakeholders', type:'Stakeholders',  icon:"user"},
+        {name:'Requirements', type:'requirements', icon:"comment"},
+        {name:'Functions', type:'functions', icon:"cogs"}
+      ]
+      let html = items.map(i=>
+        `<div style="${(addItemMode == i.type)? "background-color: #6dce9e !important":""}" data-type="${i.type}" class="item action_interface_change_add_item_type">
+          ${i.name}
+        </div>`
+        ).join('')
+      return html
+    },
     viewListItem:(item) => {
       if (item) {
         let cardHtml = `
@@ -125,6 +139,7 @@ var createRelationsView = function () {
           <div style="width: 80%;margin-left: 10%;" class="ui cards">
            ${theme.quickStartLastViewItem("redo","Reload","Go to last WIP graph","action_relations_qs_show_last_view")}
            ${theme.quickStartLastViewItem("sitemap","Whole Project","Create a graph of the whole project","action_relations_qs_show_whole_project")}
+           ${theme.quickStartLastViewItem("sitemap","Only Interfaces","Show only the projects interfaces","action_relations_qs_show_only_interfaces")}
            ${theme.quickStartLastViewItem("search","Focus","Create a graph focused on a product","action_relations_qs_start_from_element")}
            ${theme.quickStartLastViewItem("file outline","New","Start from an empty graph","action_relations_qs_create_new_empty")}
            ${cards}
@@ -227,11 +242,7 @@ var createRelationsView = function () {
     bind(".action_relations_toogle_show_interfaces","click",(e)=>{ elementVisibility.interfaces = !elementVisibility.interfaces; update(); }, container)
     bind(".action_relations_toogle_show_compose","click",(e)=>{ elementVisibility.compose = !elementVisibility.compose; update(); }, container)
 
-    bind(".action_interface_add_stakeholder","click",(e)=>{
-      addItemMode = 'stakeholders'
-      document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
-      queryDOM(".action_interface_add_stakeholder").classList.add('active')
-    }, container)
+
     bind(".action_relations_export_png","click",(e)=>{
       saveSvgAsPng(container.querySelector('.stellae-graph'), "tree.png", {scale: 2})
     }, container)
@@ -318,16 +329,11 @@ var createRelationsView = function () {
         showVisibilityMenuSnapshot = false
       }
     }, container)
-    bind(".action_interface_add_requirement","click",(e)=>{
-      addItemMode = 'requirements'
-      console.log(document.querySelectorAll(".add_relations_nodes"));
-      document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
-      queryDOM(".action_interface_add_requirement").classList.add('active')
-    }, container)
+
     bind(".action_interface_add_functions","click",(e)=>{
       addItemMode = 'functions'
-      document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
-      queryDOM(".action_interface_add_functions").classList.add('active')
+
+
     }, container)
     bind(".action_interface_set_new_metalink_mode","click",(e)=>{
       lastSelectedNode = undefined;
@@ -340,11 +346,6 @@ var createRelationsView = function () {
     //   linkNodes(lastSelectedNode,previousSelectedNode)
     //   update()
     // }, container)
-    bind(".action_interface_add_pbs","click",(e)=>{
-      addItemMode = 'currentPbs'
-      document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
-      queryDOM(".action_interface_add_pbs").classList.add('active')
-    }, container)
 
     bind(".action_relations_add_nodes_from_templates","click",(e)=>{
       let store = query.currentProject()
@@ -778,6 +779,11 @@ var createRelationsView = function () {
         addModeInterfaceType = interfaceDefaultTypeId
         update()
     }, container)
+    bind(".action_interface_change_add_item_type","click",(e)=>{
+        let itemDefaultType = e.target.dataset.type;
+        addItemMode = itemDefaultType
+        update()
+    }, container)
 
   }
 
@@ -850,17 +856,42 @@ var createRelationsView = function () {
         currentSnapshot = undefined
         update()
       }
-      function setResetInterfaces() {
+      addMode='compose'
+      setTimeout(function () {
+        setReset()
+        //fix graph after a few seconds
+        setTimeout(function () {
+          setGraphToFixed()
+        }, 1900);
+      }, 1);
+    }, container)
+    bind(".action_relations_qs_show_only_interfaces","click",(e)=>{
+      function setReset() {
         fixedValues = false
         hiddenItemsFromSideView= []
+        elementVisibility = {
+          functions : false,
+          requirements : false,
+          stakeholders : false,
+          physicalSpaces : false,
+          workPackages : false,
+          metaLinks : false,
+          interfaces : true,
+          compose : false
+        }
+        groupElements={
+          functions: false,
+          requirements: false,
+          stakeholders: false,
+          pbs:  false,
+          physicalSpaces : false,
+        }
+        addMode='physical'
+        currentSnapshot = undefined
         update()
       }
       setTimeout(function () {
-        if (activeMode == "interfaces") {
-          setResetInterfaces()
-        }else {
-          setReset()
-        }
+        setReset()
         //fix graph after a few seconds
         setTimeout(function () {
           setGraphToFixed()
@@ -911,7 +942,8 @@ var createRelationsView = function () {
         <div style="height: 100%" class="interfaceGraph"></div>
         <div style="opacity: 0.85;height: 99%;width: 250px;position: absolute;right:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenu ? '':'hidden'} menuGraph"></div>
         <div style="opacity: 0.85;height: 99%;width: 210px;position: absolute;left:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenuSnapshot ? '':'hidden'} menuSnapshotGraph"></div>
-      </div>`
+      </div>
+      <div style="opacity: 0.85;height: 50px;width: 400px;position: absolute;right:10px;bottom:5px;background-color: transparent;" class='graphSearchArea'></div>`
 
       container.ondragover = function (ev) {
         ev.preventDefault();
@@ -1439,9 +1471,7 @@ var createRelationsView = function () {
   var renderMenu= async function (container) {
     let store =  await query.currentProject()
     let interfaceListItems =  store.interfacesTypes
-    let commonMenuHTML = `
-
-
+    let searchAreaHtml =`
     <div class="ui item">
       <div class="ui icon input">
         <input class="input_relation_search_nodes" type="text" placeholder="Search...">
@@ -1455,7 +1485,8 @@ var createRelationsView = function () {
         <label>Fix Nodes</label>
       </div>
     </div>
-
+    `
+    let commonMenuHTML = `
     <div class="item">
       <div class="ui mini basic icon buttons">
         <button class="disabled ui basic icon button " >
@@ -1539,6 +1570,14 @@ var createRelationsView = function () {
           </div>
         </div>
 
+        <div class="ui simple dropdown item">
+          add Items
+          <i class="dropdown icon"></i>
+          <div class="menu" style="margin-top:0px;">
+            ${theme.viewItemsList()}
+          </div>
+        </div>
+
         <div class="ui item">
           <div class="ui icon button basic action_relations_toogle_show_graph_menu">
             <i class="ellipsis horizontal icon action_relations_toogle_show_graph_menu"></i>
@@ -1552,28 +1591,7 @@ var createRelationsView = function () {
 
 
 
-      <div class="ui item">
-        <div class="ui mini basic buttons">
-          <div class="ui disabled icon button">
-            display
-          </div>
-          <button class="${elementVisibility.compose ? 'active':''} ui mini icon button action_interfaces_toogle_show_compose" data-tooltip="Show composition links" data-position="bottom center">
-            <i class="object group icon action_interfaces_toogle_show_compose"></i>
-          </button>
-          <button class="${elementVisibility.interfaces ? 'active':''} ui mini icon button action_interfaces_toogle_show_interfaces" data-tooltip="Show interfaces links" data-position="bottom center">
-            <i class="cubes icon action_interfaces_toogle_show_interfaces"></i>
-          </button>
-        </div>
-      </div>
 
-      <div class="ui item">
-        <div class="ui mini basic buttons">
-          <div class="ui icon button action_interfaces_add_pbs" data-tooltip="Add Product" data-position="bottom center">
-            <i class="plus  icon action_interfaces_add_pbs"></i>
-            <i class="dolly icon action_interfaces_add_pbs"></i>
-          </div>
-        </div>
-      </div>
       <div class="ui item">
         <div class="ui mini basic buttons">
           <div class="ui disabled icon button">
@@ -1595,11 +1613,8 @@ var createRelationsView = function () {
         </div>
       </div>
     </div>`
-    if (activeMode == "relations") {
-      container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + relationsMenuHTML +`</div>`
-    }else {
-      container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + interfacesMenuHTML +`</div>`
-    }
+    container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + relationsMenuHTML + interfacesMenuHTML +`</div>`
+    container.querySelector('.graphSearchArea').innerHTML=`<div class="ui mini compact text menu">`+ searchAreaHtml +`</div>`
 
     container.querySelector('.input_relation_search_nodes').addEventListener('keyup', function(e){
       //e.stopPropagation()
@@ -1655,28 +1670,6 @@ var createRelationsView = function () {
         </div>
       </div>
 
-      <div class="item">
-        <div class="header">Show</div>
-          <div class="ui item">
-            <div class="ui toggle checkbox">
-              <input ${fadeOtherNodesOnHoover ? 'checked':''} class="action_fade_other_node_toogle_network" type="checkbox" name="public">
-              <label>Highlight connections</label>
-            </div>
-          </div>
-        <div class="ui mini vertical basic buttons">
-          <div class="ui mini button action_relations_isolate_nodes">Selected</div>
-          <div class="ui mini button action_relations_isolate_nodes_and_children">Selected and relations</div>
-        </div>
-      </div>
-
-      <div class="item">
-        <div class="header">Isolate</div>
-        <div class="ui mini vertical basic buttons">
-          <div class="ui mini button action_relations_isolate_nodes">Selected</div>
-          <div class="ui mini button action_relations_isolate_nodes_and_children">Selected and relations</div>
-        </div>
-      </div>
-    </div>
     `
     container.querySelector('.menuSnapshotGraph').innerHTML=`
     <div style="right: 9px;position: absolute;" class="ui item action_relations_toogle_show_graph_snapshot_menu"><i class="close icon"></i></div>
@@ -2021,12 +2014,13 @@ var createRelationsView = function () {
     }
   }
 
-  function addItems(type, uuid, initValue) {
+  async function addItems(type, uuid, initValue) {
     if (type == 'requirements') {
       push(addRequirement({uuid:uuid, name:initValue}))
     }else if (type == 'currentPbs') {
+      let store = await query.currentProject()
       push(addPbs({uuid:uuid, name:initValue}))
-      push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+      push(addPbsLink({source:store.currentPbs.items[0].uuid, target:uuid}))
     }else if (type == 'stakeholders') {
       push(act.add('stakeholders',{uuid:uuid, name:initValue}))
     }else if (type = 'functions') {
@@ -2109,6 +2103,3 @@ var createRelationsView = function () {
 
 var relationsView = createRelationsView();
 relationsView.init()
-
-var interfacesView = createRelationsView();
-interfacesView.init({context:"interfaces"})

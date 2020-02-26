@@ -53,7 +53,6 @@ var reparse = false;
   pageManager.addComponent({name:"functions",object:functionsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"planning",object:planningView, haveSideBar:false})
   pageManager.addComponent({name:"pbs",object:pbsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
-  pageManager.addComponent({name:"interfaces",object:interfacesView, haveSideBar:false})
   pageManager.addComponent({name:"relations",object:relationsView, haveSideBar:false})
   pageManager.addComponent({name:"unified",object:unifiedView,linkedComponents:["leftMenuActions"], haveSideBar:false})
   pageManager.addComponent({name:"projectSelection",object:projectSelectionView,linkedComponents:["leftMenuActions"], haveSideBar:false})
