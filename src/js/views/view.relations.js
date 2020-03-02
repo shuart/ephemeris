@@ -676,11 +676,11 @@ var createRelationsView = function () {
         update()
       }
     }, container)
-    bind(".action_relations_update_snapshot","click",(e)=>{
+    bind(".action_relations_update_snapshot","click",async (e)=>{
       if (confirm("Update this snapshot")) {
         let useImages = true // create a snsphot when saving graph
-
-        let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
+        let currentStore = await query.currentProject()
+        let graph = currentStore.graphs.items.find(i=> i.uuid == e.target.dataset.id)
 
         if (useImages) {
           svgAsPngUri(container.querySelector('.stellae-graph'),{scale: 0.1}).then(function (uri) {
