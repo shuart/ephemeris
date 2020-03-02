@@ -63,13 +63,21 @@ function reducer(action, store) {
 
   }else if (type == "removeLink") { //REMOVE A LINK WITH SOURCE OR TARGET OR BOTH
     recordChangeInStore(type, store, group, pl)//record it before to working on modified arrays array
-    if (pl.source && !pl.target) {
-      storeGroup.links =storeGroup.links.filter(i=> i.source != pl.source)
-    }else if (pl.target && !pl.source) {
-      storeGroup.links =storeGroup.links.filter(i=> i.target != pl.target)
-    }else if (pl.target && pl.source) {
-      storeGroup.links =storeGroup.links.filter(i=> !(i.target == pl.target && i.source == pl.source))
+
+    console.log(pl.source, pl.target)
+    if (pl.source || pl.target) {
+        dbConnector.removeProjectLink(projectUuid, storeGroup ,{source:pl.source, target: pl.target}).then(notifyChange)
+    }else{
+        dbConnector.removeProjectLink(projectUuid, storeGroup ,pl.uuid).then(notifyChange)
     }
+
+    // if (pl.source && !pl.target) {
+    //   storeGroup.links =storeGroup.links.filter(i=> i.source != pl.source)
+    // }else if (pl.target && !pl.source) {
+    //   storeGroup.links =storeGroup.links.filter(i=> i.target != pl.target)
+    // }else if (pl.target && pl.source) {
+    //   storeGroup.links =storeGroup.links.filter(i=> !(i.target == pl.target && i.source == pl.source))
+    // }
   }
 
   //helper functions
