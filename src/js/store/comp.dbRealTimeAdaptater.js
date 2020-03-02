@@ -239,7 +239,7 @@ var createDbRealTimeAdaptater = function () {
     selector[collectionName+".links"] = link
     return new Promise(function(resolve, reject) {
         projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-          logCallback(item)
+          logCallback()
           localProjects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
             console.log("persisted");
           });

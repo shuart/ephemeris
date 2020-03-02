@@ -9,6 +9,7 @@ var createRelationsView = function () {
   var fixedValues = undefined;
   var fadeOtherNodesOnHoover =false;
   var lastSelectedNode = undefined;
+  var lastFixedNodes = undefined;
   var previousSelectedNode = undefined;
   var addLinkMode = false;
   var itemsToFixAtNextUpdate = []
@@ -1074,18 +1075,9 @@ var createRelationsView = function () {
           }
           currentSnapshot = undefined//clear current snapshot
 
-        }else if( activeMode =="relations") {// if not go to default
-          if (query.currentProject().graphs && query.currentProject().graphs.default) {
-            fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB backward compatibility (TODO: remove)
-          }
-          console.log("relations")
-          // alert("relations")
-        }else if (activeMode == 'interfaces') {
-          if (query.currentProject().graphs && query.currentProject().graphs.interfaces) {
-            fixedValuesList = query.currentProject().graphs.interfaces.nodesPositions
-          }
-          console.log("interfaces")
-          // alert("interfaces")
+        }else if( lastFixedNodes) {// if not go to default
+          fixedValuesList = deepCopy(lastFixedNodes.nodesPositions )
+          // fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB backward compatibility (TODO: remove)
         }
       }
       //concat with items to fix this time
@@ -1834,11 +1826,7 @@ var createRelationsView = function () {
           // }
           let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
           //append to graph DB
-          if (activeMode=="relations") {
-            // query.currentProject().graphs.default = graphItem//TODO use actions DBCHANGE
-          }else if (activeMode == "interfaces") {
-            // query.currentProject().graphs.interfaces = graphItem//TODO use actions DBCHANGE
-          }
+          lastFixedNodes = graphItem
         }
       },
       onRelationshipDoubleClick:function (d) {
@@ -2006,6 +1994,7 @@ var createRelationsView = function () {
     if (!fixedValues) {
       let snapId = "wipgraph484622464"
       let newGraphItem = {uuid:snapId,view:activeMode, name:"0-Current WIP", groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+
       push(act.remove("graphs", {uuid:snapId}))
       push(act.add("graphs", newGraphItem))
       let savedCurrentSnapshot = currentSnapshot
@@ -2031,6 +2020,7 @@ var createRelationsView = function () {
   async function setSnapshot(uuid) {
     let store = await query.currentProject()
     let graph = store.graphs.items.find(i=> i.uuid == uuid)
+    lastFixedNodes = graph
     fixedValues = true
     hiddenItemsFromSideView= graph.hiddenItems || []
     if (graph.elementVisibility) {
@@ -2047,12 +2037,10 @@ var createRelationsView = function () {
       //   query.currentProject().graphs.items =[]
       // }
       let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
-      //append to graph DB
-      if (activeMode=="relations") {
-        // query.currentProject().graphs.default = graphItem//TODO use actions
-      }else if (activeMode == "interfaces") {
-        // query.currentProject().graphs.interfaces = graphItem//TODO use actions
-      }
+      //append to graph to local state
+
+      lastFixedNodes = graphItem
+
     }
 
   }
