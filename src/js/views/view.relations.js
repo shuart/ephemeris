@@ -140,7 +140,8 @@ var createRelationsView = function () {
           <div style="width: 80%;margin-left: 10%;" class="ui cards">
            ${theme.quickStartLastViewItem("redo","Reload","Go to last WIP graph","action_relations_qs_show_last_view")}
            ${theme.quickStartLastViewItem("sitemap","Whole Project","Create a graph of the whole project","action_relations_qs_show_whole_project")}
-           ${theme.quickStartLastViewItem("sitemap","Only Interfaces","Show only the projects interfaces","action_relations_qs_show_only_interfaces")}
+           ${theme.quickStartLastViewItem("dolly","Only PBS","Create a graph of the Product Breakdown Structure","action_relations_qs_show_only_PBS")}
+           ${theme.quickStartLastViewItem("cubes","Only Interfaces","Show only the projects interfaces","action_relations_qs_show_only_interfaces")}
            ${theme.quickStartLastViewItem("search","Focus","Create a graph focused on a product","action_relations_qs_start_from_element")}
            ${theme.quickStartLastViewItem("file outline","New","Start from an empty graph","action_relations_qs_create_new_empty")}
            ${cards}
@@ -858,6 +859,39 @@ var createRelationsView = function () {
         update()
       }
       addMode='compose'
+      setTimeout(function () {
+        setReset()
+        //fix graph after a few seconds
+        setTimeout(function () {
+          setGraphToFixed()
+        }, 1900);
+      }, 1);
+    }, container)
+    bind(".action_relations_qs_show_only_PBS","click",(e)=>{
+      function setReset() {
+        fixedValues = false
+        hiddenItemsFromSideView= []
+        elementVisibility = {
+          functions : false,
+          requirements : false,
+          stakeholders : false,
+          physicalSpaces : false,
+          workPackages : false,
+          metaLinks : false,
+          interfaces : false,
+          compose : true
+        }
+        groupElements={
+          functions: false,
+          requirements: false,
+          stakeholders: false,
+          pbs:  false,
+          physicalSpaces : false,
+        }
+        addMode='compose'
+        currentSnapshot = undefined
+        update()
+      }
       setTimeout(function () {
         setReset()
         //fix graph after a few seconds
