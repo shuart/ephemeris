@@ -1333,10 +1333,10 @@ var createRelationsView = function () {
   var updateItemsToDisplayAndRelations= async function (elementVisibility) {//only side effect TODO: find a better way?
     var store = await query.currentProject()
     var categoryStore = {}
-    for (var i = 0; i < store.metaLinks.length; i++) {
-      let metaType = store.metaLinks[i].type
+    for (var i = 0; i < store.metaLinks.items.length; i++) {
+      let metaType = store.metaLinks.items[i].type
       if (metaType == "category") {
-        categoryStore[store.metaLinks[i].source] = store.metaLinks[i].target
+        categoryStore[store.metaLinks.items[i].source] = store.metaLinks.items[i].target
       }
     }
     var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})

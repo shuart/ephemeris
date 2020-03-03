@@ -276,9 +276,8 @@ function getCategoryFromItemUuid(sourceItemId, store, catStore) {//todo limit me
   // console.log(sourceItemId);
   // console.log(categoryLink);
   if (categoryLink) {
-    category = store.categories.items.find(c=>c.uuid == categoryLink.target)
+    category = store.categories.items.find(c=>c.uuid == categoryLink)
   }
-  // console.log(category);
   return category
 }
 
