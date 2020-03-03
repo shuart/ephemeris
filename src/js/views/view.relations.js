@@ -17,6 +17,7 @@ var createRelationsView = function () {
   var currentGraphTransformation=[0,0,1]
   var addMode = "compose";
   var addModeInterfaceType = undefined;
+  var addItemCatType = undefined;
   var addItemMode ="currentPbs"
   //What to show
   var hiddenItemsFromSideView = [];
@@ -81,15 +82,20 @@ var createRelationsView = function () {
         ).join('')
       return html
     },
-    viewItemsList:()=> {
+    viewItemsList:(categoriesItems)=> {
       items=[
         {name:'Products', type:'currentPbs', icon:"dolly"},
-        {name:'Stakeholders', type:'Stakeholders',  icon:"user"},
+        {name:'Stakeholders', type:'stakeholders',  icon:"user"},
         {name:'Requirements', type:'requirements', icon:"comment"},
         {name:'Functions', type:'functions', icon:"cogs"}
       ]
-      let html = items.map(i=>
-        `<div style="${(addItemMode == i.type)? "background-color: #6dce9e !important":""}" data-type="${i.type}" class="item action_interface_change_add_item_type">
+
+      let categoryArray = categoriesItems.map(c=>{
+        return {uuid:c.uuid, name:c.name, type:'currentPbs', icon:"dolly"}
+      })
+
+      let html = items.concat(categoryArray).map(i=>
+        `<div style="${((addItemMode == i.type && addItemCatType == i.uuid)||(addItemMode == i.type && !i.uuid))? "background-color: #6dce9e !important":""}" data-type="${i.type}"  data-id="${i.uuid}"  class="item action_interface_change_add_item_type">
           ${i.name}
         </div>`
         ).join('')
@@ -783,6 +789,7 @@ var createRelationsView = function () {
     }, container)
     bind(".action_interface_change_add_item_type","click",(e)=>{
         let itemDefaultType = e.target.dataset.type;
+        addItemCatType = e.target.dataset.id;
         addItemMode = itemDefaultType
         update()
     }, container)
@@ -1497,6 +1504,7 @@ var createRelationsView = function () {
   var renderMenu= async function (container) {
     let store =  await query.currentProject()
     let interfaceListItems =  store.interfacesTypes
+    let categoriesListItems =  store.categories
     let searchAreaHtml =`
     <div class="ui item">
       <div class="ui icon input">
@@ -1582,33 +1590,29 @@ var createRelationsView = function () {
           <div class="disabled ui icon button">
             Add
           </div>
-          <div class="${addItemMode=="stakeholders" ? 'active':''} ui icon button add_relations_nodes action_interface_add_stakeholder" data-tooltip="Stakeholder" data-position="bottom center">
-            <i class="user icon action_interface_add_stakeholder"></i>
+          <div data-type="stakeholders" class="${addItemMode=="stakeholders" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Stakeholder" data-position="bottom center">
+            <i data-type="stakeholders" class="user icon action_interface_change_add_item_type"></i>
           </div>
-          <div class="${addItemMode=="requirements" ? 'active':''} ui icon button add_relations_nodes action_interface_add_requirement" data-tooltip="Requirement" data-position="bottom center">
-            <i class="comment icon action_interface_add_requirement"></i>
+          <div data-type="requirements" class="${addItemMode=="requirements" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Requirement" data-position="bottom center">
+            <i data-type="requirements" class="comment icon action_interface_change_add_item_type"></i>
           </div>
-          <div class="${addItemMode=="currentPbs" ? 'active':''} ui icon button add_relations_nodes action_interface_add_pbs" data-tooltip="Product" data-position="bottom center">
-            <i class="dolly icon action_interface_add_pbs"></i>
+          <div data-type="currentPbs" class="${addItemMode=="currentPbs" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Product" data-position="bottom center">
+            <i data-type="currentPbs" class="dolly icon action_interface_change_add_item_type"></i>
           </div>
-          <div class="${addItemMode=="functions" ? 'active':''} ui icon button add_relations_nodes action_interface_add_functions" data-tooltip="Functions" data-position="bottom center">
-            <i class="cogs icon action_interface_add_functions"></i>
+          <div data-type="functions" class="${addItemMode=="functions" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Functions" data-position="bottom center">
+            <i data-type="functions" class="cogs icon action_interface_change_add_item_type"></i>
           </div>
         </div>
 
         <div class="ui simple dropdown item">
-          add Items
+          Other items
           <i class="dropdown icon"></i>
           <div class="menu" style="margin-top:0px;">
-            ${theme.viewItemsList()}
+            ${theme.viewItemsList(categoriesListItems.items)}
           </div>
         </div>
 
-        <div class="ui item">
-          <div class="ui icon button basic action_relations_toogle_show_graph_menu">
-            <i class="ellipsis horizontal icon action_relations_toogle_show_graph_menu"></i>
-          </div>
-        </div>
+
       </div>
 
     </div>`
@@ -1638,6 +1642,13 @@ var createRelationsView = function () {
           ${theme.viewInterfaceList(interfaceListItems.items)}
         </div>
       </div>
+
+      <div class="ui item">
+        <div class="ui icon button basic action_relations_toogle_show_graph_menu">
+          <i class="ellipsis horizontal icon action_relations_toogle_show_graph_menu"></i>
+        </div>
+      </div>
+
     </div>`
     container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + relationsMenuHTML + interfacesMenuHTML +`</div>`
     container.querySelector('.graphSearchArea').innerHTML=`<div class="ui mini compact text menu">`+ searchAreaHtml +`</div>`
@@ -1918,7 +1929,7 @@ var createRelationsView = function () {
           var initValue = prompt("Add an item")
           if (initValue) {
             var uuid = genuuid()
-            addItems(addItemMode, uuid, initValue)
+            addItems(addItemMode, uuid, initValue, addItemCatType)
             //itemsToFixAtNextUpdate=[]
             itemsToFixAtNextUpdate.push({uuid:uuid, fx:e.x, fy:e.y})
             update()
@@ -2037,13 +2048,16 @@ var createRelationsView = function () {
     }
   }
 
-  async function addItems(type, uuid, initValue) {
+  async function addItems(type, uuid, initValue, addItemCatType) {
     if (type == 'requirements') {
       push(addRequirement({uuid:uuid, name:initValue}))
     }else if (type == 'currentPbs') {
       let store = await query.currentProject()
       push(addPbs({uuid:uuid, name:initValue}))
       push(addPbsLink({source:store.currentPbs.items[0].uuid, target:uuid}))
+      if (addItemCatType) {
+        push(act.add("metaLinks",{type:"category", source:uuid, target:addItemCatType}))
+      }
     }else if (type == 'stakeholders') {
       push(act.add('stakeholders',{uuid:uuid, name:initValue}))
     }else if (type = 'functions') {
