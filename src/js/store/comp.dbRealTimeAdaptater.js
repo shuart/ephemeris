@@ -239,7 +239,7 @@ var createDbRealTimeAdaptater = function () {
     selector[collectionName+".links"] = link
     return new Promise(function(resolve, reject) {
         projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-          logCallback(item)
+          logCallback()
           localProjects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
             console.log("persisted");
           });
@@ -266,7 +266,15 @@ var createDbRealTimeAdaptater = function () {
   }
   function removeProjectLink(projectUuid, collectionName, link) {
     let selector = {}
-    selector[collectionName+".links"] = link
+    if (typeof link === "string") {
+      selector[collectionName+".links"] = {uuid:link}
+    }else if (link.source && !link.target) {
+      selector[collectionName+".links"] = {source:link.source }
+    }else if (link.target && !link.source) {
+      selector[collectionName+".links"] = {target:link.target}
+    }else if (link.target && link.source) {
+      selector[collectionName+".links"] = {source:link.source, target:link.target}
+    }
     return new Promise(function(resolve, reject) {
         projects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
           logCallback(item)

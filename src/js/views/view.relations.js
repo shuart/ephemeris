@@ -3,12 +3,13 @@ var createRelationsView = function () {
   var objectIsActive = false;
   var activeMode = 'relations'
 
-
+  var quickstartModal=undefined
   var displayType = "network";
   var activeGraph = undefined;
   var fixedValues = undefined;
   var fadeOtherNodesOnHoover =false;
   var lastSelectedNode = undefined;
+  var lastFixedNodes = undefined;
   var previousSelectedNode = undefined;
   var addLinkMode = false;
   var itemsToFixAtNextUpdate = []
@@ -16,6 +17,7 @@ var createRelationsView = function () {
   var currentGraphTransformation=[0,0,1]
   var addMode = "compose";
   var addModeInterfaceType = undefined;
+  var addItemCatType = undefined;
   var addItemMode ="currentPbs"
   //What to show
   var hiddenItemsFromSideView = [];
@@ -80,6 +82,25 @@ var createRelationsView = function () {
         ).join('')
       return html
     },
+    viewItemsList:(categoriesItems)=> {
+      items=[
+        {name:'Products', type:'currentPbs', icon:"dolly"},
+        {name:'Stakeholders', type:'stakeholders',  icon:"user"},
+        {name:'Requirements', type:'requirements', icon:"comment"},
+        {name:'Functions', type:'functions', icon:"cogs"}
+      ]
+
+      let categoryArray = categoriesItems.map(c=>{
+        return {uuid:c.uuid, name:c.name, type:'currentPbs', icon:"dolly"}
+      })
+
+      let html = items.concat(categoryArray).map(i=>
+        `<div style="${((addItemMode == i.type && addItemCatType == i.uuid)||(addItemMode == i.type && !i.uuid))? "background-color: #6dce9e !important":""}" data-type="${i.type}"  data-id="${i.uuid}"  class="item action_interface_change_add_item_type">
+          ${i.name}
+        </div>`
+        ).join('')
+      return html
+    },
     viewListItem:(item) => {
       if (item) {
         let cardHtml = `
@@ -125,6 +146,8 @@ var createRelationsView = function () {
           <div style="width: 80%;margin-left: 10%;" class="ui cards">
            ${theme.quickStartLastViewItem("redo","Reload","Go to last WIP graph","action_relations_qs_show_last_view")}
            ${theme.quickStartLastViewItem("sitemap","Whole Project","Create a graph of the whole project","action_relations_qs_show_whole_project")}
+           ${theme.quickStartLastViewItem("dolly","Only PBS","Create a graph of the Product Breakdown Structure","action_relations_qs_show_only_PBS")}
+           ${theme.quickStartLastViewItem("cubes","Only Interfaces","Show only the projects interfaces","action_relations_qs_show_only_interfaces")}
            ${theme.quickStartLastViewItem("search","Focus","Create a graph focused on a product","action_relations_qs_start_from_element")}
            ${theme.quickStartLastViewItem("file outline","New","Start from an empty graph","action_relations_qs_create_new_empty")}
            ${cards}
@@ -227,11 +250,7 @@ var createRelationsView = function () {
     bind(".action_relations_toogle_show_interfaces","click",(e)=>{ elementVisibility.interfaces = !elementVisibility.interfaces; update(); }, container)
     bind(".action_relations_toogle_show_compose","click",(e)=>{ elementVisibility.compose = !elementVisibility.compose; update(); }, container)
 
-    bind(".action_interface_add_stakeholder","click",(e)=>{
-      addItemMode = 'stakeholders'
-      document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
-      queryDOM(".action_interface_add_stakeholder").classList.add('active')
-    }, container)
+
     bind(".action_relations_export_png","click",(e)=>{
       saveSvgAsPng(container.querySelector('.stellae-graph'), "tree.png", {scale: 2})
     }, container)
@@ -318,16 +337,11 @@ var createRelationsView = function () {
         showVisibilityMenuSnapshot = false
       }
     }, container)
-    bind(".action_interface_add_requirement","click",(e)=>{
-      addItemMode = 'requirements'
-      console.log(document.querySelectorAll(".add_relations_nodes"));
-      document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
-      queryDOM(".action_interface_add_requirement").classList.add('active')
-    }, container)
+
     bind(".action_interface_add_functions","click",(e)=>{
       addItemMode = 'functions'
-      document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
-      queryDOM(".action_interface_add_functions").classList.add('active')
+
+
     }, container)
     bind(".action_interface_set_new_metalink_mode","click",(e)=>{
       lastSelectedNode = undefined;
@@ -340,11 +354,6 @@ var createRelationsView = function () {
     //   linkNodes(lastSelectedNode,previousSelectedNode)
     //   update()
     // }, container)
-    bind(".action_interface_add_pbs","click",(e)=>{
-      addItemMode = 'currentPbs'
-      document.querySelectorAll(".add_relations_nodes").forEach(e=>e.classList.remove('active'))
-      queryDOM(".action_interface_add_pbs").classList.add('active')
-    }, container)
 
     bind(".action_relations_add_nodes_from_templates","click",(e)=>{
       let store = query.currentProject()
@@ -673,11 +682,11 @@ var createRelationsView = function () {
         update()
       }
     }, container)
-    bind(".action_relations_update_snapshot","click",(e)=>{
+    bind(".action_relations_update_snapshot","click",async (e)=>{
       if (confirm("Update this snapshot")) {
         let useImages = true // create a snsphot when saving graph
-
-        let graph = query.currentProject().graphs.items.find(i=> i.uuid == e.target.dataset.id)
+        let currentStore = await query.currentProject()
+        let graph = currentStore.graphs.items.find(i=> i.uuid == e.target.dataset.id)
 
         if (useImages) {
           svgAsPngUri(container.querySelector('.stellae-graph'),{scale: 0.1}).then(function (uri) {
@@ -778,6 +787,12 @@ var createRelationsView = function () {
         addModeInterfaceType = interfaceDefaultTypeId
         update()
     }, container)
+    bind(".action_interface_change_add_item_type","click",(e)=>{
+        let itemDefaultType = e.target.dataset.type;
+        addItemCatType = e.target.dataset.id;
+        addItemMode = itemDefaultType
+        update()
+    }, container)
 
   }
 
@@ -850,17 +865,75 @@ var createRelationsView = function () {
         currentSnapshot = undefined
         update()
       }
-      function setResetInterfaces() {
+      addMode='compose'
+      setTimeout(function () {
+        setReset()
+        //fix graph after a few seconds
+        setTimeout(function () {
+          setGraphToFixed()
+        }, 1900);
+      }, 1);
+    }, container)
+    bind(".action_relations_qs_show_only_PBS","click",(e)=>{
+      function setReset() {
         fixedValues = false
         hiddenItemsFromSideView= []
+        elementVisibility = {
+          functions : false,
+          requirements : false,
+          stakeholders : false,
+          physicalSpaces : false,
+          workPackages : false,
+          metaLinks : false,
+          interfaces : false,
+          compose : true
+        }
+        groupElements={
+          functions: false,
+          requirements: false,
+          stakeholders: false,
+          pbs:  false,
+          physicalSpaces : false,
+        }
+        addMode='compose'
+        currentSnapshot = undefined
         update()
       }
       setTimeout(function () {
-        if (activeMode == "interfaces") {
-          setResetInterfaces()
-        }else {
-          setReset()
+        setReset()
+        //fix graph after a few seconds
+        setTimeout(function () {
+          setGraphToFixed()
+        }, 1900);
+      }, 1);
+    }, container)
+    bind(".action_relations_qs_show_only_interfaces","click",(e)=>{
+      function setReset() {
+        fixedValues = false
+        hiddenItemsFromSideView= []
+        elementVisibility = {
+          functions : false,
+          requirements : false,
+          stakeholders : false,
+          physicalSpaces : false,
+          workPackages : false,
+          metaLinks : false,
+          interfaces : true,
+          compose : false
         }
+        groupElements={
+          functions: false,
+          requirements: false,
+          stakeholders: false,
+          pbs:  false,
+          physicalSpaces : false,
+        }
+        addMode='physical'
+        currentSnapshot = undefined
+        update()
+      }
+      setTimeout(function () {
+        setReset()
         //fix graph after a few seconds
         setTimeout(function () {
           setGraphToFixed()
@@ -895,6 +968,9 @@ var createRelationsView = function () {
   }
 
   var render = async function () {
+    if (quickstartModal) {
+      quickstartModal.remove()
+    }
     var store = await query.currentProject()
     container = document.createElement("div")
     container.style.height = "100%"
@@ -911,7 +987,8 @@ var createRelationsView = function () {
         <div style="height: 100%" class="interfaceGraph"></div>
         <div style="opacity: 0.85;height: 99%;width: 250px;position: absolute;right:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenu ? '':'hidden'} menuGraph"></div>
         <div style="opacity: 0.85;height: 99%;width: 210px;position: absolute;left:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenuSnapshot ? '':'hidden'} menuSnapshotGraph"></div>
-      </div>`
+      </div>
+      <div style="opacity: 0.85;height: 50px;width: 400px;position: absolute;right:10px;bottom:5px;background-color: transparent;" class='graphSearchArea'></div>`
 
       container.ondragover = function (ev) {
         ev.preventDefault();
@@ -1042,18 +1119,9 @@ var createRelationsView = function () {
           }
           currentSnapshot = undefined//clear current snapshot
 
-        }else if( activeMode =="relations") {// if not go to default
-          if (query.currentProject().graphs && query.currentProject().graphs.default) {
-            fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB backward compatibility (TODO: remove)
-          }
-          console.log("relations")
-          // alert("relations")
-        }else if (activeMode == 'interfaces') {
-          if (query.currentProject().graphs && query.currentProject().graphs.interfaces) {
-            fixedValuesList = query.currentProject().graphs.interfaces.nodesPositions
-          }
-          console.log("interfaces")
-          // alert("interfaces")
+        }else if( lastFixedNodes) {// if not go to default
+          fixedValuesList = deepCopy(lastFixedNodes.nodesPositions )
+          // fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB backward compatibility (TODO: remove)
         }
       }
       //concat with items to fix this time
@@ -1268,10 +1336,10 @@ var createRelationsView = function () {
   var updateItemsToDisplayAndRelations= async function (elementVisibility) {//only side effect TODO: find a better way?
     var store = await query.currentProject()
     var categoryStore = {}
-    for (var i = 0; i < store.metaLinks.length; i++) {
-      let metaType = store.metaLinks[i].type
+    for (var i = 0; i < store.metaLinks.items.length; i++) {
+      let metaType = store.metaLinks.items[i].type
       if (metaType == "category") {
-        categoryStore[store.metaLinks[i].source] = store.metaLinks[i].target
+        categoryStore[store.metaLinks.items[i].source] = store.metaLinks.items[i].target
       }
     }
     var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
@@ -1344,6 +1412,9 @@ var createRelationsView = function () {
   }
 
   var renderQuickstart = async function () {
+    if (quickstartModal) {
+      quickstartModal.remove()
+    }
     let quickstartContainer = document.createElement("div")
     quickstartContainer.style.height = "100%"
 
@@ -1371,8 +1442,11 @@ var createRelationsView = function () {
 
     quickstartContainer.innerHTML=theme.quickstartView(viewMenuHtml)
 
-    document.querySelector(".center-container").innerHTML=""
-    document.querySelector(".center-container").appendChild(quickstartContainer)
+    // document.querySelector(".center-container").innerHTML=""
+    // document.querySelector(".center-container").appendChild(quickstartContainer)
+
+    quickstartModal = ephHelpers.addModalDOM()
+    quickstartModal.querySelector('.modal_container').appendChild(quickstartContainer)
 
     quickstartConnections(quickstartContainer)
   }
@@ -1439,9 +1513,8 @@ var createRelationsView = function () {
   var renderMenu= async function (container) {
     let store =  await query.currentProject()
     let interfaceListItems =  store.interfacesTypes
-    let commonMenuHTML = `
-
-
+    let categoriesListItems =  store.categories
+    let searchAreaHtml =`
     <div class="ui item">
       <div class="ui icon input">
         <input class="input_relation_search_nodes" type="text" placeholder="Search...">
@@ -1455,7 +1528,8 @@ var createRelationsView = function () {
         <label>Fix Nodes</label>
       </div>
     </div>
-
+    `
+    let commonMenuHTML = `
     <div class="item">
       <div class="ui mini basic icon buttons">
         <button class="disabled ui basic icon button " >
@@ -1525,25 +1599,29 @@ var createRelationsView = function () {
           <div class="disabled ui icon button">
             Add
           </div>
-          <div class="${addItemMode=="stakeholders" ? 'active':''} ui icon button add_relations_nodes action_interface_add_stakeholder" data-tooltip="Stakeholder" data-position="bottom center">
-            <i class="user icon action_interface_add_stakeholder"></i>
+          <div data-type="stakeholders" class="${addItemMode=="stakeholders" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Stakeholder" data-position="bottom center">
+            <i data-type="stakeholders" class="user icon action_interface_change_add_item_type"></i>
           </div>
-          <div class="${addItemMode=="requirements" ? 'active':''} ui icon button add_relations_nodes action_interface_add_requirement" data-tooltip="Requirement" data-position="bottom center">
-            <i class="comment icon action_interface_add_requirement"></i>
+          <div data-type="requirements" class="${addItemMode=="requirements" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Requirement" data-position="bottom center">
+            <i data-type="requirements" class="comment icon action_interface_change_add_item_type"></i>
           </div>
-          <div class="${addItemMode=="currentPbs" ? 'active':''} ui icon button add_relations_nodes action_interface_add_pbs" data-tooltip="Product" data-position="bottom center">
-            <i class="dolly icon action_interface_add_pbs"></i>
+          <div data-type="currentPbs" class="${addItemMode=="currentPbs" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Product" data-position="bottom center">
+            <i data-type="currentPbs" class="dolly icon action_interface_change_add_item_type"></i>
           </div>
-          <div class="${addItemMode=="functions" ? 'active':''} ui icon button add_relations_nodes action_interface_add_functions" data-tooltip="Functions" data-position="bottom center">
-            <i class="cogs icon action_interface_add_functions"></i>
+          <div data-type="functions" class="${addItemMode=="functions" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Functions" data-position="bottom center">
+            <i data-type="functions" class="cogs icon action_interface_change_add_item_type"></i>
           </div>
         </div>
 
-        <div class="ui item">
-          <div class="ui icon button basic action_relations_toogle_show_graph_menu">
-            <i class="ellipsis horizontal icon action_relations_toogle_show_graph_menu"></i>
+        <div class="ui simple dropdown item">
+          Other items
+          <i class="dropdown icon"></i>
+          <div class="menu" style="margin-top:0px;">
+            ${theme.viewItemsList(categoriesListItems.items)}
           </div>
         </div>
+
+
       </div>
 
     </div>`
@@ -1552,28 +1630,7 @@ var createRelationsView = function () {
 
 
 
-      <div class="ui item">
-        <div class="ui mini basic buttons">
-          <div class="ui disabled icon button">
-            display
-          </div>
-          <button class="${elementVisibility.compose ? 'active':''} ui mini icon button action_interfaces_toogle_show_compose" data-tooltip="Show composition links" data-position="bottom center">
-            <i class="object group icon action_interfaces_toogle_show_compose"></i>
-          </button>
-          <button class="${elementVisibility.interfaces ? 'active':''} ui mini icon button action_interfaces_toogle_show_interfaces" data-tooltip="Show interfaces links" data-position="bottom center">
-            <i class="cubes icon action_interfaces_toogle_show_interfaces"></i>
-          </button>
-        </div>
-      </div>
 
-      <div class="ui item">
-        <div class="ui mini basic buttons">
-          <div class="ui icon button action_interfaces_add_pbs" data-tooltip="Add Product" data-position="bottom center">
-            <i class="plus  icon action_interfaces_add_pbs"></i>
-            <i class="dolly icon action_interfaces_add_pbs"></i>
-          </div>
-        </div>
-      </div>
       <div class="ui item">
         <div class="ui mini basic buttons">
           <div class="ui disabled icon button">
@@ -1594,12 +1651,16 @@ var createRelationsView = function () {
           ${theme.viewInterfaceList(interfaceListItems.items)}
         </div>
       </div>
+
+      <div class="ui item">
+        <div class="ui icon button basic action_relations_toogle_show_graph_menu">
+          <i class="ellipsis horizontal icon action_relations_toogle_show_graph_menu"></i>
+        </div>
+      </div>
+
     </div>`
-    if (activeMode == "relations") {
-      container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + relationsMenuHTML +`</div>`
-    }else {
-      container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + interfacesMenuHTML +`</div>`
-    }
+    container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + relationsMenuHTML + interfacesMenuHTML +`</div>`
+    container.querySelector('.graphSearchArea').innerHTML=`<div class="ui mini compact text menu">`+ searchAreaHtml +`</div>`
 
     container.querySelector('.input_relation_search_nodes').addEventListener('keyup', function(e){
       //e.stopPropagation()
@@ -1655,28 +1716,6 @@ var createRelationsView = function () {
         </div>
       </div>
 
-      <div class="item">
-        <div class="header">Show</div>
-          <div class="ui item">
-            <div class="ui toggle checkbox">
-              <input ${fadeOtherNodesOnHoover ? 'checked':''} class="action_fade_other_node_toogle_network" type="checkbox" name="public">
-              <label>Highlight connections</label>
-            </div>
-          </div>
-        <div class="ui mini vertical basic buttons">
-          <div class="ui mini button action_relations_isolate_nodes">Selected</div>
-          <div class="ui mini button action_relations_isolate_nodes_and_children">Selected and relations</div>
-        </div>
-      </div>
-
-      <div class="item">
-        <div class="header">Isolate</div>
-        <div class="ui mini vertical basic buttons">
-          <div class="ui mini button action_relations_isolate_nodes">Selected</div>
-          <div class="ui mini button action_relations_isolate_nodes_and_children">Selected and relations</div>
-        </div>
-      </div>
-    </div>
     `
     container.querySelector('.menuSnapshotGraph').innerHTML=`
     <div style="right: 9px;position: absolute;" class="ui item action_relations_toogle_show_graph_snapshot_menu"><i class="close icon"></i></div>
@@ -1841,11 +1880,7 @@ var createRelationsView = function () {
           // }
           let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
           //append to graph DB
-          if (activeMode=="relations") {
-            // query.currentProject().graphs.default = graphItem//TODO use actions DBCHANGE
-          }else if (activeMode == "interfaces") {
-            // query.currentProject().graphs.interfaces = graphItem//TODO use actions DBCHANGE
-          }
+          lastFixedNodes = graphItem
         }
       },
       onRelationshipDoubleClick:function (d) {
@@ -1903,7 +1938,7 @@ var createRelationsView = function () {
           var initValue = prompt("Add an item")
           if (initValue) {
             var uuid = genuuid()
-            addItems(addItemMode, uuid, initValue)
+            addItems(addItemMode, uuid, initValue, addItemCatType)
             //itemsToFixAtNextUpdate=[]
             itemsToFixAtNextUpdate.push({uuid:uuid, fx:e.x, fy:e.y})
             update()
@@ -2013,6 +2048,7 @@ var createRelationsView = function () {
     if (!fixedValues) {
       let snapId = "wipgraph484622464"
       let newGraphItem = {uuid:snapId,view:activeMode, name:"0-Current WIP", groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+
       push(act.remove("graphs", {uuid:snapId}))
       push(act.add("graphs", newGraphItem))
       let savedCurrentSnapshot = currentSnapshot
@@ -2021,12 +2057,16 @@ var createRelationsView = function () {
     }
   }
 
-  function addItems(type, uuid, initValue) {
+  async function addItems(type, uuid, initValue, addItemCatType) {
     if (type == 'requirements') {
       push(addRequirement({uuid:uuid, name:initValue}))
     }else if (type == 'currentPbs') {
+      let store = await query.currentProject()
       push(addPbs({uuid:uuid, name:initValue}))
-      push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+      push(addPbsLink({source:store.currentPbs.items[0].uuid, target:uuid}))
+      if (addItemCatType) {
+        push(act.add("metaLinks",{type:"category", source:uuid, target:addItemCatType}))
+      }
     }else if (type == 'stakeholders') {
       push(act.add('stakeholders',{uuid:uuid, name:initValue}))
     }else if (type = 'functions') {
@@ -2037,6 +2077,7 @@ var createRelationsView = function () {
   async function setSnapshot(uuid) {
     let store = await query.currentProject()
     let graph = store.graphs.items.find(i=> i.uuid == uuid)
+    lastFixedNodes = graph
     fixedValues = true
     hiddenItemsFromSideView= graph.hiddenItems || []
     if (graph.elementVisibility) {
@@ -2053,12 +2094,10 @@ var createRelationsView = function () {
       //   query.currentProject().graphs.items =[]
       // }
       let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
-      //append to graph DB
-      if (activeMode=="relations") {
-        // query.currentProject().graphs.default = graphItem//TODO use actions
-      }else if (activeMode == "interfaces") {
-        // query.currentProject().graphs.interfaces = graphItem//TODO use actions
-      }
+      //append to graph to local state
+
+      lastFixedNodes = graphItem
+
     }
 
   }
@@ -2109,6 +2148,3 @@ var createRelationsView = function () {
 
 var relationsView = createRelationsView();
 relationsView.init()
-
-var interfacesView = createRelationsView();
-interfacesView.init({context:"interfaces"})
