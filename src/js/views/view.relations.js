@@ -3,7 +3,7 @@ var createRelationsView = function () {
   var objectIsActive = false;
   var activeMode = 'relations'
 
-
+  var quickstartModal=undefined
   var displayType = "network";
   var activeGraph = undefined;
   var fixedValues = undefined;
@@ -968,6 +968,9 @@ var createRelationsView = function () {
   }
 
   var render = async function () {
+    if (quickstartModal) {
+      quickstartModal.remove()
+    }
     var store = await query.currentProject()
     container = document.createElement("div")
     container.style.height = "100%"
@@ -1409,6 +1412,9 @@ var createRelationsView = function () {
   }
 
   var renderQuickstart = async function () {
+    if (quickstartModal) {
+      quickstartModal.remove()
+    }
     let quickstartContainer = document.createElement("div")
     quickstartContainer.style.height = "100%"
 
@@ -1436,8 +1442,11 @@ var createRelationsView = function () {
 
     quickstartContainer.innerHTML=theme.quickstartView(viewMenuHtml)
 
-    document.querySelector(".center-container").innerHTML=""
-    document.querySelector(".center-container").appendChild(quickstartContainer)
+    // document.querySelector(".center-container").innerHTML=""
+    // document.querySelector(".center-container").appendChild(quickstartContainer)
+
+    quickstartModal = ephHelpers.addModalDOM()
+    quickstartModal.querySelector('.modal_container').appendChild(quickstartContainer)
 
     quickstartConnections(quickstartContainer)
   }

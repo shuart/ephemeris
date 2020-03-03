@@ -468,6 +468,56 @@ ephHelpers.updateListElements = function(list, data) {
   console.log("view refreshed");
 }
 
+ephHelpers.addModalDOM = function () {
+  sourceOccElement = document.createElement('div');
+  sourceOccElement.style.height = "100%"
+  sourceOccElement.style.width = "100%"
+  sourceOccElement.style.zIndex = "11"
+  sourceOccElement.style.position = "fixed"
+
+  var dimmer = document.createElement('div');
+  dimmer.classList="dimmer occurence-dimmer"
+  var mainEl = document.createElement('div');
+
+  mainEl.style.position = "fixed"
+  mainEl.style.top = "0px"
+  mainEl.style.display = "flex"
+  mainEl.style.flexDirection = "column"
+  mainEl.style.zIndex = "9999999999"
+  mainEl.style.backgroundColor = "white"
+
+  mainEl.classList ="ui raised padded container segment"
+  // mainEl.style.width = "50%"
+  mainEl.style.width = "60%"
+  mainEl.style.maxHeight = "90%"
+  mainEl.style.left= "25%";
+  mainEl.style.padding = "50px";
+  mainEl.style.overflow = "auto";
+  // mainEl.style.left= "25%";
+  var container = document.createElement('div');
+
+  container.style.position = "relative"
+  container.style.height = "90%"
+  container.style.overflow = "auto"
+  container.classList ="modal_container"
+
+  var menuArea = document.createElement("div");
+
+  // menuArea.appendChild(saveButton)
+
+  sourceOccElement.appendChild(dimmer)
+  sourceOccElement.appendChild(mainEl)
+  mainEl.appendChild(menuArea)
+  mainEl.appendChild(container)
+
+  // menuArea.appendChild(toNode(renderMenu()))
+  // container.appendChild(toNode(renderProfile(uuid)))
+
+  document.body.appendChild(sourceOccElement)
+
+  return sourceOccElement
+}
+
 
 //Workarounds
 
