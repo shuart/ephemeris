@@ -129,7 +129,7 @@ var createShowUpdateLinksService = function () {
           {prop:"name", displayAs:"Name", edit:false}
         ]
       }else {
-        alert("fefsefs")
+
         sourceGroup='currentPbs';
         sourceData=store.currentPbs.items
         sourceLinks=store.currentPbs.links
