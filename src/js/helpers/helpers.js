@@ -142,6 +142,32 @@ function removeFromArray(array, item) {
 
 function moveElementInArray (array, value, target) {
   var oldIndex = array.indexOf(value);
+  if (oldIndex > -1){// case of value note already in list
+
+  }
+  if (oldIndex > -1){
+    var newIndex = (array.indexOf(target) + 1);
+
+    if (newIndex < 0){
+      newIndex = 0
+    }else if (newIndex >= array.length){
+      newIndex = array.length
+    }
+
+    console.log(oldIndex, newIndex);
+
+    var arrayClone = array.slice();
+    arrayClone.splice(oldIndex,1);
+    arrayClone.splice(newIndex,0,value);
+
+    return arrayClone
+  }else {
+    console.log("element not found");
+  }
+  return array
+}
+function moveElementInArrayLegacy (array, value, target) {
+  var oldIndex = array.indexOf(value);
   if (oldIndex > -1){
     var newIndex = (array.indexOf(target) + 1);
 
@@ -466,6 +492,16 @@ ephHelpers.updateListElements = function(list, data) {
   if (data.singleElement) {list.updateSingleElement(data.singleElement)}
   list.refreshList()
   console.log("view refreshed");
+}
+
+ephHelpers.setDisplayOrder = function(store, collectionName) {
+  let currentOrder = store.itemsOrder.items.find(o=>o.collectionName==collectionName)
+  if (!currentOrder) {
+    return []
+  }else {
+    return currentOrder.order
+  }
+
 }
 
 ephHelpers.addModalDOM = function () {

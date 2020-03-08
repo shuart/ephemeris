@@ -59,11 +59,9 @@ function createEditItem(group, callback) {
 }
 function createMoveItem(group, callback) {
   return function ({
-    origin = undefined,
-    target = undefined,
-    project = undefined
+    value = undefined
   }={}) {
-    var action = {type:"moveItem", group, payload:{origin,target, project}}
+    var action = {type:"moveItem", group, payload:{value}}
     if (callback) {callback()}
     return action
   }

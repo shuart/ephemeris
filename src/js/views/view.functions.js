@@ -47,6 +47,10 @@ var createFunctionsView = function () {
     return displayRules
   }
 
+  var setDisplayOrder = function (store) {
+    return ephHelpers.setDisplayOrder(store,"functions")
+  }
+
   var render = async function () {
       var store = await query.currentProject()
       currentVisibleList = showListMenu({
@@ -57,6 +61,7 @@ var createFunctionsView = function () {
         fullScreen:true,
         displayProp:"name",
         display:setDisplayRules(store),
+        displayOrder:setDisplayOrder(store),
         extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,
@@ -74,20 +79,28 @@ var createFunctionsView = function () {
           console.log("remove");
           if (confirm("remove item ?")) {
             push(act.remove("functions",{uuid:ev.target.dataset.id}))
-            ev.select.updateData(store.functions.items)
+            // ev.select.updateData(store.functions.items)
           }
         },
         onMove: (ev)=>{
           console.log("move");
           if (confirm("move item ?")) {
-            push(act.move("functions", {origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+            // let currentDisplayOrder =  ephHelpers.setDisplayOrder(store,"functions")
+            //let newDisplayOrder = moveElementInArray (currentDisplayOrder, ev.originTarget.dataset.id, ev.target.dataset.id)
+            push(act.move("functions", {value:ev.newOrder}))
+            // var sourceItem = storeGroup.items.filter((item)=>item.uuid == pl.origin)[0]
+            // var targetItem = storeGroup.items.filter((item)=>item.uuid == pl.target)[0]
+            // storeGroup.items = moveElementInArray(storeGroup.items,sourceItem,targetItem)
+            //console.log(newDisplayOrder);
+
+
             //update links if needed
             push(act.removeLink("functions",{target:ev.originTarget.dataset.id}))
             if (ev.targetParentId && ev.targetParentId != "undefined") {
               push(act.addLink("functions",{source:ev.targetParentId, target:ev.originTarget.dataset.id}))
             }
-            ev.select.updateData(store.functions.items)
-            ev.select.updateLinks(store.functions.links)
+            //ev.select.updateData(store.functions.items)
+            //ev.select.updateLinks(store.functions.links)
           }
         },
         onAdd: (ev)=>{

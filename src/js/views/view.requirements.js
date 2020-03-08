@@ -53,6 +53,10 @@ var createRequirementsView = function () {
     return displayRules
   }
 
+  var setDisplayOrder = function (store) {
+    return ephHelpers.setDisplayOrder(store,"requirements")
+  }
+
   var render = async function () {
     var store = await query.currentProject()
       currentVisibleList = showListMenu({
@@ -63,6 +67,7 @@ var createRequirementsView = function () {
         fullScreen:true,
         displayProp:"name",
         display:setDisplayRules(store),
+        displayOrder:setDisplayOrder(store),
         extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,
@@ -92,7 +97,7 @@ var createRequirementsView = function () {
         onMove: (ev)=>{
           console.log("move");
           if (confirm("move item ?")) {
-            push(moveRequirement({origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+            push(act.move("requirements", {value:ev.newOrder}))
             //update links if needed
             push(removeRequirementLink({target:ev.originTarget.dataset.id}))
             if (ev.targetParentId && ev.targetParentId != "undefined") {

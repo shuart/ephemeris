@@ -330,6 +330,46 @@ var createDbRealTimeAdaptater = function () {
         });
       });
   }
+  function updateItemOrder(projectUuid, collectionName, value) {
+
+    return new Promise(async function(resolve, reject) {
+
+      await projects.find({uuid: projectUuid}, async function (err, docs) {
+        let collectionOrderIndex = docs[0].itemsOrder.items.findIndex(o=>o.collectionName==collectionName)
+        // let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
+        if (collectionOrderIndex<0) { //if order is not yet defined
+          let selector = {}
+          selector["itemsOrder.items"] = {uuid:genuuid(),collectionName:collectionName, order:value }
+          return new Promise(function(resolve, reject) {
+              projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+                logCallback(item)
+                localProjects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+                  console.log("new order added");
+                  console.log("persisted");
+                });
+                resolve(affectedDocuments[0])
+              });
+            }).catch(function(err) {
+              reject(err)
+            });
+        }else {
+          let indexToChange = collectionOrderIndex
+          let selector = {}
+          selector["itemsOrder.items."+indexToChange+".order"] = value
+          await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+              logCallback(upsert)
+              localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+                  console.log(docs[0]);
+                  console.log(value);
+                  console.log("order modified");
+                  console.log("persisted");
+                });
+              resolve(affectedDocuments)
+            });
+        }
+      });
+    });
+  }
   function addProjectCollection(projectUuid, collectionName, value) {
 
     return new Promise(async function(resolve, reject) {
@@ -443,6 +483,7 @@ var createDbRealTimeAdaptater = function () {
   self.removeProjectLink = removeProjectLink
   self.updateProjectItem = updateProjectItem
   self.replaceProjectItem = replaceProjectItem
+  self.updateItemOrder = updateItemOrder
   self.addProjectCollection = addProjectCollection
   self.setProject = setProject
   self.setProjectData = setProjectData

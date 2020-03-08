@@ -54,6 +54,10 @@ var createPbsView = function () {
     return displayRules
   }
 
+  var setDisplayOrder = function (store) {
+    return ephHelpers.setDisplayOrder(store,"currentPbs")
+  }
+
   var render = async function () {
     var store = await query.currentProject()
     console.log(store.currentPbs.items);
@@ -65,6 +69,7 @@ var createPbsView = function () {
         fullScreen:true,
         displayProp:"name",
         display:setDisplayRules(store),
+        displayOrder:setDisplayOrder(store),
         extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,
@@ -101,7 +106,8 @@ var createPbsView = function () {
         onMove: (ev)=>{
           console.log("move");
           if (confirm("move item ?")) {
-            push(movePbs({origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+            // push(movePbs({origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+            push(act.move("currentPbs", {value:ev.newOrder}))
             //update links if needed
             push(removePbsLink({target:ev.originTarget.dataset.id}))
             if (ev.targetParentId && ev.targetParentId != "undefined") {
@@ -110,8 +116,8 @@ var createPbsView = function () {
               push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:ev.originTarget.dataset.id}))
 
             }
-            ev.select.updateData(store.currentPbs.items)
-            ev.select.updateLinks(store.currentPbs.links)
+            // ev.select.updateData(store.currentPbs.items)
+            // ev.select.updateLinks(store.currentPbs.links)
           }
         },
         onAdd: (ev)=>{

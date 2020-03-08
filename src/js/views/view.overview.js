@@ -441,6 +441,15 @@ var createOverview = function (targetSelector) {
       dbConnector.addProjectCollection(store.uuid, "changes", store.changes)
       alertAboutUpdate("Changes have been added.")
     }
+    if (!store.itemsOrder) {
+      store.itemsOrder={
+        items:[
+
+        ]
+      },
+      dbConnector.addProjectCollection(store.uuid, "itemsOrder", store.itemsOrder)
+      alertAboutUpdate("custom item order have been added.")
+    }
 
 
   }

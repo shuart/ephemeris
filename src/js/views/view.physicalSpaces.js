@@ -32,6 +32,10 @@ var createWorkPhysicalSpacesView = function () {
     return displayRules
   }
 
+  var setDisplayOrder = function (store) {
+    return ephHelpers.setDisplayOrder(store,"functions")
+  }
+
   var render = async function () {
     var store = await query.currentProject()
     currentVisibleList = showListMenu({
@@ -41,6 +45,7 @@ var createWorkPhysicalSpacesView = function () {
       targetDomContainer:".center-container",
       fullScreen:true,// TODO: perhaps not full screen?
       display:setDisplayRules(store),
+      displayOrder:setDisplayOrder(store),
       idProp:"uuid",
       onEditItem: (ev)=>{
         console.log("Edit");
@@ -58,7 +63,7 @@ var createWorkPhysicalSpacesView = function () {
       onMove: (ev)=>{
         console.log("move");
         if (confirm("move item ?")) {
-          push(act.move("physicalSpaces", {origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+          push(act.move("physicalSpaces", {value:ev.newOrder}))
           //update links if needed
           push(act.removeLink("physicalSpaces",{target:ev.originTarget.dataset.id}))
           if (ev.targetParentId && ev.targetParentId != "undefined") {

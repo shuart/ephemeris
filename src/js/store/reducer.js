@@ -47,9 +47,10 @@ function reducer(action, store) {
     //   storeGroup.links = storeGroup.links.filter((item)=>item.source != pl.uuid && item.target != pl.uuid  )
     // }
   }else if (type == "moveItem") { //REMOVE ITEM
-    var sourceItem = storeGroup.items.filter((item)=>item.uuid == pl.origin)[0]
-    var targetItem = storeGroup.items.filter((item)=>item.uuid == pl.target)[0]
-    storeGroup.items = moveElementInArray(storeGroup.items,sourceItem,targetItem)
+    // var sourceItem = storeGroup.items.filter((item)=>item.uuid == pl.origin)[0]
+    // var targetItem = storeGroup.items.filter((item)=>item.uuid == pl.target)[0]
+    // storeGroup.items = moveElementInArray(storeGroup.items,sourceItem,targetItem)
+    dbConnector.updateItemOrder(projectUuid, storeGroup, pl.value).then(notifyChange)
 
   }else if (type == "modifyItem") { //MODIFY ITEM
     // var itemToEdit = storeGroup.items.filter((item)=>item.uuid == pl.uuid)

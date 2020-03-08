@@ -5,6 +5,7 @@ function showListMenu({
   parentSelectMenu = undefined,
   targetDomContainer = undefined,
   display = undefined,
+  displayOrder = [],
   extraFields =undefined,
   focusSearchOnRender = true,
   singleElement =undefined,
@@ -180,6 +181,8 @@ function showListMenu({
   var showBatchActions =false;
   var currentSelectedBatch =[];
 
+  var currentDisplayOrder =undefined;
+
 
   var self={}
 
@@ -312,7 +315,13 @@ function showListMenu({
         if (event.target.classList.contains("action_list_end_move_item") ) {
           if (ismoving) {
             console.log(event.target.dataset.id,ismoving.dataset.id, event.target.dataset.parentid);
-            onMove({select:self,selectDiv:sourceEl, originTarget:ismoving, target:event.target, targetParentId:event.target.dataset.parentid})
+
+            console.log(currentDisplayOrder);
+
+            let newDisplayOrder = moveElementInArray (currentDisplayOrder, ismoving.dataset.id, event.target.dataset.id)
+            console.log(newDisplayOrder);
+            displayOrder = newDisplayOrder //set as new display order
+            onMove({select:self,newOrder:newDisplayOrder, selectDiv:sourceEl, originTarget:ismoving, target:event.target, targetParentId:event.target.dataset.parentid})
             ismoving = false
           }
           if (ismovingExtraItems[0]) {//if other items are selected
@@ -763,6 +772,10 @@ function showListMenu({
       rules = [rules[0]]
     }
 
+    if (level == 0 && !currentDisplayOrder) {
+      currentDisplayOrder = sourceData.map(i=> i.uuid) //record base order
+    }
+    console.log(currentDisplayOrder);
     //Check if sorting is necessary
     if (currentSortProp) {
       data = data.sort(function(a, b) {
@@ -773,6 +786,26 @@ function showListMenu({
           if (nameA > nameB) {return 1;}
         }
         return 0;})
+    }else if (displayOrder[0]) {
+
+      //sort by display order
+      data = data.sort(function(a, b) {
+        let sortOrderA = displayOrder.indexOf(a.uuid)
+        let sortOrderB = displayOrder.indexOf(b.uuid)
+        if (sortOrderA && sortOrderB) {
+          if (sortOrderA < sortOrderB) {return -1;}
+          if (sortOrderA > sortOrderB) {return 1;}
+        }else {
+          let originalOrderA = currentDisplayOrder.indexOf(a.uuid)
+          let originalOrderB = currentDisplayOrder.indexOf(b.uuid)
+          if (originalOrderA < originalOrderB) {return -1;}
+          if (originalOrderA > originalOrderB) {return 1;}
+        }
+        return 0;})
+
+        if (level == 0) {
+          currentDisplayOrder = sourceData.map(i=> i.uuid) //record new base order
+        }
     }
 
     var htmlArray = []
