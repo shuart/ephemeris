@@ -143,13 +143,13 @@ var createRelationsView = function () {
        let html = `
         <div class="ui center aligned basic segment">
           <h3>Create a graph of the project or show an existing one</h3>
-          <div style="width: 80%;margin-left: 10%;" class="ui cards">
-           ${theme.quickStartLastViewItem("redo","Reload","Go to last WIP graph","action_relations_qs_show_last_view")}
+          <div style="width: 80%;margin-left: 10%;justify-content: center;" class="ui cards">
+          ${theme.quickStartLastViewItem("file outline","New","Start from an empty graph","action_relations_qs_create_new_empty")}
            ${theme.quickStartLastViewItem("sitemap","Whole Project","Create a graph of the whole project","action_relations_qs_show_whole_project")}
            ${theme.quickStartLastViewItem("dolly","Only PBS","Create a graph of the Product Breakdown Structure","action_relations_qs_show_only_PBS")}
            ${theme.quickStartLastViewItem("cubes","Only Interfaces","Show only the projects interfaces","action_relations_qs_show_only_interfaces")}
            ${theme.quickStartLastViewItem("search","Focus","Create a graph focused on a product","action_relations_qs_start_from_element")}
-           ${theme.quickStartLastViewItem("file outline","New","Start from an empty graph","action_relations_qs_create_new_empty")}
+           ${theme.quickStartLastViewItem("redo","Reload","Go to last WIP graph","action_relations_qs_show_last_view")}
            ${cards}
            </div>
         <div>
