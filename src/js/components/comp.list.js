@@ -314,15 +314,10 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_end_move_item") ) {
           if (ismoving) {
-            console.log(event.target.dataset.id,ismoving.dataset.id, event.target.dataset.parentid);
-
-            console.log(currentDisplayOrder);
-
             //sort by display order
             currentDisplayOrder = sourceData.map(i=> i.uuid)
 
             let data = deepCopy(sourceData)
-            console.log(data.map(o=>o.name));
             data = data.sort(function(a, b) {
               let sortOrderA = displayOrder.indexOf(a.uuid)
               let sortOrderB = displayOrder.indexOf(b.uuid)
@@ -330,9 +325,7 @@ function showListMenu({
                 if (sortOrderA < sortOrderB) {return -1;}
                 if (sortOrderA > sortOrderB) {return 1;}
               }else {
-                alert('srgfdrgdrgrddg')
-                alert(sortOrderA)
-                alert(sortOrderB)
+
                 let originalOrderA = currentDisplayOrder.indexOf(a.uuid)
                 let originalOrderB = currentDisplayOrder.indexOf(b.uuid)
                 if (originalOrderA < originalOrderB) {return -1;}
@@ -340,17 +333,36 @@ function showListMenu({
               }
               return 0;
             })
-            console.log(data.map(o=>o.name));
             let newDisplayOrder = moveElementInArray (data.map(i=> i.uuid), ismoving.dataset.id, event.target.dataset.id)
-            console.log(newDisplayOrder);
+
             displayOrder = newDisplayOrder //set as new display order
             onMove({select:self,newOrder:newDisplayOrder, selectDiv:sourceEl, originTarget:ismoving, target:event.target, targetParentId:event.target.dataset.parentid})
             ismoving = false
           }
           if (ismovingExtraItems[0]) {//if other items are selected
             for (var i = 0; i < ismovingExtraItems.length; i++) {
-              ismovingExtraItems[i]
-              onMove({select:self,selectDiv:sourceEl, originTarget:ismovingExtraItems[i], target:event.target, targetParentId:event.target.dataset.parentid})
+              let data = deepCopy(sourceData)
+              data = data.sort(function(a, b) {
+                let sortOrderA = displayOrder.indexOf(a.uuid)
+                let sortOrderB = displayOrder.indexOf(b.uuid)
+                if (sortOrderA > -1 && sortOrderB > -1) {
+                  if (sortOrderA < sortOrderB) {return -1;}
+                  if (sortOrderA > sortOrderB) {return 1;}
+                }else {
+
+                  let originalOrderA = currentDisplayOrder.indexOf(a.uuid)
+                  let originalOrderB = currentDisplayOrder.indexOf(b.uuid)
+                  if (originalOrderA < originalOrderB) {return -1;}
+                  if (originalOrderA > originalOrderB) {return 1;}
+                }
+                return 0;
+              })
+              let newDisplayOrder = moveElementInArray (data.map(i=> i.uuid), ismovingExtraItems[i].dataset.id, event.target.dataset.id)
+
+              displayOrder = newDisplayOrder //set as new display order
+              onMove({select:self,newOrder:newDisplayOrder, selectDiv:sourceEl, originTarget:ismoving, target:event.target, targetParentId:event.target.dataset.parentid})
+              ismoving = false
+              // onMove({select:self,selectDiv:sourceEl, originTarget:ismovingExtraItems[i], target:event.target, targetParentId:event.target.dataset.parentid})
             }
             ismovingExtraItems=[]
           }
