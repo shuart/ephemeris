@@ -141,30 +141,55 @@ function removeFromArray(array, item) {
 //change element position in an Array
 
 function moveElementInArray (array, value, target) {
-  var oldIndex = array.indexOf(value);
-  if (oldIndex > -1){// case of value note already in list
+  var arrayClone = array.slice();//clone array
 
-  }
+  //get current item index
+  var oldIndex = array.indexOf(value);
+
+
   if (oldIndex > -1){
-    var newIndex = (array.indexOf(target) + 1);
+    //remove value from array
+    arrayClone.splice(oldIndex,1);
+    var newIndex = (arrayClone.indexOf(target) +1);
 
     if (newIndex < 0){
       newIndex = 0
-    }else if (newIndex >= array.length){
-      newIndex = array.length
+    }else if (newIndex >= arrayClone.length){
+      newIndex = arrayClone.length
     }
 
-    console.log(oldIndex, newIndex);
-
-    var arrayClone = array.slice();
-    arrayClone.splice(oldIndex,1);
     arrayClone.splice(newIndex,0,value);
+
+    // console.log(oldIndex, newIndex);
+
+    //array_move(arrayClone, oldIndex, newIndex)
+
+    // arrayClone.splice(newIndex,0,value);
 
     return arrayClone
   }else {
     console.log("element not found");
+    return array
   }
-  return array
+
+  function array_move(arr, old_index, new_index) {
+      while (old_index < 0) {
+          old_index += arr.length;
+      }
+      while (new_index < 0) {
+          new_index += arr.length;
+      }
+      if (new_index >= arr.length) {
+          var k = new_index - arr.length + 1;
+          while (k--) {
+              arr.push(undefined);
+          }
+      }
+      arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+      return arr; // for testing purposes
+  };
+
+
 }
 function moveElementInArrayLegacy (array, value, target) {
   var oldIndex = array.indexOf(value);
