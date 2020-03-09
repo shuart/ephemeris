@@ -33,7 +33,7 @@ var createWorkPhysicalSpacesView = function () {
   }
 
   var setDisplayOrder = function (store) {
-    return ephHelpers.setDisplayOrder(store,"functions")
+    return ephHelpers.setDisplayOrder(store,"physicalSpaces")
   }
 
   var render = async function () {
