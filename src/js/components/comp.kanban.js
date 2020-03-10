@@ -3,6 +3,8 @@ var createKanban = function ({
   onSave= undefined,
   customCardHtml=false,
   onClose= undefined,
+  onAddCard = undefined,
+  onPanelHeaderClick = undefined,
   hideEmptyPanels= true,
   data = []
   }={}) {
@@ -30,7 +32,7 @@ var createKanban = function ({
         <ul>
         ${cardsDataArray.map(c=>theme.card(c)).join('')}
         </ul>
-        <footer>Add a card...</footer>
+        <footer class="kanban_add_card">${onAddCard?"Add a card...":""}</footer>
       </div>
       `
     },
@@ -39,14 +41,15 @@ var createKanban = function ({
       <li>${data.title}</li>
       `
     },
-    panelCustomHtml:function (panelTitle, cardsDataArray) {
+    panelCustomHtml:function (panelTitle, cardsDataArray, panelUuid) {
+      let uuid=panelUuid||""
       return `
       <div class="list">
-        <header>${panelTitle}</header>
+        <header data-id="${uuid}" class="kanban_panel_header">${panelTitle}</header>
         <ul>
         ${cardsDataArray.map(c=>theme.cardCustomHtml(c)).join('')}
         </ul>
-        <footer>Add a card...</footer>
+        <footer data-id="${uuid}" class="kanban_add_card">${onAddCard?"Add a card...":"_"}</footer>
       </div>
       `
     },
@@ -92,22 +95,12 @@ var createKanban = function ({
     //     title:"test",
     //     content:[
     //       {title:"123"},
-    //       {title:"123"},
-    //       {title:"123"},
-    //       {title:"123"},
-    //       {title:"123"},
-    //       {title:"123"},
     //       {title:"123"}
     //     ]
     //   },
     //   {
     //     title:"test2",
     //     content:[
-    //       {title:"123"},
-    //       {title:"123"},
-    //       {title:"123"},
-    //       {title:"123"},
-    //       {title:"123"},
     //       {title:"123"},
     //       {title:"123"}
     //     ]
@@ -126,7 +119,7 @@ var createKanban = function ({
       let currentPanel = kanbanObject[i]
       let currentPanelHtml=""
       if (customCardHtml) {
-        currentPanelHtml = theme.panelCustomHtml(currentPanel.title, currentPanel.content)
+        currentPanelHtml = theme.panelCustomHtml(currentPanel.title, currentPanel.content, currentPanel.uuid)
       }else {
         currentPanelHtml = theme.panel(currentPanel.title, currentPanel.content)
       }
@@ -138,6 +131,26 @@ var createKanban = function ({
     sourceEl.innerHTML =boardHtml
 
     container.appendChild(sourceEl)
+
+    if (onAddCard) {
+      document.querySelectorAll(".kanban_add_card").forEach(item => {
+        item.addEventListener('click', e => {
+          let value = prompt("Add a card")
+          if (value) {
+            onAddCard({data:e, value:value})
+          }
+        })
+      })
+    }
+    if (onPanelHeaderClick) {
+      document.querySelectorAll(".kanban_panel_header").forEach(item => {
+        item.style.cursor="pointer"
+        item.addEventListener('click', e => {
+          onPanelHeaderClick({data:e})
+        })
+      })
+    }
+
   }
 
   var update = function () {

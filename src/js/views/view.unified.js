@@ -10,7 +10,7 @@ var createUnifiedView = function (targetSelector) {
 
   var focusOnProject = undefined
   var showTaskOwnership = false
-  var showKanban = false
+  var showKanban = true
 
 
   var init = function () {
@@ -222,9 +222,9 @@ var createUnifiedView = function (targetSelector) {
     },'')
     container.querySelector('.ulist').innerHTML = html
   }
+
   var renderKanbanOverview = function (container, allProjects) {
     let sortedVisibleSearchedProject = getProjectListForActionExtraction(allProjects)
-    console.log(sortedVisibleSearchedProject);
 
     let sortedProjectsAndActions = sortedVisibleSearchedProject.map(p=>{
       let currentProjectActions = p.actions.items.filter( e => fuzzysearch(filterText, e.name))
@@ -237,20 +237,21 @@ var createUnifiedView = function (targetSelector) {
         })
       }
     })
-    console.log(sortedProjectsAndActions);
-
-    // var html = sortedVisibleSearchedProject.reduce((acc,i)=>{
-    //
-    //   acc += generateProjectTitleHTML(i.uuid, i.name, i.reference)
-    //   acc += generateAddTaskArea(i.uuid)
-    //   var items = i.actions.items.filter( e => fuzzysearch(filterText, e.name))
-    //   items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
-    //   acc += generateTasksHTML(items.reverse() , i.uuid, allProjects)
-    //   return acc
-    // },'')
-    // container.querySelector('.ulist').innerHTML = html
     container.querySelector('.ulist').innerHTML = ""
-    var kanban = createKanban({container:container.querySelector('.ulist'), data:sortedProjectsAndActions, customCardHtml:true})
+    var kanban = createKanban({
+      container:container.querySelector('.ulist'),
+      data:sortedProjectsAndActions,
+      onPanelHeaderClick:function (e) {
+        setCurrentProject(e.data.target.dataset.id)
+        pageManager.setActivePage("overview")
+      },
+      onAddCard:function (e) {
+        console.log(e.data.target);
+        var newAction ={project:e.data.target.dataset.id, open:true, name:e.value, des:undefined, dueDate:undefined, created:Date.now(), assignedTo:undefined}
+        push(act.add("actions",newAction))
+      },
+      customCardHtml:true
+    })
 
   }
 
