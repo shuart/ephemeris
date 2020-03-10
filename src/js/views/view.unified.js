@@ -38,7 +38,7 @@ var createUnifiedView = function (targetSelector) {
         push(act.edit("actions",{uuid:e.target.dataset.id,prop:"closedOn", value:"", project:e.target.dataset.project}))
 
       }
-      update()
+      // update()
     })
     connect(".action_unified_list_edit_item","click",(e)=>{
       console.log("Edit");
@@ -47,7 +47,7 @@ var createUnifiedView = function (targetSelector) {
       if (newValue) {
         push(act.edit("actions",{project:e.target.dataset.project, uuid:e.target.dataset.id, prop:e.target.dataset.prop, value:newValue}))
       }
-      update()
+      // update()
     })
     connect(".action_unified_toogle_ownership","click",(e)=>{
       showTaskOwnership = !showTaskOwnership
@@ -88,7 +88,7 @@ var createUnifiedView = function (targetSelector) {
         if (selected[0]) {
           let newDate = moment(selected[0]).add(12, 'hours').toDate()
           push(act.edit("actions",{uuid:e.target.dataset.id, prop:e.target.dataset.prop, value:newDate, project:e.target.dataset.project}))
-          update()
+          // update()
         }
       })
     })
@@ -159,14 +159,17 @@ var createUnifiedView = function (targetSelector) {
         var newAction ={project:e.target.dataset.project, open:true, name:e.target.value, des:undefined, dueDate:undefined, created:Date.now(), assignedTo:undefined}
         push(act.add("actions",newAction))
 
-        update()
+        // update()
       }
     })
   }
 
   var render = async function () {
     var store = await query.currentProject()
-    container.innerHTML ='<div style="height:85%" class="ui container"><div class="umenu"></div><div class="ui divider"></div><div style="height:100%; overflow:auto;" class="ulist"></div></div>'
+    let currentList = document.querySelector(".ulist")
+    if (!currentList) {
+      container.innerHTML ='<div style="height:85%" class="ui container"><div class="umenu"></div><div class="ui divider"></div><div style="height:100%; overflow:auto;" class="ulist"></div></div>'
+    }
     renderSearchArea(container, store);
     await renderList(container);
 
@@ -463,6 +466,7 @@ var createUnifiedView = function (targetSelector) {
 
       <div class="ui divider"></div>
       `
+    container.querySelector(".umenu").innerHTML=""
     container.querySelector(".umenu").appendChild(addSearch)
 
     addSearch.addEventListener('keyup', async function(e){
