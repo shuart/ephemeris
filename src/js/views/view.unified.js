@@ -10,7 +10,7 @@ var createUnifiedView = function (targetSelector) {
 
   var focusOnProject = undefined
   var showTaskOwnership = false
-  var showKanban = true
+  var showKanban = false
 
 
   var init = function () {
@@ -51,6 +51,10 @@ var createUnifiedView = function (targetSelector) {
     })
     connect(".action_unified_toogle_ownership","click",(e)=>{
       showTaskOwnership = !showTaskOwnership
+      update()
+    })
+    connect(".action_unified_toogle_Kanban","click",(e)=>{
+      showKanban = !showKanban
       update()
     })
     connect(".action_unified_toogle_all_projects","click",(e)=>{
@@ -162,7 +166,7 @@ var createUnifiedView = function (targetSelector) {
 
   var render = async function () {
     var store = await query.currentProject()
-    container.innerHTML ='<div style="height:85%" class="ui container"><div class="umenu"></div><div class="ui divider"></div><div style="height:100%" class="ulist"></div></div>'
+    container.innerHTML ='<div style="height:85%" class="ui container"><div class="umenu"></div><div class="ui divider"></div><div style="height:100%; overflow:auto;" class="ulist"></div></div>'
     renderSearchArea(container, store);
     await renderList(container);
 
@@ -437,6 +441,9 @@ var createUnifiedView = function (targetSelector) {
       ${renderSwitchBetweenProjects(store)}
       <div class="item">
         <div class="ui button action_unified_toogle_ownership">${!showTaskOwnership? "Actions ownership":"Actions overview"}</div>
+      </div>
+      <div class="item">
+        <div class="ui ${showKanban? "active":""}  icon button action_unified_toogle_Kanban"><i class="map icon"></i></div>
       </div>
 
       <div class="ui simple dropdown item">

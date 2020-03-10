@@ -83,7 +83,7 @@ var createKanban = function ({
 
   var render = function () {
     sourceEl = document.createElement('div');
-    sourceEl.style.height = "90%"
+    sourceEl.style.height = "100%"
     sourceEl.style.width = "100%"
     sourceEl.classList ="kanbanComponent"
 
