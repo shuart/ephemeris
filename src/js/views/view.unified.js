@@ -162,7 +162,7 @@ var createUnifiedView = function (targetSelector) {
 
   var render = async function () {
     var store = await query.currentProject()
-    container.innerHTML ='<div class="ui container"><div class="umenu"></div><div class="ui divider"></div><div class="ulist"></div></div>'
+    container.innerHTML ='<div style="height:85%" class="ui container"><div class="umenu"></div><div class="ui divider"></div><div style="height:100%" class="ulist"></div></div>'
     renderSearchArea(container, store);
     await renderList(container);
 
@@ -195,7 +195,11 @@ var createUnifiedView = function (targetSelector) {
       allProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
     }
     if (!showTaskOwnership) {
-      await renderOverview(container, allProjects)
+      if (showKanban) {
+        await renderKanbanOverview(container, allProjects)
+      }else{
+        await renderOverview(container, allProjects)
+      }
     }else {
       await renderActionRepartition(container, allProjects)
     }
@@ -213,6 +217,37 @@ var createUnifiedView = function (targetSelector) {
       return acc
     },'')
     container.querySelector('.ulist').innerHTML = html
+  }
+  var renderKanbanOverview = function (container, allProjects) {
+    let sortedVisibleSearchedProject = getProjectListForActionExtraction(allProjects)
+    console.log(sortedVisibleSearchedProject);
+
+    let sortedProjectsAndActions = sortedVisibleSearchedProject.map(p=>{
+      let currentProjectActions = p.actions.items.filter( e => fuzzysearch(filterText, e.name))
+      currentProjectActions = currentProjectActions.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
+      return {
+        title:p.name,
+        uuid:p.uuid,
+        content:currentProjectActions.reverse().map(cpa=>{
+          return {  html:generateTaskHTML(cpa, p.uuid, allProjects) }
+        })
+      }
+    })
+    console.log(sortedProjectsAndActions);
+
+    // var html = sortedVisibleSearchedProject.reduce((acc,i)=>{
+    //
+    //   acc += generateProjectTitleHTML(i.uuid, i.name, i.reference)
+    //   acc += generateAddTaskArea(i.uuid)
+    //   var items = i.actions.items.filter( e => fuzzysearch(filterText, e.name))
+    //   items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
+    //   acc += generateTasksHTML(items.reverse() , i.uuid, allProjects)
+    //   return acc
+    // },'')
+    // container.querySelector('.ulist').innerHTML = html
+    container.querySelector('.ulist').innerHTML = ""
+    var kanban = createKanban({container:container.querySelector('.ulist'), data:sortedProjectsAndActions, customCardHtml:true})
+
   }
 
   var renderActionRepartition = function (container, allProjects) {
@@ -364,7 +399,14 @@ var createUnifiedView = function (targetSelector) {
   var generateTasksHTML = function (actions, projectUuid, allProjects) {
     var html = `<div class="ui very relaxed list">`
     html += actions.reduce((acc,i) => {
-      return acc +=`
+      return acc +=generateTaskHTML(i, projectUuid, allProjects)
+    },'')
+    html +=" </div>"
+    return html
+  }
+  var generateTaskHTML = function (action, projectUuid, allProjects) {
+    var i = action
+    var html =`
         <div data-id="${i.uuid}" class="item">
           <i  data-value ='${i.open}' data-project="${projectUuid}" data-id="${i.uuid}" class="action-mark-action-done big ${i.open ? '':'check'} circle outline icon"></i>
           <div class="content">
@@ -379,8 +421,6 @@ var createUnifiedView = function (targetSelector) {
             </div>
           </div>
         </div>`
-    },'')
-    html +=" </div>"
     return html
   }
 

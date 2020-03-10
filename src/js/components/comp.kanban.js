@@ -16,7 +16,7 @@ var createKanban = function ({
       return `
       <div class="kanbanUi">
         <nav class="navbar app"></nav>
-        <nav class="navbar board">Board bar</nav>
+        <nav class="navbar board"></nav>
         <div class="lists">
         ${panelsArray.join('')}
         </div>
