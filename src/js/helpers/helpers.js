@@ -584,9 +584,9 @@ ephHelpers.addModalDOM = function () {
 
 var workarounds = {}
 //due to a poor implementation of the meeting/participant/assigned to relation. TODO, move to separate data
-workarounds.replaceStakeholderIdInMeetings = function (store, oldId, newId) {
+workarounds.replaceStakeholderIdInMeetings = async function (store, oldId, newId) {
 
-  store.meetings.items.forEach(meeting=>{
+  store.meetings.items.forEach(async meeting=>{
     //replace participants area
     var index = meeting.participants.absent.indexOf(oldId);
     if (index !== -1) {meeting.participants.absent[index] = newId;}
@@ -606,6 +606,13 @@ workarounds.replaceStakeholderIdInMeetings = function (store, oldId, newId) {
         })
       })
     })
+
+    if (meeting) {
+      await dbConnector.replaceProjectItem(store.uuid,"meetings",meeting.uuid, meeting)
+    }else {
+      alert("Meeting could not be saved")
+    }
+
   })
 
 }

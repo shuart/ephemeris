@@ -43,8 +43,10 @@ var createImportUsersFromProjects = function (targetSelector) {
   }
 
   var getAllUsers = async function (store) {
-    var allProjectsList= await query.items("projects")
-    var ownerTable = allProjectsList
+    var allProjects = await query.items("projects")
+    var relatedProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+
+    var ownerTable = relatedProjects
         .filter(p=> p.uuid!=store.uuid)
         .map(e =>{
           return e.stakeholders.items.map(i => Object.assign({projectId:e.uuid, projectName:e.name}, i)) //add project prop to all items
@@ -146,18 +148,29 @@ var createImportUsersFromProjects = function (targetSelector) {
         {prop:"mail", displayAs:"E-mail", edit:false}
       ],
       idProp:"uuid",
-      onClick: (ev)=>{
+      onClick: async (ev)=>{
         console.log(IdToFuse, ProjectWhereFusedIs);
         console.log(ev);
-        if (confirm("fuse?")) {
-          var projectScope = query.items("projects").find(p=> p.uuid==ProjectWhereFusedIs)
+        if (confirm("Fuse the users? The original id of the user will be replace with this one.")) {
+          var allProjects = await query.items("projects")
+          var relatedProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+
+          var projectScope = relatedProjects.find(p=> p.uuid==ProjectWhereFusedIs)
           console.log(projectScope);
           var idToChange = projectScope.stakeholders.items.find(s=>s.uuid==IdToFuse)
           idToChange.uuid = ev.target.dataset.id //TODO BAD, Move to API
           var metalinksOriginToChange = projectScope.metaLinks.filter(m=>m.source==IdToFuse)
           var metalinksTargetToChange = projectScope.metaLinks.filter(m=>m.target==IdToFuse)
-          for (link of metalinksOriginToChange) {link.source = ev.target.dataset.id}
-          for (link of metalinksTargetToChange) {link.target = ev.target.dataset.id }
+          for (link of metalinksOriginToChange) {
+            // link.source = ev.target.dataset.id
+            push(act.edit("metaLinks", {uuid:link.uuid, prop:"source", value:ev.target.dataset.id}))
+
+          }
+
+          for (link of metalinksTargetToChange) {
+            // link.target = ev.target.dataset.id
+            push(act.edit("metaLinks", {uuid:link.uuid, prop:"target", value:ev.target.dataset.id}))
+          }
         }
         setTimeout(function () {
           render()

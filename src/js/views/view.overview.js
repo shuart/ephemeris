@@ -88,10 +88,11 @@ var createOverview = function (targetSelector) {
 
   }
   var connections =function () {
-    connect(".action_toogle_add_me_in_stakeholders","click",(e)=>{
+    connect(".action_toogle_add_me_in_stakeholders","click",async (e)=>{
       alert("Select your name in the stakeholder list to mark it as yourself, or add yourself as a new stakeholder")
+      var projectScope = await query.currentProject()
       showListMenu({
-        sourceData:query.currentProject().stakeholders.items,
+        sourceData:projectScope.stakeholders.items,
         displayProp:"name",
         display:[
           {prop:"name", displayAs:"Prénom", edit:false},
@@ -101,26 +102,41 @@ var createOverview = function (targetSelector) {
           {prop:"mail", displayAs:"E-mail", edit:false}
         ],
         idProp:"uuid",
-        onClick: (ev)=>{
-          console.log(ev);
-          // console.log(IdToFuse, ProjectWhereFusedIs);
+        showColoredIcons: lettersFromNames,
+        onClick: async (ev)=>{
           let idToReplace = ev.target.dataset.id
           if (confirm("Do you want to mark this stakehoder as yourself?")) {
-            var projectScope = query.currentProject()
-            var idToChange = projectScope.stakeholders.items.find(s=>s.uuid==idToReplace)
-            idToChange.uuid = app.store.userData.info.userUuid//TODO BAD, Move to API
+
+            var projectScope = await query.currentProject()
+            console.log(projectScope);
+
+            push(act.edit("stakeholders", {project:projectScope.uuid, uuid:idToReplace, prop:"uuid", value:app.store.userData.info.userUuid}))
+
             var metalinksOriginToChange = projectScope.metaLinks.items.filter(m=>m.source==idToReplace)
             var metalinksTargetToChange = projectScope.metaLinks.items.filter(m=>m.target==idToReplace)
-            for (link of metalinksOriginToChange) {link.source = app.store.userData.info.userUuid}
-            for (link of metalinksTargetToChange) {link.target = app.store.userData.info.userUuid}
-            workarounds.replaceStakeholderIdInMeetings(projectScope, idToReplace, app.store.userData.info.userUuid)
+            for (link of metalinksOriginToChange) {
+              // link.source = ev.target.dataset.id
+              push(act.edit("metaLinks", {project:projectScope.uuid, uuid:link.uuid, prop:"source", value:app.store.userData.info.userUuid}))
+            }
+            for (link of metalinksTargetToChange) {
+              // link.target = ev.target.dataset.id
+              push(act.edit("metaLinks", {project:projectScope.uuid, uuid:link.uuid, prop:"target", value:app.store.userData.info.userUuid}))
+            }
+
+            await workarounds.replaceStakeholderIdInMeetings(projectScope, idToReplace, app.store.userData.info.userUuid)
+
           }
           setTimeout(function () {
             render()
           }, 1000);
         },
         extraActions:[
-          {name:"Add",action:(ev)=>{addUserStakeholder()}}
+          {
+            name:"Add",action:(ev)=>{
+              addUserStakeholder()
+              ev.select.remove()
+            }
+          }
         ]
       })
     })
@@ -241,10 +257,10 @@ var createOverview = function (targetSelector) {
     let i = app.store.userData.info
     store.stakeholders.items[0] = {uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""}
   }
-  function addUserStakeholder() {
-    var store = query.currentProject()
+  async function addUserStakeholder() {
+    var store = await query.currentProject()
     let i = app.store.userData.info
-    store.stakeholders.items.push({uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""})
+    push(act.add("stakeholders",{uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName}))
   }
 
   function updateFileForRetroCompatibility(store) {

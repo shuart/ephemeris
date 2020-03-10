@@ -9,12 +9,20 @@ var createExternalUsersManagement = function (targetSelector) {
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:getAllUsers(store)
+        })
+      }
+    })
 
   }
 
-  var render = function () {
+  var render = async function () {
     container.innerHTML = ""
-    var allUsers = getAllUsers()
+    var allUsers = await getAllUsers()
     //var html = generateUsersViewHtml(allUsers)
     generateUsersViewList(allUsers)
     //container.innerHTML = html
@@ -33,9 +41,10 @@ var createExternalUsersManagement = function (targetSelector) {
     objectIsActive = false;
   }
 
-  var getAllUsers = function () {
-    var ownerTable = query.items("projects")
-        .map(e =>{
+  var getAllUsers = async function () {
+    var allProjects = await query.items("projects")
+    var relatedProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+    var ownerTable = relatedProjects.map(e =>{
           return e.stakeholders.items.map(i => Object.assign({projectId:e.uuid, projectName:e.name}, i)) //add project prop to all items
         } )
         .reduce((a, b) => {return a.concat(b)},[])
@@ -55,6 +64,7 @@ var createExternalUsersManagement = function (targetSelector) {
   }
 
   var generateUsersViewList = function (owners) {
+    console.log(owners);
     showListMenu({
       sourceData:owners,
       targetDomContainer:".center-container",
@@ -122,7 +132,44 @@ var createExternalUsersManagement = function (targetSelector) {
         {prop:"mail", displayAs:"E-mail", edit:false}
       ],
       idProp:"uuid",
-      onClick: (ev)=>{
+      onClick: async (ev)=>{
+        console.log(IdToFuse, ProjectWhereFusedIs);
+        console.log(ev);
+        if (confirm("Fuse the users? The original id of the user will be replace with this one.")) {
+          var allProjects = await query.items("projects")
+          var relatedProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+
+          var projectScope = relatedProjects.find(p=> p.uuid==ProjectWhereFusedIs)
+          console.log(projectScope);
+
+          push(act.edit("stakeholders", {project:ProjectWhereFusedIs, uuid:IdToFuse, prop:"uuid", value:ev.target.dataset.id}))
+
+          var metalinksOriginToChange = projectScope.metaLinks.items.filter(m=>m.source==IdToFuse)
+          var metalinksTargetToChange = projectScope.metaLinks.items.filter(m=>m.target==IdToFuse)
+          for (link of metalinksOriginToChange) {
+            // link.source = ev.target.dataset.id
+            push(act.edit("metaLinks", {project:ProjectWhereFusedIs, uuid:link.uuid, prop:"source", value:ev.target.dataset.id}))
+          }
+          for (link of metalinksTargetToChange) {
+            // link.target = ev.target.dataset.id
+            push(act.edit("metaLinks", {project:ProjectWhereFusedIs, uuid:link.uuid, prop:"target", value:ev.target.dataset.id}))
+          }
+
+          await workarounds.replaceStakeholderIdInMeetings(projectScope, IdToFuse, ev.target.dataset.id)
+
+        }
+        setTimeout(function () {
+          render()
+        }, 1000);
+
+        //mutations
+        // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
+        // console.log(ev.target);
+        // store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
+        // ev.selectDiv.remove()
+        // renderCDC(store.db, searchFilter)
+      },
+      onClicke: (ev)=>{
         console.log(IdToFuse, ProjectWhereFusedIs);
         console.log(ev);
         if (confirm("fuse?")) {
