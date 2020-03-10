@@ -10,6 +10,7 @@ var createUnifiedView = function (targetSelector) {
 
   var focusOnProject = undefined
   var showTaskOwnership = false
+  var showKanban = true
 
 
   var init = function () {
@@ -235,9 +236,14 @@ var createUnifiedView = function (targetSelector) {
       return acc
     },{tasks:[], stakeholders:[]})
     console.log(allActions);
-    var html = generateTaskOwnershipHTML(allProjects, allActions.tasks, allActions.stakeholders)
-    container.querySelector('.ulist').innerHTML = html
-    //container.querySelector('.ulist').innerHTML = html
+    if (showKanban) {
+      generateTaskOwnershipKanban(allProjects, allActions.tasks, allActions.stakeholders)
+    }else {
+      var html = generateTaskOwnershipHTML(allProjects, allActions.tasks, allActions.stakeholders)
+      container.querySelector('.ulist').innerHTML = html
+      //container.querySelector('.ulist').innerHTML = html
+
+    }
   }
 
   var getProjectListForActionExtraction = function (allProjects) {
@@ -311,6 +317,48 @@ var createUnifiedView = function (targetSelector) {
       html +=" </div>"
     }
     return html
+  }
+  var generateTaskOwnershipKanban = function (allProjects,actions, owners) {
+    var html =""
+    console.log(owners);
+    console.log(allProjects);
+    //get owners relevant infos
+    var ownerTable = allProjects
+        .map(e => e.stakeholders.items)
+        .reduce((a, b) => {return a.concat(b)},[])
+        .map((e) => {return {uuid:e.uuid, title:e.name, name:e.name, content:[]}});
+
+    for (owner of owners) {
+      let ownerArrayElement = ownerTable.find(e=> e.uuid==owner )
+
+      var ownedActions = actions.filter( e=> e.assignedTo.includes(owner))
+      var currentContent = ownedActions.map((e) => {
+          e.action.projectuuid = e.project
+          return e.action
+        }).map(i => {
+        return { html: `
+          <div data-id="${i.uuid}" class="item">
+            <i  data-value ='${i.open}' data-project="${i.projectuuid}" data-id="${i.uuid}" class="action-mark-action-done big ${i.open ? '':'check'} circle outline icon"></i>
+            <div class="content">
+              <h5 class="header">
+                ${i.name}
+                <i data-project="${i.projectuuid}" data-prop="name" data-value="${i.name}" data-id="${i.uuid}" class="edit icon action_unified_list_edit_item" style="opacity:0.2"></i>
+              </h5>
+              <div class="description">
+                Created ${moment(i.created).fromNow() }, ${generateCloseInfo(i.closedOn)}  assigned to
+                ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectuuid).stakeholders.items, i.projectuuid)}
+                ${generateTimeFromMeta("dueDate", i.uuid, i.dueDate, i.projectuuid)}
+              </div>
+            </div>
+          </div>`}
+      })
+      console.log(currentContent);
+      ownerArrayElement.content = currentContent
+
+    }
+    console.log(ownerTable);
+    container.querySelector('.ulist').innerHTML = ""
+    var kanban = createKanban({container:container.querySelector('.ulist'), data:ownerTable, customCardHtml:true})
   }
 
   var generateTasksHTML = function (actions, projectUuid, allProjects) {
