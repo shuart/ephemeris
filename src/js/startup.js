@@ -56,7 +56,10 @@ function createStartUp() {
             //setup profile if Needed
             if (!app.store.userData.info.userLastName || !app.store.userData.info.userFirstName) {
               app.store.userData.info.userFirstName = prompt("Set your first name")
+              dbConnector.setUserInfo(event.target.dataset.id, "userFirstName", app.store.userData.info.userFirstName)
               app.store.userData.info.userLastName = prompt("Set your last name")
+              dbConnector.setUserInfo(event.target.dataset.id, "userLastName", app.store.userData.info.userLastName)
+              
             }
             if (!app.store.userData.info.userUuid) {
               app.store.userData.info.userUuid = genuuid()

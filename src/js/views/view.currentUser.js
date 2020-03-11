@@ -38,6 +38,7 @@ var createCurrentUserView = function ({
       if (newValue) {
         //TODO move to reducer
         app.store.userData.info[e.target.dataset.prop] = newValue
+        dbConnector.setUserInfo(app.state.currentUser , e.target.dataset.prop, newValue)
         // push(act.edit("actions",{project:e.target.dataset.project, uuid:e.target.dataset.id, prop:e.target.dataset.prop, value:newValue}))
       }
       sourceOccElement.remove()

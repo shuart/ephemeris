@@ -94,6 +94,19 @@ var createDbRealTimeAdaptater = function () {
         reject(err)
       });
   }
+  function setUserInfo(id, prop, value) {
+    let selector = {}
+    selector["userData.info."+prop] = value
+    return new Promise(function(resolve, reject) {
+        localUsers.update({ uuid: id }, { $set: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+          console.log('user data changed');
+          console.log(affectedDocuments[0]);
+          resolve(affectedDocuments[0])
+        });
+      }).catch(function(err) {
+        reject(err)
+      });
+  }
 
   // function getUsers() {
   //   return new Promise(function(resolve, reject) {
@@ -470,6 +483,7 @@ var createDbRealTimeAdaptater = function () {
   self.getUser = getUser
   self.getUsers = getUsers
   self.setUser = setUser
+  self.setUserInfo = setUserInfo
   self.removeUser = removeUser
   self.addUserProject = addUserProject
   self.getUserProjectList = getUserProjectList
