@@ -32,7 +32,12 @@ query.collection = async function (collectionName) {
     if (group == "projects") {
       //console.log(app.store.projects);
       // storeGroup = app.store.projects //DBCHANGE
-      storeGroup = await dbConnector.getUserProjectList()
+      let allProjects = await dbConnector.getUserProjectList()
+      if (app.store.relatedProjects && app.store.relatedProjects[0]) {
+        storeGroup = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+      }else {
+        storeGroup = allProjects
+      }
       console.log(storeGroup);
     }
     //#general cases

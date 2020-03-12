@@ -198,9 +198,7 @@ var createUnifiedView = function (targetSelector) {
 
   var renderList = async function (container) {
     let allProjects = await query.items("projects")
-    if (app.store.relatedProjects && app.store.relatedProjects[0]) {
-      allProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
-    }
+
     if (!showTaskOwnership) {
       if (showKanban) {
         await renderKanbanOverview(container, allProjects)
