@@ -58,38 +58,8 @@ var createUnifiedView = function (targetSelector) {
     })
     connect(".action_unified_toogle_small_cards","click",(e)=>{
       kanbanSmallCards = !kanbanSmallCards
-      if (!kanbanSmallCards) {
-        currentKanban = undefined// clear kanban
-        update()
-      }else{
-        function resizeCard(card) {
-          card.style.height='47px'
-          card.style.overflow='hidden'
-          let header = card.querySelector(".header")
-          header.style.position= "relative";
-          header.style.top= "-26px";
-          header.style.left= "42px";
-          header.style.width= "217px";
-        }
-        function zoomCard(card) {
-          card.style.height='auto'
-          card.style.overflow='hidden'
-        }
-        let cards= document.querySelectorAll('.kanban_inside_list li')
-        cards.forEach( card => {
-          resizeCard(card)
-
-          card.addEventListener("mouseenter", function (e) {
-            zoomCard(e.target)
-          })
-          card.addEventListener("mouseleave", function (e) {
-            resizeCard(e.target)
-          })
-
-        });
-      }
-
-
+      currentKanban = undefined// clear kanban
+      update()
     })
     connect(".action_unified_toogle_Kanban","click",(e)=>{
       showKanban = !showKanban
@@ -121,6 +91,7 @@ var createUnifiedView = function (targetSelector) {
           filterClosedDaysAgo = 1
         }
       }
+      currentKanban = undefined//clean kanban
       update()
     })
     connect(".action_unified_toogle_old_items","change", (e)=>{
@@ -312,6 +283,33 @@ var createUnifiedView = function (targetSelector) {
         },
         customCardHtml:true
       })
+      if (kanbanSmallCards) {
+        function resizeCard(card) {
+          card.style.height='47px'
+          card.style.overflow='hidden'
+          let header = card.querySelector(".header")
+          header.style.position= "relative";
+          header.style.top= "-26px";
+          header.style.left= "42px";
+          header.style.width= "217px";
+        }
+        function zoomCard(card) {
+          card.style.height='auto'
+          card.style.overflow='hidden'
+        }
+        let cards= document.querySelectorAll('.kanban_inside_list li')
+        cards.forEach( card => {
+          resizeCard(card)
+
+          card.addEventListener("mouseenter", function (e) {
+            zoomCard(e.target)
+          })
+          card.addEventListener("mouseleave", function (e) {
+            resizeCard(e.target)
+          })
+
+        });
+      }
     }
   }
 
@@ -462,6 +460,33 @@ var createUnifiedView = function (targetSelector) {
     }else {
       container.querySelector('.ulist').innerHTML = ""
       currentKanban = createKanban({container:container.querySelector('.ulist'), data:ownerTable, customCardHtml:true})
+      if (kanbanSmallCards) {
+        function resizeCard(card) {
+          card.style.height='47px'
+          card.style.overflow='hidden'
+          let header = card.querySelector(".header")
+          header.style.position= "relative";
+          header.style.top= "-26px";
+          header.style.left= "42px";
+          header.style.width= "217px";
+        }
+        function zoomCard(card) {
+          card.style.height='auto'
+          card.style.overflow='hidden'
+        }
+        let cards= document.querySelectorAll('.kanban_inside_list li')
+        cards.forEach( card => {
+          resizeCard(card)
+
+          card.addEventListener("mouseenter", function (e) {
+            zoomCard(e.target)
+          })
+          card.addEventListener("mouseleave", function (e) {
+            resizeCard(e.target)
+          })
+
+        });
+      }
     }
   }
 
