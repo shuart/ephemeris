@@ -44,9 +44,9 @@ var createKanban = function ({
     panelCustomHtml:function (panelTitle, cardsDataArray, panelUuid) {
       let uuid=panelUuid||""
       return `
-      <div class="list">
+      <div class="list kanban_panel_id_${uuid}">
         <header data-id="${uuid}" class="kanban_panel_header">${panelTitle}</header>
-        <ul>
+        <ul class="kanban_inside_list">
         ${cardsDataArray.map(c=>theme.cardCustomHtml(c)).join('')}
         </ul>
         <footer data-id="${uuid}" class="kanban_add_card">${onAddCard?"Add a card...":"_"}</footer>
@@ -93,6 +93,7 @@ var createKanban = function ({
     // let kanbanObject =[
     //   {
     //     title:"test",
+    //     uuid:"fefeefsfes"
     //     content:[
     //       {title:"123"},
     //       {title:"123"}
@@ -153,8 +154,38 @@ var createKanban = function ({
 
   }
 
+  var renderPartial = function () {
+
+    // let kanbanObject =[
+    //   {
+    //     title:"test",
+    //     uuid:"fefeefsfes"
+    //     content:[
+    //       {title:"123"},
+    //       {title:"123"}
+    //     ]
+    //   }
+    // ]
+    for (var i = 0; i < data.length; i++) {
+      let currentData = data[i]
+
+      if (currentData.uuid) {
+        let dataPanel = container.querySelector('.kanban_panel_id_'+currentData.uuid)
+        if (dataPanel && currentData.content[0]) {
+          console.log(currentData);
+          let cardData = currentData.content.map(c=>theme.cardCustomHtml(c)).join('')
+          dataPanel.querySelector('.kanban_inside_list').innerHTML=cardData
+        }
+      }
+    }
+  }
+
   var update = function () {
     render()
+  }
+  var updateData = function (newData) {
+    data = newData
+    renderPartial()
   }
 
   var setActive =function () {
@@ -169,6 +200,7 @@ var createKanban = function ({
 
   self.setActive = setActive
   self.setInactive = setInactive
+  self.updateData = updateData
   self.update = update
   self.init = init
 

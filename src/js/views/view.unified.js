@@ -11,6 +11,8 @@ var createUnifiedView = function (targetSelector) {
   var focusOnProject = undefined
   var showTaskOwnership = false
   var showKanban = true
+  var currentKanban = undefined;
+  var kanbanSmallCards = false;
 
 
   var init = function () {
@@ -51,10 +53,49 @@ var createUnifiedView = function (targetSelector) {
     })
     connect(".action_unified_toogle_ownership","click",(e)=>{
       showTaskOwnership = !showTaskOwnership
+      currentKanban = undefined// clear kanban
       update()
+    })
+    connect(".action_unified_toogle_small_cards","click",(e)=>{
+      kanbanSmallCards = !kanbanSmallCards
+      if (!kanbanSmallCards) {
+        currentKanban = undefined// clear kanban
+        update()
+      }else{
+        function resizeCard(card) {
+          card.style.height='47px'
+          card.style.overflow='hidden'
+          let header = card.querySelector(".header")
+          header.style.position= "relative";
+          header.style.top= "-26px";
+          header.style.left= "42px";
+          header.style.width= "217px";
+        }
+        function zoomCard(card) {
+          card.style.height='auto'
+          card.style.overflow='hidden'
+        }
+        let cards= document.querySelectorAll('.kanban_inside_list li')
+        cards.forEach( card => {
+          resizeCard(card)
+
+          card.addEventListener("mouseenter", function (e) {
+            zoomCard(e.target)
+          })
+          card.addEventListener("mouseleave", function (e) {
+            resizeCard(e.target)
+          })
+
+        });
+      }
+
+
     })
     connect(".action_unified_toogle_Kanban","click",(e)=>{
       showKanban = !showKanban
+      if (!showKanban) {
+        currentKanban = undefined// clear kanban
+      }
       update()
     })
     connect(".action_unified_toogle_all_projects","click",(e)=>{
@@ -68,6 +109,19 @@ var createUnifiedView = function (targetSelector) {
     connect(".action_unified_load_project","click",(e)=>{
       setCurrentProject(e.target.dataset.id)
       pageManager.setActivePage("overview")
+    })
+    connect(".action_unified_toogle_all_old_items","click",(e)=>{
+      // displayAllClosedItems = !displayAllClosedItems
+      if (filterClosedDaysAgo != 0) {
+        filterClosedDaysAgo = 0
+      }else {
+        if (displayRecentlyClosedItems) {
+          filterClosedDaysAgo = 10000000000
+        }else {
+          filterClosedDaysAgo = 1
+        }
+      }
+      update()
     })
     connect(".action_unified_toogle_old_items","change", (e)=>{
       console.log(e.target.value);
@@ -168,7 +222,7 @@ var createUnifiedView = function (targetSelector) {
     var store = await query.currentProject()
     let currentList = document.querySelector(".ulist")
     if (!currentList) {
-      container.innerHTML ='<div style="height:85%" class="ui container"><div class="umenu"></div><div class="ui divider"></div><div style="height:100%; overflow:auto;" class="ulist"></div></div>'
+      container.innerHTML ='<div style="height:85%; margin-left=2%; margin-right=2%;" class=""><div style="padding: 1em 4em;" class="umenu"></div><div class="ui divider"></div><div style="height:100%; overflow:auto;" class="ulist"></div></div>'
     }
     renderSearchArea(container, store);
     await renderList(container);
@@ -189,6 +243,7 @@ var createUnifiedView = function (targetSelector) {
       focusOnProject=undefined
     }
     showTaskOwnership = false;//reset view
+    currentKanban = undefined;
     update()
   }
 
@@ -238,22 +293,26 @@ var createUnifiedView = function (targetSelector) {
         })
       }
     })
-    container.querySelector('.ulist').innerHTML = ""
-    var kanban = createKanban({
-      container:container.querySelector('.ulist'),
-      data:sortedProjectsAndActions,
-      onPanelHeaderClick:function (e) {
-        setCurrentProject(e.data.target.dataset.id)
-        pageManager.setActivePage("overview")
-      },
-      onAddCard:function (e) {
-        console.log(e.data.target);
-        var newAction ={project:e.data.target.dataset.id, open:true, name:e.value, des:undefined, dueDate:undefined, created:Date.now(), assignedTo:undefined}
-        push(act.add("actions",newAction))
-      },
-      customCardHtml:true
-    })
 
+    if (currentKanban) {
+      currentKanban.updateData(sortedProjectsAndActions)
+    }else {
+      container.querySelector('.ulist').innerHTML = ""
+      currentKanban = createKanban({
+        container:container.querySelector('.ulist'),
+        data:sortedProjectsAndActions,
+        onPanelHeaderClick:function (e) {
+          setCurrentProject(e.data.target.dataset.id)
+          pageManager.setActivePage("overview")
+        },
+        onAddCard:function (e) {
+          console.log(e.data.target);
+          var newAction ={project:e.data.target.dataset.id, open:true, name:e.value, des:undefined, dueDate:undefined, created:Date.now(), assignedTo:undefined}
+          push(act.add("actions",newAction))
+        },
+        customCardHtml:true
+      })
+    }
   }
 
   var renderActionRepartition = function (container, allProjects) {
@@ -398,8 +457,12 @@ var createUnifiedView = function (targetSelector) {
 
     }
     console.log(ownerTable);
-    container.querySelector('.ulist').innerHTML = ""
-    var kanban = createKanban({container:container.querySelector('.ulist'), data:ownerTable, customCardHtml:true})
+    if (currentKanban) {
+      currentKanban.updateData(ownerTable)
+    }else {
+      container.querySelector('.ulist').innerHTML = ""
+      currentKanban = createKanban({container:container.querySelector('.ulist'), data:ownerTable, customCardHtml:true})
+    }
   }
 
   var generateTasksHTML = function (actions, projectUuid, allProjects) {
@@ -448,6 +511,8 @@ var createUnifiedView = function (targetSelector) {
         <div class="ui ${showKanban? "active":""}  icon button action_unified_toogle_Kanban"><i class="map icon"></i></div>
       </div>
 
+      ${showKanban? '<div class="item"><div class="ui button action_unified_toogle_small_cards">small Cards</div></div>':""}
+
       <div class="ui simple dropdown item">
         Visibility
         <i class="eye icon"></i>
@@ -458,7 +523,7 @@ var createUnifiedView = function (targetSelector) {
               <label>Display closed items older than one day</label>
             </div>
           </div>
-          <div class="item">Hide All closed items</div>
+          <div class="item action_unified_toogle_all_old_items">Hide All closed items</div>
         </div>
       </div>
 
