@@ -14,6 +14,9 @@ var createUnifiedView = function (targetSelector) {
   var currentKanban = undefined;
   var kanbanSmallCards = false;
 
+  var showTags = false;
+  var sortBy ="projects"
+
 
   var init = function () {
     connections()
@@ -51,8 +54,26 @@ var createUnifiedView = function (targetSelector) {
       }
       // update()
     })
-    connect(".action_unified_toogle_ownership","click",(e)=>{
-      showTaskOwnership = !showTaskOwnership
+    connect(".action_unified_toogle_ownership_sort","click",(e)=>{
+      // showTaskOwnership = !showTaskOwnership
+      // currentKanban = undefined// clear kanban
+      // update()
+      sortBy = "ownership"
+      currentKanban = undefined// clear kanban
+      update()
+    })
+    connect(".action_unified_toogle_ownershipName_sort","click",(e)=>{
+      sortBy = "ownershipName"
+      currentKanban = undefined// clear kanban
+      update()
+    })
+    connect(".action_unified_toogle_projects_sort","click",(e)=>{
+      sortBy = "projects"
+      currentKanban = undefined// clear kanban
+      update()
+    })
+    connect(".action_unified_toogle_tags_sort","click",(e)=>{
+      sortBy = "tags"
       currentKanban = undefined// clear kanban
       update()
     })
@@ -107,6 +128,12 @@ var createUnifiedView = function (targetSelector) {
         await renderList(container);
       }, 100);
     })
+    connect(".action_unified_toogle_show_tags","change", (e)=>{
+      showTags = !showTags
+      setTimeout(async function () {
+        await renderList(container);
+      }, 100);
+    })
     connect(".action_unified_list_edit_time_item","click",(e)=>{
       ephHelpers.promptSingleDatePicker(e.target.dataset.value, function (event) {
         let selected = event.selectedDates
@@ -126,20 +153,36 @@ var createUnifiedView = function (targetSelector) {
       var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
 
+      let data = undefined
+      let display = undefined
+      let showColoredIcons = false
+
+      if (metalinkType == 'assignedTo') {
+        data = projectStore.stakeholders.items
+        display = [
+          {prop:"name", displayAs:"First name", edit:false},
+          {prop:"lastName", displayAs:"Last Name", edit:false},
+          {prop:"role", displayAs:"Role", edit:false}
+        ]
+        showColoredIcons = lettersFromNames
+      }else {
+        data = projectStore[e.target.dataset.prop].items
+        display = [
+          {prop:"name", displayAs:"Name", edit:false}
+        ]
+        showColoredIcons = undefined
+      }
+
       // showUpdateLinksService.show(ev,"requirements")
       showListMenu({
-        sourceData:projectStore.stakeholders.items,
+        sourceData:data,
         parentSelectMenu:e.select ,
         multipleSelection:currentLinksUuidFromDS,
         displayProp:"name",
         searchable : true,
-        display:[
-          {prop:"name", displayAs:"First name", edit:false},
-          {prop:"lastName", displayAs:"Last Name", edit:false},
-          {prop:"role", displayAs:"Role", edit:false}
-        ],
+        display:display,
         idProp:"uuid",
-        showColoredIcons: lettersFromNames,
+        showColoredIcons: showColoredIcons,
         onCloseMenu: (ev)=>{
           update()
         },
@@ -214,6 +257,7 @@ var createUnifiedView = function (targetSelector) {
       focusOnProject=undefined
     }
     showTaskOwnership = false;//reset view
+    sortBy='projects'
     currentKanban = undefined;
     update()
   }
@@ -225,14 +269,18 @@ var createUnifiedView = function (targetSelector) {
   var renderList = async function (container) {
     let allProjects = await query.items("projects")
 
-    if (!showTaskOwnership) {
+    if (sortBy=="projects") {
       if (showKanban) {
         await renderKanbanOverview(container, allProjects)
       }else{
         await renderOverview(container, allProjects)
       }
-    }else {
-      await renderActionRepartition(container, allProjects)
+    }else if (sortBy=="ownership") {
+      await renderActionRepartitionGeneric(container, allProjects, "stakeholders", "assignedTo", "uuid")
+    }else if (sortBy=="ownershipName") {
+      await renderActionRepartitionGeneric(container, allProjects, "stakeholders", "assignedTo", "name")
+    } else if (sortBy=="tags") {
+      await renderActionRepartitionGeneric(container, allProjects,"tags", "tags", "name")
     }
   }
   var renderOverview = function (container, allProjects) {
@@ -312,9 +360,38 @@ var createUnifiedView = function (targetSelector) {
       }
     }
   }
-
-  var renderActionRepartition = function (container, allProjects) {
-
+  //
+  // var renderActionRepartition = function (container, allProjects) {
+  //
+  //   let sortedVisibleSearchedProject = getProjectListForActionExtraction(allProjects)
+  //
+  //   var allActions = sortedVisibleSearchedProject.reduce((acc,i)=>{
+  //     var items = i.actions.items.filter( e => fuzzysearch(filterText, e.name))
+  //     items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
+  //     for (action of items.reverse()) {
+  //       //find if
+  //       let taskStakeholders = getIdsOfTargets(allProjects,i.uuid,"assignedTo", action.uuid)
+  //       acc.tasks.push({action, project:i.uuid, assignedTo:taskStakeholders})
+  //       for (target of taskStakeholders) {
+  //         console.log(acc.stakeholders.includes(target));
+  //         if (!acc.stakeholders.includes(target) ) {
+  //           acc.stakeholders.push(target)
+  //         }
+  //       }
+  //     }
+  //     return acc
+  //   },{tasks:[], stakeholders:[]})
+  //   console.log(allActions);
+  //   if (showKanban) {
+  //     generateTaskOwnershipKanban(allProjects, allActions.tasks, allActions.stakeholders)
+  //   }else {
+  //     var html = generateTaskOwnershipHTML(allProjects, allActions.tasks, allActions.stakeholders)
+  //     container.querySelector('.ulist').innerHTML = html
+  //     //container.querySelector('.ulist').innerHTML = html
+  //
+  //   }
+  // }
+  var renderActionRepartitionGeneric = function (container, allProjects, storeGroup, metalinkType, sortingProp) {
     let sortedVisibleSearchedProject = getProjectListForActionExtraction(allProjects)
 
     var allActions = sortedVisibleSearchedProject.reduce((acc,i)=>{
@@ -322,22 +399,25 @@ var createUnifiedView = function (targetSelector) {
       items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
       for (action of items.reverse()) {
         //find if
-        let taskStakeholders = getIdsOfTargets(allProjects,i.uuid,"assignedTo", action.uuid)
-        acc.tasks.push({action, project:i.uuid, assignedTo:taskStakeholders})
-        for (target of taskStakeholders) {
-          console.log(acc.stakeholders.includes(target));
-          if (!acc.stakeholders.includes(target) ) {
-            acc.stakeholders.push(target)
+        let sorterItems = getIdsOfTargets(allProjects,i.uuid,metalinkType, action.uuid)
+
+        let newTask = {action, project:i.uuid}
+        newTask[metalinkType]=sorterItems
+        acc.tasks.push(newTask)
+        for (target of sorterItems) {
+          console.log(acc.sortingValues.includes(target));
+          if (!acc.sortingValues.includes(target) ) {
+            acc.sortingValues.push(target)
           }
         }
       }
       return acc
-    },{tasks:[], stakeholders:[]})
+    },{tasks:[], sortingValues:[]})
     console.log(allActions);
     if (showKanban) {
-      generateTaskOwnershipKanban(allProjects, allActions.tasks, allActions.stakeholders)
+      generateTaskOwnershipKanban(allProjects, allActions.tasks, allActions.sortingValues, storeGroup, metalinkType, sortingProp)
     }else {
-      var html = generateTaskOwnershipHTML(allProjects, allActions.tasks, allActions.stakeholders)
+      var html = generateTaskOwnershipHTML(allProjects, allActions.tasks, allActions.sortingValues, storeGroup, metalinkType,)
       container.querySelector('.ulist').innerHTML = html
       //container.querySelector('.ulist').innerHTML = html
 
@@ -378,83 +458,98 @@ var createUnifiedView = function (targetSelector) {
     </h2>`
   }
 
-  var generateTaskOwnershipHTML = function (allProjects,actions, owners) {
+  var generateTaskOwnershipHTML = function (allProjects,actions, owners, storeGroup, metaLinksType) {
     var html =""
     console.log(owners);
     console.log(allProjects);
     //get owners relevant infos
     var ownerTable = allProjects
-        .map(e => e.stakeholders.items)
+        .map(e => e[storeGroup].items)
         .reduce((a, b) => {return a.concat(b)},[])
-        .map((e) => {return {uuid:e.uuid, name:e.name}});
+        .map((e) => {
+          let currentName = e.name
+          if (e.lastName) {
+            currentName+= " " + e.lastName
+          }
+          return {uuid:e.uuid, name:currentName}
+        });
     console.log(ownerTable);
     for (owner of owners) {
       html += `<h2 class="">${ownerTable.find(e=> e.uuid==owner ).name}</h2>`
       html += `<div class="ui very relaxed list">`
-      var ownedActions = actions.filter( e=> e.assignedTo.includes(owner))
+      var ownedActions = actions.filter( e=> e[metaLinksType].includes(owner))
       html += ownedActions.map((e) => {
-          e.action.projectuuid = e.project
+          e.action.projectUuid = e.project
           return e.action
         }).reduce((acc,i) => {
-        return acc +=`
-          <div data-id="${i.uuid}" class="item">
-            <i  data-value ='${i.open}' data-project="${i.projectuuid}" data-id="${i.uuid}" class="action-mark-action-done big ${i.open ? '':'check'} circle outline icon"></i>
-            <div class="content">
-              <h5 class="header">
-                ${i.name}
-                <i data-project="${i.projectuuid}" data-prop="name" data-value="${i.name}" data-id="${i.uuid}" class="edit icon action_unified_list_edit_item" style="opacity:0.2"></i>
-              </h5>
-              <div class="description">
-                Created ${moment(i.created).fromNow() }, ${generateCloseInfo(i.closedOn)}  assigned to
-                ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectuuid).stakeholders.items, i.projectuuid)}
-                ${generateTimeFromMeta("dueDate", i.uuid, i.dueDate, i.projectuuid)}
-              </div>
-            </div>
-          </div>`
+
+        return acc +=  generateTaskHTML(i, i.projectUuid, allProjects)
+        // return acc +=`
+        //   <div data-id="${i.uuid}" class="item">
+        //     <i  data-value ='${i.open}' data-project="${i.projectuuid}" data-id="${i.uuid}" class="action-mark-action-done big ${i.open ? '':'check'} circle outline icon"></i>
+        //     <div class="content">
+        //       <h5 class="header">
+        //         ${i.name}
+        //         <i data-project="${i.projectuuid}" data-prop="name" data-value="${i.name}" data-id="${i.uuid}" class="edit icon action_unified_list_edit_item" style="opacity:0.2"></i>
+        //       </h5>
+        //       <div class="description">
+        //         Created ${moment(i.created).fromNow() }, ${generateCloseInfo(i.closedOn)}  assigned to
+        //         ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectuuid).stakeholders.items, i.projectuuid)}
+        //         ${generateTimeFromMeta("dueDate", i.uuid, i.dueDate, i.projectuuid)}
+        //       </div>
+        //     </div>
+        //   </div>`
       },'')
       html +=" </div>"
     }
     return html
   }
-  var generateTaskOwnershipKanban = function (allProjects,actions, owners) {
+  var generateTaskOwnershipKanban = function (allProjects,actions, owners, storeGroup, metaLinksType, sortingProp) {
     var html =""
     console.log(owners);
     console.log(allProjects);
     //get owners relevant infos
     var ownerTable = allProjects
-        .map(e => e.stakeholders.items)
+        .map(e => e[storeGroup].items)
         .reduce((a, b) => {return a.concat(b)},[])
-        .map((e) => {return {uuid:e.uuid, title:e.name, name:e.name, content:[]}});
+        .map((e) => {
+          let currentName = e.name
+          if (e.lastName) {
+            currentName+= " " + e.lastName
+          }
+          return {uuid:e.uuid, title:currentName, name:currentName, content:[]}
+        });
 
     for (owner of owners) {
       let ownerArrayElement = ownerTable.find(e=> e.uuid==owner )
 
-      var ownedActions = actions.filter( e=> e.assignedTo.includes(owner))
+      var ownedActions = actions.filter( e=> e[metaLinksType].includes(owner))
       var currentContent = ownedActions.map((e) => {
-          e.action.projectuuid = e.project
+          e.action.projectUuid = e.project
           return e.action
         }).map(i => {
-        return { html: `
-          <div data-id="${i.uuid}" class="item">
-            <i  data-value ='${i.open}' data-project="${i.projectuuid}" data-id="${i.uuid}" class="action-mark-action-done big ${i.open ? '':'check'} circle outline icon"></i>
-            <div class="content">
-              <h5 class="header">
-                ${i.name}
-                <i data-project="${i.projectuuid}" data-prop="name" data-value="${i.name}" data-id="${i.uuid}" class="edit icon action_unified_list_edit_item" style="opacity:0.2"></i>
-              </h5>
-              <div class="description">
-                Created ${moment(i.created).fromNow() }, ${generateCloseInfo(i.closedOn)}  assigned to
-                ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectuuid).stakeholders.items, i.projectuuid)}
-                ${generateTimeFromMeta("dueDate", i.uuid, i.dueDate, i.projectuuid)}
-              </div>
-            </div>
-          </div>`}
+        return { html: generateTaskHTML(i, i.projectUuid, allProjects)}
       })
       console.log(currentContent);
       ownerArrayElement.content = currentContent
 
     }
     console.log(ownerTable);
+
+    if (sortingProp && sortingProp!= "uuid") {
+      let newOwnerTable =[]
+      ownerTable.forEach((item, i) => {
+        let findInNewTable = newOwnerTable.find(o=>o[sortingProp] == item[sortingProp])
+        if (findInNewTable) { //an equivalence has been found
+          findInNewTable.content = findInNewTable.content.concat(item.content)
+        }else{ //create a new record
+          newOwnerTable.push(deepCopy(item))
+        }
+      });
+
+      ownerTable = newOwnerTable //replace the table
+    }
+
     if (currentKanban) {
       currentKanban.updateData(ownerTable)
     }else {
@@ -500,8 +595,12 @@ var createUnifiedView = function (targetSelector) {
   }
   var generateTaskHTML = function (action, projectUuid, allProjects) {
     var i = action
+    var tagsHtml = ''
+    if (showTags) {
+      tagsHtml = generateListeFromMeta(allProjects, "tags",i.uuid, allProjects.filter(e=>e.uuid == projectUuid)[0].tags.items, projectUuid)
+    }
     var html =`
-        <div data-id="${i.uuid}" class="item">
+        <div style="${i.open?'':'opacity:0.6;'}" data-id="${i.uuid}" class="item">
           <i  data-value ='${i.open}' data-project="${projectUuid}" data-id="${i.uuid}" class="action-mark-action-done big ${i.open ? '':'check'} circle outline icon"></i>
           <div class="content">
             <h5  class="header ">
@@ -511,6 +610,7 @@ var createUnifiedView = function (targetSelector) {
             <div class="description">
               Created ${moment(i.created).fromNow() }, ${generateCloseInfo(i.closedOn)}  assigned to
               ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.filter(e=>e.uuid == projectUuid)[0].stakeholders.items, projectUuid)}
+              ${tagsHtml}
               ${generateTimeFromMeta("dueDate", i.uuid, i.dueDate, projectUuid)}
             </div>
           </div>
@@ -528,27 +628,42 @@ var createUnifiedView = function (targetSelector) {
             <i class="search icon"></i>
         </div>
       </div>
-      ${renderSwitchBetweenProjects(store)}
-      <div class="item">
-        <div class="ui button action_unified_toogle_ownership">${!showTaskOwnership? "Actions ownership":"Actions overview"}</div>
-      </div>
       <div class="item">
         <div class="ui ${showKanban? "active":""}  icon button action_unified_toogle_Kanban"><i class="map icon"></i></div>
       </div>
+      ${showKanban? '<div class="item"><div class="ui icon basic  button action_unified_toogle_small_cards"><i class="expand arrows alternate icon"></i></div></div>':""}
 
-      ${showKanban? '<div class="item"><div class="ui button action_unified_toogle_small_cards">small Cards</div></div>':""}
 
-      <div class="ui simple dropdown item">
-        Visibility
-        <i class="eye icon"></i>
-        <div class="menu">
-          <div class="item">
-            <div class="ui toggle checked checkbox">
-              <input ${displayRecentlyClosedItems ? 'checked':''} class="action_unified_toogle_old_items" type="checkbox" name="public">
-              <label>Display closed items older than one day</label>
+      <div style="padding-top: 0px;padding-bottom: 0px;" class="item">
+        <div  class="ui mini basic icon buttons">
+          <div class="ui mini ${sortBy=='projects'? "active":""} icon button action_unified_toogle_projects_sort"><i class="building outline icon"></i></div>
+          <div class="ui mini ${sortBy=='ownershipName'? "active":""} icon button action_unified_toogle_ownershipName_sort"><i class="user icon"></i></div>
+          <div class="ui mini ${sortBy=='ownership'? "active":""} icon button action_unified_toogle_ownership_sort"><i class="users icon"></i></div>
+          <div class="ui mini ${sortBy=='tags'? "active":""} icon button action_unified_toogle_tags_sort"><i class="tag icon"></i></div>
+        </div>
+      </div>
+
+
+      <div class="right menu">
+        ${renderSwitchBetweenProjects(store)}
+        <div class="ui simple dropdown item">
+          Visibility
+          <i class="eye icon"></i>
+          <div class="menu">
+            <div class="item">
+              <div class="ui toggle checked checkbox">
+                <input ${showTags ? 'checked':''} class="action_unified_toogle_show_tags" type="checkbox" name="public">
+                <label>Display tags</label>
+              </div>
             </div>
+            <div class="item">
+              <div class="ui toggle checked checkbox">
+                <input ${displayRecentlyClosedItems ? 'checked':''} class="action_unified_toogle_old_items" type="checkbox" name="public">
+                <label>Display closed items older than one day</label>
+              </div>
+            </div>
+            <div class="item action_unified_toogle_all_old_items">Hide All closed items</div>
           </div>
-          <div class="item action_unified_toogle_all_old_items">Hide All closed items</div>
         </div>
       </div>
 
@@ -619,7 +734,12 @@ var createUnifiedView = function (targetSelector) {
       var htmlNewItem = `<div data-inverted="" data-tooltip="${newItem}" class="ui mini teal label">${formatedNewItem}</div>`
       return acc += htmlNewItem
     }
-    var mainText = `<div class="ui mini label">Nobody</div>`
+    var emptyNameDic={
+      assignedTo:'Nobody',
+      tags:'No Tag'
+    }
+    var emptyNameDic = emptyNameDic[propName] || propName
+    var mainText = `<div class="ui mini label">${emptyNameDic}</div>`
     if (metalist[0]) {
       mainText = metalist.reduce(reduceChoices,"")
     }

@@ -173,35 +173,40 @@ var createSingleActionView = function ({
       var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
       var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
+
+      let data = undefined
+      let display = undefined
+      let showColoredIcons = false
+
+      if (metalinkType == 'assignedTo') {
+        data = projectStore.stakeholders.items
+        display = [
+          {prop:"name", displayAs:"First name", edit:false},
+          {prop:"lastName", displayAs:"Last Name", edit:false},
+          {prop:"role", displayAs:"Role", edit:false}
+        ]
+        showColoredIcons = lettersFromNames
+      }else {
+        data = projectStore[e.target.dataset.prop].items
+        display = [
+          {prop:"name", displayAs:"Name", edit:false}
+        ]
+        showColoredIcons = undefined
+      }
       showListMenu({
-        sourceData:projectStore.stakeholders.items,
+        sourceData:data,
         parentSelectMenu:e.select ,
         multipleSelection:currentLinksUuidFromDS,
         displayProp:"name",
         searchable : true,
-        display:[
-          {prop:"name", displayAs:"First name", edit:false},
-          {prop:"lastName", displayAs:"Last Name", edit:false},
-          {prop:"role", displayAs:"Role", edit:false}
-        ],
+        display:display,
         idProp:"uuid",
-        showColoredIcons: lettersFromNames,
+        showColoredIcons: showColoredIcons,
         onCloseMenu: (ev)=>{
           sourceOccElement.remove()
           update()
         },
-        // onChangeSelect: (ev)=>{
-        //   console.log(ev.select.getSelected());
-        //   console.log(projectStore.metaLinks.items);
-        //   projectStore.metaLinks.items = projectStore.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
-        //   for (newSelected of ev.select.getSelected()) {
-        //     projectStore.metaLinks.items.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
-        //   }
-        //   console.log(projectStore.metaLinks.items);
-        //   saveDB()
-        //   sourceOccElement.remove()
-        //   update()
-        // },
+
         onChangeSelect: (ev)=>{
           var changeProp = async function (sourceTriggerId) {
             var allProjects = await query.items("projects")
@@ -299,6 +304,11 @@ var createSingleActionView = function ({
           ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectUuid).stakeholders.items, i.projectUuid)}
         </p>
         <div class="ui divider"></div>
+        <h3 class="header">Tags to</h3>
+        <p>
+          ${generateListeFromMeta(allProjects, "tags",i.uuid, allProjects.filter(e=>e.uuid == i.projectUuid)[0].tags.items, i.projectUuid)}
+        </p>
+        <div class="ui divider"></div>
 
         <h3 class="header">Due by</h3>
         <p>
@@ -348,7 +358,7 @@ var createSingleActionView = function ({
   var generateListeFromMeta = function (allProjects, propName, sourceId, targetList, projectuuid, isEditable) {
     var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
     var metalist = meta.filter(e => (e.type == propName && e.source == sourceId )).map(e => e.target)
-    var editHtml = `<i data-prop="${propName}" data-value='${JSON.stringify(metalist)}' data-id="${sourceId}" data-project="${projectuuid}" class="edit icon action_single_action_select_item_assigned" style="opacity:0.2"></i>`
+    var editHtml = `<i data-prop="${propName}" data-value='${JSON.stringify(metalist)}' data-id="${sourceId}" data-project="${projectuuid}" class="edit icon action_unified_list_select_item_assigned" style="opacity:0.2"></i>`
     function reduceChoices(acc, e) {
       console.log(e);
       var foudItem = targetList.find(i=>i.uuid == e)
@@ -360,7 +370,12 @@ var createSingleActionView = function ({
       var htmlNewItem = `<div data-inverted="" data-tooltip="${newItem}" class="ui mini teal label">${formatedNewItem}</div>`
       return acc += htmlNewItem
     }
-    var mainText = `<div class="ui mini label">Nobody</div>`
+    var emptyNameDic={
+      assignedTo:'Nobody',
+      tags:'No Tag'
+    }
+    var emptyNameDic = emptyNameDic[propName] || propName
+    var mainText = `<div class="ui mini label">${emptyNameDic}</div>`
     if (metalist[0]) {
       mainText = metalist.reduce(reduceChoices,"")
     }
