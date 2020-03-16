@@ -1243,7 +1243,7 @@ function showListMenu({
               if (foudItem.lastName) {
                   let letters = foudItem.name.substring(0,1)+foudItem.lastName.substring(0,1)
                   let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
-                  let style = 'style="background: '+colorFromLetters(letters)+';width: 23px;height: 23px;border-radius: 100%;padding: 6px;font-size: 10px;color: white;text-align: center;position: absolute;left: -5px;top: -1px;"'
+                  let style = 'style="background: '+colorFromLetters(letters)+';width: 23px;height: 23px;border-style: solid;border-width: 1px;border-radius: 100%;padding: 6px;font-size: 10px;color: white;text-align: center;position: absolute;left: -5px;top: -1px;"'
                   nestedHtml +=`
                     <div ${style} class="content">
                       ${letters}
