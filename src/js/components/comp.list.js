@@ -1223,6 +1223,7 @@ function showListMenu({
             // console.log(e);
             // console.log(rule.choices());
             var itemStyle = 'cursor:pointer;'
+            var nestedHtml = ''
             var customDataId = undefined
             var secondaryAction = ""
             var foudItem = rule.choices().find(i=>i.uuid == e)
@@ -1232,6 +1233,23 @@ function showListMenu({
               var newItemId = foudItem.uuid
               if(formatedNewItem.length > 25) {
                   formatedNewItem = newItem.substring(0,10)+".. ";
+              }
+              if (foudItem.color) {
+                itemStyle += 'background-color:'+foudItem.color+';'
+              }
+              // if (foudItem.lastName) {
+              //   itemStyle += 'background:'+colorFromLetters(foudItem.name.substring(0,1)+foudItem.lastName.substring(0,1))+';'
+              // }
+              if (foudItem.lastName) {
+                  let letters = foudItem.name.substring(0,1)+foudItem.lastName.substring(0,1)
+                  let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
+                  let style = 'style="background: '+colorFromLetters(letters)+';width: 23px;height: 23px;border-radius: 100%;padding: 6px;font-size: 10px;color: white;text-align: center;position: absolute;left: -5px;top: -1px;"'
+                  nestedHtml +=`
+                    <div ${style} class="content">
+                      ${letters}
+                    </div>
+                    <div style="width:11px;display: inline-block;">  </div>
+                  `
               }
               if (rule.choiceStyle) {
                 itemStyle= rule.choiceStyle(foudItem)+" "+itemStyle || itemStyle;
@@ -1245,7 +1263,7 @@ function showListMenu({
                   secondaryAction = `<div class="detail">| <i data-id="${secondActionCustomDataId|| newItemId}" class="cubes icon action_list_click_label"></i></div>`
                 }
               }
-              var htmlNewItem = `<div style="${itemStyle}" data-inverted="" data-id="${customDataId|| newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${formatedNewItem}${secondaryAction} </div>`
+              var htmlNewItem = `<div style="${itemStyle}" data-inverted="" data-id="${customDataId|| newItemId}" data-tooltip="${newItem}" class="ui mini teal label action_list_click_label">${nestedHtml}${formatedNewItem}${secondaryAction} </div>`
               return acc += htmlNewItem
             }else {
               return acc

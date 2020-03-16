@@ -579,6 +579,28 @@ ephHelpers.addModalDOM = function () {
   return sourceOccElement
 }
 
+ephHelpers.colorFromLetters = function (letters, uniform) {
+  // const alphaVal = (s) => s.toLowerCase().charCodeAt(0) - 97 + 1
+  const alphaVal = function (s) {
+    if (s) {
+      return s.toLowerCase().charCodeAt(0) - 97 + 1
+    }else {
+      let alt = "x"
+      return alt.toLowerCase().charCodeAt(0) - 97 + 1
+    }
+  }
+  let color='#ffffff'
+  if (uniform) {
+    let colorNbr = Math.round(( alphaVal(letters[0])+alphaVal(letters[1]) )/78*360)
+    color = "hsl("+colorNbr+", 34%, 50%)"
+  }else {
+    let colorNbrA = Math.round( alphaVal(letters[0]) /26*360)
+    let colorNbrB = Math.round( alphaVal(letters[1]) /26*360)
+    color = "linear-gradient(127deg, hsl("+colorNbrA+", 34%, 50%), hsl("+colorNbrB+", 34%, 50%))"
+  }
+  return color
+}
+
 
 //Workarounds
 

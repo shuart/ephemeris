@@ -723,15 +723,39 @@ var createUnifiedView = function (targetSelector) {
     var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
     var metalist = meta.filter(e => (e.type == propName && e.source == sourceId )).map(e => e.target)
     var editHtml = `<i data-prop="${propName}" data-value='${JSON.stringify(metalist)}' data-id="${sourceId}" data-project="${projectuuid}" class="edit icon action_unified_list_select_item_assigned" style="opacity:0.2"></i>`
+
     function reduceChoices(acc, e) {
       console.log(e);
+      var itemStyle = 'cursor:pointer;'
+      var nestedHtml = ''
       var foudItem = targetList.find(i=>i.uuid == e)
       var newItem = foudItem.name + " "+ (foudItem.lastName || " ")+" "
       var formatedNewItem = newItem
       if(formatedNewItem.length > 25) {
           formatedNewItem = newItem.substring(0,10)+".. ";
       }
-      var htmlNewItem = `<div data-inverted="" data-tooltip="${newItem}" class="ui mini teal label">${formatedNewItem}</div>`
+      if (foudItem.color) {
+        itemStyle += 'background-color:'+foudItem.color+';'
+      }
+      if (foudItem.lastName) {
+        // itemStyle += 'background:'+ephHelpers.colorFromLetters(foudItem.name.substring(0,1)+foudItem.lastName.substring(0,1))+';'
+        if (true) {
+          let letters = foudItem.name.substring(0,1)+foudItem.lastName.substring(0,1)
+          let colStyle = 'style ="flex-grow: 0;flex-basis: 50px;"'
+          let style = 'style="background: '+ephHelpers.colorFromLetters(letters)+';width: 23px;height: 23px;border-radius: 100%;padding: 5px;font-size: 10px;color: white;text-align: center;position: absolute;left: -5px;top: -1px;"'
+          nestedHtml +=`
+            <div ${style} class="content">
+              ${letters}
+            </div>
+            <div style="width:11px;display: inline-block;">  </div>
+          `
+        }
+      }
+      var htmlNewItem = `
+      <div data-inverted="" style="${itemStyle}" data-tooltip="${newItem}" class="ui mini teal label">
+      ${nestedHtml}
+      ${formatedNewItem}
+      </div>`
       return acc += htmlNewItem
     }
     var emptyNameDic={
