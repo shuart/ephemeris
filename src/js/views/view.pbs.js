@@ -235,10 +235,10 @@ var createPbsView = function () {
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = store.currentPbs.items.map(i=>{
-      let linkToTextFunc = getRelatedItems(store, i, "functions").map(s=> s[0] ? s[0].name:"").join(",")
-      let linkToTextReq = getRelatedItems(store, i, "requirements").map(s=> s[0] ? s[0].name:"").join(",")
-      let linkToTextSpaces = getRelatedItems(store, i, "physicalSpaces",{objectIs:"target", metalinksType:"contains"}).map(s=> s[0]? s[0].name : '').join(",")
-      let linkToTextWorkpackages = getRelatedItems(store, i, "workPackages",{objectIs:"target", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToTextFunc = getRelatedItems(store, i, "functions").map(s=> s.name ? s.name:"").join(",")
+      let linkToTextReq = getRelatedItems(store, i, "requirements").map(s=> s.name ? s.name:"").join(",")
+      let linkToTextSpaces = getRelatedItems(store, i, "physicalSpaces",{objectIs:"target", metalinksType:"contains"}).map(s=> s.name? s.name : '').join(",")
+      let linkToTextWorkpackages = getRelatedItems(store, i, "workPackages",{objectIs:"target", metalinksType:"WpOwn"}).map(s=> s.name? s.name : '').join(",")
 
 
       return {id:i.uuid, name:i.name, description:i.desc, functions:linkToTextFunc, requirements:linkToTextReq, physicalSpaces: linkToTextSpaces, workPackages:linkToTextWorkpackages}

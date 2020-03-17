@@ -203,10 +203,10 @@ var createRequirementsView = function () {
   var exportToCSV = async function () {
     let store = await query.currentProject()
     let data = store.requirements.items.map(i=>{
-      let linkToText = getRelatedItems(store, i, "stakeholders", {metalinksType:"origin"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
-      let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"target", metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : '').join(",")
-      let linkToTextTags = getRelatedItems(store, i, "tags", {metalinksType:"tags"}).map(s=> s[0]? s[0].name : "").join(",")
-      let linkToTextWorkpackages = getRelatedItems(store, i, "workPackages",{objectIs:"target", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToText = getRelatedItems(store, i, "stakeholders", {metalinksType:"origin"}).map(s=> s.name? s.name +" "+s.lastName : "").join(",")
+      let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"target", metalinksType:"originNeed"}).map(s=> s.name? s.name : '').join(",")
+      let linkToTextTags = getRelatedItems(store, i, "tags", {metalinksType:"tags"}).map(s=> s.name? s.name : "").join(",")
+      let linkToTextWorkpackages = getRelatedItems(store, i, "workPackages",{objectIs:"target", metalinksType:"WpOwnNeed"}).map(s=> s.name? s.name : '').join(",")
       return {id:i.uuid, name:i.name, description:i.desc, stakeholders:linkToText, products:linkToTextPbs, tags:linkToTextTags, workPackages:linkToTextWorkpackages}
     })
     JSONToCSVConvertor(data, 'Requirements', true)

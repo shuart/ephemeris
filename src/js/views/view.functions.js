@@ -298,8 +298,8 @@ var createFunctionsView = function () {
   var exportToCSV = async function () {
     let store = await query.currentProject()
     let data = store.functions.items.map(i=>{
-      let linkToText = getRelatedItems(store, i, "requirements").map(s=> s[0] ? s[0].name:'').join(",")
-      let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"target", metalinksType:"originFunction"}).map(s=> s[0]? s[0].name : '').join(",")
+      let linkToText = getRelatedItems(store, i, "requirements").map(s=> s.name ? s.name:'').join(",")
+      let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"target", metalinksType:"originFunction"}).map(s=> s.name? s.name : '').join(",")
       return {id:i.uuid, name:i.name, description:i.desc, Requirements:linkToText, Products:linkToTextPbs}
     })
     JSONToCSVConvertor(data, 'Functions', true)

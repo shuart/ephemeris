@@ -237,7 +237,7 @@ var createWorkPhysicalSpacesView = function () {
   var exportToCSV = function () {
     let store = query.currentProject()
     let data = store.physicalSpaces.items.map(i=>{
-      let linkToTextPbs = getRelatedItems(store, i, "currentPbs", {metalinksType:"contains"}).map(s=> s[0]? s[0].name : "").join(",")
+      let linkToTextPbs = getRelatedItems(store, i, "currentPbs", {metalinksType:"contains"}).map(s=> s.name? s.name : "").join(",")
       return {id:i.uuid, name:i.name, description:i.desc, products:linkToTextPbs}
     })
     JSONToCSVConvertor(data, 'PhysicalSpaces', true)
