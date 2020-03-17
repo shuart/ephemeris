@@ -99,7 +99,7 @@ var createExportProjectInfoView = function () {
       appendHtml(container, theme.section("requirements","All project requirements"))
       for (requirement of store.requirements.items) {
         let linkToText = getRelatedItems(store, requirement, "stakeholders").reduce(function (acc, item) {
-          if (item[0]) {
+          if (item && item[0]) {
             return acc += item[0].name +" "+item[0].lastName+" "
           }
         },"")
@@ -157,9 +157,11 @@ var createExportProjectInfoView = function () {
     return treeArray.map(function (t) {
       let branchesHTML = renderTreeHTML(t.branches, currentLevel+1, store)
       // let caret = (branchesHTML != "") ? true :false;
-      let linkToTextFunc = getRelatedItems(store, t.leaf, "functions", {metalinksType:"originFunction"}).map(l=>l[0] ? l[0].name :"").join(", ")
-      let linkToTextReq = getRelatedItems(store, t.leaf, "requirements", {metalinksType:"originNeed"}).map(l=>l[0] ? l[0].name :"").join(", ")
-
+      let linkToTextFunc = getRelatedItems(store, t.leaf, "functions", {metalinksType:"originFunction"}).map(l=>l.name ? l.name :"").join(", ")
+      let linkToTextReq = getRelatedItems(store, t.leaf, "requirements", {metalinksType:"originNeed"}).map(l=>l.name  ? l.name :"").join(", ")
+      console.log(linkToTextFunc);
+      console.log(linkToTextReq);
+      console.log( linkToTextFunc + ", "+ linkToTextReq);
       let leafHTML = theme.itemLeaf(t.leaf, branchesHTML, currentLevel, linkToTextFunc + ", "+ linkToTextReq)
       return leafHTML
     }).join("")
