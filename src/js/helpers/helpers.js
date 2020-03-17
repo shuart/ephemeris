@@ -487,7 +487,18 @@ ephHelpers.startSelectionToShowFields = async function (ev,sourceList, settingsT
     },
     onClick: (ev)=>{
       console.log("select");
-    }
+    },
+    extraActions:[
+      {
+        name:"Reset",
+        action:(ev)=>{
+            push(act.remove("settings",{uuid:settingsUuid}))
+            push(act.add("settings",{uuid:uuid(), type:settingsType, name:settingsName, value:[]}))
+            update()
+            ev.select.remove()
+          }
+        }
+    ]
   })
 }
 

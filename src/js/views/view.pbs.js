@@ -163,17 +163,17 @@ var createPbsView = function () {
           })
         },
         extraActions:[
-          {
-            name:"CustomFields",
-            action:(ev)=>{
-              isExtraFieldsVisible = !isExtraFieldsVisible;
-              setTimeout(function () {
-                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
-                update()
-              }, 100);
-              // ev.select.remove();
-            }
-          },
+          // {
+          //   name:"CustomFields",
+          //   action:(ev)=>{
+          //     isExtraFieldsVisible = !isExtraFieldsVisible;
+          //     setTimeout(function () {
+          //       document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+          //       update()
+          //     }, 100);
+          //     // ev.select.remove();
+          //   }
+          // },
           // {
           //   name:"Extras",
           //   action:(ev)=>{
@@ -209,7 +209,7 @@ var createPbsView = function () {
                   for (importedElement of results.data) {
                     var id = genuuid()
                     push(act.add("currentPbs", {uuid:id,name:importedElement[0],desc:importedElement[1]}))
-                    push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+                    push(addPbsLink({source:store.currentPbs.items[0].uuid, target:id}))
                   }
                   alert("Close and re-open the view to complete the import")
                 }

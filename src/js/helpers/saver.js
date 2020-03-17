@@ -47,24 +47,24 @@ function createSaver({
     // input = document.querySelector("input[type=file]"),
     // pre = document.querySelector("pre");
 
-  create.addEventListener("click", function () {
-      var link = document.createElement("a");
-      link.setAttribute("download", filename);
-      var json = createJSONFile(JSON.stringify({type:type, userData:app.store.userData , data:app.store.projects}));//TODO closure issue again
-      // var json = createJSONFile(JSON.stringify(object));
-      //var json = createJSONFile(JSON.stringify(store.db));
-      if (json !== "Invalid JSON") {
-        link.href = json;
-        document.body.appendChild(link);
-        console.log("Valid JSON");
-        //code.textContent = "Valid JSON";
-        link.click();
-        window.addEventListener("focus", revokeBlobURL);
-      } else {
-        //code.textContext = json;
-      }
-
-  }, false);
+  // create.addEventListener("click", function () {
+  //     var link = document.createElement("a");
+  //     link.setAttribute("download", filename);
+  //     var json = createJSONFile(JSON.stringify({type:type, userData:app.store.userData , data:app.store.projects}));//TODO closure issue again
+  //     // var json = createJSONFile(JSON.stringify(object));
+  //     //var json = createJSONFile(JSON.stringify(store.db));
+  //     if (json !== "Invalid JSON") {
+  //       link.href = json;
+  //       document.body.appendChild(link);
+  //       console.log("Valid JSON");
+  //       //code.textContent = "Valid JSON";
+  //       link.click();
+  //       window.addEventListener("focus", revokeBlobURL);
+  //     } else {
+  //       //code.textContext = json;
+  //     }
+  //
+  // }, false);
 
   // reader.addEventListener("load", function() {
   //   pre.textContent = JSON.stringify(reader.result, null, 2);

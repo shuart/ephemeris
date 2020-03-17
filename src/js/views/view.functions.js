@@ -158,17 +158,17 @@ var createFunctionsView = function () {
           })
         },
         extraActions:[
-          {
-            name:"CustomFields",
-            action:(ev)=>{
-              isExtraFieldsVisible = !isExtraFieldsVisible;
-              setTimeout(function () {
-                document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
-                update()
-              }, 100);
-              // ev.select.remove();
-            }
-          },
+          // {
+          //   name:"CustomFields",
+          //   action:(ev)=>{
+          //     isExtraFieldsVisible = !isExtraFieldsVisible;
+          //     setTimeout(function () {
+          //       document.querySelector(".center-container").innerHTML=""//clean main view again because of tag. TODO find a better way
+          //       update()
+          //     }, 100);
+          //     // ev.select.remove();
+          //   }
+          // },
           {
             name:"Export",
             action:(ev)=>{
