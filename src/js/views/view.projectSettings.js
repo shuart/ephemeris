@@ -50,8 +50,12 @@ var createProjectSettingsView = function ({
     connect(".action_project_settings_change_image","click",(e)=>{
       setProjectLogo(function (dataUrl) {
         push(act.edit("settings", {uuid:e.target.dataset.id, prop:"value", value:dataUrl}))
-        sourceOccElement.remove()
-        update()
+
+        setTimeout(function () {
+          sourceOccElement.remove()
+          update()
+        }, 1000);
+
       })
     })
     connect(".action_project_settings_remove_logo_image","click",(e)=>{
@@ -61,7 +65,7 @@ var createProjectSettingsView = function ({
     })
   }
 
-  var render = function (uuid) {
+  var render = async function (uuid) {
     sourceOccElement = document.createElement('div');
     sourceOccElement.style.height = "100%"
     sourceOccElement.style.width = "100%"
@@ -103,17 +107,17 @@ var createProjectSettingsView = function ({
     mainEl.appendChild(container)
 
     menuArea.appendChild(toNode(renderMenu()))
-    container.appendChild(toNode(renderProject(uuid)))
+    container.appendChild(toNode(await renderProject(uuid)))
 
     document.body.appendChild(sourceOccElement)
 
   }
 
-  var renderProject =function (uuid){
+  var renderProject =async function (uuid){
 
-    let dataSourceStore = query.currentProject()
+    let dataSourceStore = await query.currentProject()
 
-    let i = deepCopy(dataSourceStore)
+    //let i = deepCopy(dataSourceStore)
     // if (!i.userUuid || !i.userLastName  || !i.userUuid) {
     //   i.userFirstName =i.userFirstName || 'Set your First Name'
     //   i.userLastName =i.userLastName || 'Set your First Name'
@@ -121,7 +125,8 @@ var createProjectSettingsView = function ({
     // }
 
     //check if default are there
-    let projectImageSetting = i.settings.items.find(s=>s.type = "projectLogo")
+    console.log(dataSourceStore.settings.items);
+    let projectImageSetting = dataSourceStore.settings.items.find(s=>s.type == "projectLogo")
     if (!projectImageSetting) {
       push(act.add("settings",{name:"Project Logo",type:"projectLogo", value:""}))
       sourceOccElement.remove()

@@ -22,7 +22,8 @@ var createMeetingsManager = function (targetSelector) {
     </div>`
   }
   theme.editor = function (e, store) {//editor start point
-
+    console.log(store.settings.items.find(s=>s.type=="projectLogo"));
+    console.log(store.settings.items);
      html =`
      <div style="width:80%; margin-left:10%;" id="meetingAreaEditor" class="meetingAreaEditor">
         <img style="margin-left:70%;" class="ui small image" src=${store.settings.items.find(s=>s.type=="projectLogo")?store.settings.items.find(s=>s.type=="projectLogo").value:""}>
