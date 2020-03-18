@@ -59,7 +59,7 @@ function createStartUp() {
               dbConnector.setUserInfo(event.target.dataset.id, "userFirstName", app.store.userData.info.userFirstName)
               app.store.userData.info.userLastName = prompt("Set your last name")
               dbConnector.setUserInfo(event.target.dataset.id, "userLastName", app.store.userData.info.userLastName)
-              
+
             }
             if (!app.store.userData.info.userUuid) {
               app.store.userData.info.userUuid = genuuid()
@@ -178,17 +178,27 @@ function createStartUp() {
     dimmer.classList="dimmer"
     // dimmer.style.background = "linear-gradient(#b0d6be, #535f5e)"
     // dimmer.style.background = "linear-gradient(#bad4c4, #535f5e)"
-    dimmer.style.background = "linear-gradient(#99b6c1, #4a524b)"
+
+    // dimmer.style.background = "linear-gradient(#99b6c1, #4a524b)"//grad only
+    dimmer.style.backgroundColor =  "white"
+    dimmer.style.backgroundImage =  "url('././img/ephemeris_bg.jpg')"
+    dimmer.style.backgroundRepeat= "no-repeat";
+    dimmer.style.backgroundPosition =  "right top"
+    // dimmer.style.backgroundPosition =  "25% 0%"
     // dimmer.style.background = "linear-gradient(to bottom, #bbd2c5, #536976)"
     dimmer.style.opacity = 1;
     var mainEl = document.createElement('div');
 
-    mainEl.classList ="ui raised very padded text container segment"
+    // mainEl.classList ="ui raised very padded text container segment"
+    mainEl.style.maxWidth = "600px"
+    mainEl.style.height = "80%"
+    mainEl.style.overflow = "auto"
     mainEl.style.position = "fixed"
-    mainEl.style.top = "0px"
+    mainEl.style.top = "30px"
+    mainEl.style.right = "14%"
     // mainEl.style.width = "50%"
     mainEl.style.zIndex = "99999"
-    mainEl.style.backgroundColor = "white"
+    // mainEl.style.backgroundColor = "white"
     // mainEl.style.top= "50%";
     // mainEl.style.transform= "translate(-50%, -50%);"
 
@@ -211,13 +221,13 @@ function createStartUp() {
         </div>
       </div>
 
-      <div class="ui horizontal divider">or</div>
-        <div class="ui center aligned container">
+      <div class="ui horizontal divider">-</div>
+        <!-- <div class="ui center aligned container">
           <button class="ui button action_startup_load_reveal" type="submit">load a database file</button>
           <div style="visibility:hidden" class="statup_input_zone">
             <input class="ui input statup_input" type="file" accept=".json" />
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
     `

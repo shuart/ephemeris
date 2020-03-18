@@ -414,7 +414,14 @@ textarea {
 }
 
 .app-loader-cache{
-  background: linear-gradient(#99b6c1, #4a524b);
+  /* background: linear-gradient(#99b6c1, #4a524b); */
+
+  background-color :  white;
+  /* background-image :  url('../img/ephemeris_bg.jpg'); */
+  background-position :  right top;
+
+
+
   /* background: linear-gradient(#bad4c4, #535f5e); */
   /* background : linear-gradient(to bottom, #bbd2c5, #536976); */
   width: 100%;
@@ -424,7 +431,7 @@ textarea {
 
 }
 .app-loader-cache .spinner{
-        color: white;
+        color: black;
         border-radius: 1em;
         padding: 1em;
         position: absolute;

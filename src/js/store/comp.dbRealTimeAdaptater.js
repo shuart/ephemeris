@@ -45,7 +45,7 @@ var createDbRealTimeAdaptater = function () {
             console.log(err);
         });
       }else {
-        startupScreen.showLoader()
+        // startupScreen.showLoader()
         localProjects.find({}, function (err, docs) {
           projects.insert(docs, function (err, newDocs) {
             console.log(docs);
