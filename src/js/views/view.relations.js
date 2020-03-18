@@ -22,7 +22,9 @@ var createRelationsView = function () {
   //What to show
   var hiddenItemsFromSideView = [];
   var showVisibilityMenu = false;
-  var showVisibilityMenuSnapshot = true;
+  var showVisibilityMenuSnapshot = false;
+  var showVisibilityAddMenu = false;
+  var showVisibilityAddLinksMenu = false;
 
   var showExtraLabels = true;
   var showLinksText = true;
@@ -74,11 +76,16 @@ var createRelationsView = function () {
   var container = undefined
 
   var theme={
-    viewInterfaceList:(interfaceItems)=> { ;
-      let html = interfaceItems.map(i=>
-        `<div style="${(addModeInterfaceType == i.uuid)? "background-color: #6dce9e !important":""}" data-id="${i.uuid}" class="item action_interface_change_interface_type">
+    viewInterfaceList:(interfaceItems)=> {
+      let html =
+      `<a style="${(addMode == 'compose')? "background-color: #6dce9e !important":""}" data-id="" class="item action_interfaces_toogle_compose">
+        <i class='object group icon'></i>
+        Composition
+      </a>`
+      html += interfaceItems.map(i=>
+        `<a style="${(addModeInterfaceType == i.uuid && addMode != 'compose')? "background-color: #6dce9e !important":""}" data-id="${i.uuid}" class="item action_interface_change_interface_type">
           ${i.name}
-        </div>`
+        </a>`
         ).join('')
       return html
     },
@@ -95,9 +102,10 @@ var createRelationsView = function () {
       })
 
       let html = items.concat(categoryArray).map(i=>
-        `<div style="${((addItemMode == i.type && addItemCatType == i.uuid)||(addItemMode == i.type && !i.uuid))? "background-color: #6dce9e !important":""}" data-type="${i.type}"  data-id="${i.uuid}"  class="item action_interface_change_add_item_type">
+        `<a style="${((addItemMode == i.type && addItemCatType == i.uuid)||(addItemMode == i.type && !i.uuid))? "background-color: #6dce9e !important":""}" data-type="${i.type}"  data-id="${i.uuid}"  class="item action_interface_change_add_item_type">
+          <i class='${i.icon?i.icon:'dolly'} icon'></i>
           ${i.name}
-        </div>`
+        </a>`
         ).join('')
       return html
     },
@@ -335,6 +343,32 @@ var createRelationsView = function () {
         elem.classList.add('hidden')
         queryDOM('.action_relations_toogle_show_graph_snapshot_menu').classList.remove('active')
         showVisibilityMenuSnapshot = false
+      }
+    }, container)
+    bind(".action_relations_toogle_show_add_menu","click",(e)=>{
+      var elem = queryDOM('.graphLeftToolsOptionsArea')
+      console.log(elem);
+      if (elem.classList.contains('hidden')) {
+        elem.classList.remove('hidden')
+        queryDOM('.action_relations_toogle_show_add_menu').classList.add('active')
+        showVisibilityAddMenu = true
+      }else{
+        elem.classList.add('hidden')
+        queryDOM('.action_relations_toogle_show_add_menu').classList.remove('active')
+        showVisibilityAddMenu = false
+      }
+    }, container)
+    bind(".action_relations_toogle_show_add_links_menu","click",(e)=>{
+      var elem = queryDOM('.graphLeftToolsOptionsLinksArea')
+      console.log(elem);
+      if (elem.classList.contains('hidden')) {
+        elem.classList.remove('hidden')
+        queryDOM('.action_relations_toogle_show_add_links_menu').classList.add('active')
+        showVisibilityAddLinksMenu = true
+      }else{
+        elem.classList.add('hidden')
+        queryDOM('.action_relations_toogle_show_add_links_menu').classList.remove('active')
+        showVisibilityAddLinksMenu = false
       }
     }, container)
 
@@ -754,6 +788,7 @@ var createRelationsView = function () {
       }else {
         queryDOM('.action_interfaces_toogle_compose').classList.remove('active')
       }
+      update()
       // update()
     }, container)
     bind(".action_interfaces_toogle_physical","click",(e)=>{
@@ -764,6 +799,7 @@ var createRelationsView = function () {
       }else {
         queryDOM('.action_interfaces_toogle_physical').classList.remove('active')
       }
+      update()
       // update()
     }, container)
     bind(".action_interfaces_add_pbs","click",(e)=>{
@@ -785,6 +821,7 @@ var createRelationsView = function () {
     bind(".action_interface_change_interface_type","click",(e)=>{
         let interfaceDefaultTypeId = e.target.dataset.id;
         addModeInterfaceType = interfaceDefaultTypeId
+        addMode = "physical"
         update()
     }, container)
     bind(".action_interface_change_add_item_type","click",(e)=>{
@@ -980,15 +1017,58 @@ var createRelationsView = function () {
     connections(container)
     //update all connections at each render. otherwise multiple views share the updae
 
+    let graphSearchStyle =`
+    opacity: 0.90;
+    border-radius: 5px;
+    background-color: white;
+    height: 50px;
+    width: 475px;
+    position: absolute;
+    right: 10px;
+    bottom: 20px;
+    padding-top: 7px;
+    padding-left: 5px;
+    box-shadow: 0px 0px 18px -6px rgba(0,0,0,0.35);`
 
+    let graphViewStyle =graphSearchStyle +'bottom: auto;top:20px;'
+
+    let graphLeftToolsStyle =`
+    opacity: 0.90;
+    border-radius: 5px;
+    background-color: white;
+    width: 46px;
+    position: absolute;
+    left: 287px;
+    top: 144px;
+    padding: 5px;
+    box-shadow: 0px 0px 18px -6px rgba(0,0,0,0.35);`
+
+    let graphLeftToolsOptionsStyle =`
+    opacity: 0.90;
+    border-radius: 5px;
+    background-color: white;
+    width: 146px;
+    position: absolute;
+    left: 350px;
+    top: 144px;
+    padding: 5px;
+    box-shadow: 0px 0px 18px -6px rgba(0,0,0,0.35);`
+
+    //height: calc(100% - 45px);
+    //TODO Reuse the top menu area
     container.innerHTML=`
-      <div class='menuArea'></div>
-      <div style="height: calc(100% - 45px); position: relative" class='graphArea'>
+
+      <div style="height: 100%; position: relative" class='graphArea'>
         <div style="height: 100%" class="interfaceGraph"></div>
-        <div style="opacity: 0.85;height: 99%;width: 250px;position: absolute;right:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenu ? '':'hidden'} menuGraph"></div>
-        <div style="opacity: 0.85;height: 99%;width: 210px;position: absolute;left:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenuSnapshot ? '':'hidden'} menuSnapshotGraph"></div>
+        <div style="opacity: 0.90;border-radius: 5px;box-shadow: 0px 0px 18px -6px rgba(0,0,0,0.35); height: 90%;width: 250px;position: absolute;right:0px;top:1px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenu ? '':'hidden'} menuGraph"></div>
+        <div style="opacity: 0.90; border-radius: 5px;box-shadow: 0px 0px 18px -6px rgba(0,0,0,0.35); height: 90%;width: 210px;position: absolute;left:68px;top:10px;background-color: white; overflow-y:auto;overflow-x: hidden;" class="${showVisibilityMenuSnapshot ? '':'hidden'} menuSnapshotGraph"></div>
       </div>
-      <div style="opacity: 0.85;height: 50px;width: 400px;position: absolute;right:10px;bottom:5px;background-color: transparent;" class='graphSearchArea'></div>`
+      <div style="${graphViewStyle}" class='hidden menuArea'></div>
+      <div style="${graphSearchStyle}" class='graphSearchArea'></div>
+      <div style="${graphLeftToolsStyle}" class='graphLeftToolsArea'></div>
+      <div style="${graphLeftToolsOptionsStyle}" class='hidden graphLeftToolsOptionsArea'></div>
+      <div style="${graphLeftToolsOptionsStyle}" class='hidden graphLeftToolsOptionsLinksArea'></div>
+      `
 
       container.ondragover = function (ev) {
         ev.preventDefault();
@@ -1522,71 +1602,90 @@ var createRelationsView = function () {
       </div>
     </div>
 
+    <div class="ui mini basic icon buttons">
+      <button class="${fadeOtherNodesOnHoover ? 'active':''} ui mini button action_fade_other_node_toogle_network_button" data-tooltip="Highlight connection on hover" >
+        <i class="sun outline icon action_fade_other_node_toogle_network_button"></i>
+      </button>
+      <button class="${showLinksText ? 'active':''} ui mini button action_relations_toogle_links_text" data-tooltip="Relations texts" >
+        <i class="underline icon action_relations_toogle_links_text"></i>
+      </button>
+      <button class="${showExtraLabels ? 'active':''} ui mini button action_relations_show_extra_labels" data-tooltip="Extra Category labels" >
+        <i class="tag icon action_relations_show_extra_labels"></i>
+      </button>
+      <button class="ui icon button basic action_relations_toogle_show_graph_menu">
+        <i class="ellipsis horizontal icon action_relations_toogle_show_graph_menu"></i>
+      </button>
+    </div>
+
     <div class="ui item">
       <div class="ui toggle checkbox">
         <input ${fixedValues ? 'checked':''} class="action_restore_last_interface_toogle_network" type="checkbox" name="public">
-        <label>Fix Nodes</label>
+        <label>Fix</label>
       </div>
     </div>
+    `
+
+    let leftToolsHTML = `
+      <div class="ui mini vertical  icon buttons">
+        <button class="${showVisibilityAddMenu ? 'active':''} ui basic icon button action_relations_toogle_show_add_menu" data-tooltip="Show items to add" data-position="bottom center" >
+          <i class="plus square outline icon action_relations_toogle_show_add_menu"></i>
+        </button>
+        <button class="${showVisibilityAddLinksMenu ? 'active':''} ui basic icon button action_relations_toogle_show_add_links_menu" data-tooltip="Show items to add" data-position="bottom center" >
+          <i class="code branch icon action_relations_toogle_show_add_links_menu"></i>
+        </button>
+        <button class="ui mini basic button action_relations_show_all_nodes_in_view" data-tooltip="Show All" data-position="bottom center">
+          <i class="eye icon action_relations_show_all_nodes_in_view"></i>
+        </button>
+        <button class="ui mini basic button action_relations_hide_all_nodes_in_view" data-tooltip="Hide All" data-position="bottom center">
+          <i class="eye slash icon action_relations_hide_all_nodes_in_view"></i>
+        </button>
+        <button class="ui mini basic button action_relations_isolate_nodes" data-tooltip="Crop selection" data-position="bottom center">
+          <i class="crop icon action_relations_isolate_nodes"></i>
+        </button>
+        <button class="ui mini basic button action_relations_isolate_nodes_and_children" data-tooltip="Show only selected relations" data-position="bottom center">
+          <i class="expand alternate icon action_relations_isolate_nodes_and_children"></i>
+        </button>
+        <button class="ui mini basic button action_relations_isolate_nodes_and_all_children" data-tooltip="Show only selected relations and children" data-position="bottom center">
+          <i class="expand arrows alternate icon action_relations_isolate_nodes_and_all_children"></i>
+        </button>
+        <div class="ui basic icon button action_relations_duplicate_nodes" data-tooltip="duplicate selected Product" data-position="bottom center">
+          <i class="copy outline icon action_relations_duplicate_nodes"></i>
+        </div>
+        <div class="ui basic icon button action_relations_store_nodes_as_templates" data-tooltip="store selected as Template" data-position="bottom center">
+          <i class="archive icon action_relations_store_nodes_as_templates"></i>
+        </div>
+        <div class="ui basic icon button action_relations_add_nodes_from_templates" data-tooltip="Add from template" data-position="bottom center">
+          <i class="paste icon action_relations_add_nodes_from_templates"></i>
+        </div>
+        <button class="ui basic mini button action_relations_remove_nodes" data-tooltip="Delete Selected" data-position="bottom center">
+          <i class="trash icon action_relations_remove_nodes"></i>
+        </button>
+        <button class=" ui basic mini button action_relations_show_current_matrix" data-tooltip="interface matrix" data-position="bottom center">
+          <i class="table icon action_relations_show_current_matrix"></i>
+        </button>
+        <button class="ui basic basic basic icon button" data-tooltip="Export as .png" data-position="bottom center">
+          <i class="camera icon action_relations_export_png"></i>
+        </button>
+        <button class="${showVisibilityMenuSnapshot ? 'active':''} ui basic icon button action_relations_toogle_show_graph_snapshot_menu" data-tooltip="Show Snapshot Tools" data-position="bottom center" >
+          <i class="download icon action_relations_toogle_show_graph_snapshot_menu"></i>
+        </button>
+      </div>
+    `
+    let addElementsMenu = `
+      <div class="ui secondary vertical mini compact basic menu" style="margin-top:0px;">
+        ${theme.viewItemsList(categoriesListItems.items)}
+      </div>
+    `
+    let addLinksMenu = `
+      <div class="ui secondary vertical mini compact basic menu" style="margin-top:0px;">
+          ${theme.viewInterfaceList(interfaceListItems.items)}
+      </div>
     `
     let commonMenuHTML = `
     <div class="item">
       <div class="ui mini basic icon buttons">
         <button class="disabled ui basic icon button " >
-          Tools
-        </button>
-        <button class="${showVisibilityMenuSnapshot ? 'active':''} ui basic icon button action_relations_toogle_show_graph_snapshot_menu" data-tooltip="Show Snapshot Tools" data-position="bottom center" >
-          <i class="camera icon action_relations_toogle_show_graph_snapshot_menu"></i>
-        </button>
-        <button class="ui mini button action_relations_show_all_nodes_in_view" data-tooltip="Show All" data-position="bottom center">
-          <i class="eye icon action_relations_show_all_nodes_in_view"></i>
-        </button>
-        <button class="ui mini button action_relations_hide_all_nodes_in_view" data-tooltip="Hide All" data-position="bottom center">
-          <i class="eye slash icon action_relations_hide_all_nodes_in_view"></i>
-        </button>
-        <button class="ui mini button action_relations_isolate_nodes" data-tooltip="Crop selection" data-position="bottom center">
-          <i class="crop icon action_relations_isolate_nodes"></i>
-        </button>
-        <button class="ui mini button action_relations_isolate_nodes_and_children" data-tooltip="Show only selected relations" data-position="bottom center">
-          <i class="expand alternate icon action_relations_isolate_nodes_and_children"></i>
-        </button>
-        <button class="ui mini button action_relations_isolate_nodes_and_all_children" data-tooltip="Show only selected relations and children" data-position="bottom center">
-          <i class="expand arrows alternate icon action_relations_isolate_nodes_and_all_children"></i>
-        </button>
-        <div class="ui icon button action_relations_duplicate_nodes" data-tooltip="duplicate selected Product" data-position="bottom center">
-          <i class="copy outline icon action_relations_duplicate_nodes"></i>
-        </div>
-        <div class="ui icon button action_relations_store_nodes_as_templates" data-tooltip="store selected as Template" data-position="bottom center">
-          <i class="archive icon action_relations_store_nodes_as_templates"></i>
-        </div>
-        <div class="ui icon button action_relations_add_nodes_from_templates" data-tooltip="Add from template" data-position="bottom center">
-          <i class="paste icon action_relations_add_nodes_from_templates"></i>
-        </div>
-        <button class="ui mini button action_relations_remove_nodes" data-tooltip="Delete Selected" data-position="bottom center">
-          <i class="trash icon action_relations_remove_nodes"></i>
-        </button>
-        <button class="ui basic icon button" data-tooltip="Export as .png" data-position="bottom center">
-          <i class="download icon action_relations_export_png"></i>
-        </button>
-      </div>
-    </div>
-
-    <div class="item">
-      <div class="ui mini basic icon buttons">
-        <button class="disabled ui basic icon button " >
           Show
-        </button>
-        <button class="${fadeOtherNodesOnHoover ? 'active':''} ui mini button action_fade_other_node_toogle_network_button" data-tooltip="Highlight connection on hover" data-position="bottom center">
-          <i class="sun outline icon action_fade_other_node_toogle_network_button"></i>
-        </button>
-        <button class="${showLinksText ? 'active':''} ui mini button action_relations_toogle_links_text" data-tooltip="Relations texts" data-position="bottom center">
-          <i class="underline icon action_relations_toogle_links_text"></i>
-        </button>
-        <button class="${showExtraLabels ? 'active':''} ui mini button action_relations_show_extra_labels" data-tooltip="Extra Category labels" data-position="bottom center">
-          <i class="tag icon action_relations_show_extra_labels"></i>
-        </button>
-        <button class=" ui mini button action_relations_show_current_matrix" data-tooltip="interface matrix" data-position="bottom center">
-          <i class="table icon action_relations_show_current_matrix"></i>
         </button>
       </div>
     </div>
@@ -1627,10 +1726,6 @@ var createRelationsView = function () {
     </div>`
     let interfacesMenuHTML =`
     <div class="right menu">
-
-
-
-
       <div class="ui item">
         <div class="ui mini basic buttons">
           <div class="ui disabled icon button">
@@ -1651,16 +1746,12 @@ var createRelationsView = function () {
           ${theme.viewInterfaceList(interfaceListItems.items)}
         </div>
       </div>
-
-      <div class="ui item">
-        <div class="ui icon button basic action_relations_toogle_show_graph_menu">
-          <i class="ellipsis horizontal icon action_relations_toogle_show_graph_menu"></i>
-        </div>
-      </div>
-
     </div>`
-    container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML + relationsMenuHTML + interfacesMenuHTML +`</div>`
+    // container.querySelector('.menuArea').innerHTML=`<div class="ui mini compact text menu">`+ commonMenuHTML +`</div>`
     container.querySelector('.graphSearchArea').innerHTML=`<div class="ui mini compact text menu">`+ searchAreaHtml +`</div>`
+    container.querySelector('.graphLeftToolsArea').innerHTML=leftToolsHTML
+    container.querySelector('.graphLeftToolsOptionsArea').innerHTML=addElementsMenu
+    container.querySelector('.graphLeftToolsOptionsLinksArea').innerHTML=addLinksMenu
 
     container.querySelector('.input_relation_search_nodes').addEventListener('keyup', function(e){
       //e.stopPropagation()
