@@ -14,6 +14,7 @@ var createUnifiedView = function (targetSelector) {
   var currentKanban = undefined;
   var kanbanSmallCards = false;
 
+  var showBacklog = true;
   var showTags = false;
   var sortBy ="projects"
 
@@ -132,6 +133,13 @@ var createUnifiedView = function (targetSelector) {
       showTags = !showTags
       setTimeout(async function () {
         await renderList(container);
+      }, 100);
+    })
+    connect(".action_unified_toogle_show_backlog","change", (e)=>{
+      showBacklog = !showBacklog
+      setTimeout(async function () {
+        currentKanban = undefined//clean kanban
+        update()
       }, 100);
     })
     connect(".action_unified_list_edit_time_item","click",(e)=>{
@@ -502,6 +510,18 @@ var createUnifiedView = function (targetSelector) {
       },'')
       html +=" </div>"
     }
+    if (showBacklog) {
+      html += `<h2 class="">Backlog</h2>`
+      html += `<div class="ui very relaxed list">`
+      var ownedActions = actions.filter( e=> !e[metaLinksType][0])
+      html += ownedActions.map((e) => {
+          e.action.projectUuid = e.project
+          return e.action
+        }).reduce((acc,i) => {
+        return acc +=  generateTaskHTML(i, i.projectUuid, allProjects)
+      },'')
+      html +=" </div>"
+    }
     return html
   }
   var generateTaskOwnershipKanban = function (allProjects,actions, owners, storeGroup, metaLinksType, sortingProp) {
@@ -520,9 +540,10 @@ var createUnifiedView = function (targetSelector) {
           return {uuid:e.uuid, title:currentName, name:currentName, content:[]}
         });
 
+    ownerTable.push({uuid:"backlog", title:"Backlog", name:"Backlog", content:[]})
+
     for (owner of owners) {
       let ownerArrayElement = ownerTable.find(e=> e.uuid==owner )
-
       var ownedActions = actions.filter( e=> e[metaLinksType].includes(owner))
       var currentContent = ownedActions.map((e) => {
           e.action.projectUuid = e.project
@@ -534,7 +555,19 @@ var createUnifiedView = function (targetSelector) {
       ownerArrayElement.content = currentContent
 
     }
-    console.log(ownerTable);
+    //fill backlog
+    if (showBacklog) {
+      let ownerArrayElement = ownerTable.find(e=> e.uuid=='backlog' )
+      var ownedActions = actions.filter( e=> !e[metaLinksType][0])
+      var currentContent = ownedActions.map((e) => {
+          e.action.projectUuid = e.project
+          return e.action
+        }).map(i => {
+        return { html: generateTaskHTML(i, i.projectUuid, allProjects)}
+      })
+      console.log(currentContent);
+      ownerArrayElement.content = currentContent
+    }
 
     if (sortingProp && sortingProp!= "uuid") {
       let newOwnerTable =[]
@@ -654,6 +687,12 @@ var createUnifiedView = function (targetSelector) {
               <div class="ui toggle checked checkbox">
                 <input ${showTags ? 'checked':''} class="action_unified_toogle_show_tags" type="checkbox" name="public">
                 <label>Display tags</label>
+              </div>
+            </div>
+            <div class="item">
+              <div class="ui toggle checked checkbox">
+                <input ${showBacklog ? 'checked':''} class="action_unified_toogle_show_backlog" type="checkbox" name="public">
+                <label>Display backlog items</label>
               </div>
             </div>
             <div class="item">
