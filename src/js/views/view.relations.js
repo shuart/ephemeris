@@ -407,8 +407,8 @@ var createRelationsView = function () {
     //   update()
     // }, container)
 
-    bind(".action_relations_add_nodes_from_templates","click",(e)=>{
-      let store = query.currentProject()
+    bind(".action_relations_add_nodes_from_templates","click",async (e)=>{
+      let store = await query.currentProject()
       showListMenu({
         sourceData:store.templates.items,
         displayProp:"name",
@@ -430,15 +430,15 @@ var createRelationsView = function () {
         },
         idProp:"uuid",
         extraButtons : [
-          {name:"Select", class:"select", prop:"uuid", action: (orev)=>{
+          {name:"Select", class:"select", prop:"uuid", action: async  (orev)=>{
 
-            loadFromTemplate(orev.dataset.id)
+            await loadFromTemplate(orev.dataset.id)
           }}
         ],
       })
 
-      function loadFromTemplate(id) {
-        let store = query.currentProject()
+      async function loadFromTemplate(id) {
+        let store = await query.currentProject()
         let template = store.templates.items.find(t=>t.uuid == id).template
         let selectedNodes = template.nodes
         let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
@@ -453,6 +453,7 @@ var createRelationsView = function () {
         if (confirm("Modify object names to mark them as copies?")) {
           extraText = "-copy"
         }
+        console.log(selectedNodes);
         selectedNodes.forEach(function (node) {
           if (node.uuid) {
             let storeGroup = node.storeGroup
@@ -468,7 +469,7 @@ var createRelationsView = function () {
                 let hasParent = template.relatedLocalLinks.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
 
                 if (!hasParent) {
-                  push(act.addLink(storeGroup,{source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+                  push(act.addLink(storeGroup,{source:store.currentPbs.items[0].uuid, target:id}))
                 }
               }
 
@@ -512,8 +513,8 @@ var createRelationsView = function () {
 
       // isolateSelectedNodes(selectedNodes, false)
     }, container)
-    bind(".action_relations_duplicate_nodes","click",(e)=>{
-      let store = query.currentProject()
+    bind(".action_relations_duplicate_nodes","click",async (e)=>{
+      let store = await query.currentProject()
 
       let selectedNodes = activeGraph.getSelectedNodes()
       let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
@@ -529,10 +530,23 @@ var createRelationsView = function () {
       if (confirm("Modify object names to mark them as copies?")) {
         extraText = "-copy"
       }
-      selectedNodes.forEach(function (node) {
+
+
+      selectedNodes.forEach(async function (node) {
         if (node.uuid) {
+
           let storeGroup = getObjectGroupByUuid(node.uuid, store)
-          let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
+          // let elementToDuplicate =  await query.items("all", i=> i.uuid == node.uuid)[0]
+          let allItems = []
+          for (var keys in store) {
+            if (store.hasOwnProperty(keys)) {
+              if (store[keys].items) {
+                allItems = allItems.concat(store[keys].items)
+              }
+            }
+          }
+          let elementToDuplicate =  allItems.filter(i=> i.uuid == node.uuid)[0]
+          console.log(elementToDuplicate);
           if (elementToDuplicate) {
             var id = convertUuid(node.uuid)
             let newElement = deepCopy(elementToDuplicate)        //first get a clean node copy
@@ -543,18 +557,18 @@ var createRelationsView = function () {
               //check if parent is copied too
               let hasParent = store.currentPbs.links.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
               if (!hasParent) {
-                push(act.addLink(storeGroup,{source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+                push(act.addLink(storeGroup,{source:store.currentPbs.items[0].uuid, target:id}))
               }
             }
 
             //find and duplicate links
-            let metaLinksToSearch =query.items("metaLinks")
+            let metaLinksToSearch =store.metaLinks.items
             let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
 
-            let catLinksToSearch =query.items("metaLinks").filter(l=>l.type=="category")
+            let catLinksToSearch =store.metaLinks.items.filter(l=>l.type=="category")
             let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
 
-            let interfacesToSearch =query.items("interfaces")
+            let interfacesToSearch =store.interfaces.items
             let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
             // let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
 
@@ -607,7 +621,16 @@ var createRelationsView = function () {
       selectedNodes.forEach(function (node) {
         if (node.uuid) {
           let storeGroup = getObjectGroupByUuid(node.uuid, store)
-          let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
+          // let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
+          let allItems = []
+          for (var keys in store) {
+            if (store.hasOwnProperty(keys)) {
+              if (store[keys].items) {
+                allItems = allItems.concat(store[keys].items)
+              }
+            }
+          }
+          let elementToDuplicate =  allItems.filter(i=> i.uuid == node.uuid)[0]
           if (elementToDuplicate) {
             var id = convertUuid(node.uuid)
             let newElement = deepCopy(elementToDuplicate)        //first get a clean node copy
@@ -623,13 +646,13 @@ var createRelationsView = function () {
               }
             }
             //find and duplicate links
-            let metaLinksToSearch =query.items("metaLinks")
+            let metaLinksToSearch =store.metaLinks.items
             let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
 
-            let catLinksToSearch =query.items("metaLinks").filter(l=>l.type=="category")
+            let catLinksToSearch =store.metaLinks.items.filter(l=>l.type=="category")
             let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
 
-            let interfacesToSearch =query.items("interfaces")
+            let interfacesToSearch =store.interfaces.items
             let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
 
             let localLinksToSearch =store[storeGroup].links
