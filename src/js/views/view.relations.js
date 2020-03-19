@@ -12,7 +12,8 @@ var createRelationsView = function () {
   var lastFixedNodes = undefined;
   var previousSelectedNode = undefined;
   var addLinkMode = false;
-  var itemsToFixAtNextUpdate = []
+  var itemsToFixAtNextUpdate = [];
+  var graphSelectionModeActive = false;
 
   var currentGraphTransformation=[0,0,1]
   var addMode = "compose";
@@ -352,6 +353,10 @@ var createRelationsView = function () {
         elem.classList.remove('hidden')
         queryDOM('.action_relations_toogle_show_add_menu').classList.add('active')
         showVisibilityAddMenu = true
+        //hide the other menu
+        queryDOM('.graphLeftToolsOptionsLinksArea').classList.add('hidden')
+        queryDOM('.action_relations_toogle_show_add_links_menu').classList.remove('active')
+        showVisibilityAddLinksMenu = false
       }else{
         elem.classList.add('hidden')
         queryDOM('.action_relations_toogle_show_add_menu').classList.remove('active')
@@ -365,10 +370,23 @@ var createRelationsView = function () {
         elem.classList.remove('hidden')
         queryDOM('.action_relations_toogle_show_add_links_menu').classList.add('active')
         showVisibilityAddLinksMenu = true
+        //hide the product add
+        queryDOM('.graphLeftToolsOptionsArea').classList.add('hidden')
+        queryDOM('.action_relations_toogle_show_add_menu').classList.remove('active')
+        showVisibilityAddMenu = false
       }else{
         elem.classList.add('hidden')
         queryDOM('.action_relations_toogle_show_add_links_menu').classList.remove('active')
         showVisibilityAddLinksMenu = false
+      }
+    }, container)
+    bind(".action_relations_toogle_graph_selection_mode","click",(e)=>{
+      if (graphSelectionModeActive) {
+        activeGraph.setSelectionModeInactive()
+        graphSelectionModeActive = false
+      }else{
+        activeGraph.setSelectionModeActive()
+        graphSelectionModeActive = true
       }
     }, container)
 
@@ -1021,12 +1039,12 @@ var createRelationsView = function () {
     opacity: 0.90;
     border-radius: 5px;
     background-color: white;
-    height: 50px;
+    height: 46px;
     width: 475px;
     position: absolute;
     right: 10px;
     bottom: 20px;
-    padding-top: 7px;
+    padding-top: 5px;
     padding-left: 5px;
     box-shadow: 0px 0px 18px -6px rgba(0,0,0,0.35);`
 
@@ -1633,6 +1651,9 @@ var createRelationsView = function () {
         <button class="${showVisibilityAddLinksMenu ? 'active':''} ui basic icon button action_relations_toogle_show_add_links_menu" data-tooltip="Show items to add" data-position="bottom center" >
           <i class="code branch icon action_relations_toogle_show_add_links_menu"></i>
         </button>
+        <button class="${graphSelectionModeActive ? 'active':''} ui basic icon button action_relations_toogle_graph_selection_mode" data-tooltip="Select items" data-position="bottom center" >
+          <i class="border style icon action_relations_toogle_graph_selection_mode"></i>
+        </button>
         <button class="ui mini basic button action_relations_show_all_nodes_in_view" data-tooltip="Show All" data-position="bottom center">
           <i class="eye icon action_relations_show_all_nodes_in_view"></i>
         </button>
@@ -1960,6 +1981,10 @@ var createRelationsView = function () {
           "errors": []
       },
       nodeRadius: 25,
+      onSelectionEnd:function (node) {
+        activeGraph.setSelectionModeInactive()
+        graphSelectionModeActive = false;
+      },
       showLinksText:showLinksText,
       unpinNodeOnClick:!fixedValues,//disable node unpin when fixedgraph mode
       onNodeDragEnd:function (node) {

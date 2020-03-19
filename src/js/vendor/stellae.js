@@ -52,6 +52,7 @@ function stellae(_selector, _options) {
     var linkModeStartNode = undefined;
     var linkModeEndNode = undefined;
     var currentSelectedNodes = undefined;
+    var selectionModeActive = false;
 
     //box selection elements TODO reorganise
     function rect(x, y, w, h) {
@@ -110,6 +111,10 @@ function stellae(_selector, _options) {
         currentSelectedNodes = checkSelectedNode(start, end, nodes)
         markNodesSelected(currentSelectedNodes)
         console.log(currentSelectedNodes);
+        selectionModeActive = false
+        if (typeof options.onSelectionEnd === 'function') {
+            options.onSelectionEnd();
+        }
     };
 
     var zoom = d3.zoom().on('zoom', function() {
@@ -146,7 +151,7 @@ function stellae(_selector, _options) {
                  var transform = d3.zoomTransform(base.node());
                  return transform.invert(xy);
                }
-               if (d3.event.ctrlKey) {
+               if (d3.event.ctrlKey || selectionModeActive) {
                     base.on('.zoom', null);
                     let start = mouseTransform(d3.mouse(this))
                      startSelection(start);
@@ -1656,6 +1661,12 @@ function stellae(_selector, _options) {
     function getSelectedNodes() {
       return currentSelectedNodes
     }
+    function setSelectionModeActive() {
+      selectionModeActive = true;
+    }
+    function setSelectionModeInactive() {
+      selectionModeActive = false;
+    }
 
     // function getCurrentMousePosition() {
     //         var xy1 = mouseCurrentPosition
@@ -1699,6 +1710,8 @@ function stellae(_selector, _options) {
         updateWithCustomData: updateWithCustomData,
         exportNodesPosition: exportNodesPosition,
         importNodesPosition: importNodesPosition,
+        setSelectionModeActive:setSelectionModeActive,
+        setSelectionModeInactive:setSelectionModeInactive,
         setFocusedNodes:setFocusedNodes,
         setFadeOtherNodesOnHoover: setFadeOtherNodesOnHoover,
         getSelectedNodes: getSelectedNodes,
