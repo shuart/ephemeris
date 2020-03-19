@@ -79,7 +79,8 @@ var createRelationsView = function () {
   var theme={
     viewInterfaceList:(interfaceItems)=> {
       let html =
-      `<a style="${(addMode == 'compose')? "background-color: #6dce9e !important":""}" data-id="" class="item action_interfaces_toogle_compose">
+      `<div class="header item">Select, then double click on the graph to add</div>
+      <a style="${(addMode == 'compose')? "background-color: #6dce9e !important":""}" data-id="" class="item action_interfaces_toogle_compose">
         <i class='object group icon'></i>
         Composition
       </a>`
@@ -101,8 +102,10 @@ var createRelationsView = function () {
       let categoryArray = categoriesItems.map(c=>{
         return {uuid:c.uuid, name:c.name, type:'currentPbs', icon:"dolly"}
       })
+      let html =
+      `<div class="header item">Select, then double click on the graph to add</div>`
 
-      let html = items.concat(categoryArray).map(i=>
+      html += items.concat(categoryArray).map(i=>
         `<a style="${((addItemMode == i.type && addItemCatType == i.uuid)||(addItemMode == i.type && !i.uuid))? "background-color: #6dce9e !important":""}" data-type="${i.type}"  data-id="${i.uuid}"  class="item action_interface_change_add_item_type">
           <i class='${i.icon?i.icon:'dolly'} icon'></i>
           ${i.name}
