@@ -213,7 +213,13 @@ var createDbRealTimeAdaptater = function () {
   function logCallback(item) {
     console.log("item added to DB");
     console.log(item);
+
+    onlineBridge.sendCopy(app)
+
   }
+
+
+
   function addProject(newProject) {
     if (app.state.currentUser) {
       addProjectToUser(app.state.currentUser, newProject.uuid)
@@ -480,6 +486,10 @@ var createDbRealTimeAdaptater = function () {
       });
   }
 
+  function getDbReferences() {
+    return {users:users,projects:projects,localProjects:localProjects}
+  }
+
   self.getUser = getUser
   self.getUsers = getUsers
   self.setUser = setUser
@@ -502,6 +512,7 @@ var createDbRealTimeAdaptater = function () {
   self.setProject = setProject
   self.setProjectData = setProjectData
   self.removeProject = removeProject
+  self.getDbReferences = getDbReferences
   self.init = init
 
   return self
