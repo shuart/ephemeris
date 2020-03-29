@@ -235,14 +235,14 @@ var createOnlineAccountView = function ({
     console.log(isConnected);
     if (!isConnected) {
       connectionArea.innerHTML=`
-      <button class="ui disabled button">
+      <button class="ui disabled mini button">
         <i class="ellipsis horizontal icon"></i>
         Disconnected
       </button>
       `
     }else {
       connectionArea.innerHTML=`
-      <button class="ui teal disabled button">
+      <button class="ui teal disabled mini button">
         <i class="wifi icon"></i>
         Connected
       </button>

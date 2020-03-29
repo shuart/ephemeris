@@ -19,18 +19,19 @@ var init = function () {
 
   function addMessage (message) {
     //document.getElementById('main').innerHTML += `<p>${message.text}</p>`;
-    let receivedProject = message.text
+    console.log(message);
+    let receivedProject = message
     let dbs = dbConnector.getDbReferences()
-    dbs.projects.update({ uuid: receivedProject.uuid }, message.text, {}, function (err, numReplaced) {
+    dbs.projects.update({ uuid: receivedProject.uuid }, message, {}, function (err, numReplaced) {
       document.dispatchEvent(new Event('storeUpdated'))
     });
     $('body')
       .toast({
-        message: 'I am a toast, nice to meet you !'
+        message: 'Project updated online'
       });
   }
 
-  app.service('messages').on('created', addMessage);
+  app.service('projects').on('updated', addMessage);
 
 
 }
@@ -141,16 +142,32 @@ var checkProjectToLoad = async function () {
  var sendCopy = async function(localApp) {
 
    console.log("sending data");
-  // let dbs = dbConnector.getDbReferences()
-  // let projectUuid = localApp.state.currentProject
-  //  await dbs.projects.find({uuid: projectUuid}, async function (err, docs) {//TODO should use local projects after
-  //     //let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
-  //
-  //      await app.service('messages').create({
-  //         text: docs[0]
-  //       });
-  //
-  //     });
+
+  let dbs = dbConnector.getDbReferences()
+  let projectUuid = localApp.state.currentProject
+   await dbs.projects.find({uuid: projectUuid}, async function (err, docs) {//TODO should use local projects after
+      //let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
+      try {
+        let onlineProjectId = await app.service('projects').find({
+          query: {
+            uuid: projectUuid,
+            $select: [ '_id', 'uuid' ]
+          }
+
+        });
+        console.log(onlineProjectId);
+        if (onlineProjectId.data[0]) {
+          await app.service('projects').update(onlineProjectId.data[0]._id,docs[0]);
+        }else {
+          console.log("could not find project");
+        }
+
+      } catch (e) {
+        console.log("data could not be saved online");
+        console.log(e);
+      }
+
+  });
 }
 
 var getSharedProjects = async function () {
