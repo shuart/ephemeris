@@ -11,6 +11,8 @@ const app = feathers();
 var init = function () {
   // Register socket.io to talk to our server
   app.configure(feathers.socketio(socket));
+  // Set up the Feathers authentication client
+  app.configure(feathers.authentication());
 
   alert("socket initialized")
 
@@ -33,8 +35,86 @@ var init = function () {
 
 }
 
+var isAuthenticated = async function () {
+  try {
+    await app.reAuthenticate()
+    return true
+  } catch (e) {
+    console.log(e);
+    return false
+  }
+}
+
+const login = async function (credentials) {
+  try {
+    if(!credentials) {
+      // Try to authenticate using an existing token
+      await app.reAuthenticate();
+    } else {
+      // Otherwise log in with the `local` strategy using the credentials we got
+      await app.authenticate({
+        strategy: 'local',
+        ...credentials
+      });
+    }
+
+    // If successful, show the chat page
+    alert("logged")
+  } catch(error) {
+    // If we got an error, show the login page
+    alert("login refused")
+    console.log(error);
+  }
+};
+
+var connectToOnlineAccount = async function (user) {
+
+  const credentials = user;
+  console.log("trying to log");
+  console.log(credentials);
+  // First create the user
+  //await app.service('users').create(credentials);
+  // If successful log them in
+
+  await login(credentials);
+
+  try {
+    console.log("sending message");
+    await app.service('messages').create({
+       text: 'connected'
+     });
+  } catch (e) {
+    console.log(e);
+  }
+
+
+
+}
+var logOutFromOnlineAccount = async function () {
+  try {
+    await app.service('messages').create({
+       text: 'leaving'
+     });
+    await app.logout();
+    alert("unlogged")
+
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+
 var checkSyncStatus = async function(user) {
   console.log(user)
+
+
+  // checkProjectToLoad()
+
+
+
+}
+
+var checkProjectToLoad = async function () {
   let dbs = dbConnector.getDbReferences()
 
   const messages = await app.service('messages').find();
@@ -56,27 +136,54 @@ var checkSyncStatus = async function(user) {
   }else {
      console.log("No project To Sync");
    }
-
-
-
 }
 
  var sendCopy = async function(localApp) {
 
- console.log("sending data");
-  let dbs = dbConnector.getDbReferences()
-  let projectUuid = localApp.state.currentProject
-   await dbs.projects.find({uuid: projectUuid}, async function (err, docs) {//TODO should use local projects after
-      //let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
-
-       await app.service('messages').create({
-          text: docs[0]
-        });
-
-      });
-
+   console.log("sending data");
+  // let dbs = dbConnector.getDbReferences()
+  // let projectUuid = localApp.state.currentProject
+  //  await dbs.projects.find({uuid: projectUuid}, async function (err, docs) {//TODO should use local projects after
+  //     //let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
+  //
+  //      await app.service('messages').create({
+  //         text: docs[0]
+  //       });
+  //
+  //     });
 }
 
+var getSharedProjects = async function () {
+  const messages = await app.service('projects').find({
+    // query: {
+    //   $sort: { createdAt: -1 },
+    //   $limit: 25
+    // }
+  });
+
+  return messages
+}
+var getSharedProject = async function (uuid) {
+  const messages = await app.service('projects').find({
+    query: {
+      uuid: uuid
+    }
+  });
+
+  return messages
+}
+var createOnlineProject = async function (project) {
+  const messages = await app.service('projects').create(project);
+
+  return messages
+}
+
+self.getSharedProject = getSharedProject
+self.createOnlineProject = createOnlineProject
+self.getSharedProjects = getSharedProjects
+self.isAuthenticated = isAuthenticated
+self.connectToOnlineAccount = connectToOnlineAccount
+self.logOutFromOnlineAccount = logOutFromOnlineAccount
 self.checkSyncStatus = checkSyncStatus
 self.sendCopy = sendCopy
 self.init = init

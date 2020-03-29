@@ -171,7 +171,7 @@ var createProjectSelectionView = function (targetSelector) {
     setCurrentProject(undefined)
     renderCDC()//TODO Ugly
     if(onlineBridge){
-      onlineBridge.checkSyncStatus(app.state.currentUser)
+      onlineBridge.checkSyncStatus(app.state.currentUser) //TODO onlineBirdge prenvent autoupdate
       setTimeout(function () {update()}, 2000);
     }
     update()

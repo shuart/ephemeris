@@ -21,6 +21,49 @@ var createOnlineAccountView = function ({
         </div>
         </div>
       `
+    },
+    projectList: function (projects) {
+      return `
+      <div class="ui middle aligned divided list">
+         ${projects.map(p=>theme.projectElement(p)).join('')}
+     </div>
+     <div class="ui divider"></div>
+      `
+    },
+    projectElement: function (project) {
+      return `
+      <div class="item">
+       <div class="right floated content">
+         <div data-id="${project.uuid}" class="ui button action_online_account_set_project_as_local">Add to my projects</div>
+       </div>
+       <img class="ui avatar image" src="/images/avatar2/small/lena.png">
+       <div class="content">
+         ${project.name}
+         ${project.uuid}
+       </div>
+     </div>
+      `
+    },
+    localProjectList: function (projects) {
+      return `
+      <div class="ui middle aligned divided list">
+         ${projects.map(p=>theme.localProjectElement(p)).join('')}
+     </div>
+     <div class="ui divider"></div>
+      `
+    },
+    localProjectElement: function (project) {
+      return `
+      <div class="item">
+       <div class="right floated content">
+         <div data-id="${project.uuid}" class="ui button action_online_account_share_project">Add</div>
+       </div>
+       <img class="ui avatar image" src="/images/avatar2/small/lena.png">
+       <div class="content">
+         ${project.name}
+       </div>
+     </div>
+      `
     }
 
   }
@@ -48,67 +91,45 @@ var createOnlineAccountView = function ({
     connect(".action_online_account_close","click",(e)=>{
       sourceOccElement.remove()
     })
+    connect(".action_online_account_login","click",async (e)=>{
+      let dataSourceStore = app.store.userData.info
+      let i = deepCopy(dataSourceStore)
+      console.log('connecting');
+      let user = {email:i.mail, password:i.onlineAccountPassword}
+      await onlineBridge.connectToOnlineAccount(user)
 
+      sourceOccElement.remove()
+      update()
+    })
+    connect(".action_online_account_logout","click",async (e)=>{
+      await onlineBridge.logOutFromOnlineAccount()
 
-    connect(".action_online_account_edit_time_item","click",(e)=>{
-      console.log(event.target.parentElement.querySelector("input"));
-      event.target.parentElement.querySelector("input").style.display ="inline-block"
-      event.target.parentElement.querySelector("input").style.borderRadius ="8px"
-      event.target.parentElement.querySelector("input").style.borderStyle ="dashed"
-      event.target.parentElement.querySelector("input").style.borderColor ="#9ed2ce"
-      event.target.parentElement.querySelector("input").style.borderColor ="#e8e8e8"
-      event.target.parentElement.querySelector("input").style.backgroundColor= "#e8e8e8"
-      event.target.parentElement.querySelector("input").previousSibling.previousSibling.remove()
-      event.target.style.display ="none"
-      event.target.parentElement.querySelector("input").onchange = function (ev) {
-        //onEditItemTime({select:self, selectDiv:sourceEl, target:ev.target})
+      sourceOccElement.remove()
+      update()
+    })
+    connect(".action_online_account_share_project","click",async (e)=>{
 
-        console.log(ev);
-        push(act.edit("actions",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate, project:ev.target.dataset.project}))
-        sourceOccElement.remove()
-        update()
+      var allProjects = await query.items("projects")
+      var projectToShare = allProjects.find(p=>p.uuid== e.target.dataset.id)
+      await onlineBridge.createOnlineProject(projectToShare)
+
+      sourceOccElement.remove()
+      update()
+    })
+    connect(".action_online_account_set_project_as_local","click",async (e)=>{
+      let loadedProject = await onlineBridge.getSharedProject(e.target.dataset.id)
+      console.log(loadedProject);
+      if (loadedProject.data[0]) {
+        console.log(loadedProject.data[0]);
+        dbConnector.addProject(loadedProject.data[0])
       }
-      //sourceEl.remove()
+
+
+      sourceOccElement.remove()
+      update()
     })
 
-    connect(".action_online_account_select_item_assigned","click",(e)=>{
-      var metalinkType = e.target.dataset.prop;
-      var sourceTriggerId = e.target.dataset.id;
-      var projectStore = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0];
-      var metaLinks = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
-      var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
-      showListMenu({
-        sourceData:projectStore.stakeholders.items,
-        parentSelectMenu:e.select ,
-        multipleSelection:currentLinksUuidFromDS,
-        displayProp:"name",
-        searchable : true,
-        display:[
-          {prop:"name", displayAs:"Name", edit:false},
-          {prop:"desc", displayAs:"Description", edit:false}
-        ],
-        idProp:"uuid",
-        onCloseMenu: (ev)=>{
-          sourceOccElement.remove()
-          update()
-        },
-        onChangeSelect: (ev)=>{
-          console.log(ev.select.getSelected());
-          console.log(projectStore.metaLinks.items);
-          projectStore.metaLinks.items = projectStore.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
-          for (newSelected of ev.select.getSelected()) {
-            projectStore.metaLinks.items.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
-          }
-          console.log(projectStore.metaLinks.items);
-          saveDB()
-          sourceOccElement.remove()
-          update()
-        },
-        onClick: (ev)=>{
-          console.log("select");
-        }
-      })
-    })
+
   }
 
   var render = function (uuid) {
@@ -157,16 +178,17 @@ var createOnlineAccountView = function ({
 
     document.body.appendChild(sourceOccElement)
 
+    renderSharingInfo()
+
   }
 
   var renderProfile =function (uuid){
 
     let dataSourceStore = app.store.userData.info
     let i = deepCopy(dataSourceStore)
-    if (!i.userUuid || !i.userLastName  || !i.userUuid) {
-      i.userFirstName =i.userFirstName || 'Set your First Name'
-      i.userLastName =i.userLastName || 'Set your First Name'
-      i.userUuid =i.userUuid|| 'Set your uuid - You can find it in the "manage stakehoder" view'
+    if (!i.userUuid || !i.mail  || !i.onlineAccountPassword) {
+      i.mail =i.mail || 'Set your mail'
+      i.onlineAccountPassword =i.onlineAccountPassword || 'Set your password'
     }
 
     let html =`
@@ -175,23 +197,28 @@ var createOnlineAccountView = function ({
     </h2>
     <div data-id="${i.uuid}" class="ui segment">
       <div class="content">
-        <h3 class="header">First name</h3>
-        ${i.userFirstName}
-        <i data-prop="userFirstName" data-value="${i.userFirstName}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
+        <h3 class="header">Mail</h3>
+        ${i.mail}
+        <i data-prop="mail" data-value="${i.mail}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
         <div class="ui divider"></div>
 
         <h3 class="header">Last name</h3>
-        ${i.userLastName}
-        <i data-prop="userLastName" data-value="${i.userLastName}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
+        ${i.onlineAccountPassword}
+        <i data-prop="onlineAccountPassword" data-value="${i.onlineAccountPassword}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
         <div class="ui divider"></div>
 
-        <h3 class="header">UUID</h3>
-        ${i.userUuid}
-        <i data-prop="userUuid" data-value="${i.userUuid}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
-
-        <div class="ui divider"></div>
-
+        <button class="ui primary button action_online_account_login">
+          log-in
+        </button>
+        <button class="ui button action_online_account_logout">
+          log-out
+        </button>
       </div>
+    </div>
+    <div class="ui divider"></div>
+    <div class="online_account_connection_status_area"></div>
+    <div data-id="${i.uuid}" class="ui segment">
+      <div class="online_account_sharing_info_area" ></div>
     </div>
     <div class="ui divider"></div>
     `
@@ -201,67 +228,59 @@ var createOnlineAccountView = function ({
     return theme.menu()
   }
 
+  var renderSharingInfo = async function() {
+    let isConnected = await onlineBridge.isAuthenticated()
+    let renderArea = sourceOccElement.querySelector('.online_account_sharing_info_area')
+    let connectionArea = sourceOccElement.querySelector('.online_account_connection_status_area')
+    console.log(isConnected);
+    if (!isConnected) {
+      connectionArea.innerHTML=`
+      <button class="ui disabled button">
+        <i class="ellipsis horizontal icon"></i>
+        Disconnected
+      </button>
+      `
+    }else {
+      connectionArea.innerHTML=`
+      <button class="ui teal disabled button">
+        <i class="wifi icon"></i>
+        Connected
+      </button>
+      `
+
+      //local projects
+      let allLocalProjects = await query.items("projects")
+      let relevantProjects = []
+      if (app.store.relatedProjects && app.store.relatedProjects[0]) {
+        relevantProjects = allLocalProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+      }
+
+      //online projects
+      let onlineProjects = await onlineBridge.getSharedProjects()
+      let onlineProjectsIds= onlineProjects.data.map(p=>p.uuid)
+
+      // let activeOnlineProject =
+      let localOnlyProjects = relevantProjects.filter(p=>!onlineProjectsIds.includes(p.uuid))
+      let sharedLocalProjects = relevantProjects.filter(p=>onlineProjectsIds.includes(p.uuid))
+      //render
+
+      renderArea.innerHTML+="Local only Projects"
+      let localListHtml = theme.localProjectList(localOnlyProjects.reverse())
+      renderArea.innerHTML+=localListHtml
+
+      renderArea.innerHTML+="Shared local Projects"
+      let sharedLocalListHtml = theme.localProjectList(sharedLocalProjects.reverse())
+      renderArea.innerHTML+=sharedLocalListHtml
+
+      renderArea.innerHTML+="Other Shared Projects"
+      let listHtml = theme.projectList(onlineProjects.data.reverse())
+      renderArea.innerHTML+=listHtml
+    }
+  }
+
 
   //UTILS
-  var getActionObjectCopyFromUuid = function (uuid) {
-    let allActions = []
-    query.items("projects").forEach(function (store) {
-      let formatedActions = store.actions.items.map(a=>{//TODO only check open action
-        let copy = deepCopy(a)
-        copy.projectName = store.name;
-        copy.urgent = lessThanInSomeDays(a.dueDate,2)
-        copy.projectUuid = store.uuid
-        return copy
-      })
-      allActions = allActions.concat(formatedActions)
-    })
-    return allActions.find(a=>a.uuid == uuid)
-  }
-  var generateListeFromMeta = function (propName, sourceId, targetList, projectuuid, isEditable) {
-    var meta = query.items("projects").filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
-    var metalist = meta.filter(e => (e.type == propName && e.source == sourceId )).map(e => e.target)
-    var editHtml = `<i data-prop="${propName}" data-value='${JSON.stringify(metalist)}' data-id="${sourceId}" data-project="${projectuuid}" class="edit icon action_single_action_select_item_assigned" style="opacity:0.2"></i>`
-    function reduceChoices(acc, e) {
-      console.log(e);
-      var foudItem = targetList.find(i=>i.uuid == e)
-      var newItem = foudItem.name + " "+ (foudItem.lastName || " ")+" "
-      var formatedNewItem = newItem
-      if(formatedNewItem.length > 25) {
-          formatedNewItem = newItem.substring(0,10)+".. ";
-      }
-      var htmlNewItem = `<div data-inverted="" data-tooltip="${newItem}" class="ui mini teal label">${formatedNewItem}</div>`
-      return acc += htmlNewItem
-    }
-    var mainText = `<div class="ui mini label">Nobody</div>`
-    if (metalist[0]) {
-      mainText = metalist.reduce(reduceChoices,"")
-    }
-    return mainText + editHtml
-  }
-  var generateTimeFromMeta = function (propName, sourceId, value, projectuuid, isEditable) {
-    let today
-    let propDisplay ="No due Date";
-    let labelColor = ""
-    if (value) {
-      today = new Date(value).toISOString().substr(0, 10);
-      propDisplay = moment(value).format("MMMM Do YY");
-      console.log(new Date(value));
-      if (lessThanInSomeDays(new Date(value),10 )) {
-        labelColor = "orange"
-      }
-      if (lessThanInSomeDays(new Date(value),2 )) {
-        labelColor = "red"//redish
-      }
-    }else {
-      today = new Date().toISOString().substr(0, 10);
-    }
-    var mainText = `<div class="ui mini ${labelColor} label">${propDisplay}</div>`
-    var editHtml=`
-    <input data-project="${projectuuid}" data-prop="${propName}" data-id="${sourceId}" style="display:none;" type="date" class="dateinput ${sourceId} action_list_edit_time_input" name="trip-start" value="${today}">
-    <i data-project="${projectuuid}" data-prop="${propName}" data-value='${JSON.stringify(value)}' data-id="${sourceId}" class="edit icon action_single_action_edit_time_item" style="opacity:0.2">
-    </i>`
-    return mainText + editHtml
-  }
+
   var generateCloseInfo = function (value) {
     let mainText =''
     if (value && value != "") {
