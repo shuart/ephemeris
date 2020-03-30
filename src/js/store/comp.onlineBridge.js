@@ -3,16 +3,16 @@ var self ={};
 var objectIsActive = true;
 // Set up socket.io
 const socket = io('http://localhost:3030');
-  // Initialize a Feathers app
-const app = feathers();
+  // Initialize a Feathers client
+const client = feathers();
 
 
 
 var init = function () {
   // Register socket.io to talk to our server
-  app.configure(feathers.socketio(socket));
+  client.configure(feathers.socketio(socket));
   // Set up the Feathers authentication client
-  app.configure(feathers.authentication());
+  client.configure(feathers.authentication());
 
   alert("socket initialized")
 
@@ -21,24 +21,20 @@ var init = function () {
     //document.getElementById('main').innerHTML += `<p>${message.text}</p>`;
     console.log(message);
     let receivedProject = message
-    let dbs = dbConnector.getDbReferences()
-    dbs.projects.update({ uuid: receivedProject.uuid }, message, {}, function (err, numReplaced) {
-      document.dispatchEvent(new Event('storeUpdated'))
-    });
-    $('body')
-      .toast({
-        message: 'Project updated online'
-      });
+    if (app.store.userData.info.syncingProjects && app.store.userData.info.syncingProjects.includes(receivedProject.uuid )) {//check if project is supposed to sync
+      resyncFromOnlineProject(message)
+    }else {
+      console.log("Not Syncying update as project is not supposed to sync");
+    }
   }
 
-  app.service('projects').on('updated', addMessage);
-
+  client.service('projects').on('updated', addMessage);
 
 }
 
 var isAuthenticated = async function () {
   try {
-    await app.reAuthenticate()
+    await client.reAuthenticate()
     return true
   } catch (e) {
     console.log(e);
@@ -50,10 +46,10 @@ const login = async function (credentials) {
   try {
     if(!credentials) {
       // Try to authenticate using an existing token
-      await app.reAuthenticate();
+      await client.reAuthenticate();
     } else {
       // Otherwise log in with the `local` strategy using the credentials we got
-      await app.authenticate({
+      await client.authenticate({
         strategy: 'local',
         ...credentials
       });
@@ -74,14 +70,14 @@ var connectToOnlineAccount = async function (user) {
   console.log("trying to log");
   console.log(credentials);
   // First create the user
-  //await app.service('users').create(credentials);
+  //await client.service('users').create(credentials);
   // If successful log them in
 
   await login(credentials);
 
   try {
     console.log("sending message");
-    await app.service('messages').create({
+    await client.service('messages').create({
        text: 'connected'
      });
   } catch (e) {
@@ -93,10 +89,10 @@ var connectToOnlineAccount = async function (user) {
 }
 var logOutFromOnlineAccount = async function () {
   try {
-    await app.service('messages').create({
+    await client.service('messages').create({
        text: 'leaving'
      });
-    await app.logout();
+    await client.logout();
     alert("unlogged")
 
   } catch (e) {
@@ -118,7 +114,7 @@ var checkSyncStatus = async function(user) {
 var checkProjectToLoad = async function () {
   let dbs = dbConnector.getDbReferences()
 
-  const messages = await app.service('messages').find();
+  const messages = await client.service('messages').find();
 
   console.log(messages);
   let projectToSync = messages[messages.length-1].text
@@ -145,33 +141,38 @@ var checkProjectToLoad = async function () {
 
   let dbs = dbConnector.getDbReferences()
   let projectUuid = localApp.state.currentProject
-   await dbs.projects.find({uuid: projectUuid}, async function (err, docs) {//TODO should use local projects after
-      //let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
-      try {
-        let onlineProjectId = await app.service('projects').find({
-          query: {
-            uuid: projectUuid,
-            $select: [ '_id', 'uuid' ]
-          }
 
-        });
-        console.log(onlineProjectId);
-        if (onlineProjectId.data[0]) {
-          await app.service('projects').update(onlineProjectId.data[0]._id,docs[0]);
-        }else {
-          console.log("could not find project");
-        }
+  if (localApp.store.userData.info.syncingProjects && localApp.store.userData.info.syncingProjects.includes(projectUuid)) {//check if project is supposed to sync
+    await dbs.projects.find({uuid: projectUuid}, async function (err, docs) {//TODO should use local projects after
+       //let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
+       try {
+         let onlineProjectId = await client.service('projects').find({
+           query: {
+             uuid: projectUuid,
+             $select: [ '_id', 'uuid' ]
+           }
 
-      } catch (e) {
-        console.log("data could not be saved online");
-        console.log(e);
-      }
+         });
+         console.log(onlineProjectId);
+         if (onlineProjectId.data[0]) {
+           await client.service('projects').update(onlineProjectId.data[0]._id,docs[0]);
+         }else {
+           console.log("could not find project");
+         }
 
-  });
+       } catch (e) {
+         console.log("data could not be saved online");
+         console.log(e);
+       }
+
+   });
+  }else {
+    console.log("Not Syncying update as project is not supposed to sync");
+  }
 }
 
 var getSharedProjects = async function () {
-  const messages = await app.service('projects').find({
+  const messages = await client.service('projects').find({
     // query: {
     //   $sort: { createdAt: -1 },
     //   $limit: 25
@@ -181,7 +182,7 @@ var getSharedProjects = async function () {
   return messages
 }
 var getSharedProject = async function (uuid) {
-  const messages = await app.service('projects').find({
+  const messages = await client.service('projects').find({
     query: {
       uuid: uuid
     }
@@ -190,11 +191,33 @@ var getSharedProject = async function (uuid) {
   return messages
 }
 var createOnlineProject = async function (project) {
-  const messages = await app.service('projects').create(project);
+  const messages = await client.service('projects').create(project);
 
   return messages
 }
 
+var getOnlineProjectAndResync = async function (uuid) {
+  let onlineProject = await getSharedProject(uuid)
+  console.log(onlineProject);
+  if (onlineProject.data[0]) {
+    resyncFromOnlineProject(onlineProject.data[0])
+  }
+
+}
+
+var resyncFromOnlineProject = function (onlineProject) {
+  let dbs = dbConnector.getDbReferences()
+  dbs.projects.update({ uuid: onlineProject.uuid }, onlineProject, {}, function (err, numReplaced) {
+    document.dispatchEvent(new Event('storeUpdated'))
+    $('body')
+      .toast({
+        message: 'Project updated online'
+      });
+  });
+
+}
+
+self.getOnlineProjectAndResync = getOnlineProjectAndResync
 self.getSharedProject = getSharedProject
 self.createOnlineProject = createOnlineProject
 self.getSharedProjects = getSharedProjects

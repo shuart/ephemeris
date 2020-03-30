@@ -64,6 +64,27 @@ var createOnlineAccountView = function ({
        </div>
      </div>
       `
+    },
+    sharedProjectList: function (projects) {
+      return `
+      <div class="ui middle aligned divided list">
+         ${projects.map(p=>theme.sharedProjectElement(p)).join('')}
+     </div>
+     <div class="ui divider"></div>
+      `
+    },
+    sharedProjectElement: function (project) {
+      return `
+      <div class="item">
+       <div class="right floated content">
+         <div data-id="${project.uuid}" class="ui button ${project.isSyncing?"action_online_account_unsync_project":'action_online_account_sync_project'}">${project.isSyncing?"Stop Syncing":'Sync'}</div>
+       </div>
+       <img class="ui avatar image" src="/images/avatar2/small/lena.png">
+       <div class="content">
+         ${project.name}
+       </div>
+     </div>
+      `
     }
 
   }
@@ -113,6 +134,21 @@ var createOnlineAccountView = function ({
       var projectToShare = allProjects.find(p=>p.uuid== e.target.dataset.id)
       await onlineBridge.createOnlineProject(projectToShare)
 
+      setProjectAsSyncing(e.target.dataset.id)
+
+      sourceOccElement.remove()
+      update()
+    })
+    connect(".action_online_account_unsync_project","click",async (e)=>{
+      setProjectAsNotSyncing(e.target.dataset.id)
+
+      sourceOccElement.remove()
+      update()
+    })
+    connect(".action_online_account_sync_project","click",async (e)=>{
+      setProjectAsSyncing(e.target.dataset.id)
+        onlineBridge.getOnlineProjectAndResync(e.target.dataset.id)
+
       sourceOccElement.remove()
       update()
     })
@@ -121,8 +157,9 @@ var createOnlineAccountView = function ({
       console.log(loadedProject);
       if (loadedProject.data[0]) {
         console.log(loadedProject.data[0]);
-        dbConnector.addProject(loadedProject.data[0])
+        await dbConnector.addProject(loadedProject.data[0])
       }
+      setProjectAsSyncing(loadedProject.data[0].uuid)
 
 
       sourceOccElement.remove()
@@ -262,6 +299,17 @@ var createOnlineAccountView = function ({
       // let activeOnlineProject =
       let localOnlyProjects = relevantProjects.filter(p=>!onlineProjectsIds.includes(p.uuid))
       let sharedLocalProjects = relevantProjects.filter(p=>onlineProjectsIds.includes(p.uuid))
+
+      //check if the project is Syncing
+      if (app.store.userData.info.syncingProjects) {//is there some project that sync? check if the prop is already used
+        sharedLocalProjects.forEach((item, i) => {
+          let isSyncing = app.store.userData.info.syncingProjects.includes(item.uuid)
+          if (isSyncing) {
+            item.isSyncing = true
+          }
+        });
+      }
+
       //render
 
       renderArea.innerHTML+="Local only Projects"
@@ -269,13 +317,28 @@ var createOnlineAccountView = function ({
       renderArea.innerHTML+=localListHtml
 
       renderArea.innerHTML+="Shared local Projects"
-      let sharedLocalListHtml = theme.localProjectList(sharedLocalProjects.reverse())
+      let sharedLocalListHtml = theme.sharedProjectList(sharedLocalProjects.reverse())
       renderArea.innerHTML+=sharedLocalListHtml
 
       renderArea.innerHTML+="Other Shared Projects"
       let listHtml = theme.projectList(onlineProjects.data.reverse())
       renderArea.innerHTML+=listHtml
     }
+  }
+
+  var setProjectAsSyncing = function (projectUuid) {
+    if (!app.store.userData.info.syncingProjects) {//if properrty is used for the first time
+      app.store.userData.info.syncingProjects = []
+    }
+    app.store.userData.info.syncingProjects.push(projectUuid)
+    console.log(app.store.userData.info.syncingProjects);
+    dbConnector.setUserInfo(app.state.currentUser , 'syncingProjects', app.store.userData.info.syncingProjects)
+  }
+  var setProjectAsNotSyncing = function (projectUuid) {
+
+    app.store.userData.info.syncingProjects= app.store.userData.info.syncingProjects.filter(p => p != projectUuid)
+    console.log(app.store.userData.info.syncingProjects);
+    dbConnector.setUserInfo(app.state.currentUser , 'syncingProjects', app.store.userData.info.syncingProjects)
   }
 
 
