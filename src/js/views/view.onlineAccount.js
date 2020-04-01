@@ -34,12 +34,11 @@ var createOnlineAccountView = function ({
       return `
       <div class="item">
        <div class="right floated content">
-         <div data-id="${project.uuid}" class="ui button action_online_account_set_project_as_local">Add to my projects</div>
+         <div data-id="${project.uuid}" class="ui mini button action_online_account_set_project_as_local">Add to my projects</div>
        </div>
-       <img class="ui avatar image" src="/images/avatar2/small/lena.png">
+       <i class="building outline middle aligned icon"></i>
        <div class="content">
          ${project.name}
-         ${project.uuid}
        </div>
      </div>
       `
@@ -56,9 +55,9 @@ var createOnlineAccountView = function ({
       return `
       <div class="item">
        <div class="right floated content">
-         <div data-id="${project.uuid}" class="ui button action_online_account_share_project">Add</div>
+         <div data-id="${project.uuid}" class="ui mini button action_online_account_share_project">Add</div>
        </div>
-       <img class="ui avatar image" src="/images/avatar2/small/lena.png">
+       <i class="building outline middle aligned icon"></i>
        <div class="content">
          ${project.name}
        </div>
@@ -77,11 +76,13 @@ var createOnlineAccountView = function ({
       return `
       <div class="item">
        <div class="right floated content">
-         <div data-id="${project.uuid}" class="ui button ${project.isSyncing?"action_online_account_unsync_project":'action_online_account_sync_project'}">${project.isSyncing?"Stop Syncing":'Sync'}</div>
+         <div data-id="${project.uuid}" class="ui mini button ${project.isSyncing?"action_online_account_unsync_project":'action_online_account_sync_project'}">${project.isSyncing?"Stop Syncing":'Sync'}</div>
        </div>
-       <img class="ui avatar image" src="/images/avatar2/small/lena.png">
+       <i class="building outline middle aligned icon"></i>
        <div class="content">
          ${project.name}
+         ${project.isSyncing?"<div class='ui mini horizontal teal label'>Synced</div>":"<div class='ui mini horizontal red label'>Not Synced</div>"}
+
        </div>
      </div>
       `
@@ -111,6 +112,7 @@ var createOnlineAccountView = function ({
 
     connect(".action_online_account_close","click",(e)=>{
       sourceOccElement.remove()
+      pageManager.setActivePage("projectSelection")
     })
     connect(".action_online_account_login","click",async (e)=>{
       let dataSourceStore = app.store.userData.info
@@ -299,6 +301,8 @@ var createOnlineAccountView = function ({
       // let activeOnlineProject =
       let localOnlyProjects = relevantProjects.filter(p=>!onlineProjectsIds.includes(p.uuid))
       let sharedLocalProjects = relevantProjects.filter(p=>onlineProjectsIds.includes(p.uuid))
+      let sharedLocalProjectsIds= sharedLocalProjects.map(p=>p.uuid)
+      onlineProjects.data = onlineProjects.data.filter(p=>!sharedLocalProjectsIds.includes(p.uuid))
 
       //check if the project is Syncing
       if (app.store.userData.info.syncingProjects) {//is there some project that sync? check if the prop is already used

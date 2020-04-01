@@ -2,34 +2,44 @@ var createOnlineBridge = function () {
 var self ={};
 var objectIsActive = true;
 // Set up socket.io
-const socket = io('http://localhost:3030');
+// const socket = io('http://localhost:3030');
   // Initialize a Feathers client
 const client = feathers();
+var clientIsConfigured = false;
 
 
 
 var init = function () {
-  // Register socket.io to talk to our server
-  client.configure(feathers.socketio(socket));
-  // Set up the Feathers authentication client
-  client.configure(feathers.authentication());
 
-  alert("socket initialized")
+}
+var connect = function (serverAdress) {
+  if (!clientIsConfigured) {
+    // Register socket.io to talk to our server
+    // var socket = io('http://localhost:3030');
+    serverAdress = serverAdress ||'http://localhost:3030'
+    var socket = io(serverAdress);
+    client.configure(feathers.socketio(socket));
+    // Set up the Feathers authentication client
+    client.configure(feathers.authentication());
+
+    console.log("socket initialized")
+    clientIsConfigured = true
 
 
-  function addMessage (message) {
-    //document.getElementById('main').innerHTML += `<p>${message.text}</p>`;
-    console.log(message);
-    let receivedProject = message
-    if (app.store.userData.info.syncingProjects && app.store.userData.info.syncingProjects.includes(receivedProject.uuid )) {//check if project is supposed to sync
-      resyncFromOnlineProject(message)
-    }else {
-      console.log("Not Syncying update as project is not supposed to sync");
+    function addMessage (message) {
+      //document.getElementById('main').innerHTML += `<p>${message.text}</p>`;
+      console.log(message);
+      let receivedProject = message
+      if (app.store.userData.info.syncingProjects && app.store.userData.info.syncingProjects.includes(receivedProject.uuid )) {//check if project is supposed to sync
+        resyncFromOnlineProject(message)
+      }else {
+        console.log("Not Syncying update as project is not supposed to sync");
+      }
     }
+
+    client.service('projects').on('updated', addMessage);
   }
-
-  client.service('projects').on('updated', addMessage);
-
+  login()
 }
 
 var isAuthenticated = async function () {
@@ -56,10 +66,10 @@ const login = async function (credentials) {
     }
 
     // If successful, show the chat page
-    alert("logged")
+    console.log("logged")
   } catch(error) {
     // If we got an error, show the login page
-    alert("login refused")
+    console.log("login refused")
     console.log(error);
   }
 };
@@ -209,10 +219,11 @@ var resyncFromOnlineProject = function (onlineProject) {
   let dbs = dbConnector.getDbReferences()
   dbs.projects.update({ uuid: onlineProject.uuid }, onlineProject, {}, function (err, numReplaced) {
     document.dispatchEvent(new Event('storeUpdated'))
-    $('body')
-      .toast({
-        message: 'Project updated online'
-      });
+    console.log('updated from online project');
+    // $('body')
+    //   .toast({
+    //     message: 'Project updated online'
+    //   });
   });
 
 }
@@ -225,6 +236,7 @@ self.isAuthenticated = isAuthenticated
 self.connectToOnlineAccount = connectToOnlineAccount
 self.logOutFromOnlineAccount = logOutFromOnlineAccount
 self.checkSyncStatus = checkSyncStatus
+self.connect = connect
 self.sendCopy = sendCopy
 self.init = init
 
