@@ -192,6 +192,12 @@ var store = {
   settings:{
     items:[]
   },
+  itemsOrder:{
+    items:[]
+  },
+  onlineHistory:{
+    items:[]
+  },
   links:[] //TODO unifier links et metalinks
 }
 

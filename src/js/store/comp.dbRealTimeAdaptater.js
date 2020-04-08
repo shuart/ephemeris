@@ -210,14 +210,44 @@ var createDbRealTimeAdaptater = function () {
   function getProjects() {
 
   }
-  function logCallback(item) {
-    console.log("item added to DB");
-    console.log(item);
 
-    onlineBridge.sendCopy(app)
+  //=====Connect to online Bridge=====
+  async function logCallback(actionItem) {
+    console.log("item added to DB");
+    console.log(actionItem);
+
+    let onlineHistoryItem = actionItem
+
+    await addOnlineHistoryItem(onlineHistoryItem)
+    //data has been persisted, now try to synchronise it
+
+    onlineBridge.sendCopy(app, actionItem)
 
   }
 
+  function addOnlineHistoryItem(item) {
+    let projectUuid = item.projectUuid
+    console.log(projectUuid);
+    let selector = {}
+    // selector["onlineHistory.items"] = JSON.stringify(item)
+    selector["onlineHistory.items"] = item
+    let actionItem = { $push: selector }
+
+    console.log(actionItem);
+    console.log(selector);
+
+    return new Promise(function(resolve, reject) {
+        projects.update({ uuid: projectUuid }, actionItem, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+          localProjects.update({ uuid: projectUuid }, actionItem, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+            console.log("persisted online item");
+          });
+          resolve(affectedDocuments[0])
+        });
+      }).catch(function(err) {
+        reject(err)
+      });
+  }
+  //=====END Connect to online Bridge=====
 
 
   function addProject(newProject) {
@@ -238,20 +268,56 @@ var createDbRealTimeAdaptater = function () {
         reject(err)
       });
   }
-  function addProjectItem(projectUuid, collectionName, item) {
-    let selector = {}
-    selector[collectionName+".items"] = item
-    return new Promise(function(resolve, reject) {
-        projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-          logCallback(item)
-          localProjects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-            console.log("persisted");
+
+  function updateDB(callBackItem) {
+
+    if (callBackItem.type == "update") {
+
+      let projectUuid = callBackItem.projectUuid
+      let selector = {}
+      selector[callBackItem.selectorProperty] = callBackItem.item
+      let actionItem = {}
+      actionItem[callBackItem.subtype] = selector
+
+      return new Promise(function(resolve, reject) {
+          projects.update({ uuid: projectUuid }, actionItem, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+            logCallback(callBackItem)
+            localProjects.update({ uuid: projectUuid }, actionItem, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+              console.log("persisted");
+            });
+            resolve(affectedDocuments[0])
           });
-          resolve(affectedDocuments[0])
+        }).catch(function(err) {
+          // reject(err)
+          console.log(err);
+          alert("error in saving to DB")
         });
-      }).catch(function(err) {
-        reject(err)
-      });
+    }
+
+  }
+
+  function addProjectItem(projectUuid, collectionName, item) {
+
+    let selectorProperty = collectionName+".items"
+    let callBackItem = {type:"update",subtype:"$push", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:item}
+
+    return updateDB(callBackItem)
+    // let selector = {}
+    // selector[selectorProperty] = item
+    // let actionItem = { $push: selector }
+
+
+    // return new Promise(function(resolve, reject) {
+    //     projects.update({ uuid: projectUuid }, actionItem, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+    //       logCallback(callBackItem)
+    //       localProjects.update({ uuid: projectUuid }, actionItem, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+    //         console.log("persisted");
+    //       });
+    //       resolve(affectedDocuments[0])
+    //     });
+    //   }).catch(function(err) {
+    //     reject(err)
+    //   });
   }
   function addProjectLink(projectUuid, collectionName, link) {
     let selector = {}

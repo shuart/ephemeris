@@ -466,6 +466,13 @@ var createOverview = function (targetSelector) {
       dbConnector.addProjectCollection(store.uuid, "itemsOrder", store.itemsOrder)
       alertAboutUpdate("custom item order have been added.")
     }
+    if (!store.onlineHistory) {
+      store.onlineHistory={
+        items:[]
+      },
+      dbConnector.addProjectCollection(store.uuid, "onlineHistory", store.onlineHistory)
+      alertAboutUpdate("Online History have been added.")
+    }
 
 
   }

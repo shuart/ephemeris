@@ -148,7 +148,7 @@ var checkProjectToLoad = async function () {
    }
 }
 
- var sendCopy = async function(localApp) {
+ var sendCopy = async function(localApp, actionItem) {
 
    console.log("sending data");
 
@@ -158,7 +158,7 @@ var checkProjectToLoad = async function () {
   if (localApp.store.userData.info.syncingProjects && localApp.store.userData.info.syncingProjects.includes(projectUuid)) {//check if project is supposed to sync
     await dbs.projects.find({uuid: projectUuid}, async function (err, docs) {//TODO should use local projects after
        //let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
-       try {
+       try { //get the online id of the project
          let onlineProjectId = await client.service('projects').find({
            query: {
              uuid: projectUuid,
@@ -167,8 +167,11 @@ var checkProjectToLoad = async function () {
 
          });
          console.log(onlineProjectId);
-         if (onlineProjectId.data[0]) {
-           await client.service('projects').update(onlineProjectId.data[0]._id,docs[0]);
+         if (onlineProjectId.data[0]) { //update the online project
+           sendAllProject(onlineProjectId.data[0]._id,docs[0])
+           console.log("data sent");
+           sendNotSyncedChanges(onlineProjectId.data[0]._id,docs[0])
+           console.log("partial data sent");
          }else {
            console.log("could not find project");
          }
@@ -182,6 +185,23 @@ var checkProjectToLoad = async function () {
   }else {
     console.log("Not Syncying update as project is not supposed to sync");
   }
+}
+
+var sendAllProject = async function ( onlineId, projectData) {
+  await client.service('projects').update(onlineId,projectData);
+}
+var sendNotSyncedChanges = async function (onlineId,projectData) {
+  //get the lastChange
+  let change = projectData.onlineHistory.items[projectData.onlineHistory.items.length-1]
+  console.log(change);
+  console.log( projectData.onlineHistory);
+  if (change) {
+    if (change.type == "update") {
+      console.log(change.data);
+      alert('changé')
+    }
+  }
+
 }
 
 var getSharedProjects = async function () {
