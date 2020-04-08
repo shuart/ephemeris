@@ -280,12 +280,12 @@ var createDbRealTimeAdaptater = function () {
       actionItem[callBackItem.subtype] = selector
 
       return new Promise(function(resolve, reject) {
-          projects.update({ uuid: projectUuid }, actionItem, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+          projects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
             logCallback(callBackItem)
-            localProjects.update({ uuid: projectUuid }, actionItem, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+            localProjects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
               console.log("persisted");
             });
-            resolve(affectedDocuments[0])
+            resolve(affectedDocuments)
           });
         }).catch(function(err) {
           // reject(err)
@@ -305,57 +305,23 @@ var createDbRealTimeAdaptater = function () {
 
   }
   function addProjectLink(projectUuid, collectionName, link) {
-    // let selector = {}
-    // selector[collectionName+".links"] = link
 
     let selectorProperty = collectionName+".links"
     let callBackItem = {type:"update",subtype:"$push", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:link}
 
     return updateDB(callBackItem)
 
-    // return new Promise(function(resolve, reject) {
-    //     projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-    //       logCallback()
-    //       localProjects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-    //         console.log("persisted");
-    //       });
-    //       resolve(affectedDocuments[0])
-    //     });
-    //   }).catch(function(err) {
-    //     reject(err)
-    //   });
   }
   function removeProjectItem(projectUuid, collectionName, item) {
-    // let selector = {}
-    // selector[collectionName+".items"] = {uuid:item}
 
     let selectorProperty = collectionName+".items"
     let callBackItem = {type:"update",subtype:"$pull", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:{uuid:item}}
 
     return updateDB(callBackItem)
-    // return new Promise(function(resolve, reject) {
-    //     projects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-    //       logCallback(item)
-    //       localProjects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-    //         console.log("persisted");
-    //       });
-    //       resolve(affectedDocuments[0])
-    //     });
-    //   }).catch(function(err) {
-    //     reject(err)
-    //   });
+
   }
   function removeProjectLink(projectUuid, collectionName, link) {
-    // let selector = {}
-    // if (typeof link === "string") {
-    //   selector[collectionName+".links"] = {uuid:link}
-    // }else if (link.source && !link.target) {
-    //   selector[collectionName+".links"] = {source:link.source }
-    // }else if (link.target && !link.source) {
-    //   selector[collectionName+".links"] = {target:link.target}
-    // }else if (link.target && link.source) {
-    //   selector[collectionName+".links"] = {source:link.source, target:link.target}
-    // }
+
     let item = undefined
     if (typeof link === "string") {
       item = {uuid:link}
@@ -372,17 +338,6 @@ var createDbRealTimeAdaptater = function () {
 
     return updateDB(callBackItem)
 
-    // return new Promise(function(resolve, reject) {
-    //     projects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-    //       logCallback(item)
-    //       localProjects.update({ uuid: projectUuid }, { $pull: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-    //         console.log("persisted");
-    //       });
-    //       resolve(affectedDocuments[0])
-    //     });
-    //   }).catch(function(err) {
-    //     reject(err)
-    //   });
   }
   function updateProjectItem(projectUuid, collectionName, itemId, prop, value) {
 
@@ -390,15 +345,22 @@ var createDbRealTimeAdaptater = function () {
 
       await projects.find({uuid: projectUuid}, async function (err, docs) {
         let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
-        let selector = {}
-        selector[collectionName+".items."+indexToChange+"."+prop] = value
-        await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-            logCallback(upsert)
-            localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-                console.log("persisted");
-              });
-            resolve(affectedDocuments)
-          });
+        // let selector = {}
+        // selector[collectionName+".items."+indexToChange+"."+prop] = value
+
+        let selectorProperty = collectionName+".items."+indexToChange+"."+prop
+        let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value}
+
+        await updateDB(callBackItem)
+        resolve()
+
+        // await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+        //     logCallback(upsert)
+        //     localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+        //         console.log("persisted");
+        //       });
+        //     resolve(affectedDocuments)
+        //   });
         });
       });
 
@@ -415,15 +377,22 @@ var createDbRealTimeAdaptater = function () {
 
       await projects.find({uuid: projectUuid}, async function (err, docs) {
         let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
-        let selector = {}
-        selector[collectionName+".items."+indexToChange] = value
-        await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-            logCallback(upsert)
-            localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-                console.log("persisted");
-              });
-            resolve(affectedDocuments)
-          });
+        // let selector = {}
+        // selector[collectionName+".items."+indexToChange] = value
+
+        let selectorProperty = collectionName+".items."+indexToChange
+        let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value}
+
+        await updateDB(callBackItem)
+        resolve()
+
+        // await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+        //     logCallback(upsert)
+        //     localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+        //         console.log("persisted");
+        //       });
+        //     resolve(affectedDocuments)
+        //   });
         });
       });
   }
@@ -435,51 +404,70 @@ var createDbRealTimeAdaptater = function () {
         let collectionOrderIndex = docs[0].itemsOrder.items.findIndex(o=>o.collectionName==collectionName)
         // let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
         if (collectionOrderIndex<0) { //if order is not yet defined
-          let selector = {}
-          selector["itemsOrder.items"] = {uuid:genuuid(),collectionName:collectionName, order:value }
-          return new Promise(function(resolve, reject) {
-              projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-                logCallback(item)
-                localProjects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-                  console.log("new order added");
-                  console.log("persisted");
-                });
-                resolve(affectedDocuments[0])
-              });
-            }).catch(function(err) {
-              reject(err)
-            });
+          // let selector = {}
+          // selector["itemsOrder.items"] = {uuid:genuuid(),collectionName:collectionName, order:value }
+
+          let selectorProperty = "itemsOrder.items"
+          let callBackItem = {type:"update",subtype:"$push", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:{uuid:genuuid(),collectionName:collectionName, order:value }}
+
+          await updateDB(callBackItem)
+          resolve()
+
+          // return new Promise(function(resolve, reject) {
+          //     projects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+          //       logCallback(item)
+          //       localProjects.update({ uuid: projectUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+          //         console.log("new order added");
+          //         console.log("persisted");
+          //       });
+          //       resolve(affectedDocuments[0])
+          //     });
+          //   }).catch(function(err) {
+          //     reject(err)
+          //   });
         }else {
           let indexToChange = collectionOrderIndex
-          let selector = {}
-          selector["itemsOrder.items."+indexToChange+".order"] = value
-          await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-              logCallback(upsert)
-              localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-                  console.log(docs[0]);
-                  console.log(value);
-                  console.log("order modified");
-                  console.log("persisted");
-                });
-              resolve(affectedDocuments)
-            });
+          // let selector = {}
+          // selector["itemsOrder.items."+indexToChange+".order"] = value
+
+          let selectorProperty = "itemsOrder.items."+indexToChange+".order"
+          let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value}
+
+          await updateDB(callBackItem)
+          resolve()
+
+          // await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+          //     logCallback(upsert)
+          //     localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+          //         console.log(docs[0]);
+          //         console.log(value);
+          //         console.log("order modified");
+          //         console.log("persisted");
+          //       });
+          //     resolve(affectedDocuments)
+          //   });
         }
       });
     });
   }
   function addProjectCollection(projectUuid, collectionName, value) {
 
-    return new Promise(async function(resolve, reject) {
-      let selector = {}
-      selector[collectionName] = value
-      await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-          logCallback(upsert)
-          localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-              console.log("persisted");
-            });
-          resolve(affectedDocuments)
-        });
-    });
+    let selectorProperty = collectionName
+    let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value}
+
+    return updateDB(callBackItem)
+
+    // return new Promise(async function(resolve, reject) {
+    //   let selector = {}
+    //   selector[collectionName] = value
+    //   await projects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+    //       logCallback(upsert)
+    //       localProjects.update({ uuid: projectUuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
+    //           console.log("persisted");
+    //         });
+    //       resolve(affectedDocuments)
+    //     });
+    // });
   }
   //SPECIAL CASES
 
