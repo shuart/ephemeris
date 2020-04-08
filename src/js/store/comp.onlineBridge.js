@@ -13,9 +13,12 @@ var init = function () {
 
 }
 var connect = function (serverAdress) {
-  if (!clientIsConfigured) {
+  if (!clientIsConfigured && serverAdress ) {
     // Register socket.io to talk to our server
     // var socket = io('http://localhost:3030');
+    if (!serverAdress) {
+      alert("bridgeServer not found. Fallback on local server if available")
+    }
     serverAdress = serverAdress ||'http://localhost:3030'
     var socket = io(serverAdress);
     client.configure(feathers.socketio(socket));

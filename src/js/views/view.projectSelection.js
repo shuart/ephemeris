@@ -171,7 +171,7 @@ var createProjectSelectionView = function (targetSelector) {
     setCurrentProject(undefined)
     renderCDC()//TODO Ugly
     if(onlineBridge){
-      onlineBridge.connect() 
+      onlineBridge.connect(app.store.userData.info.bridgeServer)
       // setTimeout(function () {update()}, 2000);
     }
     update()

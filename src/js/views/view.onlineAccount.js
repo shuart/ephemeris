@@ -119,6 +119,7 @@ var createOnlineAccountView = function ({
       let i = deepCopy(dataSourceStore)
       console.log('connecting');
       let user = {email:i.mail, password:i.onlineAccountPassword}
+      await onlineBridge.connect(app.store.userData.info.bridgeServer)
       await onlineBridge.connectToOnlineAccount(user)
 
       sourceOccElement.remove()
@@ -227,6 +228,7 @@ var createOnlineAccountView = function ({
     let i = deepCopy(dataSourceStore)
     if (!i.userUuid || !i.mail  || !i.onlineAccountPassword) {
       i.mail =i.mail || 'Set your mail'
+      i.bridgeServer =i.bridgeServer || 'Set your server adress'
       i.onlineAccountPassword =i.onlineAccountPassword || 'Set your password'
     }
 
@@ -236,6 +238,11 @@ var createOnlineAccountView = function ({
     </h2>
     <div data-id="${i.uuid}" class="ui segment">
       <div class="content">
+        <h3 class="header">Server</h3>
+        ${i.bridgeServer}
+        <i data-prop="bridgeServer" data-value="${i.bridgeServer}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
+        <div class="ui divider"></div>
+
         <h3 class="header">Mail</h3>
         ${i.mail}
         <i data-prop="mail" data-value="${i.mail}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
