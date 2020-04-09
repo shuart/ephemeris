@@ -40,7 +40,18 @@ var connect = function (serverAdress) {
       }
     }
 
+    function updateOnStatus (message) {
+      console.log(message);
+      let receivedProject = message
+      if (app.store.userData.info.syncingProjects && app.store.userData.info.syncingProjects.includes(receivedProject.uuid )) {//check if project is supposed to sync
+        insertInDbFromOnlineProject(message)
+      }else {
+        console.log("Not Syncying update as project is not supposed to sync");
+      }
+    }
+
     client.service('projects').on('updated', addMessage);
+    client.service('projects').on('status', updateOnStatus );
   }
   login()
 }
@@ -153,7 +164,8 @@ var checkProjectToLoad = async function () {
    console.log("sending data");
 
   let dbs = dbConnector.getDbReferences()
-  let projectUuid = localApp.state.currentProject
+  // let projectUuid = localApp.state.currentProject
+  let projectUuid = actionItem.projectUuid
 
   if (localApp.store.userData.info.syncingProjects && localApp.store.userData.info.syncingProjects.includes(projectUuid)) {//check if project is supposed to sync
     await dbs.projects.find({uuid: projectUuid}, async function (err, docs) {//TODO should use local projects after
@@ -168,8 +180,8 @@ var checkProjectToLoad = async function () {
          });
          console.log(onlineProjectId);
          if (onlineProjectId.data[0]) { //update the online project
-           sendAllProject(onlineProjectId.data[0]._id,docs[0])
-           console.log("data sent");
+           // sendAllProject(onlineProjectId.data[0]._id,docs[0])
+           // console.log("data sent");
            sendNotSyncedChanges(onlineProjectId.data[0]._id,docs[0])
            console.log("partial data sent");
          }else {
@@ -197,8 +209,26 @@ var sendNotSyncedChanges = async function (onlineId,projectData) {
   console.log( projectData.onlineHistory);
   if (change) {
     if (change.type == "update") {
-      console.log(change.data);
-      alert('changé')
+      //TODO this should update also the history
+      //update the online DB
+      let selector = {}
+      selector[change.selectorProperty] = change.item
+      let actionItem = {}
+      actionItem[change.subtype] = selector
+      console.log(actionItem);
+      try {
+        await client.service('projects').update(onlineId,actionItem);
+      } catch (e) {
+        console.log("+++++++++++++++++++++");
+        console.log("+++++++++++++++++++++");
+        console.log("+++++++++++++++++++++");
+        console.log(e);
+        console.log("+++++++++++++++++++++");
+        console.log("+++++++++++++++++++++");
+        console.log("+++++++++++++++++++++");
+        alert("errore while replacating")
+      }
+      // alert('changé')
     }
   }
 
@@ -249,6 +279,10 @@ var resyncFromOnlineProject = function (onlineProject) {
     //   });
   });
 
+}
+var insertInDbFromOnlineProject = function (changes) {
+  let change = changes.data.items[changes.data.items.length-1]
+  console.log(change);
 }
 
 self.getOnlineProjectAndResync = getOnlineProjectAndResync

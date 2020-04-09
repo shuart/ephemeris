@@ -108,18 +108,6 @@ var createDbRealTimeAdaptater = function () {
       });
   }
 
-  // function getUsers() {
-  //   return new Promise(function(resolve, reject) {
-  //     users.keys().then(function (keys) {
-  //       console.log(keys);
-  //       var promises  = keys.map(function(item) { return users.getItem(item); });
-  //       resolve(Promise.all(promises))
-  //     }).catch(function(err) {
-  //       reject(err)
-  //     });
-  //   });
-  // }
-
   function getUsers() {
     return new Promise(function(resolve, reject) {
         localUsers.find({}, function (err, docs) {
