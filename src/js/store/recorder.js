@@ -1,5 +1,6 @@
 function recordChangeInStore(type,store, group, pl){
-  if (false) {
+  let record = false;
+  if (record != false) {
     let uuid = pl.uuid
     let projectUuid = app.state.currentProject
     if (type == "addItem") { //ADD ITEM

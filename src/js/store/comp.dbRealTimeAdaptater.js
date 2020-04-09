@@ -225,11 +225,11 @@ var createDbRealTimeAdaptater = function () {
     console.log(selector);
 
     return new Promise(function(resolve, reject) {
-        projects.update({ uuid: projectUuid }, actionItem, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-          localProjects.update({ uuid: projectUuid }, actionItem, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+        projects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
+          localProjects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
             console.log("persisted online item");
           });
-          resolve(affectedDocuments[0])
+          resolve(affectedDocuments)
         });
       }).catch(function(err) {
         reject(err)
@@ -257,8 +257,7 @@ var createDbRealTimeAdaptater = function () {
       });
   }
 
-  function updateDB(callBackItem) {
-
+  function updateDB(callBackItem, preventSync) {
     if (callBackItem.type == "update") {
 
       let projectUuid = callBackItem.projectUuid
@@ -269,7 +268,12 @@ var createDbRealTimeAdaptater = function () {
 
       return new Promise(function(resolve, reject) {
           projects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
-            logCallback(callBackItem)
+
+            if (!preventSync) {
+              logCallback(callBackItem)
+            }
+
+
             localProjects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
               console.log("persisted");
             });
@@ -505,6 +509,7 @@ var createDbRealTimeAdaptater = function () {
   self.setProjectData = setProjectData
   self.removeProject = removeProject
   self.getDbReferences = getDbReferences
+  self.updateDB = updateDB
   self.init = init
 
   return self

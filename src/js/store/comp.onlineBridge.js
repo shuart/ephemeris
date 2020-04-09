@@ -50,7 +50,7 @@ var connect = function (serverAdress) {
       }
     }
 
-    client.service('projects').on('updated', addMessage);
+    // client.service('projects').on('updated', addMessage);
     client.service('projects').on('status', updateOnStatus );
   }
   login()
@@ -207,7 +207,13 @@ var sendNotSyncedChanges = async function (onlineId,projectData) {
   let change = projectData.onlineHistory.items[projectData.onlineHistory.items.length-1]
   console.log(change);
   console.log( projectData.onlineHistory);
-  if (change) {
+  let userMail = app.store.userData.info.mail
+
+  change.user ={mail:userMail}
+
+  let modifyOnlineData = false
+  let modifyOnlineHistory = true
+  if (change && modifyOnlineData) {
     if (change.type == "update") {
       //TODO this should update also the history
       //update the online DB
@@ -219,14 +225,27 @@ var sendNotSyncedChanges = async function (onlineId,projectData) {
       try {
         await client.service('projects').update(onlineId,actionItem);
       } catch (e) {
-        console.log("+++++++++++++++++++++");
-        console.log("+++++++++++++++++++++");
-        console.log("+++++++++++++++++++++");
         console.log(e);
-        console.log("+++++++++++++++++++++");
-        console.log("+++++++++++++++++++++");
-        console.log("+++++++++++++++++++++");
-        alert("errore while replacating")
+        alert("error while replacating")
+      }
+      // alert('changé')
+    }
+  }
+  if (change && modifyOnlineHistory) {
+    if (change.type == "update") {
+      //TODO this should update also the history
+      //update the online DB
+      let selector = {}
+      // selector["onlineHistory.items"] = JSON.stringify(item)
+      selector["onlineHistory.items"] = change
+      let actionItem = { $push: selector }
+      console.log(actionItem);
+      try {
+        console.log("starting")
+        await client.service('projects').update(onlineId,actionItem);
+      } catch (e) {
+        console.log(e);
+        alert("error while replacating")
       }
       // alert('changé')
     }
@@ -280,8 +299,16 @@ var resyncFromOnlineProject = function (onlineProject) {
   });
 
 }
-var insertInDbFromOnlineProject = function (changes) {
+var insertInDbFromOnlineProject = async function (changes) {
   let change = changes.data.items[changes.data.items.length-1]
+
+  if (change.user) {
+    if (change.user.mail == app.store.userData.info.mail) {
+      return undefined //cancel update as it's a self one
+    }
+  }
+  await dbConnector.updateDB(change, true)
+  document.dispatchEvent(new Event('storeUpdated'))
   console.log(change);
 }
 
