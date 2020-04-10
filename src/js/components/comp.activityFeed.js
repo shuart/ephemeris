@@ -24,7 +24,7 @@ var createActivityFeed = function ({
         <div class="content">
           <div data-id="${event.id}" class="summary action_event_feed_click_content">
             ${(event.name && event.name!= "Missing item")? ("Item \'"+event.name + "\'" ): ("An item")} ${event.prop? (", property \'"+event.prop + "\', " ): ""} in ${event.storeGroupTxt} has been ${event.typeTxt}.
-            <div class="date">${moment(event.timestamp).fromNow()}</div>
+            <div class="date">${event.user?"by "+event.user+",":""} ${moment(event.timestamp).fromNow()}</div>
           </div>
         </div>
       </div>`
@@ -38,7 +38,7 @@ var createActivityFeed = function ({
         <div class="content">
           <div data-id="${event.id}" class="summary action_event_feed_click_content">
             ${event.name? ("Item \'"+event.name + "\'" ): ("An item")} in ${event.storeGroupTxt} has been ${event.typeTxt}.
-            <div class="date">${moment(event.timestamp).fromNow()}</div>
+            <div class="date">${event.user?"by "+event.user+",":""} ${moment(event.timestamp).fromNow()}</div>
           </div>
         </div>
       </div>`
@@ -85,8 +85,8 @@ var createActivityFeed = function ({
 
   }
 
-  var formatText = function(prop) {
-    let out = ""
+  var formatTextGroup = function(prop) {
+    let out = prop
     if (prop == 'currentPbs') {
       out = 'Products'
     }else if (prop == 'requirements') {
@@ -95,11 +95,24 @@ var createActivityFeed = function ({
       out = 'Functions'
     }else if (prop == 'actions') {
       out = 'Actions'
-    }else if (prop == 'addItem') {
+    }else if (prop == 'metaLinks') {
+      out = 'Relations'
+    }
+    return out
+  }
+  var formatTextActions = function(prop) {
+    let out = ""
+    if (prop == 'addItem') {
+      out = 'added'
+    }else if (prop == '$push') {
       out = 'added'
     }else if (prop == 'removeItem') {
       out = 'removed'
+    }else if (prop == '$pull') {
+      out = 'removed'
     }else if (prop == 'modifyItem') {
+      out = 'modified'
+    }else if (prop == '$set') {
       out = 'modified'
     }else if (prop == 'addLink') {
       out = 'linked'
@@ -111,22 +124,26 @@ var createActivityFeed = function ({
 
   var renderFeed = async function (originalData) {
     var store = await query.currentProject()
-    if (store.history.items[0]) {
-      let formatedData = deepCopy(store.history.items)
+    let activityStore = store.onlineHistory.items
+    if (activityStore[0]) {
+      let formatedData = activityStore
       .reverse()
       .slice(0, maxElements || store.history.items.length)
       .filter(i=>(i.type !='addLink' && i.type !='removeLink'))
       .map(i=>({
         uuid:i.uuid,
-        id:i.id,
-        storeGroup:i.storeGroup,
-        storeGroupTxt: formatText(i.storeGroup),
-        type:i.type,
-        typeTxt: formatText(i.type),
-        timestamp:i.timestamp,
-        name:(searchForAllItemsNames ? ( getObjectNameByUuid(i.id) ): (i.change.name)),
-        prop:i.change.prop,
-        change:JSON.stringify(i.change)
+        id:i.uuid,
+        storeGroup:i.selectorProperty.split(".")[0],
+        storeGroupTxt: formatTextGroup(i.selectorProperty.split(".")[0]),
+        type:i.subtype,
+        typeTxt: formatTextActions(i.subtype),
+        timestamp:i.localTimestamp,
+        // name:(searchForAllItemsNames ? ( getObjectNameByUuid(i.id) ): (i.change.name)),
+        name:undefined,
+        user:i.user.mail,
+        // prop:i.change.prop,
+        // change:JSON.stringify(i.change)
+        change:JSON.stringify(i.item)
       }))
       let eventList = formatedData.map(function (d) {
         return theme.event(d)

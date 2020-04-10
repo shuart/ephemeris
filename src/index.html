@@ -74,6 +74,7 @@
             <a id="topmenu_project_saver" class="item "><i class="archive icon"></i>Export project</a>
               <input id="file-project-input" type="file" name="name" style="display: none;" />
             <!-- <a id="saver" class="item action_save_all"><i class="download icon"></i>Save</a> -->
+            <a class="item action_toogle_online_account_view"><i class="user icon"></i>Online Account</a>
             <a class="item action_toogle_current_user_view"><i class="user icon"></i>User Settings</a>
             <!-- <div id="saverDB" class="item action_save_CSC"><i class="edit icon"></i>Save CSC DB</div> -->
         </div>
@@ -183,12 +184,16 @@
 
   </div>
 
+  <script src="js/vendor/feathers.client_4.5.2.js"></script>
+  <!-- <script src="https://unpkg.com/@feathersjs/client@^4.3.0/dist/feathers.js"></script> -->
+  <script src="js/vendor/socket_204.io.js"></script>
+
   <script src="js/vendor/modernizr-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script>window.jQuery || document.write('<script src="js/vendor/jquery-3.3.1.min.js"><\/script>')</script>
-  <script src="https://unpkg.com/vanilla-picker@2"></script>
+  <script src="js/vendor/vanilla-picker.js"></script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/nedb/1.8.0/nedb.js" integrity="sha256-nTyjFDqODcD0EGSWTPrPnyCqV52MP8Pg+8zwuPGm1ms=" crossorigin="anonymous"></script>
+  <script src="js/vendor/nedb.js"></script>
 
 
   <!-- <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script> -->
@@ -234,7 +239,6 @@
   <script src="js/store/templates.js"></script>
   <script src="js/store/store.js"></script>
   <script src="js/store/actions.js"></script>
-  <script src="js/store/recorder.js"></script>
   <script src="js/store/reducer.js"></script>
   <script src="js/store/routes.js"></script>
 
@@ -263,6 +267,8 @@
   <script src="js/components/comp.activityFeed.js"></script>
   <script src="js/components/comp.kanban.js"></script>
 
+  <script src="js/store/comp.onlineBridge.js"></script>
+
 
   <script src="js/startup.js"></script>
 
@@ -280,6 +286,7 @@
   <script src="js/views/view.leftMenu.projectTree.js"></script>
   <script src="js/views/view.topMenu.js"></script>
   <script src="js/views/view.overview.js"></script>
+  <script src="js/views/view.onlineAccount.js"></script>
   <script src="js/views/view.projects.js"></script>
   <script src="js/views/view.requirements.js"></script>
   <script src="js/views/view.functions.js"></script>

@@ -185,6 +185,9 @@ var reparse = false;
   connect(".action_toogle_current_user_view","click",(e)=>{
     currentUserView.update()
   })
+  connect(".action_toogle_online_account_view","click",(e)=>{
+    onlineAccountView.update()
+  })
   connect(".action_toogle_tags_view","click",(e)=>{
     tagsView.update()
   })
