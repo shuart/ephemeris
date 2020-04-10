@@ -182,7 +182,7 @@ var checkProjectToLoad = async function () {
          if (onlineProjectId.data[0]) { //update the online project
            // sendAllProject(onlineProjectId.data[0]._id,docs[0])
            // console.log("data sent");
-           sendNotSyncedChanges(onlineProjectId.data[0]._id,docs[0])
+           sendLastChange(onlineProjectId.data[0]._id,docs[0])
            console.log("partial data sent");
          }else {
            console.log("could not find project");
@@ -202,11 +202,14 @@ var checkProjectToLoad = async function () {
 var sendAllProject = async function ( onlineId, projectData) {
   await client.service('projects').update(onlineId,projectData);
 }
-var sendNotSyncedChanges = async function (onlineId,projectData) {
+var sendLastChange = async function (onlineId,projectData) {
   //get the lastChange
   let change = projectData.onlineHistory.items[projectData.onlineHistory.items.length-1]
+  sendChangeToServer(onlineId,change)
+}
+
+var sendChangeToServer = async function (onlineId,change) {
   console.log(change);
-  console.log( projectData.onlineHistory);
 
   if (!change.localTimestamp) {//ensure that when now who has modified the element
     let timestamp = Date.now()
@@ -261,7 +264,6 @@ var sendNotSyncedChanges = async function (onlineId,projectData) {
       // alert('changé')
     }
   }
-
 }
 
 var getSharedProjects = async function () {
@@ -292,15 +294,27 @@ var createOnlineProject = async function (project) {
 var getOnlineProjectAndResync = async function (uuid) {
   let onlineProject = await getSharedProject(uuid)
   console.log(onlineProject);
+  //get the
   if (onlineProject.data[0]) {
-    resyncFromOnlineProject(onlineProject.data[0])
+    await resyncFromOnlineProject(onlineProject.data[0])
   }
-
 }
 
-var resyncFromOnlineProject = function (onlineProject) {
+var resyncFromOnlineProject = async function (onlineProject) {
   let dbs = dbConnector.getDbReferences()
-  dbs.projects.update({ uuid: onlineProject.uuid }, onlineProject, {}, function (err, numReplaced) {
+  let difffromOnline = await getDiffFromOnlineProject(onlineProject)
+  await dbs.projects.update({ uuid: onlineProject.uuid }, onlineProject, {}, function (err, numReplaced) {
+
+    //syn diff online and local
+    console.log(difffromOnline);
+    difffromOnline.forEach((item, i) => {
+      console.log("change to sync")
+      sendChangeToServer(onlineProject._id,item)
+      //TODO be sure it's the local project matching
+      dbConnector.updateDB(item, true)
+    });
+
+
     document.dispatchEvent(new Event('storeUpdated'))
     console.log('updated from online project');
     // $('body')
@@ -310,6 +324,29 @@ var resyncFromOnlineProject = function (onlineProject) {
   });
 
 }
+
+var getDiffFromOnlineProject =async function (onlineProject) {
+  let dbs = dbConnector.getDbReferences()
+  let unsyncLocalHistory =[]
+  let localProject = await getLocalProject(onlineProject.uuid)
+  let localHistory = localProject.onlineHistory.items
+  console.log(localHistory);
+  //getOnly the usable element
+  let cleanedLocalHistory = localHistory.filter(i=>i.uuid != undefined)//TODO mix with filter lower
+  let onlineHistoryItemsUuid = onlineProject.onlineHistory.items.map(i=>i.uuid)
+  //the online history contains already the change from the other user and is in the full data downloaded.
+  //What is important is to find what is localy not synced to preserve it.
+  //So we remove all the items that are already in the online container
+  unsyncLocalHistory = cleanedLocalHistory.filter(i=>!onlineHistoryItemsUuid.includes(i.uuid))
+  // console.log(cleanedLocalHistory.map(i=>i.uuid));
+  // console.log(onlineHistoryItemsUuid.filter(i=>i !=undefined));
+  console.log(unsyncLocalHistory);
+  //alert("the history")
+  return unsyncLocalHistory
+}
+
+
+
 var insertInDbFromOnlineProject = async function (changes) {
   let change = changes.data.items[changes.data.items.length-1]
 
@@ -321,6 +358,18 @@ var insertInDbFromOnlineProject = async function (changes) {
   await dbConnector.updateDB(change, true)
   document.dispatchEvent(new Event('storeUpdated'))
   console.log(change);
+}
+
+var getLocalProject= function (uuid) {
+  let dbs = dbConnector.getDbReferences()
+  return new Promise(function(resolve, reject) {
+      dbs.projects.find({uuid: uuid}, function (err, docs) {
+        console.log(docs);
+        resolve(docs[0])
+      })
+    }).catch(function(err) {
+      reject(err)
+    });
 }
 
 self.getOnlineProjectAndResync = getOnlineProjectAndResync

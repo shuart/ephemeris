@@ -35,13 +35,13 @@ function reducer(action, store) {
   //reduce
   if (type == "addItem") { //ADD ITEM
     dbConnector.addProjectItem(projectUuid, storeGroup ,pl).then(notifyChange)
-    recordChangeInStore(type, store, group, pl)
+
 
   }else if (type == "removeItem") { //REMOVE ITEM
     console.log(storeGroup.items);
     // storeGroup.items = storeGroup.items.filter((item)=>item.uuid != pl.uuid)
     dbConnector.removeProjectItem(projectUuid, storeGroup ,pl.uuid).then(notifyChange)
-    recordChangeInStore(type, store, group, pl)
+
     //clean relative links DBCHANGE
     // if (storeGroup.links) {
     //   storeGroup.links = storeGroup.links.filter((item)=>item.source != pl.uuid && item.target != pl.uuid  )
@@ -56,14 +56,14 @@ function reducer(action, store) {
     // var itemToEdit = storeGroup.items.filter((item)=>item.uuid == pl.uuid)
     // itemToEdit[0][pl.prop] = pl.value
     dbConnector.updateProjectItem(projectUuid, storeGroup, pl.uuid, pl.prop, pl.value).then(notifyChange)
-    recordChangeInStore(type, store, group, pl)
+
 
   }else if (type == "addLink") { //ADD A LINK
     dbConnector.addProjectLink(projectUuid, storeGroup ,{uuid:pl.uuid, source:pl.source, target:pl.target}).then(notifyChange)
-    recordChangeInStore(type, store, group, pl)
+
 
   }else if (type == "removeLink") { //REMOVE A LINK WITH SOURCE OR TARGET OR BOTH
-    recordChangeInStore(type, store, group, pl)//record it before to working on modified arrays array
+    // recordChangeInStore(type, store, group, pl)//record it before to working on modified arrays array
 
     console.log(pl.source, pl.target)
     if (pl.source || pl.target) {
