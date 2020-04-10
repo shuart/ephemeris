@@ -212,12 +212,32 @@ var createDbRealTimeAdaptater = function () {
     onlineBridge.sendCopy(app, actionItem)
 
   }
+  async function logCallbackWithoutSync(actionItem) {
+    console.log("item added to DB");
+    console.log(actionItem);
+
+    let onlineHistoryItem = actionItem
+
+    await addOnlineHistoryItem(onlineHistoryItem)
+
+  }
 
   function addOnlineHistoryItem(item) {
     let projectUuid = item.projectUuid
     console.log(projectUuid);
     let selector = {}
     // selector["onlineHistory.items"] = JSON.stringify(item)
+
+    if (!item.user) {//check if a user already exist (there should be one if the action come form an online sync)
+      let userMail = app.store.userData.info.mail
+      let timestamp = Date.now()
+      item.user = {mail:userMail}
+      item.localTimestamp=timestamp
+      item.uuid=genuuid()
+    }
+
+
+
     selector["onlineHistory.items"] = item
     let actionItem = { $push: selector }
 
@@ -271,8 +291,9 @@ var createDbRealTimeAdaptater = function () {
 
             if (!preventSync) {
               logCallback(callBackItem)
+            }else {
+              logCallbackWithoutSync(callBackItem)
             }
-
 
             localProjects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
               console.log("persisted");

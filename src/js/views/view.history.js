@@ -12,14 +12,14 @@ var createHistoryView = function () {
 
   var render = async function () {
     var store = await query.currentProject()
-    let formatedData = store.history.items.map(i=>({
+    let formatedData = store.onlineHistory.items.reverse().map(i=>({
       uuid:i.uuid,
-      id:i.id,
-      storeGroup:i.storeGroup,
-      type:i.type,
-      timestamp:i.timestamp,
-      name:i.change.name|| i.change.prop,
-      change:JSON.stringify(i.change)
+      id:i.uuid,
+      storeGroup:i.selectorProperty,
+      type:i.subtype,
+      timestamp:i.localTimestamp,
+      name:JSON.stringify(i.user),
+      change:JSON.stringify(i.item)
     }))
     showListMenu({
       sourceData:formatedData,

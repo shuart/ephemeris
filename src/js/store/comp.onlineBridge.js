@@ -207,9 +207,20 @@ var sendNotSyncedChanges = async function (onlineId,projectData) {
   let change = projectData.onlineHistory.items[projectData.onlineHistory.items.length-1]
   console.log(change);
   console.log( projectData.onlineHistory);
-  let userMail = app.store.userData.info.mail
 
-  change.user ={mail:userMail}
+  if (!change.localTimestamp) {//ensure that when now who has modified the element
+    let timestamp = Date.now()
+    change.localTimestamp=timestamp
+  }
+  if (!change.user) {//ensure that when now who has modified the element
+    let userMail = app.store.userData.info.mail
+    change.user ={mail:userMail}
+  }else if(!change.user.mail) {
+    let userMail = app.store.userData.info.mail
+    change.user.mail = app.store.userData.info.mail
+  }
+
+
 
   let modifyOnlineData = false
   let modifyOnlineHistory = true
