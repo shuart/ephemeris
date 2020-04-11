@@ -181,9 +181,9 @@ function createStartUp() {
 
     // dimmer.style.background = "linear-gradient(#99b6c1, #4a524b)"//grad only
     dimmer.style.backgroundColor =  "white"
-    dimmer.style.backgroundImage =  "url('././img/ephemeris_bg.jpg')"
+    // dimmer.style.backgroundImage =  "url('././img/bubble.jpg')"
     dimmer.style.backgroundRepeat= "no-repeat";
-    dimmer.style.backgroundPosition =  "right top"
+    dimmer.style.backgroundPosition =  "center bottom"
     // dimmer.style.backgroundPosition =  "25% 0%"
     // dimmer.style.background = "linear-gradient(to bottom, #bbd2c5, #536976)"
     dimmer.style.opacity = 1;
@@ -191,19 +191,34 @@ function createStartUp() {
 
     // mainEl.classList ="ui raised very padded text container segment"
     mainEl.style.maxWidth = "600px"
-    mainEl.style.height = "80%"
+    mainEl.style.height = "60%"
     mainEl.style.overflow = "auto"
     mainEl.style.position = "fixed"
     mainEl.style.top = "30px"
-    mainEl.style.right = "14%"
+    // mainEl.style.right = "14%"
     // mainEl.style.width = "50%"
     mainEl.style.zIndex = "99999"
     // mainEl.style.backgroundColor = "white"
     // mainEl.style.top= "50%";
     // mainEl.style.transform= "translate(-50%, -50%);"
 
+    bgEl = document.createElement('div');
+
+    bgEl.style.backgroundColor =  "white"
+    bgEl.style.position= "fixed"
+    bgEl.style.bottom= "0px"
+    bgEl.style.width= "50%"
+    bgEl.style.height= "35%"
+    bgEl.style.position= "fixed"
+    bgEl.style.backgroundImage= "url('././img/bubble.jpg')"
+    bgEl.style.backgroundSize=     "contain";                      /* <------ */
+    bgEl.style.backgroundRepeat= "no-repeat";
+    bgEl.style.backgroundPosition= "center center";
+    bgEl.style.zIndex = "999999"
+
     sourceEl.appendChild(dimmer)
     sourceEl.appendChild(mainEl)
+    sourceEl.appendChild(bgEl)
     mainEl.innerHTML = `
     <div class="ui container">
       <h2 class='ui center aligned icon header'>
