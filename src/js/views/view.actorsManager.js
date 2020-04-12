@@ -64,7 +64,7 @@ var createActorsManagerView = function ({
           </div>
           <div class="description">
             <div class="item">
-                ${actor.stakehoders.map(s=>theme.stakehoderElement(s)).join('')}
+                ${actor.stakeholders? actor.stakeholders.map(s=>theme.stakehoderElement(s)).join(''):""}
                 <div data-id="${actor.uuid}"  class="ui mini basic teal button actors_manager_add_actor_stakeholder">Add a stakeholder</div>
             </div>
           </div>
@@ -226,11 +226,11 @@ var createActorsManagerView = function ({
     var stakeholdersCollection = await getAllUsers()
     for (var i = 0; i < actorsCollection.length; i++) {
       let actor = actorsCollection[i]
-      actor.stakehoders = []
+      actor.stakeholders = []
       for (var i = 0; i < stakeholdersCollection.length; i++) {
         let stakeholder =stakeholdersCollection[i]
         if (stakeholder.actorsId == actor.uuid) {
-          actor.stakehoders.push(stakeholder)
+          actor.stakeholders.push(stakeholder)
         }
       }
     }
