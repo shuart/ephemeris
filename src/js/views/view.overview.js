@@ -473,6 +473,13 @@ var createOverview = function (targetSelector) {
       dbConnector.addProjectCollection(store.uuid, "onlineHistory", store.onlineHistory)
       alertAboutUpdate("Online History have been added.")
     }
+    if (!store.actors) {
+      store.actors={
+        items:[]
+      },
+      dbConnector.addProjectCollection(store.uuid, "actors", store.onlineHistory)
+      alertAboutUpdate("Actors have been added.")
+    }
 
 
   }

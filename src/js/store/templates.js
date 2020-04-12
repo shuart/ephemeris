@@ -198,6 +198,9 @@ var store = {
   onlineHistory:{
     items:[]
   },
+  actors:{
+    items:[]
+  },
   links:[] //TODO unifier links et metalinks
 }
 
