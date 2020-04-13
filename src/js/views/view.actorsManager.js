@@ -58,6 +58,7 @@ var createActorsManagerView = function ({
         </div>
         <div class="content">
           <a class="header">${actor.name +" "+ (actor.lastName||"") }</a>
+            <i data-projectid="${actor.projectid}"  data-id="${actor.uuid}" class="edit icon actors_manager_edit_actor_name" style="opacity:0.2"></i>
           <div class="meta">
             <span>Represent a stakeholder in these projects:</span>
             ${actor.projectName}
@@ -89,7 +90,7 @@ var createActorsManagerView = function ({
       return `
       <div class="ui item">
          ${stakehoder.name +" "+ stakehoder.lastName +" in "+stakehoder.projectName}
-         <div data-projectid="${stakehoder.projectid}" data-id="${stakehoder.uuid}"  class="ui mini basic red button actors_manager_remove_stakeholder_from_actor">Remove</div>
+         <div data-actorsid="${stakehoder.actorsId}" data-projectid="${stakehoder.projectid}" data-id="${stakehoder.uuid}"  class="ui mini basic red button actors_manager_remove_stakeholder_from_actor">Remove</div>
      </div>
      <div class="ui divider"></div>
       `
@@ -146,9 +147,34 @@ var createActorsManagerView = function ({
       generateUsersFusionList(owners, undefined)//add actor in relevant projects
       refresh()
     })
-    connect(".actors_manager_remove_Actor","click",(e)=>{
+    connect(".actors_manager_remove_Actor","click",async (e)=>{
       if (confirm("Remove this actor?")) {
-        push(act.remove("actors",{project:e.target.dataset.projectid, uuid:e.target.dataset.id}))
+        var projects = await getRelevantProject()
+        projects.forEach((item, i) => {
+          if (item.actors.items.find(i=>i.uuid = e.target.dataset.id)) {
+            push(act.remove("actors",{project:item.uuid, uuid:e.target.dataset.id}))
+          }
+        });
+
+
+        refresh()
+      }
+    })
+    connect(".actors_manager_edit_actor_name","click",async (e)=>{
+      if (confirm("Rename this actor?")) {
+        var projects = await getRelevantProject()
+        var firstName = prompt("New actor first name")
+        var lastName = prompt("New actor last name")
+        projects.forEach((item, i) => {
+          if (item.actors.items.find(i=>i.uuid = e.target.dataset.id)) {
+            // push(act.remove("actors",{project:item.uuid, uuid:e.target.dataset.id}))
+            push(act.edit("actors",{uuid:e.target.dataset.id,prop:"name", value:firstName, project:item.uuid}))
+            push(act.edit("actors",{uuid:e.target.dataset.id,prop:"lastName", value:lastName, project:item.uuid}))
+
+          }
+        });
+
+
         refresh()
       }
     })
@@ -159,12 +185,22 @@ var createActorsManagerView = function ({
       generateUsersFusionList(owners, e.target.dataset.id)
     })
     connect(".actors_manager_remove_stakeholder_from_actor","click",async (e)=>{
+      // var projects = await getRelevantProject()
+      console.log(e.target.dataset.actorsid);
+
       push(act.edit("stakeholders",{uuid:e.target.dataset.id,prop:"actorsId", value:undefined, project:e.target.dataset.projectid}))
       refresh()
     })
 
 
 
+  }
+
+  var getRelevantProject = async function () {
+    var allProjects = await query.items("projects")
+    var relatedProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+
+    return relatedProjects
   }
 
   var render = function (uuid) {
