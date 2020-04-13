@@ -138,10 +138,12 @@ var createActorsManagerView = function ({
       sourceOccElement.remove()
       // pageManager.setActivePage("projectSelection")
     })
-    connect(".actors_manager_add_Actor","click",(e)=>{
-      var firstName = prompt("New actor first name")
-      var lastName = prompt("New actor last name")
-      push(act.add("actors",{uuid:genuuid(), actorUuid:genuuid(), name:firstName, lastName:lastName}))
+    connect(".actors_manager_add_Actor","click",async (e)=>{
+      let owners = await getAllUsers()
+      // push(act.add("actors",{uuid:genuuid(), actorUuid:genuuid(), name:firstName, lastName:lastName}))
+      let fullActorsCollection = await getAllActors()
+      owners = addActorNameToStaholders(owners,fullActorsCollection)
+      generateUsersFusionList(owners, undefined)//add actor in relevant projects
       refresh()
     })
     connect(".actors_manager_remove_Actor","click",(e)=>{
@@ -152,7 +154,9 @@ var createActorsManagerView = function ({
     })
     connect(".actors_manager_add_actor_stakeholder","click",async (e)=>{
       let owners = await getAllUsers()
-      generateUsersFusionList(owners, e.target.dataset.id, "ProjectWhereFusedIs")
+      let fullActorsCollection = await getAllActors()
+      owners = addActorNameToStaholders(owners,fullActorsCollection)
+      generateUsersFusionList(owners, e.target.dataset.id)
     })
     connect(".actors_manager_remove_stakeholder_from_actor","click",async (e)=>{
       push(act.edit("stakeholders",{uuid:e.target.dataset.id,prop:"actorsId", value:undefined, project:e.target.dataset.projectid}))
@@ -222,18 +226,23 @@ var createActorsManagerView = function ({
   var renderContainer = async function() {
     // var store = await query.currentProject()
     // var actorsCollection=store.actors.items
-    var actorsCollection = await getAllActors()
-    var stakeholdersCollection = await getAllUsers()
+    let fullActorsCollection = await getAllActors()
+    let actorsCollection = removeDoubleActors(fullActorsCollection)
+    let stakeholdersCollection = await getAllUsers()
+
     for (var i = 0; i < actorsCollection.length; i++) {
       let actor = actorsCollection[i]
       actor.stakeholders = []
-      for (var i = 0; i < stakeholdersCollection.length; i++) {
-        let stakeholder =stakeholdersCollection[i]
+
+      for (var j = 0; j < stakeholdersCollection.length; j++) {
+        let stakeholder =stakeholdersCollection[j]
         if (stakeholder.actorsId == actor.uuid) {
           actor.stakeholders.push(stakeholder)
         }
       }
     }
+
+    console.log(actorsCollection);
     if (!actorsCollection[0]) {
       container.innerHTML = theme.placeholder()
     }else {
@@ -257,7 +266,7 @@ var createActorsManagerView = function ({
     var relatedProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
     var actorsTable = relatedProjects.map(e =>{
           if (e.actors) {
-            return e.actors.items.map(i => Object.assign({projectid:e.uuid, projectName:e.name}, i)) //add project prop to all items
+            return e.actors.items.map(i => Object.assign({projectid:e.uuid, projectName:e.name, appearIn:[{projectid:e.uuid, projectName:e.name}]}, i)) //add project prop to all items
           }else {
             return []
           }
@@ -270,7 +279,40 @@ var createActorsManagerView = function ({
     return actorsTable
   }
 
-  var generateUsersFusionList = function (owners, idToFuse, ProjectWhereFusedIs) {
+  var addActorNameToStaholders = function (stakehoders, actors) {
+    return stakehoders.map(e =>{
+          if (e.actorsId) {
+
+            let actor = actors.find(a=>a.uuid == e.actorsId)
+            let actorName = "missing"
+            if (actor) {
+              actorName = actor.name+" "+actor.lastName
+            }
+            return  Object.assign({actorsName:actorName}, e) //add project prop to all items
+          }else {
+            return e
+          }
+        } )
+  }
+
+  var removeDoubleActors = function (actorList) {
+    let cleanedList = []
+    let cleanedId = {}
+    for (var i = 0; i < actorList.length; i++) {
+      let currentActor = actorList[i]
+      //search in cleanedId
+      if (!cleanedId[currentActor.uuid]) {
+        cleanedList.push(currentActor)
+        cleanedId[currentActor.uuid] = currentActor
+      }else {
+        cleanedId[currentActor.uuid].appearIn.push(currentActor.appearIn[0])
+      }
+    }
+    return cleanedList
+  }
+
+
+  var generateUsersFusionList = function (owners, idToFuse) {
     showListMenu({
       sourceData:owners,
       displayProp:"name",
@@ -280,15 +322,34 @@ var createActorsManagerView = function ({
         {prop:"lastName", displayAs:"Nom", edit:false},
         {prop:"org", displayAs:"Entreprise", edit:false},
         {prop:"role", displayAs:"Fonction", edit:false},
-        {prop:"mail", displayAs:"E-mail", edit:false}
+        {prop:"mail", displayAs:"E-mail", edit:false},
+        {prop:"actorsName", displayAs:"Rep. by", edit:false}
       ],
       idProp:"uuid",
       extraButtons : [
-        {name:"Add", class:"fuse", prop:"projectid", action: (orev)=>{
+        {name:"Add", class:"fuse", prop:"projectid", action: async (orev)=>{
           // pageManager.setActivePage("relations", {param:{context:"extract", uuid:orev.dataset.id}})//TODO should not call page ma,ager directly
           console.log(orev);
 
-          push(act.edit("stakeholders",{uuid:orev.dataset.id,prop:"actorsId", value:idToFuse, project:orev.dataset.extra}))
+          //get the relevant actor or create a new one
+          let actor = {uuid:genuuid(), actorUuid:genuuid(), project:orev.dataset.extra}
+          if (idToFuse) {
+            let actors = await getAllActors()
+            let exisitingActor = actors.find(a=> a.uuid = idToFuse)
+            if (exisitingActor) {
+              actor = exisitingActor
+              actor.project = orev.dataset.extra
+              push(act.add("actors",actor))
+            }
+          }else {
+            var firstName = prompt("New actor first name")
+            var lastName = prompt("New actor last name")
+            actor.name=firstName
+            actor.lastName = lastName
+            push(act.add("actors",actor))
+          }
+
+          push(act.edit("stakeholders",{uuid:orev.dataset.id,prop:"actorsId", value:actor.uuid, project:orev.dataset.extra}))
 
           refresh()
           }
