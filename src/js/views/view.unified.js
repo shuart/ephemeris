@@ -16,7 +16,8 @@ var createUnifiedView = function (targetSelector) {
 
   var showBacklog = true;
   var showTags = false;
-  var sortBy ="projects"
+  var sortBy ="projects";
+  var groupByActor = true;
 
 
   var init = function () {
@@ -133,6 +134,13 @@ var createUnifiedView = function (targetSelector) {
       showTags = !showTags
       setTimeout(async function () {
         await renderList(container);
+      }, 100);
+    })
+    connect(".action_unified_toogle_group_by_actor","change", (e)=>{
+      groupByActor = !groupByActor
+      setTimeout(async function () {
+        currentKanban = undefined// clear kanban
+        update()
       }, 100);
     })
     connect(".action_unified_toogle_show_backlog","change", (e)=>{
@@ -479,7 +487,7 @@ var createUnifiedView = function (targetSelector) {
           if (e.lastName) {
             currentName+= " " + e.lastName
           }
-          return {uuid:e.uuid, name:currentName}
+          return {uuid:e.uuid, name:currentName, actorsId:actorsId}
         });
     console.log(ownerTable);
     for (owner of owners) {
@@ -537,7 +545,7 @@ var createUnifiedView = function (targetSelector) {
           if (e.lastName) {
             currentName+= " " + e.lastName
           }
-          return {uuid:e.uuid, title:currentName, name:currentName, content:[]}
+          return {uuid:e.uuid, title:currentName, name:currentName, actorsId:e.actorsId, content:[]}
         });
 
     ownerTable.push({uuid:"backlog", title:"Backlog", name:"Backlog", content:[]})
@@ -553,6 +561,61 @@ var createUnifiedView = function (targetSelector) {
       })
       console.log(currentContent);
       ownerArrayElement.content = currentContent
+
+    }
+
+    if (groupByActor) {
+      var actorsTable = allProjects.map(e =>{
+            if (e.actors) {
+              return e.actors.items.map(i => Object.assign({projectid:e.uuid, projectName:e.name, appearIn:[{projectid:e.uuid, projectName:e.name}]}, i)) //add project prop to all items
+            }else {
+              return []
+            }
+          } )
+          .reduce((a, b) => {return a.concat(b)},[])
+      let addedActors = []
+      let alreadyAddedActors = {}
+
+      for (var i = 0; i < actorsTable.length; i++) {
+        let item = actorsTable[i]
+        let currentName = item.name
+        if (item.lastName) {
+          currentName+= " " + item.lastName
+        }
+        if (!alreadyAddedActors[item.uuid]) {
+          alreadyAddedActors[item.uuid]= true
+          addedActors.push({uuid:item.uuid, isActor:true, title:currentName, name:currentName, content:[]})
+        }
+
+      }
+
+      for (var i = 0; i < addedActors.length; i++) {
+        let actor = addedActors[i]
+
+        let relatedOwners = ownerTable.filter(o=>o.actorsId == actor.uuid)
+
+        let relatedOwnersContent = relatedOwners.map(r=>r.content).reduce((a, b) => {return a.concat(b)},[])
+        actor.content = relatedOwnersContent
+
+        // for (var i = 0; i < relatedOwners.length; i++) {//erase content in original elements
+        //   relatedOwners[i].hasActor = true
+        // }
+
+
+        // var ownedActions = actions.filter( e=> e.actorsId == actor.uuid)
+        // var currentContent = ownedActions.map((e) => {
+        //     e.action.projectUuid = e.project
+        //     return e.action
+        //   }).map(i => {
+        //   return { html: generateTaskHTML(i, i.projectUuid, allProjects)}
+        // })
+        // console.log(currentContent);
+        // ownerArrayElement.content = currentContent
+      }
+      ownerTable = ownerTable.concat(addedActors).filter(o=>!o.actorsId)
+
+
+
 
     }
     //fill backlog
@@ -693,6 +756,12 @@ var createUnifiedView = function (targetSelector) {
               <div class="ui toggle checked checkbox">
                 <input ${showBacklog ? 'checked':''} class="action_unified_toogle_show_backlog" type="checkbox" name="public">
                 <label>Display backlog items</label>
+              </div>
+            </div>
+            <div class="item">
+              <div class="ui toggle checked checkbox">
+                <input ${groupByActor ? 'checked':''} class="action_unified_toogle_group_by_actor" type="checkbox" name="public">
+                <label>Group Items by Actors</label>
               </div>
             </div>
             <div class="item">
