@@ -206,11 +206,62 @@ var createPbsView = function () {
               importCSVfromFileSelector(function (results) {
                 let startImport = confirm(results.data.length+" Products will be imported")
                 if (startImport) {
-                  for (importedElement of results.data) {
-                    var id = genuuid()
-                    push(act.add("currentPbs", {uuid:id,name:importedElement[0],desc:importedElement[1]}))
-                    push(addPbsLink({source:store.currentPbs.items[0].uuid, target:id}))
+
+                  if (confirm("Use a custom importFuntion?")) {
+                    let importFunction = prompt("import function")
+
+                    function addItem (data) {
+                      var id = genuuid()
+                      push(act.add("currentPbs", {uuid:data.uuid,name:data.name,desc:data.desc}))
+                      // push(addPbsLink({source:store.currentPbs.items[0].uuid, target:id}))
+                      return id
+                    }
+                    var addLink = function (data) {
+                      var id = genuuid()
+                      push(addPbsLink({source:data.source, target:data.target}))
+                      return id
+                    }
+                    var message = function (data) {
+                      alert(data.message)
+                    }
+                    var getImportedData = function () {
+                      return results.data
+                    }
+                    var getId = function () {
+                      return genuuid()
+                    }
+                    let localApi ={
+                      addItem,
+                      addLink,
+                      message,
+                      getId,
+                      getImportedData
+                    }
+
+                    let importer = new Function('api', '"use strict";' + importFunction);
+
+                    console.log(importer(localApi));
+                    // var looseJsonParse = function(obj){
+                    //     // return Function('"use strict";return (' + obj + ')')()(getImportedData,addItem,addLink,message);
+                    //     return Function('api','"use strict";return (' + obj + ')')();
+                    // }
+                    // console.log(
+                    //   looseJsonParse(
+                    //    // "{a:(4-1), b:function(){}, c:new Date()}"
+                    //    importFunction
+                    //   )
+                    // )
+
+                  }else {
+                    for (importedElement of results.data) {
+                      var id = genuuid()
+                      push(act.add("currentPbs", {uuid:id,name:importedElement[0],desc:importedElement[1]}))
+                      push(addPbsLink({source:store.currentPbs.items[0].uuid, target:id}))
+                    }
                   }
+
+
+
                   alert("Close and re-open the view to complete the import")
                 }
               })
