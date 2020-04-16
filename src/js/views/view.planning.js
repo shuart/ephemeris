@@ -2,6 +2,7 @@ var createPlanningView = function () {
   var self ={};
   var objectIsActive = false;
   var ganttObject = undefined
+  var ganttDataSet = undefined
   var currentPlanning = undefined
   var currentList = undefined
 
@@ -138,7 +139,7 @@ var createPlanningView = function () {
       //update search event
       setUpSearch(document.querySelector(".planning_search_input"), store.plannings.items)
     }else {
-      alert("elemet missing")
+      alert("element missing")
     }
 
   }
@@ -171,9 +172,10 @@ var createPlanningView = function () {
     return [
       {prop:"name", displayAs:"name", edit:"true"},
       {prop:"desc", displayAs:"Description", edit:"true"},
-      {prop:"start", displayAs:"Début", edit:"true", time:true},
-      {prop:"duration", displayAs:"Durée", edit:"true"},
-      {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+      {prop:"start", displayAs:"Start", edit:"true", time:true},
+      {prop:"duration", displayAs:"Duration", edit:"true"},
+      {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
+      {prop:"eventContainsStakeholders", displayAs:"Stakeholders", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true}
     ]
   }
   var renderPlanning = async function () {
@@ -203,14 +205,14 @@ var createPlanningView = function () {
               ev.select.updateData(newPlanningData)
             }
           }
-          if (ganttObject) {  ganttObject.update(await prepareGanttData())}
+          updateGant()
         },
         onEditItemTime: async(ev)=>{
           push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
           var newPlanningData = await preparePlanningData(currentPlanning.uuid)
           ev.select.updateData(newPlanningData)
-          alert('"ffesfesfs"')
-          if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
+
+          if (ganttObject) {  updateGant(); changeListSize()}//TODO why needed?
         },
         onRemove: async(ev)=>{
           console.log("remove");
@@ -221,7 +223,7 @@ var createPlanningView = function () {
             var newPlanningData = await preparePlanningData(currentPlanning.uuid)
             ev.select.updateData(newPlanningData)
 
-            if (ganttObject) {  ganttObject.update(await prepareGanttData())}
+            updateGant()
           }
         },
         onMove: async(ev)=>{
@@ -236,7 +238,7 @@ var createPlanningView = function () {
             var newPlanningData = await preparePlanningData(currentPlanning.uuid)
             ev.select.updateData(newPlanningData)
 
-            if (ganttObject) {  ganttObject.update(await prepareGanttData())}
+            updateGant()
           }
         },
         // onMove: (ev)=>{
@@ -265,7 +267,7 @@ var createPlanningView = function () {
           }
           console.log(store);
 
-          if (ganttObject) {  ganttObject.update(await prepareGanttData())}
+          updateGant()
         },
         onEditChoiceItem: (ev)=>{
           startSelection(ev)
@@ -278,7 +280,8 @@ var createPlanningView = function () {
             var newPlanningData = await preparePlanningData(currentPlanning.uuid)
             ev.select.updateData(newPlanningData)
             ev.select.refreshList()
-            if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
+            // if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
+            if (ganttObject) {  updateGant(); changeListSize()}//TODO why needed?
 
           })
         },
@@ -349,57 +352,98 @@ var createPlanningView = function () {
                 ganttObject = undefined
               }else {
                 let ganttData = await prepareGanttData()
-                ganttObject = createGanttView({
-                  targetSelector:".planning-gantt-area",
-                  initialData:ganttData,
-                  elementDefaultColor :"rgb(104, 185, 181)",
-                  elementDefaultTextColor :"#fff",
-                  onChangeLengthEnd: async function (e) {
-                    console.log(e);
+                var container = document.querySelector('.planning-gantt-area');
 
-                    var a = moment(e.mouseTime);
-                    var b = moment(e.startTime);
-                    var dayDiff = a.diff(b, 'days')
+                // Create a DataSet (allows two way data-binding)
+                var groups = new vis.DataSet([
+                  {id: 1, content: 'Truck&nbsp;1'},
+                  {id: 2, content: 'Truck&nbsp;2'},
+                  {id: 3, content: 'Truck&nbsp;3'},
+                  {id: "t5454", content: 'Truck&nbsp;4'}
+                ]);
 
-                    // push(editPlanning({uuid:e.target.id, prop:'duration', value:dayDiff}))
-                    push(act.edit("timeTracks",{uuid:e.target.id, prop:'duration', value:dayDiff}))
-                    var newPlanningData = await preparePlanningData(currentPlanning.uuid)
-                    ev.select.updateData(newPlanningData)
-                    // ev.select.updateLinks(store.plannings.items[0].links)
-                    ev.select.update()
-                    if (ganttObject) {  ganttObject.update(await prepareGanttData())}
-                    changeListSize()
+                ganttDataSet = new vis.DataSet(ganttData);
+                // var items = new vis.DataSet([
+                //  {id: 1, group:1, content: 'item 1', start: '2014-04-20'},
+                //  {id: 2, group:1, content: 'item 2', start: '2014-04-14'},
+                //  {id: 3, group:2, content: 'item 3', start: '2014-04-18'},
+                //  {id: 4, group:3, content: 'item 4', start: '2014-04-16', end: '2014-04-19'},
+                //  {id: 5, group:"t5454", content: 'item 5', start: '2014-04-25'},
+                //  {id: 6, group:"t5454", content: 'item 6', start: '2014-04-27', type: 'point'}
+                // ]);
 
-                  },
-                  onChangeStartEnd:async function (e) {
-                    console.log(e);
-                    // push(editPlanning({uuid:e.target.id, prop:'start', value:e.mouseTime}))
+                // Configuration for the Timeline
+                var options = {
+                  editable: true,
+                  orientation: 'top'
+                };
 
-                    push(act.edit("timeTracks",{uuid:e.target.id, prop:'start', value:e.mouseTime}))
-                    var newPlanningData = await preparePlanningData(currentPlanning.uuid)
-                    ev.select.updateData(newPlanningData)
-                    // ev.select.updateLinks(store.plannings.items[0].links)
-                    ev.select.update()
-                    if (ganttObject) {  ganttObject.update(await prepareGanttData())}
-                    changeListSize()
+                // Create a Timeline
+                ganttObject = new vis.Timeline(container, null, options);
+                ganttObject.setGroups(groups);
+                ganttObject.setItems(ganttDataSet);
 
-                  },
-                  onElementClicked : async function (e) {
-                    showSingleEventService.showById(e.id, async function (e) {
-                      var newPlanningData = await preparePlanningData(currentPlanning.uuid)
-                      ev.select.updateData(newPlanningData)
-                      ev.select.refreshList()
-                      if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
-
-                    })
-
+                ganttDataSet.on('*', function (event, properties) {
+                  console.log(event, properties);
+                  if (event == "update") {
+                    let newStartDate = properties.data[0].start
+                    let id = properties.data[0].id
+                    push(act.edit("timeTracks",{uuid:id, prop:'start', value:newStartDate}))
                   }
-                 })
+                });
+
+                // let ganttData = await prepareGanttData()
+                // ganttObject = createGanttView({
+                //   targetSelector:".planning-gantt-area",
+                //   initialData:ganttData,
+                //   elementDefaultColor :"rgb(104, 185, 181)",
+                //   elementDefaultTextColor :"#fff",
+                //   onChangeLengthEnd: async function (e) {
+                //     console.log(e);
+                //
+                //     var a = moment(e.mouseTime);
+                //     var b = moment(e.startTime);
+                //     var dayDiff = a.diff(b, 'days')
+                //
+                //     // push(editPlanning({uuid:e.target.id, prop:'duration', value:dayDiff}))
+                //     push(act.edit("timeTracks",{uuid:e.target.id, prop:'duration', value:dayDiff}))
+                //     var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+                //     ev.select.updateData(newPlanningData)
+                //     // ev.select.updateLinks(store.plannings.items[0].links)
+                //     ev.select.update()
+                //     if (ganttObject) {  ganttObject.update(await prepareGanttData())}
+                //     changeListSize()
+                //
+                //   },
+                //   onChangeStartEnd:async function (e) {
+                //     console.log(e);
+                //     // push(editPlanning({uuid:e.target.id, prop:'start', value:e.mouseTime}))
+                //
+                //     push(act.edit("timeTracks",{uuid:e.target.id, prop:'start', value:e.mouseTime}))
+                //     var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+                //     ev.select.updateData(newPlanningData)
+                //     // ev.select.updateLinks(store.plannings.items[0].links)
+                //     ev.select.update()
+                //     if (ganttObject) {  ganttObject.update(await prepareGanttData())}
+                //     changeListSize()
+                //
+                //   },
+                //   onElementClicked : async function (e) {
+                //     showSingleEventService.showById(e.id, async function (e) {
+                //       var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+                //       ev.select.updateData(newPlanningData)
+                //       ev.select.refreshList()
+                //       if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
+                //
+                //     })
+                //
+                //   }
+                //  })
               }
 
                if (ganttObject) {//change siz of list if gant is activated
-                  let data = await prepareGanttData()
-                  ganttObject.update(data)
+                  // let data = await prepareGanttData()
+                  // ganttObject.update(data)
                    changeListSize()
                    updateComponents()
                }
@@ -435,10 +479,11 @@ var createPlanningView = function () {
     var newPlanningData =  await preparePlanningData(currentPlanning.uuid)
     let ganttData = newPlanningData.map(function (i) {
       return {
-        startDate: i.start|| Date.now(),
+        start: i.start|| Date.now(),
         duration: [i.duration, 'days'],
-        // endDate: moment(i.start || Date.now(), "DD-MM-YYYY").add(5, 'days').toDate(),
-        label: i.name,
+        end: moment(i.start || Date.now(), "DD-MM-YYYY").add(5, 'days').toDate(),
+        content: i.name,
+        group:1,
         id: i.uuid,
         dependsOn: []
       }
@@ -510,6 +555,13 @@ var createPlanningView = function () {
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
+    }else if (metalinkType == "eventContainsStakeholders") {
+      sourceData=store.stakeholders.items
+      sourceLinks=store.stakeholders.links
+      displayRules = [
+        {prop:"name", displayAs:"Name", edit:false},
+        {prop:"lastName", displayAs:"Last Name", fullText:true, edit:false}
+      ]
     }
     showListMenu({
       sourceData:sourceData,
@@ -558,6 +610,13 @@ var createPlanningView = function () {
         if (filteredIds.includes(item.dataset.id) || !value) {item.style.display = "block"}else{item.style.display = "none"}
       }
     });
+  }
+
+  var updateGant=async  function () {
+    if (ganttObject) {
+      let ganttData = await prepareGanttData()
+       ganttObject.setItems(ganttData)
+     }
   }
 
   var update = function () {

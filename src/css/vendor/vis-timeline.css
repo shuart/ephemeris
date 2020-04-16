@@ -1,0 +1,40 @@
+.vis-timeline {
+  border: none !important;
+}
+
+.vis-item {
+  border-color: #00b5ad !important;
+  background-color: #00b5ad !important;
+  color: white !important;
+
+}
+
+.vis-item,
+.vis-item.vis-line {
+
+}
+
+.vis-item.vis-dot {
+
+}
+
+.vis-item.vis-selected {
+  /* border-color: black !important; */
+  /* background-color: black !important; */
+  box-shadow: 5px 5px 20px rgba(128,128,128, 0.5) !important;
+}
+
+.vis-time-axis .vis-text {
+  padding-top: 10px !important;
+}
+
+.vis-time-axis .vis-text.vis-major {
+}
+
+.vis-time-axis .vis-grid.vis-minor {
+
+}
+
+.vis-time-axis .vis-grid.vis-major {
+
+}
