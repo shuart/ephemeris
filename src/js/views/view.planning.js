@@ -351,29 +351,33 @@ var createPlanningView = function () {
             action: async (ev)=>{
               ganttMode = "events"
               timelineView.update()
-              await loadGantt()
-
-               if (ganttObject) {//change siz of list if gant is activated
-                  // let data = await prepareGanttData()
-                  // ganttObject.update(data)
-                   changeListSize()
-                   updateComponents()
-               }
+              timelineView.setPlanningMode("events")
+              timelineView.eventsTimeline(currentPlanning.uuid)
+              // await loadGantt()
+              //
+              //  if (ganttObject) {//change siz of list if gant is activated
+              //     // let data = await prepareGanttData()
+              //     // ganttObject.update(data)
+              //      changeListSize()
+              //      updateComponents()
+              //  }
             }
           },
           {
             name:"Capacity",
             action: async (ev)=>{
               ganttMode = "capacity"
-
-              await loadGantt()
-
-               if (ganttObject) {//change siz of list if gant is activated
-                  // let data = await prepareGanttData()
-                  // ganttObject.update(data)
-                   changeListSize()
-                   updateComponents()
-               }
+              timelineView.update()
+              timelineView.setPlanningMode("capacity")
+              timelineView.eventsTimeline(currentPlanning.uuid)
+              // await loadGantt()
+              //
+              //  if (ganttObject) {//change siz of list if gant is activated
+              //     // let data = await prepareGanttData()
+              //     // ganttObject.update(data)
+              //      changeListSize()
+              //      updateComponents()
+              //  }
             }
           }
         ]

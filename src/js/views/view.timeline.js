@@ -6,6 +6,15 @@ var createTimelineView = function ({
   var self ={};
   var objectIsActive = false;
 
+  var container = undefined
+
+  var ganttObject = undefined
+  var ganttDataSet = undefined
+  var ganttGroups = undefined
+  var currentPlanning = undefined
+  var currentList = undefined
+  var ganttMode = "events"
+
   let currentSetUuid = undefined
   let currentSetGenerateBuffer = []
   let currentSetGenerateInterfaceBuffer = []
@@ -45,6 +54,10 @@ var createTimelineView = function ({
     })
     connect(".action_vv_set_close","click",(e)=>{
       objectIsActive = false;
+      currentPlanning = undefined;
+      container.innerHTML=""
+      ganttObject.destroy()
+      ganttObject = undefined
       sourceOccElement.remove()
     })
   }
@@ -78,7 +91,7 @@ var createTimelineView = function ({
     mainEl.style.padding = "50px";
     mainEl.style.overflow = "auto";
     // mainEl.style.left= "25%";
-    var container = document.createElement('div');
+    container = document.createElement('div');
 
     container.style.position = "relative"
     container.style.height = "90%"
@@ -108,9 +121,7 @@ var createTimelineView = function ({
   }
 
   var renderSet = async function (){
-    let relevantSet = await generateRelevantSet(currentSetUuid)
-    let workSet = deepCopy(relevantSet)
-    await displayWorkSet(workSet, ".vvDefinitionsArea")
+    await loadGantt()
   }
   var renderMenu =function (uuid, store){
     // let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
@@ -122,14 +133,176 @@ var createTimelineView = function ({
 
 
 
+  var prepareGanttData = async function () {
+    var store = await query.currentProject()
+    var newPlanningData =  await preparePlanningData(currentPlanning)
+    let items = []
+    let groups = []
+    if (ganttMode == "events") {
+      //create the data to display each element on his own lane
+      for (var i = 0; i < newPlanningData.length; i++) {
+        let item = newPlanningData[i]
+        items.push({
+          start: item.start|| Date.now(),
+          duration: [item.duration, 'days'],
+          end: moment(item.start || Date.now(), "DD-MM-YYYY").add(item.duration, 'days'),
+          content: item.name,
+          group:item.uuid,
+          id: item.uuid,
+          dependsOn: []
+        })
+        groups.push({id:item.uuid, content:item.name})
+      }
+
+    }
+    if (ganttMode == "capacity") {
+
+      let relevantMetalinks = store.metaLinks.items.filter(i=> i.type== "eventContainsStakeholders")
+      //create the data to display each element on his own lane
+      for (var i = 0; i < newPlanningData.length; i++) {
+        let item = newPlanningData[i]
+        let relatedEvent = store.events.items.find(e=>e.uuid == item.relatedEvent)
+        let relevantStakeholders = relevantMetalinks.filter(m=> m.source == relatedEvent.uuid)
+        let relevantStakeholder =undefined
+        if (!relevantStakeholders[0]) {//in case the iutem is not connected add it to a default group
+          relevantStakeholder = {uuid:"unallocated", name:"unallocated", lastName:""}
+        }else {
+          relevantStakeholder =store.stakeholders.items.find(i=> i.uuid== relevantStakeholders[0].target )
+        }
+
+        items.push({
+          start: item.start|| Date.now(),
+          duration: [item.duration, 'days'],
+          end: moment(item.start || Date.now(), "DD-MM-YYYY").add(item.duration, 'days'),
+          content: item.name,
+          group:relevantStakeholder.uuid,
+          id: item.uuid,
+          dependsOn: []
+        })
+        if (relevantStakeholder.uuid != "unallocated" && !groups.find(g=>g.id == relevantStakeholder.uuid )) {//if unallocated add the group only at the end
+          groups.push({id:relevantStakeholder.uuid, content:relevantStakeholder.name+" "+relevantStakeholder.lastName})
+        }
+
+      }
+      groups.push({id:"unallocated", content:"unallocated"})
+    }
+
+
+    if (!items[0]) {
+      ganttData = undefined
+    }
+    console.log("data prepared");
+    return {items, groups}
+  }
+
+  var preparePlanningData = async function (planningUuid) {
+    var store = await query.currentProject()
+    let relevantTimeLinks = store.timeLinks.items.filter(l=>l.type == "planning" && l.source == planningUuid)
+    let relevantTimeTracksUuid = relevantTimeLinks.map(r => r.target)
+    console.log(relevantTimeTracksUuid);
+    let relevantTimeTracks = store.timeTracks.items.filter(l => relevantTimeTracksUuid.includes(l.uuid))
+    console.log(relevantTimeTracks);
+    if (!relevantTimeTracks || !relevantTimeTracks[0]) {
+      return []
+    }
+    let planningData = relevantTimeTracks.map(function (t) {
+      let relatedEvent = store.events.items.find(e=>e.uuid == t.relatedEvent)
+      return {
+        uuid:t.uuid,
+        relatedEvent:relatedEvent.uuid,
+        name:relatedEvent.name,
+        desc:relatedEvent.desc,
+        start:t.start,
+        duration:t.duration
+      }
+    })
+    return planningData
+  }
+
+  async function loadGantt() {
+    if (ganttObject) {
+      container.innerHTML=""
+      ganttObject.destroy()
+      ganttObject = undefined
+    }else {
+      let ganttData = await prepareGanttData()
+      var container = document.querySelector('.timeLineArea');
+      // Create a DataSet (allows two way data-binding)
+      // ganttGroups = new vis.DataSet([
+      //   {id: 1, content: 'Truck&nbsp;1'},
+      //   {id: 2, content: 'Truck&nbsp;2'},
+      //   {id: 3, content: 'Truck&nbsp;3'},
+      //   {id: "t5454", content: 'Truck&nbsp;4'}
+      // ]);
+      if (ganttGroups || ganttDataSet) {
+        ganttGroups.clear()
+        ganttDataSet.clear()
+      }
+      console.log('injecting data');
+      ganttGroups = new vis.DataSet(ganttData.groups);
+      ganttDataSet = new vis.DataSet(ganttData.items);
+      // var items = new vis.DataSet([
+      //  {id: 4, group:3, content: 'item 4', start: '2014-04-16', end: '2014-04-19'},
+      //  {id: 5, group:"t5454", content: 'item 5', start: '2014-04-25'},
+      //  {id: 6, group:"t5454", content: 'item 6', start: '2014-04-27', type: 'point'}
+      // ]);
+
+      var options = {
+        editable: true,
+        orientation: 'top'
+      };
+
+      ganttObject = new vis.Timeline(container, null, options);
+      ganttObject.setGroups(ganttGroups);
+      ganttObject.setItems(ganttDataSet);
+
+      ganttDataSet.on('*', function (event, properties) {
+        console.log(event, properties);
+        if (event == "update") {
+          console.log(properties);
+          if (properties.data[0].start != properties.oldData[0].start) {
+            let newStartDate = properties.data[0].start
+            let id = properties.data[0].id
+            push(act.edit("timeTracks",{uuid:id, prop:'start', value:newStartDate}))
+          }
+
+          var startD = moment(properties.data[0].start);
+          var endD = moment(properties.data[0].end);
+          let newDuration = endD.diff(startD, 'days')+1
+          var oldstartD = moment(properties.oldData[0].start);
+          var oldendD = moment(properties.oldData[0].end);
+          let oldDuration = oldendD.diff(oldstartD, 'days')+1
+          console.log(oldDuration,newDuration);
+
+          if (oldDuration != newDuration) {
+            let id = properties.data[0].id
+            push(act.edit("timeTracks",{uuid:id, prop:'duration', value:newDuration}))
+          }
+
+        }
+      });
+      //   onElementClicked : async function (e) {
+      //     showSingleEventService.showById(e.id, async function (e) {
+      //       var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+      //       ev.select.updateData(newPlanningData)
+      //       ev.select.refreshList()
+      //       if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
+      //
+      //     })
+    }
+  }
 
 
 
 
 
 
-
-  var eventsTimeline = function (uuid) {
+  var setPlanningMode = async  function (mode) {
+    ganttMode = mode
+  }
+  var eventsTimeline = async  function (uuid) {
+    currentPlanning = uuid
+    await loadGantt()
   }
   var update = function (uuid) {
     if (uuid) {
@@ -155,6 +328,7 @@ var createTimelineView = function ({
   }
 
 
+  self.setPlanningMode = setPlanningMode
   self.eventsTimeline = eventsTimeline
   self.setActive = setActive
   self.setInactive = setInactive
