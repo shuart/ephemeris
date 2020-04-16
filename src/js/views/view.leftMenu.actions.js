@@ -89,6 +89,7 @@ var createLeftMenuActions = function () {
         copy.urgent = lessThanInSomeDays(a.dueDate,2)
         copy.projectUuid = store.uuid
         copy.assignedToUuid = store.metaLinks.items.filter(m=>m.type == "assignedTo" && m.source == copy.uuid).map(f=>f.target)
+        copy.assignedToStakeholderItem = store.stakeholders.items.filter(i=>i.uuid == copy.assignedToUuid)
         return copy
       })
       allActions = allActions.concat(formatedActions)
@@ -99,8 +100,22 @@ var createLeftMenuActions = function () {
     filteredActions = filteredActions.filter( e => e.open)
     filteredActions = filteredActions.filter( e => lessThanInSomeDays(e.dueDate,7))
 
-    if (actionSortStatus == "my actions" && app.store.userData.info.userUuid) {
-      filteredActions = filteredActions.filter( e => e.assignedToUuid.includes(app.store.userData.info.userUuid))
+    // if (actionSortStatus == "my actions" && app.store.userData.info.userUuid) {
+    //   filteredActions = filteredActions.filter( e => e.assignedToUuid.includes(app.store.userData.info.userUuid))
+    // }
+    if (actionSortStatus == "my actions" && app.store.userData.info.follows) {
+      filteredActions = filteredActions.filter( e => {
+        for (var i = 0; i < e.assignedToStakeholderItem.length; i++) {
+          let s = e.assignedToStakeholderItem[i]
+          if (app.store.userData.info.follows.includes(s.actorsId)) {
+            return true
+          }
+          if (app.store.userData.info.userUuid == s.actorsId) {
+            return true
+          }
+        }
+        return false
+      })
     }
 
     let sortedActions = filteredActions.sort(function(a, b) {

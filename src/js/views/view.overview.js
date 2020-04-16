@@ -49,13 +49,7 @@ var createOverview = function (targetSelector) {
     <h4>Quickstart guide</h4>
 
       <div class="ui small steps">
-        <div class="link step action_toogle_add_me_in_stakeholders">
-          <i class="address book icon"></i>
-          <div class="content">
-            <div class="title">Add myself</div>
-            <div class="description">As a project stakeholder</div>
-          </div>
-        </div>
+      
         <div class="link step action_toogle_stakeholders">
           <i class="address book icon"></i>
           <div class="content">

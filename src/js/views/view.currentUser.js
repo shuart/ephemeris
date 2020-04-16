@@ -36,10 +36,7 @@ var createCurrentUserView = function ({
       console.log("Edit");
       var newValue = prompt("Edit Item",e.target.dataset.value)
       if (newValue) {
-        //TODO move to reducer
-        app.store.userData.info[e.target.dataset.prop] = newValue
-        dbConnector.setUserInfo(app.state.currentUser , e.target.dataset.prop, newValue)
-        // push(act.edit("actions",{project:e.target.dataset.project, uuid:e.target.dataset.id, prop:e.target.dataset.prop, value:newValue}))
+        editCurrentUserItem(e.target.dataset.value, newValue)  
       }
       sourceOccElement.remove()
       update()
@@ -270,6 +267,14 @@ var createCurrentUserView = function ({
     return mainText
   }
 
+  var editCurrentUserItem = function (prop, newValue) {
+    //TODO move to reducer
+    app.store.userData.info[prop] = newValue
+    dbConnector.setUserInfo(app.state.currentUser , prop, newValue)
+    // push(act.edit("actions",{project:e.target.dataset.project, uuid:e.target.dataset.id, prop:e.target.dataset.prop, value:newValue}))
+
+  }
+
 
 
   var update = function (uuid) {
@@ -287,6 +292,7 @@ var createCurrentUserView = function ({
 
   self.setActive = setActive
   self.setInactive = setInactive
+  self.editCurrentUserItem = editCurrentUserItem
   self.update = update
   self.init = init
 

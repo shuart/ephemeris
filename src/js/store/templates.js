@@ -214,7 +214,7 @@ var createNewProject = function (name, optionsData) {
   if (options.placeholder) {
     createPBS(secondProject)
   }
-  createUserStakeholder(store)
+  createUserStakeholder(secondProject)
   console.log(secondProject);
   return secondProject
 }
@@ -231,7 +231,8 @@ function createPBS(store) {
 function createUserStakeholder(store) {
   if (app.store) {
     let i = app.store.userData.info
-    store.stakeholders.items[0] = {uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""}
+    store.stakeholders.items[0] = {uuid:genuuid(),actorsId:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""}
+    store.actors.items[0] = {uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName}
 
   }
   // return store

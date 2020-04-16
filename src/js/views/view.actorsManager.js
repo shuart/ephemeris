@@ -9,6 +9,7 @@ var createActorsManagerView = function ({
   let currentActionUuid = undefined
   let sourceOccElement = undefined
   let container = undefined
+  let filterText = undefined
 
   let theme = {
     menu : function (action) {
@@ -18,12 +19,18 @@ var createActorsManagerView = function ({
             <div class="ui teal button actors_manager_add_Actor">Add</div>
         </div>
         <div class="right menu">
+          <div class="actors_search_area">
+          </div>
           <div class="item">
               <div class="ui red button actors_manager_close">close</div>
           </div>
         </div>
         </div>
         <div class="ui divider"></div>
+        <h2 class="ui header">Project Actors</h2>
+        <h2 class="ui sub header">
+          Assign a role to someone in multiple projects.
+        </h2>
       `
     },
     placeholder: function (actors) {
@@ -41,10 +48,7 @@ var createActorsManagerView = function ({
     },
     actorsList: function (actors) {
       return `
-      <h2 class="ui header">Project Actors</h2>
-      <h2 class="ui sub header">
-        Assign a role to someone in multiple projects.
-      </h2>
+
       <div class="ui items">
         ${actors.map(a=>theme.actorsElement(a)).join('')}
       </div>
@@ -64,21 +68,18 @@ var createActorsManagerView = function ({
             ${actor.projectName}
           </div>
           <div class="description">
-            <div class="item">
+            <div class="ui mini middle aligned list">
                 ${actor.stakeholders? actor.stakeholders.map(s=>theme.stakehoderElement(s)).join(''):""}
                 <div data-id="${actor.uuid}"  class="ui mini basic teal button actors_manager_add_actor_stakeholder">Add a stakeholder</div>
             </div>
           </div>
           <div class="extra">
-            <h5 class="header">ID</h5>
-            ${actor.uuid}
-            <i data-prop="uuid" data-value="${actor.uuid}" data-id="${actor.uuid}" class="edit icon actors_manager_edit_item" style="opacity:0.2"></i>
-
             <h5 class="header">Ephemeris User ID</h5>
             ${actor.ephemerisUuid|| "Set an another Ephemeris User ID to connect it to this project"}
             <i data-projectid="${actor.projectid}" data-prop="ephemerisUuid" data-value="${actor.ephemerisUuid}" data-id="${actor.uuid}" class="edit icon actors_manager_edit_item" style="opacity:0.2"></i>
 
             <div class="item">
+                ${theme.followElement(actor)}
                 <div data-projectid="${actor.projectid}" data-id="${actor.uuid}"  class="ui mini basic  red button actors_manager_remove_Actor">Remove</div>
             </div>
           </div>
@@ -86,13 +87,27 @@ var createActorsManagerView = function ({
       </div>
       `
     },
+    followElement: function (actor) {
+      if (app.store.userData.info.userUuid== actor.uuid) {
+        return `<div data-projectid="${actor.projectid}" data-id="${actor.uuid}"  class="ui mini  teal button">Myself</div>`
+      }
+      else if (app.store.userData.info.follows.includes(actor.uuid)) {
+        return `<div data-projectid="${actor.projectid}" data-id="${actor.uuid}"  class="ui mini  blue button actors_manager_follow_activities">Following</div>`
+      }else {
+        return `<div data-projectid="${actor.projectid}" data-id="${actor.uuid}"  class="ui mini basic  blue button actors_manager_follow_activities">Follow activities</div>`
+      }
+    },
     stakehoderElement: function (stakehoder) {
       return `
-      <div class="ui item">
-         ${stakehoder.name +" "+ stakehoder.lastName +" in "+stakehoder.projectName}
-         <div data-actorsid="${stakehoder.actorsId}" data-projectid="${stakehoder.projectid}" data-id="${stakehoder.uuid}"  class="ui mini basic red button actors_manager_remove_stakeholder_from_actor">Remove</div>
-     </div>
-     <div class="ui divider"></div>
+      <div class="item">
+        <div class="right floated content">
+          <div data-actorsid="${stakehoder.actorsId}" data-projectid="${stakehoder.projectid}" data-id="${stakehoder.uuid}"  class="ui mini basic tertiary red button actors_manager_remove_stakeholder_from_actor">Remove</div>
+        </div>
+        <i class="user icon"></i>
+        <div class="content">
+          ${stakehoder.name +" "+ stakehoder.lastName +" in "+stakehoder.projectName}
+        </div>
+      </div>
       `
     },
     projectList: function (projects) {
@@ -115,6 +130,14 @@ var createActorsManagerView = function ({
        </div>
      </div>
       `
+    },
+    searchArea : function () {
+      return `
+        <div class="ui icon input">
+            <input class="list-search-input" type="text" placeholder="Search list...">
+            <i class="search icon"></i>
+        </div>
+        `
     }
 
   }
@@ -134,18 +157,43 @@ var createActorsManagerView = function ({
       }
       refresh()
     })
+    connect(".actors_manager_follow_activities","click",(e)=>{
+
+      let followedActors = app.store.userData.info.follows || []
+      let newFollowedActors = []
+      if (followedActors.includes(e.target.dataset.id)) {
+        newFollowedActors = followedActors.filter(a => a != e.target.dataset.id)
+      }else {
+        newFollowedActors = followedActors.concat(e.target.dataset.id)
+      }
+      currentUserView.editCurrentUserItem("follows",newFollowedActors)
+      console.log(app.store.userData.info.follows);
+      refresh()
+    })
+
+    connect(".actors_manager_edit_item","click",(e)=>{
+      console.log("Edit");
+      var newValue = prompt("Edit Item",e.target.dataset.value)
+      if (newValue) {
+        push(act.edit("actors",{uuid:e.target.dataset.id,prop:e.target.dataset.prop, value:newValue, project:e.target.dataset.projectid}))
+      }
+      refresh()
+    })
 
     connect(".actors_manager_close","click",(e)=>{
+      filterText = undefined
       sourceOccElement.remove()
       // pageManager.setActivePage("projectSelection")
     })
     connect(".actors_manager_add_Actor","click",async (e)=>{
-      let owners = await getAllUsers()
-      // push(act.add("actors",{uuid:genuuid(), actorUuid:genuuid(), name:firstName, lastName:lastName}))
-      let fullActorsCollection = await getAllActors()
-      owners = addActorNameToStaholders(owners,fullActorsCollection)
-      generateUsersFusionList(owners, undefined)//add actor in relevant projects
-      refresh()
+      if (confirm("You have to chose an existing stakeholder to create a new actor")) {
+        let owners = await getAllUsers()
+        // push(act.add("actors",{uuid:genuuid(), actorUuid:genuuid(), name:firstName, lastName:lastName}))
+        let fullActorsCollection = await getAllActors()
+        owners = addActorNameToStaholders(owners,fullActorsCollection)
+        generateUsersFusionList(owners, undefined)//add actor in relevant projects
+        refresh()
+      }
     })
     connect(".actors_manager_remove_Actor","click",async (e)=>{
       if (confirm("Remove this actor?")) {
@@ -249,6 +297,8 @@ var createActorsManagerView = function ({
 
     document.body.appendChild(sourceOccElement)
 
+    renderSearchArea(menuArea)
+
     renderContainer()
     // renderSharingInfo()
 
@@ -282,6 +332,21 @@ var createActorsManagerView = function ({
     if (!actorsCollection[0]) {
       container.innerHTML = theme.placeholder()
     }else {
+      actorsCollection = actorsCollection.sort(function(a, b) {
+        var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+        var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+        // names must be equal
+        return 0;
+      });
+      if (filterText != undefined || filterText != "") {
+        actorsCollection=actorsCollection.filter(e=> fuzzysearch(filterText,e.name) || fuzzysearch(filterText,e.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")) || fuzzysearch(filterText,e.lastName) || fuzzysearch(filterText,e.lastName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")))
+      }
       container.innerHTML = theme.actorsList(actorsCollection)
     }
 
@@ -431,7 +496,30 @@ var createActorsManagerView = function ({
     })
   }
 
+  var renderSearchArea =function (container) {
+    var addSearch = document.createElement('div');
+    addSearch.classList="ui "
+    addSearch.innerHTML = theme.searchArea()
+    console.log(container);
+    container.querySelector(".actors_search_area").appendChild(addSearch)
 
+    addSearch.addEventListener('keyup', function(e){
+      //e.stopPropagation()
+      var value = container.querySelector(".list-search-input").value
+      var tag = getHashTags(value)
+      filterProject = undefined
+      if (tag) {
+        filterProject = tag[0]
+        console.log(filterProject);
+        value = value.replace('#'+tag[0]+" ",'');
+        value = value.replace('#'+tag[0],'');
+      }
+      filterText = value;
+      console.log(filterText);
+      refresh()
+      // renderList(container)
+    });
+  }
 
 
   //UTILS
@@ -443,6 +531,8 @@ var createActorsManagerView = function ({
     }
     return mainText
   }
+
+
 
 
 
