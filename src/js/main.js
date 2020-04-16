@@ -211,6 +211,9 @@ var reparse = false;
   connect(".action_toogle_actors_manager_view","click",(e)=>{
     actorsManagerView.update()
   })
+  connect(".action_toogle_timeline_view","click",(e)=>{
+    timelineView.update()
+  })
 
 
   connect(".action_toogle_stakeholders","click",async (e)=>{
