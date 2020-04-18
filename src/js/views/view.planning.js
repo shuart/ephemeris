@@ -210,7 +210,7 @@ var createPlanningView = function () {
           updateGant()
         },
         onEditItemTime: async(ev)=>{
-          push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
+          push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.value}))
           var newPlanningData = await preparePlanningData(currentPlanning.uuid)
           ev.select.updateData(newPlanningData)
 

@@ -478,16 +478,28 @@ function showListMenu({
           // }
         }
         if (event.target.classList.contains("action_list_edit_time_item")) {
-          console.log(event.target.parentElement.querySelector("input"));
-          event.target.parentElement.querySelector("input").style.display ="block"
-          //event.target.style.opacity ="1"
-          event.target.parentElement.querySelector("input").previousSibling.remove()
-          event.target.style.display ="none"
-          event.target.parentElement.querySelector("input").onchange = function (ev) {
-            onEditItemTime({select:self, selectDiv:sourceEl, target:ev.target})
-            sourceEl.remove()
-            render()
-          }
+          //DEPENDENCY
+          ephHelpers.promptSingleDatePicker(event.target.dataset.value, function (ev) {
+            let selected = ev.selectedDates
+            if (selected[0]) {
+              let newDate = moment(selected[0]).add(12, 'hours').toDate()
+              // push(act.edit("actions",{uuid:e.target.dataset.id, prop:e.target.dataset.prop, value:newDate, project:e.target.dataset.project}))
+              onEditItemTime({select:self, selectDiv:sourceEl, target:event.target, value:newDate})
+              // render()
+              // update()
+            }
+          })
+
+          // console.log(event.target.parentElement.querySelector("input"));
+          // event.target.parentElement.querySelector("input").style.display ="block"
+          // //event.target.style.opacity ="1"
+          // event.target.parentElement.querySelector("input").previousSibling.remove()
+          // event.target.style.display ="none"
+          // event.target.parentElement.querySelector("input").onchange = function (ev) {
+          //   onEditItemTime({select:self, selectDiv:sourceEl, target:ev.target})
+          //   sourceEl.remove()
+          //   render()
+          // }
           //sourceEl.remove()
         }
         if (event.target.classList.contains("action_list_edit_text_item")) {

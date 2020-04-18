@@ -58,7 +58,7 @@ var createShowSingleEventService = function () {
         startSelectionFromParametersView(ev)
       },
       onEditItemTime: (ev)=>{
-        push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
+        push(act.edit("timeTracks",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.value}))
         showById(uuid, callback)
         setTimeout(function () {ev.select.remove()}, 100);
       },

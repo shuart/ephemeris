@@ -33,7 +33,7 @@ var createChangeManagerView = function () {
         }
       },
       onEditItemTime: (ev)=>{
-        push(act.edit("changes",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
+        push(act.edit("changes",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.value}))
       },
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
