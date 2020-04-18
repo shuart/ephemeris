@@ -353,6 +353,10 @@ var createPlanningView = function () {
               timelineView.update()
               timelineView.setPlanningMode("events")
               timelineView.eventsTimeline(currentPlanning.uuid)
+
+              setTimeout(function () {
+                updateComponents()
+              }, 200);
               // await loadGantt()
               //
               //  if (ganttObject) {//change siz of list if gant is activated
@@ -370,6 +374,10 @@ var createPlanningView = function () {
               timelineView.update()
               timelineView.setPlanningMode("capacity")
               timelineView.eventsTimeline(currentPlanning.uuid)
+
+              setTimeout(function () {
+                updateComponents()
+              }, 200);
               // await loadGantt()
               //
               //  if (ganttObject) {//change siz of list if gant is activated

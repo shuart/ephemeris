@@ -7,6 +7,7 @@ var createTimelineView = function ({
   var objectIsActive = false;
 
   var container = undefined
+  var containerBottom = undefined
 
   var ganttObject = undefined
   var ganttDataSet = undefined
@@ -94,13 +95,14 @@ var createTimelineView = function ({
     container = document.createElement('div');
 
     container.style.position = "relative"
-    container.style.height = "90%"
+    container.style.height = "50%"
     container.style.overflow = "hidden"
     container.classList = "timeLineArea"
-    var containerBottom = document.createElement('div');
+
+    containerBottom = document.createElement('div');
 
     containerBottom.style.position = "relative"
-    containerBottom.style.height = "0%"
+    containerBottom.style.height = "50%"
     containerBottom.style.overflow = "hidden"
     containerBottom.classList = "bottomArea"
 
@@ -122,6 +124,7 @@ var createTimelineView = function ({
 
   var renderSet = async function (){
     await loadGantt()
+
   }
   var renderMenu =function (uuid, store){
     // let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
@@ -129,6 +132,99 @@ var createTimelineView = function ({
   }
 
   //UTILS
+
+  var loadCapacityChart = function (days, simplifiedGroups) {
+    // create a dataSet with groups
+   var names = ['SquareShaded', 'Bargraph', 'Blank', 'CircleShaded'];
+   var groups = new vis.DataSet();
+   for (var i = 0; i < simplifiedGroups.length; i++) {
+     simplifiedGroups[i]
+     groups.add({
+        id: simplifiedGroups[i].id,
+        content: simplifiedGroups[i].content,
+        options: {
+            drawPoints: {
+                style: 'square' // square, circle
+            },
+            shaded: {
+                orientation: 'bottom' // top, bottom
+            }
+        }});
+   }
+
+ //     groups.add({
+ //     id: 0,
+ //     content: names[0],
+ //     options: {
+ //         drawPoints: {
+ //             style: 'square' // square, circle
+ //         },
+ //         shaded: {
+ //             orientation: 'bottom' // top, bottom
+ //         }
+ //     }});
+ //
+ // groups.add({
+ //     id: 1,
+ //     content: names[1],
+ //     options: {
+ //         style:'bar'
+ //     }});
+ //
+ // groups.add({
+ //     id: 2,
+ //     content: names[2],
+ //     options: {drawPoints: false}
+ // });
+ //
+ // groups.add({
+ //     id: 3,
+ //     content: names[3],
+ //     options: {
+ //         drawPoints: {
+ //             style: 'circle' // square, circle
+ //         },
+ //         shaded: {
+ //             orientation: 'top' // top, bottom
+ //         }
+ //     }});
+
+     // container = document.getElementById('visualization');
+    var items = [
+     {x: '2014-06-13', y: 60},
+     {x: '2014-06-14', y: 40},
+     {x: '2014-06-15', y: 55},
+     {x: '2014-06-16', y: 40},
+     {x: '2014-06-17', y: 50},
+     {x: '2014-06-13', y: 30, group: 0},
+     {x: '2014-06-14', y: 10, group: 0},
+     {x: '2014-06-15', y: 15, group: 1},
+     {x: '2014-06-16', y: 30, group: 1},
+     {x: '2014-06-17', y: 10, group: 1},
+     {x: '2014-06-18', y: 15, group: 1},
+     {x: '2014-06-19', y: 52, group: 1},
+     {x: '2014-06-20', y: 10, group: 1},
+     {x: '2014-06-21', y: 20, group: 2},
+     {x: '2014-06-22', y: 60, group: 2},
+     {x: '2014-06-23', y: 10, group: 2},
+     {x: '2014-06-24', y: 25, group: 2},
+     {x: '2014-06-25', y: 30, group: 2},
+     {x: '2014-06-26', y: 20, group: 3},
+     {x: '2014-06-27', y: 60, group: 3},
+     {x: '2014-06-28', y: 10, group: 3},
+     {x: '2014-06-29', y: 25, group: 3},
+     {x: '2014-06-30', y: 30, group: 3}
+    ];
+
+    var dataset = new vis.DataSet(days);
+    var options = {
+       defaultGroup: 'ungrouped',
+       legend: true,
+       start: '2014-06-10',
+       end: '2014-07-04'
+    };
+    var graph2d = new vis.Graph2d(containerBottom, dataset, groups, options);
+  }
 
 
 
@@ -226,6 +322,75 @@ var createTimelineView = function ({
       ganttObject = undefined
     }else {
       let ganttData = await prepareGanttData()
+
+      //prepare capacity graph
+
+      let days = []
+
+      var a = moment('2020-04-27');
+      var b = moment('2020-08-01');
+
+      // If you want an exclusive end date (half-open interval)
+      let interestDate =[]
+      for (var i = 0; i < ganttData.items.length; i++) {
+        let item= ganttData.items[i]
+        console.log(item);
+        if (item.start._isAMomentObject) {
+          if (item.start._isValid) {
+            // interestDate.push(item.start)
+            interestDate.push(item.start.clone().add(1, 'days'))
+            interestDate.push(item.start.clone().subtract(1, 'days'))
+          }
+        }else {
+          // interestDate.push(moment(item.start))
+          interestDate.push(moment(item.start).add(1, 'days'))
+          interestDate.push(moment(item.start).subtract(1, 'days'))
+        }
+        if (item.end._isAMomentObject) {
+          if (item.end._isValid) {
+            // interestDate.push(item.end)
+            interestDate.push(item.end.clone().add(1, 'days'))
+            interestDate.push(item.end.clone().subtract(1, 'days'))
+          }else {
+            alert()
+          }
+        }else {
+          // interestDate.push(moment(item.end))
+          interestDate.push(moment(item.end).add(1, 'days'))
+          interestDate.push(moment(item.end).subtract(1, 'days'))
+        }
+
+      }
+      console.log(interestDate);
+      for (var l = 0; l < interestDate.length; l++) {
+      // for (var m = moment(a); m.isBefore(b); m.add(1, 'days')) {
+
+        console.log(interestDate[l]);
+        let m =moment(interestDate[l])
+        console.log(m);
+        let valueAtPoint = ganttData.groups.map(g=>{ return {id:g.id, value:0};})
+        for (var i = 0; i < ganttData.items.length; i++) {
+
+          let gItem = ganttData.items[i]
+          var startM = moment(gItem.start)
+          var endM = moment(gItem.end)
+          if ((startM.isBefore(m)||startM.isSame(m) )&& ( m.isBefore(endM) || endM.isSame(m)) ) {
+            valueAtPoint.find(v=>v.id==gItem.group).value += 1
+
+          }
+
+
+        }
+        for (var j = 0; j < valueAtPoint.length; j++) {
+          // console.log(valueAtPoint);
+          let currentValueElement = valueAtPoint[j]
+          days.push({x: m.format('YYYY-MM-DD'), y: currentValueElement.value, group: currentValueElement.id})
+        }
+
+      }
+      loadCapacityChart(days, ganttData.groups)
+      ///////////
+
       var container = document.querySelector('.timeLineArea');
       // Create a DataSet (allows two way data-binding)
       // ganttGroups = new vis.DataSet([
@@ -303,6 +468,7 @@ var createTimelineView = function ({
   var eventsTimeline = async  function (uuid) {
     currentPlanning = uuid
     await loadGantt()
+    // loadCapacityChart()
   }
   var update = function (uuid) {
     if (uuid) {
