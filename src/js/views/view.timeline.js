@@ -238,10 +238,15 @@ var createTimelineView = function ({
       //create the data to display each element on his own lane
       for (var i = 0; i < newPlanningData.length; i++) {
         let item = newPlanningData[i]
+        console.log(item.start);
+        console.log(item.duration);
+        console.log(moment(item.start || Date.now(), "DD-MM-YYYY").add(parseInt(item.duration), 'days'));
+        console.log();
+        alert("dddd")
         items.push({
           start: item.start|| Date.now(),
-          duration: [item.duration, 'days'],
-          end: moment(item.start || Date.now(), "DD-MM-YYYY").add(item.duration, 'days'),
+          duration: parseInt(item.duration),
+          end: moment(item.start || Date.now(), "DD-MM-YYYY").add(parseInt(item.duration), 'days'),
           content: item.name,
           group:item.uuid,
           id: item.uuid,
@@ -268,8 +273,8 @@ var createTimelineView = function ({
 
         items.push({
           start: item.start|| Date.now(),
-          duration: [item.duration, 'days'],
-          end: moment(item.start || Date.now(), "DD-MM-YYYY").add(item.duration, 'days'),
+          duration: parseInt(item.duration),
+          end: moment(item.start || Date.now(), "DD-MM-YYYY").add(parseInt(item.duration), 'days'),
           content: item.name,
           group:relevantStakeholder.uuid,
           id: item.uuid,
@@ -365,9 +370,9 @@ var createTimelineView = function ({
       for (var l = 0; l < interestDate.length; l++) {
       // for (var m = moment(a); m.isBefore(b); m.add(1, 'days')) {
 
-        console.log(interestDate[l]);
+        // console.log(interestDate[l]);
         let m =moment(interestDate[l])
-        console.log(m);
+        // console.log(m);
         let valueAtPoint = ganttData.groups.map(g=>{ return {id:g.id, value:0};})
         for (var i = 0; i < ganttData.items.length; i++) {
 
