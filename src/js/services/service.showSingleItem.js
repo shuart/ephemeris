@@ -104,7 +104,7 @@ var createShowSingleItemService = function () {
         })
       },
       onEditItemTime: (ev)=>{
-        push(act.edit(storeGroup,{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate}))
+        push(act.edit(storeGroup,{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.value}))
       }
     })
   }
