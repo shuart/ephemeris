@@ -28,7 +28,7 @@ var createPromptPopupView = function (inputData) {
       return `
       <h2 class="ui header">${data.title}</h2>
       <div class="ui form">
-        <div class="fields">
+        <div style="width:100%; flex-direction:column;" class="fields">
         ${data.fields.map(f=> theme.input(f)).join('')}
         </div>
       ${theme.buttons(data.buttonsType)}
@@ -39,9 +39,9 @@ var createPromptPopupView = function (inputData) {
       let template ={}
       if (data.type = "input") {
         template= `
-        <div style="width:100%;" class="field input ">
-          <label>${data.label}</label>
-          <input type="text" class="form_input_${data.id}" placeholder="${data.placeholder}">
+        <div style="width:100%; padding-top: 15px;" class="field input ">
+          <label ${data.secondary?"style='opacity:0.5;'":""} >${data.label}${!data.optional?"<span style='opacity:0.5;'>*<span>":""}</label>
+          <input type="text" class="${data.secondary?"transparent":""} form_input_${data.id}" placeholder="${data.placeholder}">
         </div>
         `
       }
@@ -71,38 +71,22 @@ var createPromptPopupView = function (inputData) {
     render()
   }
   var connections =function () {
-    document.addEventListener("storeUpdated", async function () {
-      console.log(objectIsActive,currentSetList);
-      if (objectIsActive && currentSetList) {
-
-      }
-    })
+    // document.addEventListener("storeUpdated", async function () {
+    //   console.log(objectIsActive,currentSetList);
+    //   if (objectIsActive && currentSetList) {
+    //
+    //   }
+    // })
     connect(".action_prompt_cancel","click",(e)=>{
       closePopup()
       inputData.resolvePromise({result:undefined})
 
     })
     connect(".action_prompt_ok","click",(e)=>{
-      if (inputData.fields[1]) {
-        let results = {}
-        for (var i = 0; i < inputData.fields.length; i++) {
-          let element = container.querySelector(".form_input_"+inputData.fields[i].id)
-          if (element) {
-            results[inputData.fields[i].id] = element.value
-          }else {
-            results[inputData.fields[i].id] = undefined
-          }
-        }
-        inputData.resolvePromise( {result:results})
-      }else {
-        let element = container.querySelector(".form_input_"+inputData.fields[0].id)
-
-        if (element) {
-          inputData.resolvePromise( {result:element.value})
-        }
+      let isFormValid = checkIfFieldsAreCompleted()
+      if (isFormValid) {
+        resolveTheForm();
       }
-      // inputData.resolvePromise({result:undefined})
-      closePopup()
     })
   }
 
@@ -112,7 +96,7 @@ var createPromptPopupView = function (inputData) {
     sourceOccElement = document.createElement('div');
     sourceOccElement.style.height = "100%"
     sourceOccElement.style.width = "100%"
-    sourceOccElement.style.zIndex = "11"
+    sourceOccElement.style.zIndex = "999999999999"
     sourceOccElement.style.position = "fixed"
 
     var dimmer = document.createElement('div');
@@ -172,6 +156,54 @@ var createPromptPopupView = function (inputData) {
     // }
     container.innerHTML=theme.form({fields:inputData.fields, title:inputData.title, buttonsType:inputData.confirmationType})
     container.querySelector(".form_input_"+inputData.fields[0].id).focus()
+    if (!inputData.fields[1] && inputData.fields[0].type=="input") {
+      container.querySelector(".form_input_"+inputData.fields[0].id).addEventListener( 'keyup', function (e) {
+        if ( e.keyCode == 13 ) {
+          // Simulate clicking on the submit button.
+          resolveTheForm();
+        }
+      });
+    }
+  }
+
+  var resolveTheForm = function () {
+      if (inputData.fields[1]) {
+        let results = {}
+        for (var i = 0; i < inputData.fields.length; i++) {
+          let element = container.querySelector(".form_input_"+inputData.fields[i].id)
+          if (element) {
+            results[inputData.fields[i].id] = element.value
+          }else {
+            results[inputData.fields[i].id] = undefined
+          }
+        }
+        inputData.resolvePromise( {result:results})
+      }else {
+        let element = container.querySelector(".form_input_"+inputData.fields[0].id)
+
+        if (element) {
+          inputData.resolvePromise( {result:element.value})
+        }
+      }
+      // inputData.resolvePromise({result:undefined})
+      closePopup()
+  }
+
+  var checkIfFieldsAreCompleted = function () {
+    let formComplete = true// set up as complete before check
+
+    for (var i = 0; i < inputData.fields.length; i++) {
+      let element = container.querySelector(".form_input_"+inputData.fields[i].id)
+      if (element) {
+        if (element.value == "" && !inputData.fields[i].optional){
+          element.style.backgroundColor = "cornsilk"
+          formComplete =  false
+        }
+      }else {
+        // results[inputData.fields[i].id] = undefined
+      }
+    }
+    return formComplete
   }
 
   var renderSet = async function (){

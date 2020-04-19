@@ -25,7 +25,7 @@ function createStartUp() {
   function connect() {
     let file, url, reader = new FileReader;
 
-    sourceEl.onclick = function(event) {
+    sourceEl.onclick = async function(event) {
         if (event.target.classList.contains("action_startup_submit_item")) {
           console.log(event.target);
           console.log(document.querySelector('.input-su-name').value);
@@ -48,16 +48,26 @@ function createStartUp() {
           });
         }
         if (event.target.classList.contains("action_startup_load_user")) {
-          dbConnector.getUser(event.target.dataset.id).then(function (user) {
+          dbConnector.getUser(event.target.dataset.id).then(async function (user) {
             // app.store.projects = user.projects; //TODO use actions //DBCHANGE
             app.store.userData = user.userData; //TODO use actions
             app.store.relatedProjects = user.relatedProjects; //TODO use actions
             app.state.currentUser = user.uuid; //TODO use actions
             //setup profile if Needed
             if (!app.store.userData.info.userLastName || !app.store.userData.info.userFirstName) {
-              app.store.userData.info.userFirstName = prompt("Set your first name")
+
+              var popup= await createPromptPopup({
+                title:"Complete your profile",
+                fields:[
+                  { type:"input",id:"firstName" ,label:"First Name", placeholder:"Set your first name" },
+                  { type:"input",id:"lastName" ,label:"Last Name", placeholder:"Set your last name" },
+                  { type:"input",id:"userId" ,label:"This is your user ID. Change it if you have already one", placeholder:app.store.userData.info.userUuid, optional:true, secondary:true }
+                ]
+              })
+
+              app.store.userData.info.userFirstName = popup.result.firstName
               dbConnector.setUserInfo(event.target.dataset.id, "userFirstName", app.store.userData.info.userFirstName)
-              app.store.userData.info.userLastName = prompt("Set your last name")
+              app.store.userData.info.userLastName = popup.result.lastName
               dbConnector.setUserInfo(event.target.dataset.id, "userLastName", app.store.userData.info.userLastName)
 
             }
@@ -95,8 +105,13 @@ function createStartUp() {
         }
 
         if (event.target.classList.contains("action_startup_add_user")) {
-          var userName = prompt("Add a user")
-          if (userName != "") {
+          var popup= await createPromptPopup({
+            title:"Add a new session",
+            fields:{ type:"input",id:"sessionName" ,label:"Session name", placeholder:"Set a name for this new session" }
+          })
+          // var userName = prompt("Add a user")
+          userName = popup.result
+          if (userName && userName != "") {
             dbConnector.setUser({name:userName,projects:[]}).then(function () {
               renderUserSessionView()
             })
