@@ -4,6 +4,7 @@ var createPromptPopupView = function (inputData) {
 
   var container = undefined
   var containerBottom = undefined
+  var sourceOccElement = undefined
 
 
   let theme = {
@@ -108,6 +109,8 @@ var createPromptPopupView = function (inputData) {
       let isFormValid = checkIfFieldsAreCompleted()
       if (isFormValid) {
         resolveTheForm();
+      }else {
+        return undefined
       }
     })
   }
@@ -225,6 +228,7 @@ var createPromptPopupView = function (inputData) {
         // results[inputData.fields[i].id] = undefined
       }
     }
+    console.log(formComplete);
     return formComplete
   }
 
