@@ -121,11 +121,14 @@ var createProjectSelectionView = function (targetSelector) {
       setCurrentProject(e.target.dataset.id)
       pageManager.setActivePage("overview")
     })
-    connect(".action_project_selection_add_project","click",(e)=>{
-      var newReq = prompt("Add a new Project")
-      //TODO Bad
-      if (newReq) {
-        dbConnector.addProject(createNewProject(newReq, {placeholder:true}))
+    connect(".action_project_selection_add_project","click", async (e)=>{
+      // var newReq = prompt("Add a new Project")
+      var popup= await createPromptPopup({
+        title:"Add a new project",
+        fields:{ type:"input",id:"projectName" ,label:"Project name", placeholder:"Set a name for the project" }
+      })
+      if (popup && popup.result) {
+        dbConnector.addProject(createNewProject(popup.result, {placeholder:true}))
         setTimeout(function () {update()}, 1000);
       }
     })
