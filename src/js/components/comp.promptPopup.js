@@ -26,12 +26,14 @@ var createPromptPopupView = function (inputData) {
     },
     form: function (data) {
       return `
+      ${theme.iconHeader(data)}
+      ${theme.imageHeader(data)}
       <h2 class="ui header">${data.title}</h2>
       <div class="ui form">
         <div style="width:100%; flex-direction:column;" class="fields">
         ${data.fields.map(f=> theme.input(f)).join('')}
         </div>
-      ${theme.buttons(data.buttonsType)}
+      ${theme.buttons(data.confirmationType)}
       </div>
       `
     },
@@ -58,6 +60,26 @@ var createPromptPopupView = function (inputData) {
         <button class="ui basic  button action_prompt_cancel">Cancel</button>
         <button class="ui teal button action_prompt_ok">Ok</button>
       </div>`
+    },
+    iconHeader: function (data) {
+      if (data.iconHeader) {
+        return `
+        <div class="ui center aligned icon header">
+          <i class="${data.iconHeader} icon"></i>
+        </div>`
+      }else {
+        return ""
+      }
+    },
+    imageHeader: function (data) {
+      if (data.imageHeader) {
+        return `
+        <div class="ui center aligned icon header">
+          <img style="max-width:300px; width:40%;" class="ui centered medium image" src="${data.imageHeader}">
+        </div>`
+      }else {
+        return ""
+      }
     }
   }
 
@@ -154,7 +176,7 @@ var createPromptPopupView = function (inputData) {
     // for (var i = 0; i < fields.length; i++) {
     //   let field = fields[i]
     // }
-    container.innerHTML=theme.form({fields:inputData.fields, title:inputData.title, buttonsType:inputData.confirmationType})
+    container.innerHTML=theme.form(inputData)
     container.querySelector(".form_input_"+inputData.fields[0].id).focus()
     if (!inputData.fields[1] && inputData.fields[0].type=="input") {
       container.querySelector(".form_input_"+inputData.fields[0].id).addEventListener( 'keyup', function (e) {
@@ -262,6 +284,8 @@ var createPromptPopupView = function (inputData) {
 var createPromptPopup = function ({
   title= "Complete the form",
   confirmationType= "cancelOk",
+  iconHeader= undefined,
+  imageHeader= undefined,
   fields=[{ type:"input",id:"v5sd4fse5f465s" ,label:"", placeholder:"Write here" }],
   resolvePromise = undefined
   }={}) {
@@ -272,7 +296,7 @@ var createPromptPopup = function ({
       }else {
         fieldsArray = fields
       }
-      let data = {title:title, confirmationType:confirmationType, fields:fieldsArray,resolvePromise: resolve}
+      let data = {title:title, confirmationType:confirmationType, imageHeader:imageHeader,iconHeader:iconHeader, fields:fieldsArray,resolvePromise: resolve}
       let view = createPromptPopupView(data)
 
     }).catch(function(err) {

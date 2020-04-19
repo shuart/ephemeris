@@ -125,6 +125,7 @@ var createProjectSelectionView = function (targetSelector) {
       // var newReq = prompt("Add a new Project")
       var popup= await createPromptPopup({
         title:"Add a new project",
+        imageHeader:"./img/obs.png",
         fields:{ type:"input",id:"projectName" ,label:"Project name", placeholder:"Set a name for the project" }
       })
       if (popup && popup.result) {

@@ -58,6 +58,7 @@ function createStartUp() {
 
               var popup= await createPromptPopup({
                 title:"Complete your profile",
+                iconHeader:"user outline",
                 fields:[
                   { type:"input",id:"firstName" ,label:"First Name", placeholder:"Set your first name" },
                   { type:"input",id:"lastName" ,label:"Last Name", placeholder:"Set your last name" },
@@ -107,6 +108,7 @@ function createStartUp() {
         if (event.target.classList.contains("action_startup_add_user")) {
           var popup= await createPromptPopup({
             title:"Add a new session",
+            imageHeader:"./img/tele.png",
             fields:{ type:"input",id:"sessionName" ,label:"Session name", placeholder:"Set a name for this new session" }
           })
           // var userName = prompt("Add a user")

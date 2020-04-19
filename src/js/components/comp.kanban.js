@@ -135,8 +135,13 @@ var createKanban = function ({
 
     if (onAddCard) {
       document.querySelectorAll(".kanban_add_card").forEach(item => {
-        item.addEventListener('click', e => {
-          let value = prompt("Add a card")
+        item.addEventListener('click', async e => {
+          var popup= await createPromptPopup({
+            title:"Add a card",
+            fields:{ type:"input",id:"cardName" ,label:"Card name", placeholder:"Set a name for your new card" }
+          })
+
+          let value = popup.result
           if (value) {
             onAddCard({data:e, value:value})
           }
