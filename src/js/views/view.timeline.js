@@ -414,6 +414,21 @@ var createTimelineView = function ({
       ganttObject.setGroups(ganttGroups);
       ganttObject.setItems(ganttDataSet);
 
+      ganttObject.on('contextmenu', function (props) {
+
+        props.event.preventDefault();
+        let content =event.target.innerText
+        let element = ganttDataSet.get().find(s=>s.content== content)
+
+        showSingleEventService.showById(element.id, async function (e) {
+              // var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+              // ev.select.updateData(newPlanningData)
+              // ev.select.refreshList()
+              // if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
+              //
+            })
+      });
+
       ganttDataSet.on('*', async function (event, properties) {
         console.log(event, properties);
         if (event == "update") {
