@@ -13,6 +13,7 @@ var createTimelineView = function ({
   var ganttDataSet = undefined
   var capacityDataset = undefined
   var ganttGroups = undefined
+  var capacityGroups = undefined
   var currentPlanning = undefined
   var currentList = undefined
   var ganttMode = "events"
@@ -35,6 +36,13 @@ var createTimelineView = function ({
         </div>
         <div class="right menu">
           <div class="item">
+            <div class="ui clearable multiple dropdown target_timeline_elements_list">
+              <div class="text">Filter Capacity</div>
+              <i class="filter icon"></i>
+              <i class="dropdown icon"></i>
+            </div>
+          </div>
+          <div class="item">
               <div class="ui red button action_vv_set_close">close</div>
           </div>
         </div>
@@ -56,6 +64,7 @@ var createTimelineView = function ({
       }
     })
     connect(".action_vv_set_close","click",(e)=>{
+      $('.target_timeline_elements_list').dropdown('destroy')
       objectIsActive = false;
       currentPlanning = undefined;
       capacityDataset = undefined;
@@ -98,14 +107,14 @@ var createTimelineView = function ({
     container = document.createElement('div');
 
     container.style.position = "relative"
-    container.style.height = "50%"
+    container.style.height = "70%"
     container.style.overflow = "hidden"
     container.classList = "timeLineArea"
 
     containerBottom = document.createElement('div');
 
     containerBottom.style.position = "relative"
-    containerBottom.style.height = "50%"
+    containerBottom.style.height = "30%"
     containerBottom.style.overflow = "hidden"
     containerBottom.classList = "bottomArea"
 
@@ -136,15 +145,54 @@ var createTimelineView = function ({
 
   //UTILS
 
+  var setupDropdown = function () {
+    if (ganttMode != "capacity") {
+      sourceOccElement.querySelector('.target_timeline_elements_list').remove()//not used
+      return undefined
+    }
+    $('.target_timeline_elements_list')
+      .dropdown({
+        onChange:function (value, text, choice) {
+          function filterGroup(group, value) {
+            let elementsToShow = value.split(',')
+            if (true) {
+              console.log(elementsToShow);
+              console.log(group);
+              let newCapacityGroups = group.map(c=>{
+                if(value == ""){
+                  c.visible = true;
+                  return c
+                }else if (elementsToShow.includes(c.id)) {
+                  c.visible = true;
+                  return c
+                }else {
+                  c.visible = false;
+                  return c
+                }
+              })
+              group.clear()
+              group.add(newCapacityGroups)
+            }
+          }
+          filterGroup(capacityGroups, value)
+          filterGroup(ganttGroups, value)
+
+        },
+        values:capacityGroups.map(c=>{return {name:c.content, value:c.id};})
+      })
+    ;
+  }
+
   var loadCapacityChart = function (days, simplifiedGroups) {
     // create a dataSet with groups
    var names = ['SquareShaded', 'Bargraph', 'Blank', 'CircleShaded'];
-   var groups = new vis.DataSet();
+   capacityGroups = new vis.DataSet();
    for (var i = 0; i < simplifiedGroups.length; i++) {
      simplifiedGroups[i]
-     groups.add({
+     capacityGroups.add({
         id: simplifiedGroups[i].id,
         content: simplifiedGroups[i].content,
+        visible:true,
         options: {
             drawPoints: {
                 style: 'square' // square, circle
@@ -154,6 +202,8 @@ var createTimelineView = function ({
             }
         }});
    }
+
+   // groups.update({id:simplifiedGroups[0].id, visible:true})
 
  //     groups.add({
  //     id: 0,
@@ -193,40 +243,20 @@ var createTimelineView = function ({
  //     }});
 
      // container = document.getElementById('visualization');
-    var items = [
-     {x: '2014-06-13', y: 60},
-     {x: '2014-06-14', y: 40},
-     {x: '2014-06-15', y: 55},
-     {x: '2014-06-16', y: 40},
-     {x: '2014-06-17', y: 50},
-     {x: '2014-06-13', y: 30, group: 0},
-     {x: '2014-06-14', y: 10, group: 0},
-     {x: '2014-06-15', y: 15, group: 1},
-     {x: '2014-06-16', y: 30, group: 1},
-     {x: '2014-06-17', y: 10, group: 1},
-     {x: '2014-06-18', y: 15, group: 1},
-     {x: '2014-06-19', y: 52, group: 1},
-     {x: '2014-06-20', y: 10, group: 1},
-     {x: '2014-06-21', y: 20, group: 2},
-     {x: '2014-06-22', y: 60, group: 2},
-     {x: '2014-06-23', y: 10, group: 2},
-     {x: '2014-06-24', y: 25, group: 2},
-     {x: '2014-06-25', y: 30, group: 2},
-     {x: '2014-06-26', y: 20, group: 3},
-     {x: '2014-06-27', y: 60, group: 3},
-     {x: '2014-06-28', y: 10, group: 3},
-     {x: '2014-06-29', y: 25, group: 3},
-     {x: '2014-06-30', y: 30, group: 3}
-    ];
+    // var items = [
+    //  {x: '2014-06-29', y: 25, group: 3},
+    //  {x: '2014-06-30', y: 30, group: 3}
+    // ];
 
     capacityDataset = new vis.DataSet(days);
     var options = {
        defaultGroup: 'ungrouped',
        legend: true,
-       start: '2014-06-10',
-       end: '2014-07-04'
+       height:"100%",
+       start: moment(Date.now()).subtract(30, 'days').format('YYYY-MM-DD'),
+       end: moment(Date.now()).add(30, 'days').format('YYYY-MM-DD')
     };
-    var graph2d = new vis.Graph2d(containerBottom, capacityDataset, groups, options);
+    var graph2d = new vis.Graph2d(containerBottom, capacityDataset, capacityGroups, options);
   }
 
 
@@ -335,8 +365,20 @@ var createTimelineView = function ({
 
       if (ganttMode == "capacity" && showCapacity) {
         let days = await prepareCapacityData(ganttData)
-        loadCapacityChart(days, ganttData.groups)
-        ///////////
+        let capacityGroups = ganttData.groups.map(g=>{
+          return Object.assign({},g,{visible:false})
+        })
+        // let capacityGroupsVisibility = {}
+        // for (var i = 0; i < ganttData.groups.length; i++) {
+        //   capacityGroupsVisibility[ganttData.groups[i].id] = false;
+        // }
+        // graph2d1.setOptions(
+        //   {groups:
+        //     {visibility:{0:true, 1:false, 2:false, 3:false, "__ungrouped__":false}
+        //   }
+        // })
+
+        loadCapacityChart(days, capacityGroups)
       }
 
 
@@ -364,7 +406,8 @@ var createTimelineView = function ({
 
       var options = {
         editable: true,
-        orientation: 'top'
+        orientation: 'top',
+        height:"100%"
       };
 
       ganttObject = new vis.Timeline(container, null, options);
@@ -411,6 +454,11 @@ var createTimelineView = function ({
       //       if (ganttObject) {  ganttObject.update(await prepareGanttData()); changeListSize()}//TODO why needed?
       //
       //     })
+      if (ganttMode == "capacity" && showCapacity) {
+          setupDropdown()
+      }else {
+          sourceOccElement.querySelector('.target_timeline_elements_list').remove()
+      }
     }
   }
 
