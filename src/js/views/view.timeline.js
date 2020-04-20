@@ -11,10 +11,12 @@ var createTimelineView = function ({
 
   var ganttObject = undefined
   var ganttDataSet = undefined
+  var capacityDataset = undefined
   var ganttGroups = undefined
   var currentPlanning = undefined
   var currentList = undefined
   var ganttMode = "events"
+  var showCapacity = true;
 
   let currentSetUuid = undefined
   let currentSetGenerateBuffer = []
@@ -56,6 +58,7 @@ var createTimelineView = function ({
     connect(".action_vv_set_close","click",(e)=>{
       objectIsActive = false;
       currentPlanning = undefined;
+      capacityDataset = undefined;
       container.innerHTML=""
       ganttObject.destroy()
       ganttObject = undefined
@@ -216,14 +219,14 @@ var createTimelineView = function ({
      {x: '2014-06-30', y: 30, group: 3}
     ];
 
-    var dataset = new vis.DataSet(days);
+    capacityDataset = new vis.DataSet(days);
     var options = {
        defaultGroup: 'ungrouped',
        legend: true,
        start: '2014-06-10',
        end: '2014-07-04'
     };
-    var graph2d = new vis.Graph2d(containerBottom, dataset, groups, options);
+    var graph2d = new vis.Graph2d(containerBottom, capacityDataset, groups, options);
   }
 
 
@@ -276,6 +279,7 @@ var createTimelineView = function ({
           end: moment(item.start || Date.now(), "DD-MM-YYYY").add(parseInt(item.duration), 'days'),
           content: item.name,
           group:relevantStakeholder.uuid,
+          capacityToll:relatedEvent.capacityToll,
           id: item.uuid,
           dependsOn: []
         })
@@ -329,70 +333,8 @@ var createTimelineView = function ({
 
       //prepare capacity graph
 
-      if (ganttMode == "capacity") {
-        let days = []
-
-        var a = moment('2020-04-27');
-        var b = moment('2020-08-01');
-
-        // If you want an exclusive end date (half-open interval)
-        let interestDate =[]
-        for (var i = 0; i < ganttData.items.length; i++) {
-          let item= ganttData.items[i]
-          console.log(item);
-          if (item.start._isAMomentObject) {
-            if (item.start._isValid) {
-              // interestDate.push(item.start)
-              interestDate.push(item.start.clone().add(1, 'days'))
-              interestDate.push(item.start.clone().subtract(1, 'days'))
-            }
-          }else {
-            // interestDate.push(moment(item.start))
-            interestDate.push(moment(item.start).add(1, 'days'))
-            interestDate.push(moment(item.start).subtract(1, 'days'))
-          }
-          if (item.end._isAMomentObject) {
-            if (item.end._isValid) {
-              // interestDate.push(item.end)
-              interestDate.push(item.end.clone().add(1, 'days'))
-              interestDate.push(item.end.clone().subtract(1, 'days'))
-            }else {
-              alert()
-            }
-          }else {
-            // interestDate.push(moment(item.end))
-            interestDate.push(moment(item.end).add(1, 'days'))
-            interestDate.push(moment(item.end).subtract(1, 'days'))
-          }
-
-        }
-        console.log(interestDate);
-        for (var l = 0; l < interestDate.length; l++) {
-        // for (var m = moment(a); m.isBefore(b); m.add(1, 'days')) {
-
-          // console.log(interestDate[l]);
-          let m =moment(interestDate[l])
-          // console.log(m);
-          let valueAtPoint = ganttData.groups.map(g=>{ return {id:g.id, value:0};})
-          for (var i = 0; i < ganttData.items.length; i++) {
-
-            let gItem = ganttData.items[i]
-            var startM = moment(gItem.start)
-            var endM = moment(gItem.end)
-            if ((startM.isBefore(m)||startM.isSame(m) )&& ( m.isBefore(endM) || endM.isSame(m)) ) {
-              valueAtPoint.find(v=>v.id==gItem.group).value += 1
-
-            }
-
-
-          }
-          for (var j = 0; j < valueAtPoint.length; j++) {
-            // console.log(valueAtPoint);
-            let currentValueElement = valueAtPoint[j]
-            days.push({x: m.format('YYYY-MM-DD'), y: currentValueElement.value, group: currentValueElement.id})
-          }
-
-        }
+      if (ganttMode == "capacity" && showCapacity) {
+        let days = await prepareCapacityData(ganttData)
         loadCapacityChart(days, ganttData.groups)
         ///////////
       }
@@ -429,7 +371,7 @@ var createTimelineView = function ({
       ganttObject.setGroups(ganttGroups);
       ganttObject.setItems(ganttDataSet);
 
-      ganttDataSet.on('*', function (event, properties) {
+      ganttDataSet.on('*', async function (event, properties) {
         console.log(event, properties);
         if (event == "update") {
           console.log(properties);
@@ -453,6 +395,13 @@ var createTimelineView = function ({
           }
 
         }
+
+        if (capacityDataset) {//updata capacity graphs
+          let days = await prepareCapacityData()
+          capacityDataset.clear()
+          capacityDataset.add(days)
+        }
+
       });
       //   onElementClicked : async function (e) {
       //     showSingleEventService.showById(e.id, async function (e) {
@@ -465,7 +414,84 @@ var createTimelineView = function ({
     }
   }
 
+  var prepareCapacityData = async function (inputGanttData) {
+    let ganttData = undefined
+    if (inputGanttData) {
+      ganttData = inputGanttData
+    }else {
+      ganttData = await prepareGanttData()
+    }
 
+    //prepare capacity graph
+
+    if (ganttMode == "capacity" && showCapacity) {
+      let days = []
+
+      var a = moment('2020-04-27');
+      var b = moment('2020-08-01');
+
+      // If you want an exclusive end date (half-open interval)
+      let interestDate =[]
+      for (var i = 0; i < ganttData.items.length; i++) {
+        let item= ganttData.items[i]
+        console.log(item);
+        if (item.start._isAMomentObject) {
+          if (item.start._isValid) {
+            // interestDate.push(item.start)
+            interestDate.push(item.start.clone().add(1, 'days'))
+            interestDate.push(item.start.clone().subtract(1, 'days'))
+          }
+        }else {
+          // interestDate.push(moment(item.start))
+          interestDate.push(moment(item.start).add(1, 'days'))
+          interestDate.push(moment(item.start).subtract(1, 'days'))
+        }
+        if (item.end._isAMomentObject) {
+          if (item.end._isValid) {
+            // interestDate.push(item.end)
+            interestDate.push(item.end.clone().add(1, 'days'))
+            interestDate.push(item.end.clone().subtract(1, 'days'))
+          }else {
+            alert()
+          }
+        }else {
+          // interestDate.push(moment(item.end))
+          interestDate.push(moment(item.end).add(1, 'days'))
+          interestDate.push(moment(item.end).subtract(1, 'days'))
+        }
+
+      }
+      console.log(interestDate);
+      for (var l = 0; l < interestDate.length; l++) {
+      // for (var m = moment(a); m.isBefore(b); m.add(1, 'days')) {
+
+        // console.log(interestDate[l]);
+        let m =moment(interestDate[l])
+        // console.log(m);
+        let valueAtPoint = ganttData.groups.map(g=>{ return {id:g.id, value:0};})
+        for (var i = 0; i < ganttData.items.length; i++) {
+
+          let gItem = ganttData.items[i]
+          var startM = moment(gItem.start)
+          var endM = moment(gItem.end)
+          if ((startM.isBefore(m)||startM.isSame(m) )&& ( m.isBefore(endM) || endM.isSame(m)) ) {
+            let weightedValue = gItem.capacityToll || 1
+            valueAtPoint.find(v=>v.id==gItem.group).value += parseInt(weightedValue)
+
+          }
+
+
+        }
+        for (var j = 0; j < valueAtPoint.length; j++) {
+          // console.log(valueAtPoint);
+          let currentValueElement = valueAtPoint[j]
+          days.push({x: m.format('YYYY-MM-DD'), y: currentValueElement.value, group: currentValueElement.id})
+        }
+
+      }
+      return days
+    }
+  }
 
 
 

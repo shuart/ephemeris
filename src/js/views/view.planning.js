@@ -120,7 +120,8 @@ var createPlanningView = function () {
         name:relatedEvent.name,
         desc:relatedEvent.desc,
         start:t.start,
-        duration:t.duration
+        duration:t.duration,
+        capacityToll:relatedEvent.capacityToll
       }
     })
     return planningData
@@ -177,7 +178,8 @@ var createPlanningView = function () {
       {prop:"start", displayAs:"Start", edit:"true", time:true},
       {prop:"duration", displayAs:"Duration", edit:"true"},
       {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-      {prop:"eventContainsStakeholders", displayAs:"Stakeholders", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true}
+      {prop:"eventContainsStakeholders", displayAs:"Stakeholders", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
+      {prop:"capacityToll", displayAs:"Capacity toll", edit:true},
     ]
   }
   var renderPlanning = async function () {
