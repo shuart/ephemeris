@@ -625,9 +625,9 @@ textarea {
   font-weight: bold;
 }
 .flexTable .row .addMagnet {
-  position: absolute;
+  /* position: absolute; */
   bottom: 1px;
-  width: 10%;
+  width: 40px;
   height: 3px;
   background: linear-gradient(to right, #00b5ad, transparent);
   opacity: 0;
@@ -639,7 +639,7 @@ textarea {
   opacity: 0.5;
 }
 .flexTable .row .addMagnet .addPopup {
-	position: absolute;
+	/* position: absolute; */
 	top: -8px;
 	background: transparent;
 	color: white;
