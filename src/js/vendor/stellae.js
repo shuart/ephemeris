@@ -123,7 +123,10 @@ function stellae(_selector, _options) {
 
         svg.attr("transform", d3.event.transform); // updated for d3 v4
         // svg.attr('transform', 'translate(' + translate[0] + ', ' + translate[1] + ') scale(' + scale + ')');
-        optimizeRender({translate:svgTranslate,scale:svgScale})
+        setTimeout(function () {
+          optimizeRender({translate:svgTranslate,scale:svgScale})
+        }, 10);
+
 
         if (typeof options.onCanvasZoom === 'function') {
           if (options.startTransform) {//always fals
@@ -138,9 +141,10 @@ function stellae(_selector, _options) {
 
     function optimizeRender(transfrom) {
       let scaleLimit =  0.6
-      if (transfrom.scale <= 0.6) {
-
+      if (transfrom.scale <= scaleLimit) {
+        console.log(optimizeRenderStatus.text);
         if (!optimizeRenderStatus.text) {
+           // d3.selectAll(".node").select("text").transition().attr("opacity", 0);
           d3.selectAll(".node").select("text").style("display","none"); //clear all
           optimizeRenderStatus.text = true
         }
