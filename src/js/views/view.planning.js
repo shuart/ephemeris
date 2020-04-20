@@ -232,17 +232,36 @@ var createPlanningView = function () {
         },
         onMove: async(ev)=>{
           console.log("move");
+          // if (confirm("move item ?")) {
+          //   push(act.move("timeTracks", {origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+          //   //update links if needed
+          //   push(act.removeLink("timeTracks",{target:ev.originTarget.dataset.id}))
+          //   if (ev.targetParentId && ev.targetParentId != "undefined") {
+          //     push(act.addLink("timeTracks",{source:ev.targetParentId, target:ev.originTarget.dataset.id}))
+          //   }
+          //   var newPlanningData = await preparePlanningData(currentPlanning.uuid)
+          //   ev.select.updateData(newPlanningData)
+          //
+          //   updateGant()
+          // }
+          console.log("move");
           if (confirm("move item ?")) {
-            push(act.move("timeTracks", {origin:ev.originTarget.dataset.id, target:ev.target.dataset.id}))
+            // let currentDisplayOrder =  ephHelpers.setDisplayOrder(store,"functions")
+            //let newDisplayOrder = moveElementInArray (currentDisplayOrder, ev.originTarget.dataset.id, ev.target.dataset.id)
+            push(act.move("timeTracks", {value:ev.newOrder}))
+            // var sourceItem = storeGroup.items.filter((item)=>item.uuid == pl.origin)[0]
+            // var targetItem = storeGroup.items.filter((item)=>item.uuid == pl.target)[0]
+            // storeGroup.items = moveElementInArray(storeGroup.items,sourceItem,targetItem)
+            //console.log(newDisplayOrder);
+
+
             //update links if needed
             push(act.removeLink("timeTracks",{target:ev.originTarget.dataset.id}))
             if (ev.targetParentId && ev.targetParentId != "undefined") {
               push(act.addLink("timeTracks",{source:ev.targetParentId, target:ev.originTarget.dataset.id}))
             }
-            var newPlanningData = await preparePlanningData(currentPlanning.uuid)
-            ev.select.updateData(newPlanningData)
-
-            updateGant()
+            //ev.select.updateData(store.functions.items)
+            //ev.select.updateLinks(store.functions.links)
           }
         },
         // onMove: (ev)=>{
