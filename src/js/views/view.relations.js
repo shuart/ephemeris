@@ -20,6 +20,7 @@ var createRelationsView = function () {
   var addModeInterfaceType = undefined;
   var addItemCatType = undefined;
   var addItemMode ="currentPbs"
+  var nodeWalkModeActive = false;
   //What to show
   var hiddenItemsFromSideView = [];
   var showVisibilityMenu = false;
@@ -390,6 +391,15 @@ var createRelationsView = function () {
       }else{
         activeGraph.setSelectionModeActive()
         graphSelectionModeActive = true
+      }
+    }, container)
+    bind(".action_relations_toogle_graph_node_walking_mode","click",(e)=>{
+      if (nodeWalkModeActive) {
+        queryDOM('.action_relations_toogle_graph_node_walking_mode').classList.remove('active')
+        nodeWalkModeActive = false
+      }else{
+        queryDOM('.action_relations_toogle_graph_node_walking_mode').classList.add('active')
+        nodeWalkModeActive = true
       }
     }, container)
 
@@ -1423,6 +1433,33 @@ var createRelationsView = function () {
     })
     update()
   }
+  var nodeWalk = function (currentSelected, showChildren) {
+
+    let selectedNodes = currentSelected
+    let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+    let selectedNodesAndChildrenUuid = []
+    if (showChildren) {
+      selectedNodesAndChildrenUuid = findChildrenUuid(selectedNodes, itemsToDisplay, relations)
+    }
+
+    let relatedNodes = findRelatedUuid(selectedNodes, itemsToDisplay, relations)
+
+    selectedNodesAndChildrenUuid = selectedNodesAndChildrenUuid.concat(relatedNodes)
+    var selectedNodesAndRelated = selectedNodesUuid.concat(relatedNodes)
+
+    let stayVisibleNodes = showChildren? selectedNodesAndChildrenUuid : selectedNodesAndRelated
+
+    let currentVisibleNode = itemsToDisplay.filter( i => !hiddenItemsFromSideView.includes(i.uuid))
+    stayVisibleNodes = currentVisibleNode.map(n=>n.uuid).concat(stayVisibleNodes)
+    //check if node is
+
+    hiddenItemsFromSideView=[] //resetGraph
+    let newDisplayList= itemsToDisplay.filter( i => !stayVisibleNodes.includes(i.uuid))
+    newDisplayList.forEach(function (item) {// hide everyting
+      hiddenItemsFromSideView.push(item.uuid)
+    })
+    update()
+  }
   var deleteSelectedNodes = async function (currentSelected, showChildren) {
     var store = await query.currentProject()
     let selectedNodes = currentSelected
@@ -1679,6 +1716,9 @@ var createRelationsView = function () {
         </button>
         <button class="${graphSelectionModeActive ? 'active':''} ui basic icon button action_relations_toogle_graph_selection_mode" data-tooltip="Select items" data-position="bottom center" >
           <i class="border style icon action_relations_toogle_graph_selection_mode"></i>
+        </button>
+        <button class="${nodeWalkModeActive ? 'active':''} ui basic icon button action_relations_toogle_graph_node_walking_mode" data-tooltip="Expand nodes children on click" data-position="bottom center" >
+          <i class="random icon action_relations_toogle_graph_node_walking_mode"></i>
         </button>
         <button class="ui mini basic button action_relations_show_all_nodes_in_view" data-tooltip="Show All" data-position="bottom center">
           <i class="eye icon action_relations_show_all_nodes_in_view"></i>
@@ -2049,6 +2089,9 @@ var createRelationsView = function () {
         lastSelectedNode = node;
         if (addLinkMode) {
           renderMenu()
+        }
+        if (nodeWalkModeActive) {
+          nodeWalk([node, false])
         }
         console.log(lastSelectedNode,previousSelectedNode);
       },
