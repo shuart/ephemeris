@@ -54,6 +54,7 @@ function stellae(_selector, _options) {
     var linkModeEndNode = undefined;
     var currentSelectedNodes = undefined;
     var selectionModeActive = false;
+    var optimizeRenderStatus = {text:false};
 
     //box selection elements TODO reorganise
     function rect(x, y, w, h) {
@@ -122,6 +123,7 @@ function stellae(_selector, _options) {
 
         svg.attr("transform", d3.event.transform); // updated for d3 v4
         // svg.attr('transform', 'translate(' + translate[0] + ', ' + translate[1] + ') scale(' + scale + ')');
+        optimizeRender({translate:svgTranslate,scale:svgScale})
 
         if (typeof options.onCanvasZoom === 'function') {
           if (options.startTransform) {//always fals
@@ -133,6 +135,33 @@ function stellae(_selector, _options) {
           }
         }
     })
+
+    function optimizeRender(transfrom) {
+      let scaleLimit =  0.6
+      if (transfrom.scale <= 0.6) {
+
+        if (!optimizeRenderStatus.text) {
+          d3.selectAll(".node").select("text").style("display","none"); //clear all
+          optimizeRenderStatus.text = true
+        }
+        if (!optimizeRenderStatus.ring) {
+          d3.selectAll(".node").select(".ring").style("display","none"); //clear all
+          optimizeRenderStatus.ring = true
+        }
+
+      }else{
+
+        if (optimizeRenderStatus.text) {
+          d3.selectAll(".node").select("text").style("display","block"); //clear all
+          optimizeRenderStatus.text = false
+        }
+        if (optimizeRenderStatus.ring) {
+          d3.selectAll(".node").select(".ring").style("display","block"); //clear all
+          optimizeRenderStatus.ring = false
+        }
+
+      }
+    }
 
     function appendGraph(container) {
         base = container.append('svg')
