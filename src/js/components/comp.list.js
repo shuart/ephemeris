@@ -48,7 +48,6 @@ function showListMenu({
   currentSortProp = undefined,
   listIsExpanded = false
   }={}) {
-
     var extraValuesAdded =false;
 
     var lastScrollFuntion = undefined
@@ -1582,6 +1581,14 @@ function showListMenu({
           let toFilter = selectedFilter[filterProp]
           if (toFilter) {
             data = data.filter(d=>{
+
+              var currentIdProp = rule.deferredIdProp || "uuid"
+
+              if (rule.isTarget) {
+                d.item[filterProp] = rule.meta().filter(e => (e.type == filterProp && e.target == d.item[currentIdProp] )).map(e => e.source)
+              }else {
+                d.item[filterProp] = rule.meta().filter(e => (e.type == filterProp && e.source == d.item[currentIdProp] )).map(e => e.target)
+              }
               let propsInItem = d.item[filterProp]
               if (propsInItem) {
                 for (var j = 0; j < propsInItem.length; j++) {
