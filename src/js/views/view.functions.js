@@ -103,9 +103,14 @@ var createFunctionsView = function () {
             //ev.select.updateLinks(store.functions.links)
           }
         },
-        onAdd: (ev)=>{
+        onAdd: async (ev)=>{
           //var newReq = prompt("Nouveau Besoin")
-          var newReq = prompt("New Function")
+          var popup= await createPromptPopup({
+            title:"Add a new Function",
+            iconHeader:"cogs",
+            fields:{ type:"input",id:"functionName" ,label:"Function name", placeholder:"Set a name for the new Function" }
+          })
+          var newReq = popup.result
           push(act.add("functions", {name:newReq}))
           // var uuid = genuuid()
           // push(act.add("functions", {uuid:uuid,name:"Add a function"}))

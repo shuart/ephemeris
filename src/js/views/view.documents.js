@@ -84,9 +84,20 @@ var createDocumentsView = function () {
 
         }
       },
-      onAdd: (ev)=>{
-        let docName = prompt("Document Name")
-        let docLink = prompt("Document Link")
+      onAdd: async (ev)=>{
+        var popup= await createPromptPopup({
+          title:"Add a new Document",
+          iconHeader:"book",
+          fields:[
+            { type:"input",id:"docName" ,label:"Document Name", placeholder:"Set the document name" },
+            { type:"input",id:"documentLink" ,label:"Document link", placeholder:"Set a web link to the file",optional:true }
+          ]
+        })
+        if (!popup) {
+          return undefined
+        }
+        let docName = popup.result.docName
+        let docLink = popup.result.documentLink
         push(act.add("documents",{uuid:genuuid(), name:docName, link:docLink}))
       },
       onEditChoiceItem: (ev)=>{

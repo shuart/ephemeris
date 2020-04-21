@@ -107,8 +107,13 @@ var createRequirementsView = function () {
             ev.select.updateLinks(store.requirements.links)
           }
         },
-        onAdd: (ev)=>{
-          var newReq = prompt("New Need")
+        onAdd: async(ev)=>{
+          var popup= await createPromptPopup({
+            title:"Add a new Requirement",
+            iconHeader:"comment",
+            fields:{ type:"input",id:"requirementName" ,label:"Requirement name", placeholder:"Set a name for the new Requirement" }
+          })
+          var newReq = popup.result
           push(addRequirement({name:newReq}))
         },
         onAddFromPopup: (ev)=>{

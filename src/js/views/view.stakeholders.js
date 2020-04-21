@@ -66,10 +66,29 @@ var createStakeholdersView = function () {
       //     ev.select.updateLinks(store.stakeholders.links)
       //   }
       // },
-      onAdd: (ev)=>{
-        let firstName = prompt("New stakeholder - First name")
-        let lastName = prompt("Last name")
-        push(act.add("stakeholders",{uuid:genuuid(), name:firstName, lastName:lastName}))
+      onAdd: async (ev)=>{
+        var popup= await createPromptPopup({
+          title:"Add a new Stakeholder",
+          iconHeader:"user",
+          fields:[
+            { type:"input",id:"firstName" ,label:"First Name", placeholder:"Set the stakeholder first name" },
+            { type:"input",id:"lastName" ,label:"Last Name", placeholder:"Set the stakeholder last name" },
+            { type:"input",id:"org" ,label:"Organisation", placeholder:"Set an org", optional:true },
+            { type:"input",id:"role" ,label:"Role", placeholder:"Set the stakeholder role",optional:true  },
+            { type:"input",id:"mail" ,label:"e-mail adress", placeholder:"Set the stakeholder mail",optional:true  }
+          ]
+        })
+
+        if (!popup) {
+          return undefined
+        }
+
+        let firstName = popup.result.firstName
+        let lastName = popup.result.lastName
+        let org = popup.result.org
+        let role = popup.result.role
+        let mail = popup.result.mail
+        push(act.add("stakeholders",{uuid:genuuid(), name:firstName, lastName:lastName, org:org, role:role, mail:mail}))
         updateList()
       },
       onAddFromPopup: (ev)=>{

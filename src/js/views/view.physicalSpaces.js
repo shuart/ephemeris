@@ -73,8 +73,13 @@ var createWorkPhysicalSpacesView = function () {
           ev.select.updateLinks(store.physicalSpaces.links)
         }
       },
-      onAdd: (ev)=>{
-        let physicalSpaces = prompt("New Physical Space")
+      onAdd: async (ev)=>{
+        var popup= await createPromptPopup({
+          title:"Add a new Physical Space",
+          iconHeader:"building",
+          fields:{ type:"input",id:"functionName" ,label:"Physical Space name", placeholder:"Set a name for the new Physical Space" }
+        })
+        var physicalSpaces = popup.result
         push(act.add("physicalSpaces",{uuid:genuuid(), name:physicalSpaces}))
       },
       onAddFromPopup: (ev)=>{

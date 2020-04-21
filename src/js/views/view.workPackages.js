@@ -54,9 +54,17 @@ var createWorkPackagesView = function () {
           ev.select.updateData(store.workPackages.items)
         }
       },
-      onAdd: (ev)=>{
-        let workPackages = prompt("New Work Package")
-        push(act.add("workPackages",{uuid:genuuid(), name:workPackages}))
+      onAdd: async (ev)=>{
+        var popup= await createPromptPopup({
+          title:"Add a new Work Package",
+          iconHeader:"briefcase",
+          fields:{ type:"input",id:"wpName" ,label:"Work Package name", placeholder:"Set a name for the new Work Package" }
+        })
+        var workPackages = popup.result
+        if (workPackages !="") {
+          push(act.add("workPackages",{uuid:genuuid(), name:workPackages}))
+        }
+
       },
       onEditChoiceItem: (ev)=>{
         showUpdateLinksService.show(ev,"workPackages")

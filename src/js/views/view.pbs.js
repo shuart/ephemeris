@@ -120,9 +120,14 @@ var createPbsView = function () {
             // ev.select.updateLinks(store.currentPbs.links)
           }
         },
-        onAdd: (ev)=>{
+        onAdd: async (ev)=>{
+          var popup= await createPromptPopup({
+            title:"Add a new product",
+            iconHeader:"dolly",
+            fields:{ type:"input",id:"producttName" ,label:"Product name", placeholder:"Set a name for the new product" }
+          })
           var id = genuuid()
-          var newReq = prompt("New Product")
+          var newReq = popup.result
           if (newReq) {
             push(addPbs({uuid:id, name:newReq}))
             push(addPbsLink({source:store.currentPbs.items[0].uuid, target:id}))

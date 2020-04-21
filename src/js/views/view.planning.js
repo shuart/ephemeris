@@ -93,8 +93,13 @@ var createPlanningView = function () {
       ganttObject = undefined
       setCurrentPlanning(planningId)
     })
-    connect(".action_planning_manager_add_planning", "click", (e)=>{
-      let newName = prompt("Enter a new name")
+    connect(".action_planning_manager_add_planning", "click", async (e)=>{
+      var popup= await createPromptPopup({
+        title:"Add a new Planning",
+        iconHeader:"calendar outline",
+        fields:{ type:"input",id:"planningName" ,label:"Planning name", placeholder:"Set a name for the new Planning" }
+      })
+      let newName = popup.result
       if (newName) {
         push(act.add("plannings",{name:newName}))
         update()
@@ -278,7 +283,12 @@ var createPlanningView = function () {
         //   }
         // },
         onAdd: async(ev)=>{
-          var newReq = prompt("New track")
+          var popup= await createPromptPopup({
+            title:"Add a new planning Track",
+            iconHeader:"calendar",
+            fields:{ type:"input",id:"trackName" ,label:"Track name", placeholder:"Set a name for the new Track" }
+          })
+          var newReq = popup.result
           if (newReq) {
             let eventUuid = uuid()
             let trackUuid = uuid()
