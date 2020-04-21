@@ -97,10 +97,10 @@ var createTimelineView = function ({
 
     mainEl.classList ="ui raised padded container segment"
     // mainEl.style.width = "50%"
-    mainEl.style.width = "80%"
-    mainEl.style.maxHeight = "90%"
-    mainEl.style.height = "90%"
-    mainEl.style.left= "10%";
+    mainEl.style.width = "98%"
+    mainEl.style.maxHeight = "98%"
+    mainEl.style.height = "98%"
+    mainEl.style.left= "1%";
     mainEl.style.padding = "50px";
     mainEl.style.overflow = "auto";
     // mainEl.style.left= "25%";

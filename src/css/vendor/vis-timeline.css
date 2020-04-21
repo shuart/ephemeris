@@ -38,3 +38,8 @@
 .vis-time-axis .vis-grid.vis-major {
 
 }
+
+.vis-labelset .vis-label .vis-inner, .vis-item .vis-item-content {
+    font-size: 15px !important;
+    padding: 0 5px !important;
+}
