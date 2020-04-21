@@ -40,7 +40,7 @@ var createPromptPopupView = function (inputData) {
     },
     input:function (data) {
       let template ={}
-      if (data.type = "input") {
+      if (data.type == "input") {
         template= `
         <div style="width:100%; padding-top: 15px;" class="field input ">
           <label ${data.secondary?"style='opacity:0.5;'":""} >${data.label}${!data.optional?"<span style='opacity:0.5;'>*<span>":""}</label>
@@ -48,7 +48,37 @@ var createPromptPopupView = function (inputData) {
         </div>
         `
       }
+      if (data.type == "select") {
+        template= `
+        <div class="ui multiple dropdown form_select_${data.id}">
+          <input class="form_input_${data.id}" type="hidden" name="filters" value="${data.preSelected.join(',')}">
+          <i class="filter icon"></i>
+          <span class="text">${data.label}</span>
+          <div class="menu">
+            <div class="ui icon search input">
+              <i class="search icon"></i>
+              <input type="text" placeholder="${data.placeholder}">
+            </div>
+            <div class="divider"></div>
+            <div class="header">
+              <i class="tags icon"></i>
+              ${data.label}
+            </div>
+            <div class="scrolling menu">
+              ${data.selectOptions.map(o=>theme.selectElement(o)).join("")}
+            </div>
+          </div>
+        </div>
+        `
+      }
       return template
+    },
+    selectElement: function (option) {
+        return `
+        <div class="item" data-value="${option.value}">
+          <div class="ui teal empty circular label"></div>
+          ${option.name}
+        </div>`
     },
     buttons:function (type) {
       if ("cancelOk") {
@@ -142,14 +172,14 @@ var createPromptPopupView = function (inputData) {
     // mainEl.style.height = "50%"
     mainEl.style.left= "36%";
     mainEl.style.padding = "50px";
-    mainEl.style.overflow = "auto";
+    mainEl.style.overflow = "visible";
     // mainEl.style.left= "25%";
     container = document.createElement('div');
 
     container.style.position = "relative"
     container.style.height = "100%"
-    container.style.overflow = "hidden"
-    container.classList = "timeLineArea"
+    container.style.overflow = "visible"
+    container.classList = "fieldsArea"
 
     containerBottom = document.createElement('div');
 
@@ -179,8 +209,12 @@ var createPromptPopupView = function (inputData) {
     // for (var i = 0; i < fields.length; i++) {
     //   let field = fields[i]
     // }
-    container.innerHTML=theme.form(inputData)
-    container.querySelector(".form_input_"+inputData.fields[0].id).focus()
+    container.innerHTML=theme.form(inputData)//render the fields
+
+    if (inputData.fields[0].type=="input") {
+      container.querySelector(".form_input_"+inputData.fields[0].id).focus()
+    }
+
     if (!inputData.fields[1] && inputData.fields[0].type=="input") {
       container.querySelector(".form_input_"+inputData.fields[0].id).addEventListener( 'keyup', function (e) {
         if ( e.keyCode == 13 ) {
@@ -189,9 +223,19 @@ var createPromptPopupView = function (inputData) {
         }
       });
     }
+
+    let aFieldIsInput = true
+    if (aFieldIsInput) {
+      $('.ui.multiple.dropdown')
+        .dropdown({//use Fomatic dd script
+          clearable: true,
+          placeholder: 'any'
+        })
+    }
   }
 
   var resolveTheForm = function () {
+    let output = undefined
       if (inputData.fields[1]) {
         let results = {}
         for (var i = 0; i < inputData.fields.length; i++) {
@@ -203,12 +247,18 @@ var createPromptPopupView = function (inputData) {
           }
         }
         inputData.resolvePromise( {result:results})
+        output = {result:results}
       }else {
         let element = container.querySelector(".form_input_"+inputData.fields[0].id)
 
         if (element) {
           inputData.resolvePromise( {result:element.value})
+          output =  {result:element.value}
         }
+      }
+
+      if (inputData.callback) {//Callback for sue when promise is not available
+        inputData.callback(output)
       }
       // inputData.resolvePromise({result:undefined})
       closePopup()
@@ -291,6 +341,7 @@ var createPromptPopup = function ({
   iconHeader= undefined,
   imageHeader= undefined,
   fields=[{ type:"input",id:"v5sd4fse5f465s" ,label:"", placeholder:"Write here" }],
+  callback = undefined,
   resolvePromise = undefined
   }={}) {
   return new Promise(function(resolve, reject) {
@@ -300,7 +351,7 @@ var createPromptPopup = function ({
       }else {
         fieldsArray = fields
       }
-      let data = {title:title, confirmationType:confirmationType, imageHeader:imageHeader,iconHeader:iconHeader, fields:fieldsArray,resolvePromise: resolve}
+      let data = {title:title, confirmationType:confirmationType, imageHeader:imageHeader,iconHeader:iconHeader, fields:fieldsArray,callback:callback, resolvePromise: resolve}
       let view = createPromptPopupView(data)
 
     }).catch(function(err) {
