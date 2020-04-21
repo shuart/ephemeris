@@ -20,8 +20,8 @@ var createPlanningView = function () {
   }
   theme.planningVisible = function () {
     return `
-      <div class="planning-gantt-area"></div>
-      <div class="planning-list-area"></div>`
+      <div style="height:0%;" class="planning-gantt-area"></div>
+      <div style="height:100%;" class="planning-list-area"></div>`
   }
   theme.planningPreviewItem = function (i) {
      html =`
