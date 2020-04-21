@@ -119,7 +119,7 @@ var createPromptPopupView = function (inputData) {
 
 
   var init = function () {
-    connections()
+    // connections()
 
     render()
   }
@@ -202,6 +202,9 @@ var createPromptPopupView = function (inputData) {
     // container.appendChild(toNode(renderSet(uuid)))
     document.body.appendChild(sourceOccElement)
     // renderSet()
+
+    connections()
+    
     renderForm()
   }
 
@@ -308,6 +311,7 @@ var createPromptPopupView = function (inputData) {
   //UTILS
   var closePopup = function () {
     removeDropdowns(inputData.fields)
+    sourceOccElement.innerHTML=""
     sourceOccElement.remove()
   }
 
