@@ -130,19 +130,19 @@ var createPromptPopupView = function (inputData) {
     //
     //   }
     // })
-    connect(".action_prompt_cancel","click",(e)=>{
+    bind(".action_prompt_cancel","click",(e)=>{
       closePopup()
       inputData.resolvePromise({result:undefined})
 
-    })
-    connect(".action_prompt_ok","click",(e)=>{
+    }, sourceOccElement)
+    bind(".action_prompt_ok","click",(e)=>{
       let isFormValid = checkIfFieldsAreCompleted()
       if (isFormValid) {
         resolveTheForm();
       }else {
         return undefined
       }
-    })
+    },sourceOccElement)
   }
 
   var render = async function (uuid) {
@@ -224,14 +224,28 @@ var createPromptPopupView = function (inputData) {
       });
     }
 
-    let aFieldIsInput = true
-    if (aFieldIsInput) {
-      $('.ui.multiple.dropdown')
-        .dropdown({//use Fomatic dd script
-          clearable: true,
-          placeholder: 'any'
-        })
-    }
+
+    setupDropdowns(inputData.fields)
+  }
+
+  var setupDropdowns = function (fields) {
+    fields.forEach((item, i) => {
+      if (item.type=="select") {
+        $('.form_select_'+item.id)
+          .dropdown({//use Fomatic dd script
+            clearable: true,
+            placeholder: 'any'
+          })
+      }
+    });
+  }
+  var removeDropdowns = function (fields) {
+    fields.forEach((item, i) => {
+      if (item.type=="select") {
+        $('.form_select_'+item.id)
+          .dropdown('destroy')
+      }
+    });
   }
 
   var resolveTheForm = function () {
@@ -293,6 +307,7 @@ var createPromptPopupView = function (inputData) {
 
   //UTILS
   var closePopup = function () {
+    removeDropdowns(inputData.fields)
     sourceOccElement.remove()
   }
 

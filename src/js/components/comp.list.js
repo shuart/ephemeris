@@ -52,6 +52,7 @@ function showListMenu({
     var extraValuesAdded =false;
 
     var lastScrollFuntion = undefined
+    var selectedFilter = {}
     //utility to parse html
     function toNode(html) {
       var tpl = document.createElement('template');
@@ -137,6 +138,17 @@ function showListMenu({
       <div  class='${colType||"column"}'>
         <div data-prop="${currentProp}" class='orange-column ${currentProp?"action_list_toogle_sort_by_prop":""}' ${currentProp?"style='cursor:pointer;'":""}>
           ${content}
+        </div>
+      </div>
+      `
+    },
+    listItemFilterable:(content, prop, colType) => {
+      let currentProp = prop;
+      console.log(selectedFilter[currentProp]);
+      return `
+      <div  class='${colType||"column"}'>
+        <div data-prop="${currentProp}" class='orange-column ${currentProp?"action_list_toogle_filter_by_meta":""}' ${currentProp?"style='cursor:pointer;'":""}>
+          ${content} <i style="display:none;" class="filter icon target_list_menu_top_${currentProp}"></i>
         </div>
       </div>
       `
@@ -231,6 +243,34 @@ function showListMenu({
             }
 
           }
+        }
+        if (event.target.classList.contains("action_list_toogle_filter_by_meta")) {
+
+          let rule =  display.find(r=>r.prop == event.target.dataset.prop)
+          let elements =rule.choices();
+          console.log(elements);
+          console.log(data);
+          let selectOptions = elements.map(e=>({name:e.name+" " +(e.lastName||""), value:e.uuid}))
+          let preselected = ""
+          if (selectedFilter[event.target.dataset.prop]) {
+            preselected= selectedFilter[event.target.dataset.prop].join(",")
+          }
+          var popup=  createPromptPopup({
+            title:"Select filters",
+            callback :function (res) {
+              console.log(res);
+              if (res.result == "") {
+                selectedFilter[event.target.dataset.prop] = undefined
+                document.querySelector('.target_list_menu_top_'+event.target.dataset.prop).style.display = "none"
+              }else {
+                selectedFilter[event.target.dataset.prop] = res.result.split(',')
+                document.querySelector('.target_list_menu_top_'+event.target.dataset.prop).style.display = "inline"
+              }
+              refreshList()
+            },
+            // fields:{ type:"select",id:"projectName",preSelected:["test"],selectOptions:[{name:"test", value:"fff"},{name:"teffst", value:"fffa"}], label:"Project name", placeholder:"Set a name for the project" }
+            fields:{ type:"select",id:"project_filter_"+event.target.dataset.prop,preSelected:[preselected],selectOptions:selectOptions, label:rule.displayAs, optional:true, placeholder:"Search.." }
+          })
         }
         if (event.target.classList.contains("action_list_add_from_extra_field")) {
           if (onAddFromExtraField) {
@@ -741,6 +781,8 @@ function showListMenu({
           return theme.listItemFixedSize(p.displayAs, p.size)
         }else if (p.sortable || p.prop == "name") {
           return theme.listItem(p.displayAs, p.prop)
+        }else if ( p.meta){
+          return theme.listItemFilterable(p.displayAs, p.prop)
         }else {
           return theme.listItem(p.displayAs)
         }
@@ -890,13 +932,15 @@ function showListMenu({
     return htmlArray
   }
 
-  function generateFullList(data) {
+  function generateFullList(baseData) {
+    let data=baseData
     let fullListHtml = ""
     // for (var i = 0; i < data.length; i++) {
     //   fullListHtml += generateItemHtml(data[i])
     //   console.log(generateItemHtml(data[i]));
     // }
     //console.log(listContainer.scrollTop);
+    data = filterDataFromSelectedFilters(data, display, selectedFilter)//display and selectedFilter comes from global
     if (currentSearchValue != "") {
       var foundIds = findSearchedIds(currentSearchValue);
       fullListHtml = renderCurrentCluster(data.filter(d=>foundIds.includes(d.item.uuid)), listContainer.scrollTop)
@@ -1527,6 +1571,30 @@ function showListMenu({
     })
     var filteredIds = filteredData.map(x => x.uuid);
     return filteredIds
+  }
+  function filterDataFromSelectedFilters(inputData, display, selectedFilter) {
+    let data = inputData
+    if (display) {
+      for (var i = 0; i < display.length; i++) {
+        let rule= display[i]
+        if (rule.meta) {
+          let filterProp = rule.prop
+          let toFilter = selectedFilter[filterProp]
+          if (toFilter) {
+            data = data.filter(d=>{
+              let propsInItem = d.item[filterProp]
+              if (propsInItem) {
+                for (var j = 0; j < propsInItem.length; j++) {
+                  if (toFilter.includes(propsInItem[j])) { return true; }
+                }
+              }
+              return false
+            })
+          }
+        }
+      }
+    }
+    return data
   }
 
   function colorFromLetters(letters, uniform) {
