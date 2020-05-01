@@ -169,26 +169,32 @@ async function loadSavedData(data, callback) {
     }
     let allProjects = await query.items("projects")
     if (app.state.currentUser) {
-      if (allProjects.find(e=> e.uuid == jsonContent.data.uuid )) {
-        if (confirm("This project exist already. Do you want to replace it?")) {
-          // var projectIndex = app.store.projects.findIndex(e=> e.uuid == jsonContent.data.uuid )
-          // app.store.projects[projectIndex] = jsonContent.data
-          // renderCDC()
-          await dbConnector.removeProject(ev.target.dataset.id)
-          await dbConnector.addProject(jsonContent.data)
-          pageManager.setActivePage("projectSelection")
-        }else if(confirm("Create a copy?")){
-          jsonContent.data.uuid=genuuid()
-          jsonContent.data.name +="_copy"
-          console.log(jsonContent.data);
-          await dbConnector.addProject(jsonContent.data)
-          pageManager.setActivePage("projectSelection")
-        }
-      }else {
-        if (confirm("Import this project?")) {
-          dbConnector.addProject(jsonContent.data)
-          pageManager.setActivePage("projectSelection")
-        }
+      // if (allProjects.find(e=> e.uuid == jsonContent.data.uuid )) {
+      //   if (confirm("This project exist already. Do you want to replace it?")) {
+      //     // var projectIndex = app.store.projects.findIndex(e=> e.uuid == jsonContent.data.uuid )
+      //     // app.store.projects[projectIndex] = jsonContent.data
+      //     // renderCDC()
+      //     await dbConnector.removeProject(ev.target.dataset.id)
+      //     await dbConnector.addProject(jsonContent.data)
+      //     pageManager.setActivePage("projectSelection")
+      //   }else if(confirm("Create a copy?")){
+      //     jsonContent.data.uuid=genuuid()
+      //     jsonContent.data.name +="_copy"
+      //     console.log(jsonContent.data);
+      //     await dbConnector.addProject(jsonContent.data)
+      //     pageManager.setActivePage("projectSelection")
+      //   }
+      // }else {
+      //   if (confirm("Import this project?")) {
+      //     dbConnector.addProject(jsonContent.data)
+      //     pageManager.setActivePage("projectSelection")
+      //   }
+      // }
+      if (confirm("Import this project?")) {
+        jsonContent.data.uuid=genuuid()
+        jsonContent.data.name +="_imported"
+        dbConnector.addProject(jsonContent.data)
+        pageManager.setActivePage("projectSelection")
       }
     }else {alert("project files can only be added when logged in")}
   }
