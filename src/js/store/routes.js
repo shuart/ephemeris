@@ -1,7 +1,8 @@
 var query = {}
-query.currentProject = async function () {
+query.currentProject = async function (selector) {
+  let limitOfLoading = selector || undefined
   let currentProjectUuid = app.state.currentProject
-  let currentProjectToReturn = await dbConnector.getProject(currentProjectUuid)
+  let currentProjectToReturn = await dbConnector.getProject(currentProjectUuid, limitOfLoading)
   return currentProjectToReturn
 }
 
@@ -9,6 +10,16 @@ query.collection = async function (collectionName) {
   let currentProjectUuid = app.state.currentProject
   let currentCollectionToReturn = await dbConnector.getProjectCollection(currentProjectUuid, collectionName)
   return currentCollectionToReturn
+}
+
+query.allRelatedProjects = async ( limit) => {
+  let allProjects = await dbConnector.getUserProjectList(limit)
+  let relevantProjects = []
+  if (app.store.relatedProjects) {
+    relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+
+  }
+  return relevantProjects
 }
 
  query.items = async (group, condition) => {

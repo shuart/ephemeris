@@ -184,15 +184,27 @@ var createDbRealTimeAdaptater = function () {
 
   }
 
-  function getUserProjectList() {
-    return new Promise(function(resolve, reject) {
-        projects.find({}, function (err, docs) {
-          console.log(docs);
-          resolve(docs)
-        })
-      }).catch(function(err) {
-        reject(err)
-      });
+  function getUserProjectList(limit) {
+    if (limit) {
+      return new Promise(function(resolve, reject) {
+          projects.find({}, limit, function (err, docs) {
+            console.log(docs);
+            resolve(docs)
+          })
+        }).catch(function(err) {
+          reject(err)
+        });
+    }else {
+      return new Promise(function(resolve, reject) {
+          projects.find({}, function (err, docs) {
+            console.log(docs);
+            resolve(docs)
+          })
+        }).catch(function(err) {
+          reject(err)
+        });
+    }
+
   }
 
   function getProjects() {
@@ -422,15 +434,26 @@ var createDbRealTimeAdaptater = function () {
   }
   //SPECIAL CASES
 
-  function getProject(uuid) {
-    return new Promise(function(resolve, reject) {
-        projects.find({uuid: uuid}, function (err, docs) {
-          console.log(docs);
-          resolve(docs[0])
-        })
-      }).catch(function(err) {
-        reject(err)
-      });
+  function getProject(uuid, selector) {
+    if (selector) {
+      return new Promise(function(resolve, reject) {
+          projects.find({uuid: uuid}, selector, function (err, docs) {
+            console.log(docs);
+            resolve(docs[0])
+          })
+        }).catch(function(err) {
+          reject(err)
+        });
+    }else {
+      return new Promise(function(resolve, reject) {
+          projects.find({uuid: uuid}, function (err, docs) {
+            console.log(docs);
+            resolve(docs[0])
+          })
+        }).catch(function(err) {
+          reject(err)
+        });
+    }
   }
   function getProjectCollection(uuid, collectionName) {
     let projection = {}

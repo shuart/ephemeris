@@ -186,11 +186,9 @@ var createProjectSelectionView = function (targetSelector) {
   }
 
   var renderList = async function (container) {
-    let allProjects = await query.items("projects")
-    console.log(allProjects);
+    let relevantProjects = await query.allRelatedProjects({uuid:1, name:1, reference:1, currentPbs:1, functions:1, requirements:1, stakeholders:1, description:1})
 
     if (app.store.relatedProjects && app.store.relatedProjects[0]) {
-      let relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
       let sortedProject = getOrderedProjectList(relevantProjects, app.store.userData.preferences.projectDisplayOrder)
       let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
       var html = sortedVisibleProject.filter(e=> fuzzysearch(filterText,e.name) || fuzzysearch(filterText,e.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))).reduce((acc,i)=>{
