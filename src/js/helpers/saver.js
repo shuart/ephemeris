@@ -195,6 +195,7 @@ async function loadSavedData(data, callback) {
         jsonContent.data.name +="_imported"
         dbConnector.addProject(jsonContent.data)
         pageManager.setActivePage("projectSelection")
+        alert("Project has been imported")
       }
     }else {alert("project files can only be added when logged in")}
   }
