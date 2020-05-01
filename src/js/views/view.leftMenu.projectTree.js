@@ -31,8 +31,8 @@ var createLeftMenuProjectTree = function () {
   }
 
   var renderSideListe = async function () {
-    var store = await query.currentProject()
-
+    var store = await query.currentProject({currentPbs:1})
+    //{uuid:1, name:1, reference:1, currentPbs:1, functions:1
     var itemsToDisplay =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
     var relations = store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
 

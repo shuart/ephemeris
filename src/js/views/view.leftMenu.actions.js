@@ -81,8 +81,10 @@ var createLeftMenuActions = function () {
     var filterText = ""
     var filterClosedDaysAgo = -2
     let allActions = []
-    let allProjects = await query.items("projects")
-    let relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+    // let allProjects = await query.items("projects")
+    let relevantProjects = await query.allRelatedProjects({uuid:1, name:1, reference:1, actions:1, metaLinks:1, stakeholders:1, description:1})
+
+    // let relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
     relevantProjects.forEach(function (store) {
       let formatedActions = store.actions.items.map(a=>{
         let copy = deepCopy(a)
