@@ -23,6 +23,7 @@ var createTreeList = function ({
   var flatMode = true
 
   var objectIsActive = false;
+  var lastRecursiveList = undefined
   var theme = {}
 
   theme.item = function (i, visibility) {
@@ -191,9 +192,16 @@ var createTreeList = function ({
       let list = renderCurrentCluster(items, domElement.scrollTop)
       domElement.innerHTML = list
     }else if (links) {
-      let linkCopy = deepCopy(links)//deep copy the links to allow removing them
-      let itemsCopy = deepCopy(items)//deep copy the links to allow removing them
-      let list = renderRecursiveList(itemsCopy, linkCopy)
+      // let linkCopy = deepCopy(links)//deep copy the links to allow removing them
+      // let itemsCopy = deepCopy(items)//deep copy the links to allow removing them
+      let linkCopy = links
+      let itemsCopy = items
+      // let list = renderRecursiveList(itemsCopy, linkCopy)
+      if (!lastRecursiveList) { //chek if a recursive list is not already in memory
+        lastRecursiveList =  renderRecursiveList(itemsCopy, linkCopy)
+      }
+      // let list = renderRecursiveList(itemsCopy, linkCopy)
+      let list = renderCurrentCluster(lastRecursiveList, domElement.scrollTop)
       domElement.innerHTML = list
     }
     //onUpdate callBack
@@ -262,9 +270,26 @@ var createTreeList = function ({
       })
     })
     console.log(listRoots);
-    let treeArray = recursiveTreeSortInList(listRoots,items, links)
+    //optimize links format for faster search
+    let sourceMaps = {}
+    for (var i = 0; i < links.length; i++) {
+      let l=links[i]
+      let currentTarget = l.target[identifier] || l.target
+      let currentSource = l.source[identifier] || l.source
+      if (!sourceMaps[currentTarget]) {
+        sourceMaps[currentTarget] = currentSource
+      }else {
+        alert("multiple source")
+      }
+
+
+    }
+
+
+    console.log(sourceMaps);
+    let treeArray = recursiveTreeSortInList(listRoots,items, sourceMaps)
     console.log(treeArray);
-    return renderCurrentCluster(treeArray, domElement.scrollTop)
+    return treeArray
     // return renderTreeHTML(treeArray)
   }
 
@@ -277,27 +302,17 @@ var createTreeList = function ({
       }
 
     function isLinked(source, target, links) {
-      for (var i = 0; i < links.length; i++) {
-        let l=links[i]
-        if (!l.resolved) {
-          if (l.source[identifier]) {//check if links source is object
-            if (l.source[identifier] == source[identifier] && l.target[identifier] == target[identifier]) {
-              //mark link visited
-              // l.resolved = true
-              arraySwapDelete(links,i)
-              return true
-            }
-          }else { //or ID
-            if (l.source == source[identifier] && l.target == target[identifier]) {
-              //mark link visited
-              // l.resolved = true
-              arraySwapDelete(links,i)
-              return true
-            }
-          }
+
+      if (links[ target[identifier] ]) {
+        if (links[ target[identifier] ] == source[identifier]) {
+          return true
+        }else {
+          return false
         }
       }
+      return false
     }
+
 
     function getChildren(currentLeaf, items, links) {
       let childrenArray = []
@@ -410,6 +425,7 @@ var createTreeList = function ({
   var refresh = function (newItems, newLinks) {
     items = newItems
     links = newLinks
+    lastRecursiveList = undefined
     if (document.querySelector(".tree_list_area") == null) {
       console.log("container has disapeard");
       setContainerArea()

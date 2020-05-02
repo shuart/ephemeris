@@ -1,6 +1,6 @@
 {
   "name": "ephemeris",
-  "version": "9.18.18",
+  "version": "9.18.19",
   "description": "System Engineering and requirements management application",
   "main": "index.js",
   "scripts": {
