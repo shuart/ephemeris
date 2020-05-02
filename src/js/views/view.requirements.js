@@ -179,16 +179,7 @@ var createRequirementsView = function () {
           {
             name:"Import",
             action:(ev)=>{
-              importCSVfromFileSelector(function (results) {
-                let startImport = confirm(results.data.length+" requirements will be imported")
-                if (startImport) {
-                  for (requirement of results.data) {
-                    push(addRequirement({name:requirement[0], desc:requirement[1]}))
-                  }
-                  alert("Close and re-open the view to complete the import")
-                }
-              })
-
+              createImportTableWithScriptService("requirements")
             }
           },
           {

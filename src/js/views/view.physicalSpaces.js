@@ -133,16 +133,7 @@ var createWorkPhysicalSpacesView = function () {
         {
           name:"Import",
           action:(ev)=>{
-            importCSVfromFileSelector(function (results) {
-              let startImport = confirm(results.data.length+" Physical Spaces will be imported")
-              if (startImport) {
-                for (physicalSpaces of results.data) {
-                  push(addRequirement({name:physicalSpaces[0], desc:physicalSpaces[1]}))
-                }
-                alert("Close and re-open the view to complete the import")
-              }
-            })
-
+            createImportTableWithScriptService("physicalSpaces")
           }
         },
         {
