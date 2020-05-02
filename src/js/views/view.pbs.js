@@ -208,22 +208,33 @@ var createPbsView = function () {
           {
             name:"Import",
             action:(ev)=>{
-              importCSVfromFileSelector(function (results) {
+              importCSVfromFileSelector(async function(results) {
                 let startImport = confirm(results.data.length+" Products will be imported")
                 if (startImport) {
 
-                  if (confirm("Use a custom importFuntion?")) {
-                    let importFunction = prompt("import function")
+                  // if (confirm("Use a custom importFuntion?")) {
+                  if (true) {
+                    // let importFunction = prompt("import function")
+                    var popup= await createPromptPopup({
+                      title:"Use a custom import function",
+                      iconHeader:"dolly",
+                      fields:{ type:"textArea",id:"customFunc" ,label:"Function", placeholder:"Write your custom function" }
+                    })
+                    let importFunction = popup.result
+                    console.log(importFunction);
+                    var preview = {items:[],links:[]}
 
                     function addItem (data) {
                       var id = genuuid()
-                      push(act.add("currentPbs", {uuid:data.uuid,name:data.name,desc:data.desc}))
+                      // push(act.add("currentPbs", {uuid:data.uuid,name:data.name,desc:data.desc}))
                       // push(addPbsLink({source:store.currentPbs.items[0].uuid, target:id}))
+                      preview.items.push({uuid:data.uuid,name:data.name,desc:data.desc})
                       return id
                     }
                     var addLink = function (data) {
                       var id = genuuid()
-                      push(addPbsLink({source:data.source, target:data.target}))
+                      // push(addPbsLink({source:data.source, target:data.target}))
+                      preview.links.push({source:data.source, target:data.target})
                       return id
                     }
                     var message = function (data) {
@@ -235,12 +246,35 @@ var createPbsView = function () {
                     var getId = function () {
                       return genuuid()
                     }
+
+                    var showPreview = function () {
+                      currentVisibleList = showListMenu({
+                        sourceData:preview.items,
+                        sourceLinks:preview.links,
+                        displayProp:"name",
+                        display: [{prop:"name", displayAs:"Name", edit:"true"}],
+                        idProp:"uuid"
+                      })
+                    }
+
+                    var addToEphemeris = function () {
+                      preview.items.forEach(i=>{
+                        push(act.add("currentPbs", i))
+                      })
+                      preview.links.forEach(l=>{
+                        push(addPbsLink(l))
+                      })
+                    }
+
                     let localApi ={
+                      preview,
                       addItem,
                       addLink,
                       message,
                       getId,
-                      getImportedData
+                      getImportedData,
+                      showPreview,
+                      addToEphemeris
                     }
 
                     let importer = new Function('api', '"use strict";' + importFunction);

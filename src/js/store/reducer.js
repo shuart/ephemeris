@@ -95,8 +95,23 @@ function reducer(action, store) {
 
 }
 
+var ephemerisLastStoreUpdate = Date.now()
+var ephemerisScheduleStoreUpdate = false
+
 function notifyChange() {
-  document.dispatchEvent(new Event('storeUpdated'))
+  if (Date.now()-ephemerisLastStoreUpdate > 1500) { //check if laste update is not a few sec ago
+    document.dispatchEvent(new Event('storeUpdated'))
+    ephemerisLastStoreUpdate = Date.now()
+    ephemerisScheduleStoreUpdate = false
+  }else {
+    if (!ephemerisScheduleStoreUpdate) {
+      ephemerisScheduleStoreUpdate = true
+      setTimeout(function () {
+        notifyChange()
+      }, 2200);
+    }
+  }
+
 }
 
 function push(generatedAction) {
@@ -104,6 +119,6 @@ function push(generatedAction) {
   console.log(generatedAction);
   reducer(generatedAction, store)
   //saveDB()
-  document.dispatchEvent(new Event('storeUpdated'))
-  renderCDC()
+  // document.dispatchEvent(new Event('storeUpdated'))
+  // renderCDC()
 }
