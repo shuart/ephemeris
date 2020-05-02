@@ -90,6 +90,22 @@ function createRemoveLink(group, callback) {
   }
 }
 
+function createReplaceCollection(group) {
+  return function (item) { // item need to containe project ID
+    return {type:"replaceCollection", group, payload:item}
+  }
+}
+// function createReplaceCollectionItems(group) {
+//   return function (item) { // item need to containe project ID
+//     return {type:"replaceItems", group, payload:item}
+//   }
+// }
+// function createReplaceCollectionLinks(group) {
+//   return function (item) { // item need to containe project ID
+//     return {type:"replaceLinks", group, payload:item}
+//   }
+// }
+
 //ACTION
 //generic
 var act={}
@@ -99,6 +115,10 @@ act.edit = (group, payload, callback) => createEditItem(group, callback)(payload
 act.move = (group, payload, callback) => createMoveItem(group, callback)(payload)
 act.addLink = (group, payload, callback) => createAddLink(group, callback)(payload)
 act.removeLink = (group, payload, callback) => createRemoveLink(group, callback)(payload)
+
+act.replaceCollection = (group, payload, callback) => createReplaceCollection(group, callback)(payload)
+// act.replaceCollectionItems = (group, payload, callback) => createReplaceCollectionItems(group, callback)(payload)
+// act.replaceCollectionLinks = (group, payload, callback) => createReplaceCollectionItems(group, callback)(payload)
 
 
 

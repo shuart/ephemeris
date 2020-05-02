@@ -61,40 +61,26 @@ function reducer(action, store) {
   }else if (type == "addLink") { //ADD A LINK
     dbConnector.addProjectLink(projectUuid, storeGroup ,{uuid:pl.uuid, source:pl.source, target:pl.target}).then(notifyChange)
 
-
   }else if (type == "removeLink") { //REMOVE A LINK WITH SOURCE OR TARGET OR BOTH
-    // recordChangeInStore(type, store, group, pl)//record it before to working on modified arrays array
 
-    console.log(pl.source, pl.target)
     if (pl.source || pl.target) {
         dbConnector.removeProjectLink(projectUuid, storeGroup ,{source:pl.source, target: pl.target}).then(notifyChange)
     }else{
         dbConnector.removeProjectLink(projectUuid, storeGroup ,pl.uuid).then(notifyChange)
     }
 
-    // if (pl.source && !pl.target) {
-    //   storeGroup.links =storeGroup.links.filter(i=> i.source != pl.source)
-    // }else if (pl.target && !pl.source) {
-    //   storeGroup.links =storeGroup.links.filter(i=> i.target != pl.target)
-    // }else if (pl.target && pl.source) {
-    //   storeGroup.links =storeGroup.links.filter(i=> !(i.target == pl.target && i.source == pl.source))
-    // }
+  }else if (type == "replaceItems") { //replace a whole collection !!miss the correct db function
+    // dbConnector.addProjectCollection(projectUuid, storeGroup ,pl).then(notifyChange)
+  }else if (type == "replaceLinks") { //replace a whole collection
+    // dbConnector.addProjectCollection(projectUuid, storeGroup ,pl).then(notifyChange)
   }
-
-  //helper functions
-  function isItemAlreadyThere(pl, array) {
-    if (pl.type && !pl.prop) {
-      if (array.find(e => e.type == pl.type && e.source == pl.source && e.target == pl.target)) {
-        console.log(pl);
-        console.log(array.find(e => e.type == pl.type && e.source == pl.source && e.target == pl.target));
-        return true
-      }
-    }
-    return false
+  else if (type == "replaceCollection") { //replace a whole collection
+    dbConnector.addProjectCollection(projectUuid, storeGroup ,pl).then(notifyChange)
   }
 
 }
 
+//notify changes every time interval
 var ephemerisLastStoreUpdate = Date.now()
 var ephemerisScheduleStoreUpdate = false
 

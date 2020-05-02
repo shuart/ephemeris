@@ -257,13 +257,30 @@ var createPbsView = function () {
                       })
                     }
 
-                    var addToEphemeris = function () {
-                      preview.items.forEach(i=>{
-                        push(act.add("currentPbs", i))
-                      })
-                      preview.links.forEach(l=>{
-                        push(addPbsLink(l))
-                      })
+                    var addToEphemeris = async function (inputOptions) {
+                      let options = inputOptions || {}
+                      let addMode = options.mode || "batch"
+
+                      if (addMode == "batch") {
+                        var store = await query.currentProject()
+                        let i = store["currentPbs"].items.concat(preview.items)
+                        let l = store["currentPbs"].links.concat(preview.links)
+                        let newCollection= {items:i, links:l}
+
+                        push(act.replaceCollection("currentPbs", newCollection))
+
+
+                        // push(act.replaceCollectionLinks("currentPbs", l))
+                      }else {
+                        var store = await query.currentProject()
+                        preview.items.forEach(i=>{
+                          push(act.add("currentPbs", i))
+                        })
+                        preview.links.forEach(l=>{
+                          push(addPbsLink(l))
+                        })
+                      }
+
                     }
 
                     let localApi ={
