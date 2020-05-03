@@ -2,7 +2,8 @@
 
 # Ephemeris
 
-System Engineering and requirements management application
+System Engineering and requirements management application.
+[Try the web application for a demo](https://www.ephemeris.cloud/demo/)
 
 ![Screenshot](./images/screenshot.png)
 
@@ -16,7 +17,9 @@ System Engineering and requirements management application
 -   Create interfaces matrix from specific part of your project
 -   Link pictures and documents to your Products and Requirements
 -   Perform V&V on your projects
--   Schedule your projects with Gantt charts
+-   Schedule your projects with Gantt charts and capacity plannings
+-   View next actions in a Kanban layout
+-   import archimate file to work on existing data or import from CSV using custom scripts
 
 ![Lists](./images/ephemeris_lists.png)
 ![ERD](./images/ephemeris_erd.png)
@@ -34,9 +37,9 @@ Once the appropriate ZIP file has been downloaded for your platform, extract it,
 
 - Create a new user. This will be you personal session.
 - Fill in your profile
-- Once logged in, two default projects are already available. Focus on one of them or go to "Manage projects" in the settings menu to rename, add, or re-order the projects.
+- Once logged in, you can add a new project from the main view. You can go to "Manage projects" in the settings menu to rename, add, or re-order the projects.
 - When focused on a project, you can go to different views and edit the projects products, functions and requirements.
-- The "Relations" and "Interfaces" views allow you to edit the project from a network diagram
+- The "Relations" view allow you to edit the project from a network diagram
 
 ## Build and run
 
