@@ -75,20 +75,20 @@ var store = {
   },
   tags:{
     items:[
-      {uuid: uuid(), name: "Approved", color: "#ffffff"},
-      {uuid: uuid(), name: "Closed", color: "#ffffff"},
-      {uuid: uuid(), name: "Rejected", color: "#ffffff"}
+      {uuid: uuid(), name: "Approved", color: "#03b5aa"},
+      {uuid: uuid(), name: "Closed", color: "#03b5aa"},
+      {uuid: uuid(), name: "Rejected", color: "#03b5aa"}
     ]
   },
   interfacesTypes:{
     items:[
-      {uuid: uuid(), name: "Interface", color: "#ffffff"},
-      {uuid: uuid(), name: "Physical connection", color: "#ffffff"},
-      {uuid: uuid(), name: "Data connection", color: "#ffffff"},
-      {uuid: uuid(), name: "Command connection", color: "#ffffff"},
-      {uuid: uuid(), name: "Power connection", color: "#ffffff"},
-      {uuid: uuid(), name: "Electrical connection", color: "#ffffff"},
-      {uuid: uuid(), name: "Mechanical connection", color: "#ffffff"}
+      {uuid: uuid(), name: "Interface", color: "#03b5aa"},
+      {uuid: uuid(), name: "Physical connection", color: "#03b5aa"},
+      {uuid: uuid(), name: "Data connection", color: "#03b5aa"},
+      {uuid: uuid(), name: "Command connection", color: "#03b5aa"},
+      {uuid: uuid(), name: "Power connection", color: "#03b5aa"},
+      {uuid: uuid(), name: "Electrical connection", color: "#03b5aa"},
+      {uuid: uuid(), name: "Mechanical connection", color: "#03b5aa"}
     ]
   },
   categories:{

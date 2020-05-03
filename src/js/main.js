@@ -227,6 +227,9 @@ var reparse = false;
     displayThree({data:renderDTree(app.cscDB.db), startCollapsed:true})
 
   })
+  connect(".action_import_archimate","click",(e)=>{
+    importXMLService.importXML()
+  })
 
   function loadTree(itemsSource, callback) {
       if (document.querySelector("#pbs-container").style.display == "none") {

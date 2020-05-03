@@ -69,6 +69,10 @@ var createImportTableWithScriptService = function (collectionName) {
 
           if (addMode == "batch") {
             var store = await query.currentProject()
+
+            // if (collectionName =="currentPbs") {
+            //   //find all object
+            // }
             let i = store[collectionName].items.concat(preview.items)
             let l = store[collectionName].links.concat(preview.links)
             let newCollection= {items:i, links:l}

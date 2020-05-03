@@ -1310,7 +1310,12 @@ var createRelationsView = function () {
     let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
     if (itemMetaLink) {
       let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
-      return item.name
+      if (item) {
+        return item.name
+      }else {
+        console.log(itemMetaLink.target);
+        return "Unknown Type"
+      }
     }else {
       return store.interfacesTypes.items[0].name
     }
@@ -1320,7 +1325,7 @@ var createRelationsView = function () {
     let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
     if (itemMetaLink) {
       let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
-      return item.dashArray==1? "3 4": undefined
+      return (item && item.dashArray==1)? "3 4": undefined
     }else {
       return undefined
     }

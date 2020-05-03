@@ -10,8 +10,9 @@ var createInterfacesListView = function () {
 
   }
 
-  var getObjectNameByUuid = function (uuid) {
-    let foundItem = query.items("all", i=> i.uuid == uuid)[0]
+  var getObjectNameByUuid = function (uuid, store) {
+    // let foundItem = query.items("all", i=> i.uuid == uuid)[0]
+    let foundItem= store.currentPbs.items.find(i=> i.uuid == uuid)
     if (foundItem) {
       return foundItem.name
     }else {
@@ -49,8 +50,8 @@ var createInterfacesListView = function () {
         {prop:"name", displayAs:"Name", edit:true},
         {prop:"interfacesType", displayAs:"Type", meta:()=>store.metaLinks.items, choices:()=>store.interfacesTypes.items, edit:true},
         {prop:"description", displayAs:"Description", edit:true},
-        {prop:"source", displayAs:"Source item", custom:e=>getObjectNameByUuid(e), actionable:e=>e,edit:false},
-        {prop:"target", displayAs:"Target item", custom:e=>getObjectNameByUuid(e), actionable:e=>e,edit:false},
+        {prop:"source", displayAs:"Source item", custom:e=>getObjectNameByUuid(e, store), actionable:e=>e,edit:false},
+        {prop:"target", displayAs:"Target item", custom:e=>getObjectNameByUuid(e, store), actionable:e=>e,edit:false},
         {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
       ],
       idProp:"uuid",
@@ -82,10 +83,11 @@ var createInterfacesListView = function () {
       //   let tagName = prompt("New tag")
       //   push(act.add("tags",{uuid:genuuid(), name:tagName, color:"#ffffff"}))
       // },
-      onClick: (ev)=>{
+      onClick: async  (ev)=>{
+        var store = await query.currentProject()
         showSingleItemService.showById(ev.target.dataset.id, function (e) {
           ev.select.remove()
-          ev.select.updateData(readifyInterfaces())
+          ev.select.updateData(readifyInterfaces(store))
           ev.select.update()//TODO Why is it necessary?
         })
       },

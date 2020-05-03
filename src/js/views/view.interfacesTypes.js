@@ -55,7 +55,7 @@ var createInterfacesTypesView = function () {
       },
       onAdd: (ev)=>{
         let typeName = prompt("New interfaces Type")
-        push(act.add("interfacesTypes",{uuid:genuuid(), name:typeName, color:"#ffffff"}))
+        push(act.add("interfacesTypes",{uuid:genuuid(), name:typeName, color:"#03b5aa"}))
         updateList(ev)
       },
       onClick: (ev)=>{

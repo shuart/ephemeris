@@ -23,14 +23,14 @@ var createImportXMLService = function () {
 
   }
   var connections =function () {
-    document.addEventListener("keydown", function(event) {
-      if (!( event.key == 'k' && event.ctrlKey) ) return true;
-      importXML()
-      //document.querySelector('#topmenu_project_saver').click()
-      //A bit ugly TODO: check for a better way
-      event.preventDefault();
-      return false;
-    })
+    // document.addEventListener("keydown", function(event) {
+    //   if (!( event.key == 'k' && event.ctrlKey) ) return true;
+    //   importXML()
+    //   //document.querySelector('#topmenu_project_saver').click()
+    //   //A bit ugly TODO: check for a better way
+    //   event.preventDefault();
+    //   return false;
+    // })
   }
 
   var render = function (uuid) {
@@ -110,7 +110,7 @@ var createImportXMLService = function () {
     var parseAsRelations =function (folder, targetArray,folderType) {
       let type = folderType || folder.getAttribute('type')// if type is specified use it or find it
       doForEach(folder.children, function (item) {
-        if (item.tagName.toLowerCase() == "element") {
+        if (item.tagName.toLowerCase() == "element" || item.tagName.toLowerCase() == "relationship") {
           let elementId = item.id || item.getAttribute("identifier")
           targetArray.push({id:elementId, name:item.getAttribute("xsi:type"), source:item.getAttribute("source"), target:item.getAttribute("target")})
         }else if (item.tagName.toLowerCase() == "folder") {//if element is another folder
@@ -125,7 +125,7 @@ var createImportXMLService = function () {
         parseAsElementFolder(folder, projectProducts)
       }
       //parse relations
-      if (folder.getAttribute('type') == "relations") {
+      if (folder.getAttribute('type') == "relations" || folder.tagName.toLowerCase() == "relationships") {
         parseAsRelations(folder, projectRelations)
       }
     })
@@ -146,7 +146,7 @@ var createImportXMLService = function () {
           let rel = archimateRelations[relation]
           let typeName = rel.name.slice(0, -12)
           let relationId = archimateTemplate.prefix.idPrefix+rel.type
-          push(act.add("interfacesTypes",{uuid:relationId, name:typeName, extTyp:rel.type, color:"#ffffff", dashArray:rel.dashStyle == "dashed"?1:0}))
+          push(act.add("interfacesTypes",{uuid:relationId, name:typeName, extTyp:rel.type, color:"#03b5aa", dashArray:rel.dashStyle == "dashed"?1:0}))
 
         }
       }
@@ -198,7 +198,7 @@ var createImportXMLService = function () {
             let typeName = rel.name.slice(0, -12)
             let relationId = archimateTemplate.prefix.idPrefix+rel.type
 
-            newProjectFromXml.interfacesTypes.items.push({uuid:relationId, name:typeName, extTyp:rel.type, color:"#ffffff", dashArray:rel.dashStyle == "dashed"?1:0})
+            newProjectFromXml.interfacesTypes.items.push({uuid:relationId, name:typeName, extTyp:rel.type, color:"#03b5aa", dashArray:rel.dashStyle == "dashed"?1:0})
           }
         }
         // create archimate categories Types
@@ -220,7 +220,14 @@ var createImportXMLService = function () {
           console.log(newProjectFromXml);
           newProjectFromXml.currentPbs.links.push({uuid:genuuid(),source:newProjectFromXml.currentPbs.items[0].uuid, target:item.id})
           if (true) {
-            newProjectFromXml.metaLinks.items.push({uuid:genuuid(),type:"category", source:item.id, target:archimateTemplate.prefix.idPrefix+item.type.substring(10)})
+            //add metalinks to category
+            if (item.type.substring(0,10)=="archimate:") {
+              //special case for whene archimate is missing
+              newProjectFromXml.metaLinks.items.push({uuid:genuuid(),type:"category", source:item.id, target:archimateTemplate.prefix.idPrefix+item.type.substring(10)})
+            }else {
+              newProjectFromXml.metaLinks.items.push({uuid:genuuid(),type:"category", source:item.id, target:archimateTemplate.prefix.idPrefix+item.type})
+            }
+
           }
         })
         projectRelations.forEach(function (item) {
@@ -228,7 +235,15 @@ var createImportXMLService = function () {
             item.name =  "NULL at import"
           }
           let interfaceUuid = item.id
-          let interfaceTypeTargetId = archimateTemplate.prefix.idPrefix+item.name.substring(10)
+          let interfaceTypeTargetId =undefined;
+          if (item.name.substring(0,10)=="archimate:") {
+            interfaceTypeTargetId = archimateTemplate.prefix.idPrefix+item.name.substring(10)
+
+          }
+          else{
+            interfaceTypeTargetId = archimateTemplate.prefix.idPrefix+item.name+"Relationship"
+          }
+
           console.log(interfaceTypeTargetId);
           newProjectFromXml.interfaces.items.push({uuid:interfaceUuid, type:"Physical connection", name:item.name,description:"Archimate relation", source:item.source, target:item.target})
           if (true) {
@@ -317,14 +332,21 @@ var createImportXMLService = function () {
         CompositionRelationship:{name:"Composition Relationship", type:"CompositionRelationship", layer:"implementation_migration", dashStyle:"normal"},
         AggregationRelationship:{name:"Aggregation Relationship", type:"AggregationRelationship", layer:"implementation_migration", dashStyle:"normal"},
         AssignmentRelationship:{name:"Assignment Relationship", type:"AssignmentRelationship", layer:"implementation_migration", dashStyle:"normal"},
-        zationRelationship:{name:"zation Relationship", type:"zationRelationship", layer:"implementation_migration", dashStyle:"dashed"},
-        sationRelationship:{name:"sation Relationship", type:"sationRelationship", layer:"implementation_migration", dashStyle:"dashed"},//TODO what is the correct writing?
+        RealizationRelationship:{name:"Realization Relationship", type:"RealizationRelationship", layer:"implementation_migration", dashStyle:"dashed"},
+        RealisationRelationship:{name:"Realisation Relationship", type:"RealisationRelationship", layer:"implementation_migration", dashStyle:"dashed"},//TODO what is the correct writing?
         UsedByRelationship:{name:"Used By Relationship", type:"UsedByRelationship", layer:"implementation_migration", dashStyle:"normal"},
         AccessRelationship:{name:"Access Relationship", type:"AccessRelationship", layer:"implementation_migration", dashStyle:"dashed"},
         AssociationRelationship:{name:"Association Relationship", type:"AssociationRelationship", layer:"implementation_migration", dashStyle:"normal"},
         FlowRelationship:{name:"Flow Relationship", type:"FlowRelationship", layer:"implementation_migration", dashStyle:"dashed"},
         TriggeringRelationship:{name:"Triggering Relationship", type:"TriggeringRelationship", layer:"implementation_migration", dashStyle:"normal"},
         SpecializationRelationship:{name:"Specialization Relationship", type:"SpecializationRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        SpecialisationRelationship:{name:"Specialisation Relationship", type:"SpecialisationRelationship", layer:"implementation_migration", dashStyle:"normal"},
+
+        ServingRelationship:{name:"Serving Relationship", type:"ServingRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        SpecialisationRelationship:{name:"Specialisation Relationship", type:"SpecialisationRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        SpecializationRelationship:{name:"Specialization Relationship", type:"SpecializationRelationship", layer:"implementation_migration", dashStyle:"normal"},
+        InfluenceRelationship:{name:"Influence Relationship", type:"InfluenceRelationship", layer:"implementation_migration", dashStyle:"normal"},
+
         JunctionRelationship:{name:"Junction Relationship", type:"JunctionRelationship", layer:"implementation_migration", dashStyle:"normal"},
         GroupingRelationship:{name:"Grouping Relationship", type:"GroupingRelationship", layer:"implementation_migration", dashStyle:"normal"}
       }
@@ -337,6 +359,7 @@ var createImportXMLService = function () {
     render()
   }
 
+  self.importXML = importXML
   self.update = update
   self.init = init
 
