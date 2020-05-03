@@ -392,8 +392,8 @@ function lettersFromNames(e) {
   }
 }
 
-var getObjectNameByUuid = function (uuid) {
-  let foundItem = query.items("all", i=> i.uuid == uuid)[0]
+var getObjectNameByUuid = function (uuid, store) {
+  let foundItem= store.currentPbs.items.find(i=> i.uuid == uuid)
   if (foundItem) {
     return foundItem.name
   }else {
