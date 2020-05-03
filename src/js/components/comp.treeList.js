@@ -12,6 +12,7 @@ var createTreeList = function ({
   customEyeIconClass=undefined,
   customTextActionClass="",
   customExtraActionClass="",
+  optimizeRefresh = true,
   isDraggable=true,
   arrayOfHiddenItems = undefined//unused
   }={}) {
@@ -20,6 +21,7 @@ var createTreeList = function ({
   var domSearchElement = undefined
   var searchResults = undefined
   var closedCaret = []
+  var previouslyRenderedHtml = ''
   var flatMode = true
 
   var objectIsActive = false;
@@ -214,11 +216,14 @@ var createTreeList = function ({
     var clusteredElementHeight = 32
 
     let currentElementHeight = domElement.clientHeight;
+    if (currentElementHeight> 3000) { //prevent issue when client height cannot be found. No need to be bigger than 4k TODO: investigate case where that happens
+      currentElementHeight = 3000
+    }
     //console.log( scrollPosition )
     //console.log(currentElementHeight )
 
     //clean element
-    domElement.innerHTML = ""
+    // domElement.innerHTML = ""
 
     //calculation
     let nbrOfElementToAdd = Math.floor(currentElementHeight/clusteredElementHeight)+5

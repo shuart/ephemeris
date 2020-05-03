@@ -72,6 +72,9 @@ var createRelationsView = function () {
 
   var itemsToDisplay = []
   var relations = []
+  var relationsTree = {}
+  var relationsTargetTree = {}
+  var interfacesToTypesMapping = {}
 
   var sideListe = undefined
 
@@ -1162,8 +1165,13 @@ var createRelationsView = function () {
     await updateItemsToDisplayAndRelations(elementVisibility)
 
     //remove hidden items from tree
+    let hiddenItemsFromSideViewObjectMapping = {}//create mapping for performance //PERF do it one TODO
+    for (var i = 0; i < hiddenItemsFromSideView.length; i++) {
+      let hiddenElementId = hiddenItemsFromSideView[i]
+      hiddenItemsFromSideViewObjectMapping[hiddenElementId] = true
+    }
 
-    let filteredItemsToDisplay = itemsToDisplay.filter(i=> !hiddenItemsFromSideView.includes(i.uuid))
+    let filteredItemsToDisplay = itemsToDisplay.filter(i=> !hiddenItemsFromSideViewObjectMapping[i.uuid])
     //copy relations
     let relationToDisplay = relations.concat([])
 
@@ -1307,28 +1315,40 @@ var createRelationsView = function () {
     //updateSideListeVisibility()
   }
   var getInterfaceTypeFromUuid = function (store, uuid) {
-    let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
-    if (itemMetaLink) {
-      let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
-      if (item) {
-        return item.name
-      }else {
-        console.log(itemMetaLink.target);
-        return "Unknown Type"
-      }
+    let interfaceType = interfacesToTypesMapping[uuid]
+    if (interfaceType) {
+      return interfaceType.name
     }else {
-      return store.interfacesTypes.items[0].name
+      return "Unknown Type"
     }
+    // let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
+    // if (itemMetaLink) {
+    //   let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
+    //   if (item) {
+    //     return item.name
+    //   }else {
+    //     console.log(itemMetaLink.target);
+    //     return "Unknown Type"
+    //   }
+    // }else {
+    //   return store.interfacesTypes.items[0].name
+    // }
 
   }
   var getInterfaceDashArrayTypeFromUuid = function (store, uuid) {
-    let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
-    if (itemMetaLink) {
-      let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
-      return (item && item.dashArray==1)? "3 4": undefined
+    let interfaceType = interfacesToTypesMapping[uuid]
+    if (interfaceType) {
+      return (interfaceType.dashArray==1)? "3 4": undefined
     }else {
       return undefined
     }
+    // let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
+    // if (itemMetaLink) {
+    //   let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
+    //   return (item && item.dashArray==1)? "3 4": undefined
+    // }else {
+    //   return undefined
+    // }
   }
   // var getInterfaceCustomColorFromUuid = function (store, uuid) {
   //   let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
@@ -1342,10 +1362,17 @@ var createRelationsView = function () {
 
   var updateSideListeVisibility = function () {//TODO integrate in list tree
     let elementList = document.querySelector(".left-list").querySelectorAll('.action_tree_list_relations_toogle_visibility')
+
+    let hiddenItemsFromSideViewObjectMapping = {}//create mapping for performance //PERF do it one TODO
+    for (var i = 0; i < hiddenItemsFromSideView.length; i++) {
+      let hiddenElementId = hiddenItemsFromSideView[i]
+      hiddenItemsFromSideViewObjectMapping[hiddenElementId] = true
+    }
+
     for (var i = 0; i < elementList.length; i++) {
       let current = elementList[i]
       let linkedNodeId = current.dataset.id
-      let isVisible = !hiddenItemsFromSideView.includes(linkedNodeId)
+      let isVisible = !hiddenItemsFromSideViewObjectMapping[linkedNodeId]
       if (isVisible) {
         current.classList.add('fa-eye')
         current.classList.remove('fa-eye-slash')
@@ -1361,6 +1388,7 @@ var createRelationsView = function () {
     return roots.reduce(function (acc, r) {
       console.log(acc);
       let rootArray = [r.uuid]
+      console.log(links);
       let itemsChildren = items.filter((i) => {//get all the children of this element
         return links.find((l)=> {
           if (true) {//was filtering between composition and interface. Not needed
@@ -1380,7 +1408,7 @@ var createRelationsView = function () {
       return acc.concat(rootArray)
     }, [])
   }
-  function findRelatedUuid(roots,items, links) {
+  function findRelatedUuidLEGACY(roots,items, links) {
 
     return roots.reduce(function (acc, r) {
       console.log(acc);
@@ -1395,6 +1423,27 @@ var createRelationsView = function () {
           })
         })
         .map(i=>i.uuid)
+      return acc.concat(itemsRelated)
+    }, [])
+  }
+  function findRelatedUuid(roots,items, links) {
+
+    return roots.reduce(function (acc, r) {
+      console.log(acc);
+      // let rootArray = [r.uuid]
+      let itemSource =relationsTargetTree[r.uuid] || []
+      let itemTarget =relationsTree[r.uuid] || []
+      let itemsRelated =itemSource.concat(itemTarget)
+      // let itemsRelated = items
+      //   .filter((i) => {//get all the children of this element
+      //     return links.find((l)=> {
+      //       if (true) {//was filtering relations and composition. Not needed
+      //         if (l.source.uuid) {return ( (l.source.uuid == r.uuid && l.target.uuid == i.uuid)||(l.source.uuid == i.uuid && l.target.uuid == r.uuid) )//check if links source is object
+      //         }else { return ( (l.source == r.uuid && l.target == i.uuid)||(l.source == i.uuid && l.target == r.uuid) )}//or ID
+      //       }
+      //     })
+      //   })
+      //   .map(i=>i.uuid)
       return acc.concat(itemsRelated)
     }, [])
   }
@@ -1454,7 +1503,13 @@ var createRelationsView = function () {
 
     let stayVisibleNodes = showChildren? selectedNodesAndChildrenUuid : selectedNodesAndRelated
 
-    let currentVisibleNode = itemsToDisplay.filter( i => !hiddenItemsFromSideView.includes(i.uuid))
+    let hiddenItemsFromSideViewObjectMapping = {}//create mapping for performance //PERF do it one TODO
+    for (var i = 0; i < hiddenItemsFromSideView.length; i++) {
+      let hiddenElementId = hiddenItemsFromSideView[i]
+      hiddenItemsFromSideViewObjectMapping[hiddenElementId] = true
+    }
+
+    let currentVisibleNode = itemsToDisplay.filter( i => !hiddenItemsFromSideViewObjectMapping[i.uuid])
     stayVisibleNodes = currentVisibleNode.map(n=>n.uuid).concat(stayVisibleNodes)
     //check if node is
 
@@ -1524,16 +1579,78 @@ var createRelationsView = function () {
     if (elementVisibility.workPackages) { itemsToDisplay = itemsToDisplay.concat(array6) }
 
     relations = []//checl what connection to display TODO store in func
+    relationsTree = {}//checl what connection to display TODO store in func
+    relationsTargetTree = {}
+    interfacesToTypesMapping = {}
+
+    var mapInterfacesToIds = function (store) {//build mapping for performances
+
+      for (var i = 0; i < store.metaLinks.items.length; i++) {
+        let ml=  store.metaLinks.items[i]
+        if (ml.type =="interfacesType") {
+          let item = store.interfacesTypes.items.find(t=>t.uuid == ml.target)
+          if (!interfacesToTypesMapping[ml.source]) {
+            interfacesToTypesMapping[ml.source] = item
+          }
+        }
+      }
+
+      // let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
+      // if (itemMetaLink) {
+      //   let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
+      //   if (item) {
+      //     return item.name
+      //   }else {
+      //     console.log(itemMetaLink.target);
+      //     return "Unknown Type"
+      //   }
+      // }else {
+      //   return store.interfacesTypes.items[0].name
+      // }
+
+    }
+
+    mapInterfacesToIds(store)
+
+    var transferToRelationsForEach = function (relations,relationsTree, array, mofidication) {
+      for (var i = 0; i < array.length; i++) {
+        let item = array[i]
+        let newItem = Object.assign({},item)
+        mofidication(newItem)
+        relations.push(newItem)
+
+        //add to sourceMap
+        let sourceUuid = newItem.source.uuid || newItem.source
+        let targetUuid = newItem.target.uuid || newItem.target
+        if (!relationsTree[sourceUuid]) {
+          relationsTree[sourceUuid] = [targetUuid]
+        }else {
+          relationsTree[sourceUuid].push(targetUuid)
+        }
+
+        if (!relationsTargetTree[targetUuid]) {
+          relationsTargetTree[targetUuid] = [sourceUuid]
+        }else {
+          relationsTargetTree[targetUuid].push(sourceUuid)
+        }
+      }
+      console.log(relationsTree);
+    }
     if (elementVisibility.metaLinks) {
-      relations = relations.concat(store.metaLinks.items.map((e) => { e.displayType = e.type; return e}))
+      //relations = relations.concat(store.metaLinks.items.map((e) => { e.displayType = e.type; return e}))
+      //
+      transferToRelationsForEach(relations,relationsTree, store.metaLinks.items, e=> {e.displayType = e.type;})
     }
     if (elementVisibility.interfaces ) {
-      relations = relations.concat(store.interfaces.items.map((e) => { e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customDashArray = getInterfaceDashArrayTypeFromUuid(store, e.uuid); e.customColor="#6dce9e"; return e}))
+      // relations = relations.concat(store.interfaces.items.map((e) => { e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customDashArray = getInterfaceDashArrayTypeFromUuid(store, e.uuid); e.customColor="#6dce9e"; return e}))
+      transferToRelationsForEach(relations,relationsTree, store.interfaces.items, e=> {e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customDashArray = getInterfaceDashArrayTypeFromUuid(store, e.uuid); e.customColor="#6dce9e";})
     }
     if (elementVisibility.compose) {
-      relations = relations.concat(store.currentPbs.links.map((e) => { e.displayType = "Composed by";  e.type = "Composed by"; return e}))
+      // relations = relations.concat(store.currentPbs.links.map((e) => { e.displayType = "Composed by";  e.type = "Composed by"; return e}))
+      transferToRelationsForEach(relations,relationsTree, store.currentPbs.links, e=> {e.displayType = "Composed by";  e.type = "Composed by";})
       if (elementVisibility.physicalSpaces) {
-        relations = relations.concat(store.physicalSpaces.links.map((e) => {e.displayType = "Contains"; e.type = "Contains"; return e}))
+        // relations = relations.concat(store.physicalSpaces.links.map((e) => {e.displayType = "Contains"; e.type = "Contains"; return e}))
+        transferToRelationsForEach(relations,relationsTree, store.physicalSpaces.links, e=> {e.displayType = "Contains"; e.type = "Contains";})
       }
       groupLinks = []//TODO WHat is the point?
     }
