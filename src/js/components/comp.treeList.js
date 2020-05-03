@@ -132,7 +132,7 @@ var createTreeList = function ({
     if (links) {
       domModeElement.innerHTML=theme.flatModeToggle()
     }
-
+    console.log(domElement);
     setUpScrollEvent(domElement)
 
     //set up search if needed
@@ -284,7 +284,7 @@ var createTreeList = function ({
       if (!sourceMaps[currentTarget]) {
         sourceMaps[currentTarget] = currentSource
       }else {
-        alert("multiple source")
+        console.log("multiple source")
       }
 
 
@@ -419,7 +419,7 @@ var createTreeList = function ({
 
   function setUpScrollEvent(domElement) {
     domElement.addEventListener('scroll', function (event) {
-            //console.log(event)
+            console.log(event)
             render()
     })
   }

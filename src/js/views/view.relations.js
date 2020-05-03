@@ -1070,7 +1070,9 @@ var createRelationsView = function () {
     container.style.height = "100%"
 
     listContainer = document.createElement("div")
+    listContainer.style.height = "100%"
     document.querySelector(".left-list").appendChild(listContainer)
+    document.querySelector(".left-list").style.overflow = "hidden"
     connections(container)
     //update all connections at each render. otherwise multiple views share the updae
 
