@@ -60,11 +60,26 @@ var createImportXMLService = function () {
     document.body.appendChild(input)
     setTimeout(function () {
 
-      reader.addEventListener("load", function() {
+      reader.addEventListener("load", async function() {
         console.log(reader.result);
         var xmlDOM = xmlParser(reader.result)
-        if (confirm("Archimate importer Beta: This is an experimental feature. The current open project will be modified. Do you wish to continue")) {
-          xmlToProject(xmlDOM)
+        let newProjectName ="Imported from XML"
+        let confirmLoading = false
+        if (createPromptPopup) {
+          var popup= await createPromptPopup({
+            title:"Add a new project from an Archimate file",
+            imageHeader:"./img/obs.png",
+            warning:"The Archimate importer is a beta feature: Archimate files are only partialy imported. Do you wish to continue",
+            fields:{ type:"input",id:"projectName" ,label:"Project name", placeholder:"Set a name for the project" }
+          })
+          confirmLoading = popup
+          newProjectName = popup.result
+        }else {
+          confirmLoading = confirm("Archimate importer Beta: This is an experimental feature. The current open project will be modified. Do you wish to continue")
+        }
+
+        if (confirmLoading) {
+          xmlToProject(xmlDOM, newProjectName)
         }
         //console.log(parser.parse(reader.result, options));
         document.querySelector('#newInput').remove()
@@ -77,7 +92,7 @@ var createImportXMLService = function () {
 
   }
 
-  var xmlToProject = function (xmlDOM) {
+  var xmlToProject = function (xmlDOM, newProjectName) {
     var projectProducts = []
     var projectRelations = []
     //parsingFunction
@@ -186,7 +201,8 @@ var createImportXMLService = function () {
 
       })
     }else if (app.state.currentUser) {
-      var newProjectFromXMLName = prompt("Add a new Project from XML file")
+      // var newProjectFromXMLName = prompt("Add a new Project from XML file")
+      var newProjectFromXMLName = newProjectName
       //TODO Bad
       if (newProjectFromXMLName) {
         var newProjectFromXml = createNewProject(newProjectFromXMLName)

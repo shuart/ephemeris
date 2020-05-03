@@ -29,7 +29,10 @@ var createPromptPopupView = function (inputData) {
       return `
       ${theme.iconHeader(data)}
       ${theme.imageHeader(data)}
+
       <h2 class="ui header">${data.title}</h2>
+      ${theme.message(data)}
+      ${theme.warning(data)}
       <div class="ui form">
         <div style="width:100%; flex-direction:column;" class="fields">
         ${data.fields.map(f=> theme.input(f)).join('')}
@@ -115,6 +118,27 @@ var createPromptPopupView = function (inputData) {
         return `
         <div class="ui center aligned icon header">
           <img style="max-width:300px; width:40%;" class="ui centered medium image" src="${data.imageHeader}">
+        </div>`
+      }else {
+        return ""
+      }
+    },
+    message: function (data) {
+      if (data.message) {
+        return `
+        <div class="ui message">
+          <p>${data.message} </p>
+        </div>`
+      }else {
+        return ""
+      }
+    },
+    warning: function (data) {
+      if (data.warning) {
+        return `
+        <div class="ui warning message">
+          <i class="warning icon"></i>
+          ${data.warning}
         </div>`
       }else {
         return ""
@@ -367,6 +391,8 @@ var createPromptPopup = function ({
   confirmationType= "cancelOk",
   iconHeader= undefined,
   imageHeader= undefined,
+  message= undefined,
+  warning= undefined,
   fields=[{ type:"input",id:"v5sd4fse5f465s" ,label:"", placeholder:"Write here" }],
   callback = undefined,
   resolvePromise = undefined
@@ -378,7 +404,7 @@ var createPromptPopup = function ({
       }else {
         fieldsArray = fields
       }
-      let data = {title:title, confirmationType:confirmationType, imageHeader:imageHeader,iconHeader:iconHeader, fields:fieldsArray,callback:callback, resolvePromise: resolve}
+      let data = {title:title, confirmationType:confirmationType, imageHeader:imageHeader,iconHeader:iconHeader,message:message,warning:warning, fields:fieldsArray,callback:callback, resolvePromise: resolve}
       let view = createPromptPopupView(data)
 
     }).catch(function(err) {
