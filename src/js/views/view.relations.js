@@ -83,7 +83,7 @@ var createRelationsView = function () {
   var theme={
     viewInterfaceList:(interfaceItems)=> {
       let html =
-      `<div class="header item">Select, then double click on the graph to add</div>
+      `<div class="header item">Select, then draw links from the nodes external radius</div>
       <a style="${(addMode == 'compose')? "background-color: #6dce9e !important":""}" data-id="" class="item action_interfaces_toogle_compose">
         <i class='object group icon'></i>
         Composition
@@ -1107,6 +1107,8 @@ var createRelationsView = function () {
     border-radius: 5px;
     background-color: white;
     width: 146px;
+    height: 800px;
+    overflow: auto;
     position: absolute;
     left: 350px;
     top: 144px;
