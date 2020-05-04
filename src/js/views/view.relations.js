@@ -1756,7 +1756,7 @@ var createRelationsView = function () {
           physicalSpaces : true,
           workPackages : true,
           metaLinks : true,
-          interfaces : false,
+          interfaces : true,
           compose : true
         }
         objectIsActive = true;
