@@ -11,7 +11,7 @@ module.exports = stellae;
 'use strict';
 
 function stellae(_selector, _options) {
-    var base, scale, translate, container, graph, info, node, nodes, relationship, relationshipOutline, relationshipOverlay, relationshipText, relationships, selector, simulation, svg, svgNodes, svgRelationships, svgScale, svgTranslate,
+    var base, scale, translate, container, graph, info,note,notes, node, nodes, relationship, relationshipOutline, relationshipOverlay, relationshipText, relationships, selector, simulation, svg,svgNotes, svgNodes, svgRelationships, svgScale, svgTranslate,
         selection,
         mouseCurrentPosition,
         classes2colors = {},
@@ -228,6 +228,8 @@ function stellae(_selector, _options) {
 
         svgNodes = svg.append('g')
                       .attr('class', 'nodes');
+        svgNotes = svg.append('g')
+                      .attr('class', 'notes');
         //markers
         base.append("svg:defs").append("svg:marker")
         .attr("id", "markerstriangle")
@@ -310,6 +312,65 @@ function stellae(_selector, _options) {
 
     function appendInfoElementRelationship(cls, relationship) {
         appendInfoElement(cls, false, relationship);
+    }
+
+    function appendNoteToGraph() {
+        var n = appendNote();
+
+        appendLayoutToNote(n)
+
+        return n;
+    }
+    function appendNote() {
+        return note.enter()
+                   .append('g')
+                   .attr('class', "note")
+                   .attr('transform', function (d) {
+                     return "translate(" + d.x + ", " + d.y + ")"
+                   })
+                   .on('click', function(d) {//catch dblclick on canvas
+                       if (typeof options.onNoteClick === 'function') {
+                         // var xy = d3.mouse(this);
+                         // var transform = d3.zoomTransform(base.node());
+                         // var xy1 = transform.invert(xy);
+                         //
+                         // console.log("Mouse:[", xy[0], xy[1], "] Zoomed:[",xy1[0],xy1[1],"]")
+                         // options.onCanvasDoubleClick({x:xy1[0],y:xy1[1]})
+                         //   //options.onNodeDoubleClick(d);
+                       }else {
+                         var newName = prompt("Content", d.content)
+                         if (newName == "") {
+                           if (confirm("Remove note?")) {
+                             notes=notes.filter(n=>n.uuid!= d.uuid)//remove the note from data
+                             d3.select(this).remove()//remove the linked element
+                           }
+                         }else if (newName) {
+                           d.content= newName
+                           d3.select(this).select('text').text(d.content);
+                         }
+                       }
+                   })
+                   .call(d3.drag()
+                           // .on('start', dragStarted)
+                           .on('drag', function(d) {
+                              d.x += d3.event.dx;
+                              d.y += d3.event.dy;
+                              d3.select(this)
+                                  .attr('transform', "translate(" + d.x  + ", " + d.y  + ")");
+                            })
+                           .on('end', dragEnded));
+
+    }
+    function appendLayoutToNote(note) {
+        return note.append('text')
+                   .attr("fill", "black")
+                   // .attr("x", 10)
+                   // .attr("y", 10)
+                   // .attr("width", 50)
+                   // .attr("height", 100)
+                   .text(function (d) {
+                     return d.content
+                   });
     }
 
     function appendNode() {
@@ -1036,16 +1097,18 @@ function stellae(_selector, _options) {
         renderInternal()
     }
 
-    function loadCustomData() {
-        nodes = [];
+    function loadCustomData() { //Entry point for loading data
+        nodes = []; //set the base elements array
         relationships = [];
+        notes = [];
 
         updateWithCustomData(options.customData);
     }
 
     function loadCustomDataFromUrl(customDataUrl) {
-        nodes = [];
+        nodes = [];//set the base elements array
         relationships = [];
+        notes = [];
 
         d3.json(customDataUrl, function(error, data) {
             if (error) {
@@ -1065,7 +1128,8 @@ function stellae(_selector, _options) {
     function customDataToD3Data(data) {
         var graph = {
             nodes: [],
-            relationships: []
+            relationships: [],
+            notes:[]//TODO populate notes initaly
         };
 
         data.results.forEach(function(result) {
@@ -1435,7 +1499,11 @@ function stellae(_selector, _options) {
     }
 
     function updateWithD3Data(d3Data) {
+      console.log(d3Data);
         updateNodesAndRelationships(d3Data.nodes, d3Data.relationships);
+        //check for extra Helper elements
+        console.log(d3Data.notes);
+        updateHelpers(d3Data.notes)
     }
 
     function updateWithCustomData(customData) {
@@ -1461,11 +1529,18 @@ function stellae(_selector, _options) {
 
     function updateNodes(n) {
         Array.prototype.push.apply(nodes, n);
-
         node = svgNodes.selectAll('.node')
                        .data(nodes, function(d) { return d.id; });
         var nodeEnter = appendNodeToGraph();
         node = nodeEnter.merge(node);
+    }
+    function updateNotes(n) {
+        Array.prototype.push.apply(notes, n);
+
+        note = svgNotes.selectAll('.note')
+                       .data(notes, function(d) { return d.id; });
+        var noteEnter = appendNoteToGraph();
+        note = noteEnter.merge(note);
     }
 
     function updateNodesAndRelationships(n, r) {
@@ -1487,6 +1562,10 @@ function stellae(_selector, _options) {
         simulation.force('link').links(relationships);
       }
     }
+    function updateHelpers(n) {
+      updateNotes(n);
+    }
+
 
     function createGroupLinks(nodes) {
       function checkIfLabelMustGroup(label) {
@@ -1603,6 +1682,10 @@ function stellae(_selector, _options) {
       }
         console.log(exportedData);
         return exportedData
+    }
+    function exportHelpers() {
+      var exportedData = {notes:notes}
+      return exportedData
     }
     function importNodesPosition() {
         nodes.forEach(function (n) {
@@ -1748,6 +1831,7 @@ function stellae(_selector, _options) {
         updateWithCustomData: updateWithCustomData,
         exportNodesPosition: exportNodesPosition,
         importNodesPosition: importNodesPosition,
+        exportHelpers:exportHelpers,
         setSelectionModeActive:setSelectionModeActive,
         setSelectionModeInactive:setSelectionModeInactive,
         setFocusedNodes:setFocusedNodes,
