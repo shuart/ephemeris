@@ -186,7 +186,7 @@ var createProjectSelectionView = function (targetSelector) {
   }
 
   var renderList = async function (container) {
-    let relevantProjects = await query.allRelatedProjects({uuid:1, name:1, reference:1, currentPbs:1, functions:1, requirements:1, stakeholders:1, description:1})
+    let relevantProjects = await query.allRelatedProjects({uuid:1, name:1, reference:1,coverImage:1, currentPbs:1, functions:1, requirements:1, stakeholders:1, description:1})
 
     if (app.store.relatedProjects && app.store.relatedProjects[0]) {
       let sortedProject = getOrderedProjectList(relevantProjects, app.store.userData.preferences.projectDisplayOrder)
