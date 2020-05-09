@@ -326,7 +326,7 @@ var createShowSingleItemService = function () {
         {prop:"vvReportNeed", isTarget:true, displayAs:"V&V", choiceStyle: (item) =>item.status==2? 'background-color:#21ba45 !important;':'background-color:#dd4b39 !important;', meta:()=>store.metaLinks.items, choices:()=>store.vvActions.items, edit:false}
       ]
     }else if (type =="Pbs") {
-      return [{prop:"name", displayAs:"Name", edit:"true"},
+      let fields =  [{prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", edit:"true"},
         {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
         {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:true},
@@ -337,6 +337,12 @@ var createShowSingleItemService = function () {
         {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false},
         {prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
       ]
+      let customFields = store.extraFields.items.filter(s=>s.linkedTo == "currentPbs")
+      if (customFields && customFields[0]) { //if store settings exist and array is populated
+        fields = fields.concat(ephHelpers.formatCustomFields(customFields))
+        //displayRules = extraFields
+      }
+      return fields
     }else if (type =="physicalSpaces") {
       return [{prop:"name", displayAs:"Name", edit:true},
         {prop:"desc", displayAs:"Description", fullText:true, edit:true},

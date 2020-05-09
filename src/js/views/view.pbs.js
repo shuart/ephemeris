@@ -51,6 +51,11 @@ var createPbsView = function () {
       displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
       //displayRules = extraFields
     }
+    let customFields = store.extraFields.items.filter(s=>s.linkedTo == "currentPbs")
+    if (customFields && customFields[0]) { //if store settings exist and array is populated
+      displayRules = displayRules.concat(ephHelpers.formatCustomFields(customFields))
+      //displayRules = extraFields
+    }
     return displayRules
   }
 
@@ -70,7 +75,6 @@ var createPbsView = function () {
         displayProp:"name",
         display:setDisplayRules(store),
         displayOrder:setDisplayOrder(store),
-        extraFields: generateExtraFieldsList(store),
         idProp:"uuid",
         allowBatchActions:true,
         onEditItem: (ev)=>{
@@ -255,46 +259,46 @@ var createPbsView = function () {
     objectIsActive = false;
   }
 
-  function generateExtraFieldsList(store) {
-    if (isExtraFieldsVisible) {
-      let extras = store.extraFields.items.filter(i=>(i.type == "currentPbs" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
-      if (!extras[0]) {
-        if (confirm("No custom Fields yet. Add one?")) {
-          addCustomField()
-          setTimeout(function () {
-            document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
-            update()
-          }, 400);
-        }else {
-          isExtraFieldsVisible = !isExtraFieldsVisible
-        }
-      }else {
-        return extras
-      }
-    }else {
-      return undefined
-    }
-  }
-  function addCustomField(callback){
-    var uuid = genuuid()
-    var newReq = prompt("add a new Field?")
-    if (newReq) {
-      let clearedName = "_"+slugify(newReq)+"_"+(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
-      if (store.extraFields.items.filter(i=>i.prop == clearedName)[0]) {
-        console.log(store.extraFields.items.filter(i=>i.prop == clearedName)[0]);
-        alert("This field has already been registered")//in rare case where an identical field would be generated
-      }
-      if (true) {
-        console.log('adding');
-        push(act.add("extraFields",{name: newReq, prop:clearedName, type: "currentPbs"}))
-      }else {//add to main item (only pbs)
-        // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
-      }
-    }
-    if (callback) {
-      callback()
-    }
-  }
+  // function generateExtraFieldsList(store) {
+  //   if (isExtraFieldsVisible) {
+  //     let extras = store.extraFields.items.filter(i=>(i.type == "currentPbs" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+  //     if (!extras[0]) {
+  //       if (confirm("No custom Fields yet. Add one?")) {
+  //         addCustomField()
+  //         setTimeout(function () {
+  //           document.querySelector(".center-container").innerHTML=""//TODO Why? should rest all
+  //           update()
+  //         }, 400);
+  //       }else {
+  //         isExtraFieldsVisible = !isExtraFieldsVisible
+  //       }
+  //     }else {
+  //       return extras
+  //     }
+  //   }else {
+  //     return undefined
+  //   }
+  // }
+  // function addCustomField(callback){
+  //   var uuid = genuuid()
+  //   var newReq = prompt("add a new Field?")
+  //   if (newReq) {
+  //     let clearedName = "_"+slugify(newReq)+"_"+(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
+  //     if (store.extraFields.items.filter(i=>i.prop == clearedName)[0]) {
+  //       console.log(store.extraFields.items.filter(i=>i.prop == clearedName)[0]);
+  //       alert("This field has already been registered")//in rare case where an identical field would be generated
+  //     }
+  //     if (true) {
+  //       console.log('adding');
+  //       push(act.add("extraFields",{name: newReq, prop:clearedName, type: "currentPbs"}))
+  //     }else {//add to main item (only pbs)
+  //       // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+  //     }
+  //   }
+  //   if (callback) {
+  //     callback()
+  //   }
+  // }
 
   self.setActive = setActive
   self.setInactive = setInactive
