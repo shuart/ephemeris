@@ -95,12 +95,20 @@ var createImportXMLService = function () {
   var xmlToProject = function (xmlDOM, newProjectName) {
     var projectProducts = []
     var projectRelations = []
+    var projectDiagrams = []
     //parsingFunction
     var doForEach = function (item, callback) {
       for (var i = 0; i < item.length; i++) {
         callback(item[i])
       }
     };
+    var findChild =function (item, condition) {
+      for (var i = 0; i < item.length; i++) {
+        if (condition(item[i])) {
+          return item[i]
+        }
+      }
+    }
     var findElementTypeInChildren = function (item, elementName) {
       for (var i = 0; i < item.length; i++) {
         if (item[i].tagName.toLowerCase() == elementName) {
@@ -134,6 +142,49 @@ var createImportXMLService = function () {
       })
     }
 
+    var parseAsDiagrams =function (folder, targetArray,folderType) {
+      let type = folderType || folder.getAttribute('type')// if type is specified use it or find it
+      doForEach(folder.children, function (item) {
+        //get diagrams infos
+        if (item.tagName.toLowerCase() == "element") {
+          let diagram = {name:item.getAttribute('name'), uuid:item.getAttribute('id'), nodes:[], notes:[]}
+          let elementId = item.id || item.getAttribute("identifier")
+          //get diagrams elements
+          doForEach(item.children, function (child) {
+            //if is a diagram object
+            if (child.tagName.toLowerCase() == "child" && child.getAttribute("xsi:type")== "archimate:DiagramObject") {
+              let relatedNode = child.getAttribute("archimateElement")
+              let positionX = child.children[0].getAttribute("x")
+              let positionY = child.children[0].getAttribute("y")
+
+              let nodeInDiagram= {uuid:relatedNode, fx:parseInt(positionX), fy:parseInt(positionY)}
+              diagram.nodes.push(nodeInDiagram)
+            }
+          });
+          doForEach(item.children, function (child) {
+            //if is a note
+            if (child.tagName.toLowerCase() == "child" && child.getAttribute("xsi:type")== "archimate:Note") {
+              let id = child.getAttribute("id")
+              let positionX = child.children[0].getAttribute("x")
+              let positionY = child.children[0].getAttribute("y")
+              let content =""
+              // let contentNode = child.children.find(c=>c.tagName.toLowerCase()=="content")
+              let contentNode = findChild(child.children, c=>c.tagName.toLowerCase()=="content")
+              if (contentNode) {
+                console.log(contentNode)
+                content = contentNode.textContent
+              }
+
+              let note= {uuid:id, x:parseInt(positionX), y:parseInt(positionY), content:content}
+              diagram.notes.push(note)
+            }
+          });
+          // targetArray.push({id:elementId, name:item.getAttribute("xsi:type"), source:item.getAttribute("source"), target:item.getAttribute("target")})
+          targetArray.push(diagram)
+        }
+      })
+    }
+
     doForEach(xmlDOM.children, function (folder) {// parse firstLevel
       console.log(folder);
       if (folder.getAttribute('type') != "relations" && folder.getAttribute('type') != "diagrams" && folder.getAttribute('type') != "connectors") {
@@ -142,6 +193,12 @@ var createImportXMLService = function () {
       //parse relations
       if (folder.getAttribute('type') == "relations" || folder.tagName.toLowerCase() == "relationships") {
         parseAsRelations(folder, projectRelations)
+      }
+      //parseDiagrams
+      if (folder.getAttribute('type') == "diagrams") {
+        if (confirm('Parse diagrams?')) {
+          parseAsDiagrams(folder, projectDiagrams)
+        }
       }
     })
 
@@ -265,6 +322,36 @@ var createImportXMLService = function () {
           if (true) {
             newProjectFromXml.metaLinks.items.push({uuid:genuuid(),type:"interfacesType", source:interfaceUuid, target:interfaceTypeTargetId})
           }
+        })
+
+        projectDiagrams.forEach(function (item) {
+          var groupElements={
+            functions: false,
+            requirements: false,
+            stakeholders: false,
+            pbs:  false
+          }
+          var elementVisibility = {
+            functions : false,
+            requirements : false,
+            stakeholders : false,
+            physicalSpaces : false,
+            workPackages : false,
+            metaLinks : true,
+            interfaces : true,
+            compose : true
+          }
+          let newGraph = {
+            uuid:item.uuid,
+            view:"relations",
+            name:item.name,
+            groupElements:deepCopy(groupElements),
+            elementVisibility: deepCopy(elementVisibility),
+            hiddenItems:[],
+            nodesPositions:item.nodes,
+            graphHelpers:{notes:item.notes}
+          }
+          newProjectFromXml.graphs.items.push(newGraph)
         })
         dbConnector.addProject(newProjectFromXml)//use actions DBCHANGE
         // app.store.projects.push(newProjectFromXml)//use actions DBCHANGE
