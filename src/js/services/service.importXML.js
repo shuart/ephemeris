@@ -96,6 +96,7 @@ var createImportXMLService = function () {
     var projectProducts = []
     var projectRelations = []
     var projectDiagrams = []
+    var projectProperties = []
     //parsingFunction
     var doForEach = function (item, callback) {
       for (var i = 0; i < item.length; i++) {
@@ -116,6 +117,32 @@ var createImportXMLService = function () {
         }
       }
     }
+    var findElementProperties = function (item) {
+      let properties = []
+      for (var i = 0; i < item.children.length; i++) {
+        if (item.children[i].tagName.toLowerCase() == "property") {
+          if (item.children[i].getAttribute("key")) {
+            properties.push({key:item.children[i].getAttribute("key"), value:item.children[i].getAttribute("value")})
+          }else if (item.children[i].getAttribute("propertyDefinitionRef")) {
+            properties.push({key:item.children[i].getAttribute("propertyDefinitionRef"), value:item.children[i].children[0].textContent})
+          }
+        }
+        if (item.children[i].tagName.toLowerCase() == "properties") {
+          let subProperties = findElementProperties(item.children[i])
+          properties = properties.concat(subProperties)
+        }
+      }
+      return properties
+    }
+    var addPropertiesNameToPropertyList = function (properties, propList) {
+      for (var i = 0; i < properties.length; i++) {
+        let prop = properties[i]
+        if (!propList.includes(prop.key)) {
+          propList.push(prop.key)
+        }
+      }
+    }
+
     var addChildToDiagram = function (child, diagram, offset) {
       let offsetFromParent = offset || {x:0,y:0}
       let relatedNode = child.getAttribute("archimateElement")
@@ -146,7 +173,9 @@ var createImportXMLService = function () {
         if (item.tagName.toLowerCase() == "element") {
           let elementId = item.id || item.getAttribute("identifier")
           let elementName = item.getAttribute("name") || findElementTypeInChildren(item.children,"name").innerHTML
-          targetArray.push({id:elementId, name:elementName, type:item.getAttribute("xsi:type"), layertype:type})
+          let properties = findElementProperties(item)
+          addPropertiesNameToPropertyList(properties, projectProperties)
+          targetArray.push({id:elementId, name:elementName, type:item.getAttribute("xsi:type"), layertype:type, properties:properties})
         }else if (item.tagName.toLowerCase() == "folder") {//if element is another folder
           parseAsElementFolder(item, projectProducts, type)// parse as a folder with the previous folder type
         }
@@ -307,7 +336,14 @@ var createImportXMLService = function () {
         //Loading elements
         newProjectFromXml.currentPbs.items.push({name: newProjectFromXMLName, uuid: genuuid()})
         projectProducts.forEach(function (item) {
-          newProjectFromXml.currentPbs.items.push({uuid:item.id, name:item.name})
+          let newProduct = {uuid:item.id, name:item.name}
+          if (item.properties) {
+            item.properties.forEach((prop, i) => {
+              let slug = ephHelpers.slugify(prop.key)
+              newProduct['custom_prop_'+slug]=prop.value
+            });
+          }
+          newProjectFromXml.currentPbs.items.push(newProduct)
           console.log(newProjectFromXml);
           newProjectFromXml.currentPbs.links.push({uuid:genuuid(),source:newProjectFromXml.currentPbs.items[0].uuid, target:item.id})
           if (true) {
@@ -340,6 +376,14 @@ var createImportXMLService = function () {
           if (true) {
             newProjectFromXml.metaLinks.items.push({uuid:genuuid(),type:"interfacesType", source:interfaceUuid, target:interfaceTypeTargetId})
           }
+        })
+
+        projectProperties.forEach(function (item) {
+          console.log(item);
+          let slug = ephHelpers.slugify(item)
+          let newCustomProp = {uuid:genuuid(),name:item,type:"text",linkedTo:"currentPbs",limitToGroups:undefined ,prop:'custom_prop_'+slug ,isVisible:true}
+          newProjectFromXml.extraFields.items.push(newCustomProp)
+
         })
 
         projectDiagrams.forEach(function (item) {
