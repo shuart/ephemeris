@@ -116,6 +116,28 @@ var createImportXMLService = function () {
         }
       }
     }
+    var addChildToDiagram = function (child, diagram, offset) {
+      let offsetFromParent = offset || {x:0,y:0}
+      let relatedNode = child.getAttribute("archimateElement")
+      let positionX = child.children[0].getAttribute("x")
+      let positionY = child.children[0].getAttribute("y")
+
+      let nodeInDiagram= {uuid:relatedNode, fx:parseInt(positionX)+ offsetFromParent.x, fy:parseInt(positionY)+offsetFromParent.y}
+      diagram.nodes.push(nodeInDiagram)
+      // let offsetFromParent = offset|| {x:0,y:0}
+      // let relatedNode = child.getAttribute("archimateElement")
+      // let positionX = child.children[0].getAttribute("x") + offsetFromParent.x
+      // let positionY = child.children[0].getAttribute("y") + offsetFromParent.y
+      //
+      // let nodeInDiagram= {uuid:relatedNode, fx:parseInt(positionX), fy:parseInt(positionY)}
+      // diagram.nodes.push(nodeInDiagram)
+      doForEach(child.children, function (item) {//check if there is a second level of children
+        if (item.tagName.toLowerCase() == "child" && item.getAttribute("xsi:type")== "archimate:DiagramObject") {
+          addChildToDiagram(item,diagram, {x:parseInt(positionX),y:parseInt(positionY)})
+        }
+      })
+
+    }
     //rules
     var parseAsElementFolder =function (folder, targetArray, folderType) {
       let type = folderType || folder.getAttribute('type')// if type is specified use it or find it
@@ -153,12 +175,8 @@ var createImportXMLService = function () {
           doForEach(item.children, function (child) {
             //if is a diagram object
             if (child.tagName.toLowerCase() == "child" && child.getAttribute("xsi:type")== "archimate:DiagramObject") {
-              let relatedNode = child.getAttribute("archimateElement")
-              let positionX = child.children[0].getAttribute("x")
-              let positionY = child.children[0].getAttribute("y")
+              addChildToDiagram(child,diagram)
 
-              let nodeInDiagram= {uuid:relatedNode, fx:parseInt(positionX), fy:parseInt(positionY)}
-              diagram.nodes.push(nodeInDiagram)
             }
           });
           doForEach(item.children, function (child) {
