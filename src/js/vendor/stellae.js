@@ -11,7 +11,7 @@ module.exports = stellae;
 'use strict';
 
 function stellae(_selector, _options) {
-    var base, scale, translate, container, graph, info,note,notes, node, nodes, relationship, relationshipOutline, relationshipOverlay, relationshipText, relationships, selector, simulation, svg,svgNotes, svgNodes, svgRelationships, svgScale, svgTranslate,
+    var base, scale, translate, container, graph, info,note,notes,group, groups, node, nodes, relationship, relationshipOutline, relationshipOverlay, relationshipText, relationships, selector, simulation, svg,svgGroups, svgNotes, svgNodes, svgRelationships, svgScale, svgTranslate,
         selection,
         mouseCurrentPosition,
         classes2colors = {},
@@ -53,6 +53,7 @@ function stellae(_selector, _options) {
     var linkModeStartNode = undefined;
     var linkModeEndNode = undefined;
     var currentSelectedNodes = undefined;
+    var currentGroupedNodes = undefined;
     var selectionModeActive = false;
     var optimizeRenderStatus = {text:false};
 
@@ -118,6 +119,74 @@ function stellae(_selector, _options) {
             options.onSelectionEnd();
         }
     };
+
+
+    function moveCurrentGroupedNodes(nodes, delta) {
+      console.log(nodes, delta);
+      for (var i = 0; i < nodes.length; i++) {
+        let currentNode = nodes[i]
+        if (!currentNode.fx) {
+          currentNode.fx = currentNode.x
+          currentNode.fy = currentNode.y
+        }
+        currentNode.fx += delta[0]
+        currentNode.fy += delta[1]
+      }
+    };
+    function checkGroupedNode(start, end, nodes) {
+      let selectedNodes = nodes.filter(e=>{
+        console.log("captured nodes");
+        console.log(e.x);
+        console.log(e.y);
+        console.log(start);
+        console.log(end);
+        console.log(e.y < start[1]);
+
+        return (e.x > start[0] && e.x < end[0] && e.y > start[1] && e.y < end[1] )
+        // return (e.x > start[0] && e.y < start[1] && e.x < end[0] && e.y > end[1] )
+        // return {uuid:e.uuid,fx : e.x,fy : e.y}
+      });
+      // return nodes[1]
+      return selectedNodes
+    };
+    function setGroupedNodeToMove(group, nodes) {
+      let selectedNodes = []
+      if (group.nodes) {
+        selectedNodes = nodes.filter(e=>{
+          return group.nodes.includes(e.id)
+        });
+      }
+      return selectedNodes
+    };
+    function checkIfNodesShouldBeAddedToGroup(nodes) {
+      //first remove node rom all groups
+      for (var i = 0; i < groups.length; i++) {
+        let g = groups[i]
+        for (var j = 0; j < nodes.length; j++) {
+          nodes[j]
+          if (g.nodes && g.nodes.includes(nodes[j].id)) {
+            g.nodes = g.nodes.filter(n=> n != nodes[j].id)
+          }
+        }
+      }
+      let groupFound = false
+      for (var i = 0; i < groups.length; i++) {
+        let g = groups[i]
+        let result = checkGroupedNode([g.x,g.y],[g.x+g.w,g.y+g.h], nodes)
+        for (var j = 0; j < result.length; j++) {
+          addNodeToGroup(result[j],g)
+          return true//when found stop to avoid adding to multiple overlapping group
+        }
+      }
+    };
+    function addNodeToGroup(node, group) {
+      if (!group.nodes) {
+        group.nodes = []
+      }
+      group.nodes.push(node.id)
+      console.log(group);
+    }
+
 
     var zoom = d3.zoom().on('zoom', function() {
 
@@ -223,13 +292,17 @@ function stellae(_selector, _options) {
                  .attr("visibility", "hidden");
 
 
+        svgGroups = svg.append('g')
+                     .attr('class', 'groups');
         svgRelationships = svg.append('g')
-                              .attr('class', 'relationships');
+                      .attr('class', 'relationships');
 
         svgNodes = svg.append('g')
                       .attr('class', 'nodes');
+
         svgNotes = svg.append('g')
                       .attr('class', 'notes');
+
         //markers
         base.append("svg:defs").append("svg:marker")
         .attr("id", "markerstriangle")
@@ -316,10 +389,15 @@ function stellae(_selector, _options) {
 
     function appendNoteToGraph() {
         var n = appendNote();
-
         appendLayoutToNote(n)
-
         return n;
+    }
+    function appendGroupToGraph() {
+        var g = appendGroup();
+        var gLayout = appendLayoutToGroup(g)
+        appendResizeToGroup(g, gLayout)
+        appendTextToGroup(g)
+        return g;
     }
     function appendNote() {
         return note.enter()
@@ -358,7 +436,116 @@ function stellae(_selector, _options) {
                               d3.select(this)
                                   .attr('transform', "translate(" + d.x  + ", " + d.y  + ")");
                             })
-                           .on('end', dragEnded));
+                           .on('end', function () {
+                             if (!d3.event.active) {
+                                 simulation.alphaTarget(0);
+                             }
+                           }));
+
+    }
+    function appendGroup() {
+        return group.enter()
+                   .append('g')
+                   .attr('class', "group")
+                   .attr('transform', function (d) {
+                     return "translate(" + d.x + ", " + d.y + ")"
+                   })
+                   .on('click', function(d) {//catch dblclick on canvas
+                       if (typeof options.onGroupClick === 'function') {
+
+                       }else {
+                         var newName = prompt("Content", d.content)
+                         if (newName == "") {
+                           if (confirm("Remove Group?")) {
+                             groups=groups.filter(n=>n.uuid!= d.uuid)//remove the group from data
+                             d3.select(this).remove()//remove the linked element
+                           }
+                         }else if (newName) {
+                           d.content= newName
+                           d3.select(this).select('text').text(d.content);
+                         }
+                       }
+                   })
+                   .call(d3.drag()
+                           .on('start', function (d) {
+                             if (!d3.event.active && !linkMode) {
+                                currentGroupedNodes = setGroupedNodeToMove(d, nodes)
+                                 simulation.alphaTarget(0.3).restart();
+                             }
+                           })
+                           .on('drag', function(d) {
+                              d.x += d3.event.dx;
+                              d.y += d3.event.dy;
+                              d3.select(this)
+                                  .attr('transform', "translate(" + d.x  + ", " + d.y  + ")");
+                              //move contained node
+                              console.log(currentGroupedNodes);
+                              moveCurrentGroupedNodes(currentGroupedNodes, [d3.event.dx,d3.event.dy])
+                            })
+                           .on('end', function () {
+                             if (!d3.event.active) {
+                                 simulation.alphaTarget(0);
+                             }
+                           }));
+
+    }
+    function appendLayoutToGroup(group) {
+        return group.append('rect')
+                    .attr('class', "groupLayout")
+                   .attr("fill", "#2ab6ab")
+                   .attr("rx", "4")
+                   .style("opacity", .1)
+                   // .attr("x", 10)
+                   // .attr("y", 10)
+                   .attr("width", function (d) {
+                     return d.w
+                   })
+                   .attr("height", function (d) {
+                     return d.h
+                   })
+    }
+    function appendTextToGroup(group) {
+        return group.append('text')
+                   .attr("fill", "black")
+                   .attr('transform', "translate(5, 15)")
+                   .attr('font-weight', "bold")
+                   .text(function (d) {
+                     return d.content || "Group"
+                   });
+    }
+    function appendResizeToGroup(group, layout) {
+        return group.append('circle')
+                    .attr("fill", "grey")
+                    .attr("r", 5)
+                    .attr('transform', function(d){
+                      return "translate(" +(d.w) + ", " + (d.h)  + ")"
+                    })
+                    .on('click', function(d) {//catch dblclick on canvas
+                        console.log('resize');
+                        console.log(layout);
+                    })
+                    .call(d3.drag()
+                            // .on('start', dragStarted)
+                            .on('drag', function(d) {
+
+                                // move helper
+                                if ((d.w + d3.event.dx>0) && (d.h + d3.event.dy>0)) {// prevent negative group size
+                                  d.w += d3.event.dx;
+                                  d.h += d3.event.dy;
+                                  d3.select(this)
+                                      .attr('transform', "translate(" + d.w + ", " + d.h + ")");
+                                  //change group size
+                                  d3.select(this.parentNode).select('.groupLayout')
+                                      .attr("width", d.w)
+                                      .attr("height", d.h)
+                                }
+
+                             })
+                            .on('end', function () {
+                              if (!d3.event.active) {
+                                  simulation.alphaTarget(0);
+                              }
+                            }));
 
     }
     function appendLayoutToNote(note) {
@@ -369,7 +556,7 @@ function stellae(_selector, _options) {
                    // .attr("width", 50)
                    // .attr("height", 100)
                    .text(function (d) {
-                     return d.content
+                     return d.content || 'group'
                    });
     }
 
@@ -831,7 +1018,7 @@ function stellae(_selector, _options) {
         if (!d3.event.active) {
             simulation.alphaTarget(0);
         }
-
+        checkIfNodesShouldBeAddedToGroup([d])
         if (typeof options.onNodeDragEnd === 'function') {
             options.onNodeDragEnd(d);
         }
@@ -1101,6 +1288,7 @@ function stellae(_selector, _options) {
         nodes = []; //set the base elements array
         relationships = [];
         notes = [];
+        groups = [];
 
         updateWithCustomData(options.customData);
     }
@@ -1499,11 +1687,11 @@ function stellae(_selector, _options) {
     }
 
     function updateWithD3Data(d3Data) {
-      console.log(d3Data);
-        updateNodesAndRelationships(d3Data.nodes, d3Data.relationships);
+
         //check for extra Helper elements
-        console.log(d3Data.notes);
-        updateHelpers(d3Data.notes)
+        updateHelpers(d3Data.notes,d3Data.groups)
+        //start display cycle of nodes and relations
+        updateNodesAndRelationships(d3Data.nodes, d3Data.relationships);
     }
 
     function updateWithCustomData(customData) {
@@ -1542,6 +1730,14 @@ function stellae(_selector, _options) {
         var noteEnter = appendNoteToGraph();
         note = noteEnter.merge(note);
     }
+    function updateGroups(n) {
+        Array.prototype.push.apply(groups, n);
+
+        group = svgGroups.selectAll('.group')
+                       .data(groups, function(d) { return d.id; });
+        var groupEnter = appendGroupToGraph();
+        group = groupEnter.merge(group);
+    }
 
     function updateNodesAndRelationships(n, r) {
       if (options.groupLabels ) {
@@ -1562,8 +1758,10 @@ function stellae(_selector, _options) {
         simulation.force('link').links(relationships);
       }
     }
-    function updateHelpers(n) {
+    function updateHelpers(n,g) {
+      // g = [{uuid:"54646", id:'55645646', x:78, y:45, h:88, w:66}]
       updateNotes(n);
+      updateGroups(g);
     }
 
 
@@ -1684,7 +1882,7 @@ function stellae(_selector, _options) {
         return exportedData
     }
     function exportHelpers() {
-      var exportedData = {notes:notes}
+      var exportedData = {notes:notes, groups:groups}
       return exportedData
     }
     function importNodesPosition() {

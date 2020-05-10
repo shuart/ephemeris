@@ -23,8 +23,8 @@ var createRelationsView = function () {
   var nodeWalkModeActive = false;
   //What to show
   var hiddenItemsFromSideView = [];
-  var graphHelpersDefault = {notes:[]};
-  var graphHelpers = {notes:[]};
+  var graphHelpersDefault = {notes:[], groups:[]};
+  var graphHelpers = {notes:[], groups:[]};
   var showVisibilityMenu = false;
   var showVisibilityMenuSnapshot = false;
   var showVisibilityAddMenu = false;
@@ -421,6 +421,17 @@ var createRelationsView = function () {
       })
       if (popup && popup.result) {
         graphHelpers.notes.push({uuid:genuuid(),x:0, y:0, content:popup.result})
+        update()
+      }
+    }, container)
+    bind(".action_relations_add_group","click",async (e)=>{
+
+      var popup= await createPromptPopup({
+        title:"Add a new group",
+        fields:{ type:"input",id:"groupName" ,label:"Group name", placeholder:"Content" }
+      })
+      if (popup && popup.result) {
+        graphHelpers.groups.push({uuid:genuuid(),x:0, y:0,h:100, w:200, nodes:[], content:popup.result})
         update()
       }
     }, container)
@@ -1893,6 +1904,9 @@ var createRelationsView = function () {
         <button class="ui basic mini button action_relations_add_note" data-tooltip="add a Note" data-position="bottom center">
           <i class="heading icon action_relations_add_note"></i>
         </button>
+        <button class="ui basic mini button action_relations_add_group" data-tooltip="add a group" data-position="bottom center">
+          <i class="object group outline icon action_relations_add_group"></i>
+        </button>
         <button class=" ui basic mini button action_relations_show_current_matrix" data-tooltip="interface matrix" data-position="bottom center">
           <i class="table icon action_relations_show_current_matrix"></i>
         </button>
@@ -2112,6 +2126,10 @@ var createRelationsView = function () {
         e.id=e.uuid;
         return e
       }),
+      groups: data.groups.map((e) => {
+        e.id=e.uuid;
+        return e
+      }),
     }
   }
 
@@ -2119,6 +2137,7 @@ var createRelationsView = function () {
 
     //add the current Helpers to the data
     data.notes=graphHelpers.notes;
+    data.groups=graphHelpers.groups;
 
     //prepare the data in the right format
 
