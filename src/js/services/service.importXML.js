@@ -198,7 +198,7 @@ var createImportXMLService = function () {
       doForEach(folder.children, function (item) {
         //get diagrams infos
         if (item.tagName.toLowerCase() == "element") {
-          let diagram = {name:item.getAttribute('name'), uuid:item.getAttribute('id'), nodes:[], notes:[]}
+          let diagram = {name:item.getAttribute('name'), uuid:item.getAttribute('id'), nodes:[], notes:[], groups:[]}
           let elementId = item.id || item.getAttribute("identifier")
           //get diagrams elements
           doForEach(item.children, function (child) {
@@ -225,6 +225,34 @@ var createImportXMLService = function () {
               let note= {uuid:id, x:parseInt(positionX), y:parseInt(positionY), content:content}
               diagram.notes.push(note)
             }
+              //if is a group
+              if (child.tagName.toLowerCase() == "child" && child.getAttribute("xsi:type")== "archimate:Group") {
+                let id = child.getAttribute("id")
+                let positionX = child.children[0].getAttribute("x")
+                let positionY = child.children[0].getAttribute("y")
+                let height = child.children[0].getAttribute("height")
+                let width = child.children[0].getAttribute("width")
+                let content =child.getAttribute("name")
+                let relatedNodes = []
+                //get all the child IDs
+                for (var i = 0; i < child.children.length; i++) {
+                  let c = child.children[i]
+                  if (c.getAttribute("xsi:type")== "archimate:DiagramObject") {
+                    relatedNodes.push(c.getAttribute("archimateElement"))
+                  }
+                }
+                //and add all the childs to the diagram
+                doForEach(child.children, function (item) {//check if there is a second level of children
+                  if (item.tagName.toLowerCase() == "child" && item.getAttribute("xsi:type")== "archimate:DiagramObject") {
+                    addChildToDiagram(item,diagram, {x:parseInt(positionX),y:parseInt(positionY)})
+                  }
+                })
+
+
+
+                let group= {uuid:id, x:parseInt(positionX), y:parseInt(positionY),h:parseInt(height), w:parseInt(width), nodes:relatedNodes,content:content}
+                diagram.groups.push(group)
+              }
           });
           // targetArray.push({id:elementId, name:item.getAttribute("xsi:type"), source:item.getAttribute("source"), target:item.getAttribute("target")})
           targetArray.push(diagram)
@@ -411,7 +439,7 @@ var createImportXMLService = function () {
             elementVisibility: deepCopy(elementVisibility),
             hiddenItems:[],
             nodesPositions:item.nodes,
-            graphHelpers:{notes:item.notes}
+            graphHelpers:{notes:item.notes, groups:item.groups}
           }
           newProjectFromXml.graphs.items.push(newGraph)
         })
