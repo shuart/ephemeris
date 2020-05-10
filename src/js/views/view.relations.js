@@ -23,6 +23,8 @@ var createRelationsView = function () {
   var nodeWalkModeActive = false;
   //What to show
   var hiddenItemsFromSideView = [];
+  var graphHelpersDefault = {notes:[], groups:[]};
+  var graphHelpers = {notes:[], groups:[]};
   var showVisibilityMenu = false;
   var showVisibilityMenuSnapshot = false;
   var showVisibilityAddMenu = false;
@@ -411,6 +413,28 @@ var createRelationsView = function () {
 
 
     }, container)
+    bind(".action_relations_add_note","click",async (e)=>{
+
+      var popup= await createPromptPopup({
+        title:"Add a new note",
+        fields:{ type:"input",id:"noteName" ,label:"Note name", placeholder:"Content" }
+      })
+      if (popup && popup.result) {
+        graphHelpers.notes.push({uuid:genuuid(),x:0, y:0, content:popup.result})
+        update()
+      }
+    }, container)
+    bind(".action_relations_add_group","click",async (e)=>{
+
+      var popup= await createPromptPopup({
+        title:"Add a new group",
+        fields:{ type:"input",id:"groupName" ,label:"Group name", placeholder:"Content" }
+      })
+      if (popup && popup.result) {
+        graphHelpers.groups.push({uuid:genuuid(),x:0, y:0,h:100, w:200, nodes:[], content:popup.result})
+        update()
+      }
+    }, container)
     bind(".action_interface_set_new_metalink_mode","click",(e)=>{
       lastSelectedNode = undefined;
       previousSelectedNode = undefined;
@@ -754,14 +778,14 @@ var createRelationsView = function () {
         svgAsPngUri(container.querySelector('.stellae-graph'),{scale: 0.1}).then(function (uri) {
           let snapId = uuid()
           resizeCropImage(uri, function (uri) {
-            let graphItem = {uuid:snapId, preview:uri, view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+            let graphItem = {uuid:snapId, preview:uri, view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all"), graphHelpers:activeGraph.exportHelpers()}
             push(act.add("graphs", graphItem))
             setSnapshot(snapId)
           })
         })
       }else {
         let snapId = uuid()
-        let graphItem = {uuid:genuuid(), view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+        let graphItem = {uuid:genuuid(), view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all"), graphHelpers:activeGraph.exportHelpers()}
         push(act.add("graphs", graphItem))
         setSnapshot(snapId)
       }
@@ -783,7 +807,7 @@ var createRelationsView = function () {
           svgAsPngUri(container.querySelector('.stellae-graph'),{scale: 0.1}).then(function (uri) {
             resizeCropImage(uri, function (uri) {
               let snapId = uuid()
-              let newGraphItem = {uuid:snapId,preview:uri, view:activeMode, name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+              let newGraphItem = {uuid:snapId,preview:uri, view:activeMode, name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all"), graphHelpers:activeGraph.exportHelpers()}
               push(act.remove("graphs", {uuid:e.target.dataset.id}))
               push(act.add("graphs", newGraphItem))
               setSnapshot(snapId)
@@ -791,7 +815,7 @@ var createRelationsView = function () {
           })
         }else {
           let snapId = uuid()
-          let newGraphItem = {uuid:snapId,view:activeMode, name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+          let newGraphItem = {uuid:snapId,view:activeMode, name:graph.name, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all"), graphHelpers:activeGraph.exportHelpers()}
           push(act.remove("graphs", {uuid:e.target.dataset.id}))
           push(act.add("graphs", newGraphItem))
           setSnapshot(snapId)
@@ -1747,6 +1771,10 @@ var createRelationsView = function () {
   }
 
   var setActive =async function (options) {
+    //clean the graph helpers
+    graphHelpers = deepCopy(graphHelpersDefault)
+
+    //load element depending of the options
     if (options && options.param) {
       if (options.param.context && options.param.context == "extract") {
         elementVisibility = {
@@ -1872,6 +1900,12 @@ var createRelationsView = function () {
         </div>
         <button class="ui basic mini button action_relations_remove_nodes" data-tooltip="Delete Selected" data-position="bottom center">
           <i class="trash icon action_relations_remove_nodes"></i>
+        </button>
+        <button class="ui basic mini button action_relations_add_note" data-tooltip="add a Note" data-position="bottom center">
+          <i class="heading icon action_relations_add_note"></i>
+        </button>
+        <button class="ui basic mini button action_relations_add_group" data-tooltip="add a group" data-position="bottom center">
+          <i class="object group outline icon action_relations_add_group"></i>
         </button>
         <button class=" ui basic mini button action_relations_show_current_matrix" data-tooltip="interface matrix" data-position="bottom center">
           <i class="table icon action_relations_show_current_matrix"></i>
@@ -2087,14 +2121,30 @@ var createRelationsView = function () {
                   from: 1470002400000
               }
           return e
-        })
+        }),
+      notes: data.notes.map((e) => {
+        e.id=e.uuid;
+        return e
+      }),
+      groups: data.groups.map((e) => {
+        e.id=e.uuid;
+        return e
+      }),
     }
   }
 
   var renderforcesTree = function (data) {
 
+    //add the current Helpers to the data
+    data.notes=graphHelpers.notes;
+    data.groups=graphHelpers.groups;
+
+    //prepare the data in the right format
+
     var d3format = dataToD3Format(data)
     console.log(data);
+
+    //set up the graph
     activeGraph = new stellae('.interfaceGraph', {
       highlight: [
           {
@@ -2164,6 +2214,8 @@ var createRelationsView = function () {
                                 }
                             ],
                             "relationships": [
+                            ],
+                            "notes": [
                             ]
                         }
                     }
@@ -2186,7 +2238,7 @@ var createRelationsView = function () {
           //   query.currentProject().graphs = {}
           //   query.currentProject().graphs.items =[]
           // }
-          let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
+          let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all"), graphHelpers:activeGraph.exportHelpers()}
           //append to graph DB
           lastFixedNodes = graphItem
         }
@@ -2263,6 +2315,7 @@ var createRelationsView = function () {
       startTransform:currentGraphTransformation,
       zoomFit: false
   });
+  // console.log(d3format);
   activeGraph.updateWithD3Data(d3format)
   }
 
@@ -2358,7 +2411,7 @@ var createRelationsView = function () {
   function setGraphToFixed() {
     if (!fixedValues) {
       let snapId = "wipgraph484622464"
-      let newGraphItem = {uuid:snapId,view:activeMode, name:"0-Current WIP", groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all")}
+      let newGraphItem = {uuid:snapId,view:activeMode, name:"0-Current WIP", groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all"), graphHelpers:activeGraph.exportHelpers()}
 
       push(act.remove("graphs", {uuid:snapId}))
       push(act.add("graphs", newGraphItem))
@@ -2394,6 +2447,11 @@ var createRelationsView = function () {
     if (graph.elementVisibility) {
       groupElements= deepCopy(graph.groupElements);//prevent memory space linking between graph and view TODO investigate why needed here and in save
       elementVisibility= deepCopy(graph.elementVisibility);
+    }
+    if (graph.graphHelpers) {
+      graphHelpers = deepCopy(graph.graphHelpers);
+    }else {
+      graphHelpers = deepCopy(graphHelpersDefault)
     }
     currentSnapshot = uuid
     update()
