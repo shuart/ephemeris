@@ -161,7 +161,8 @@ var createUnifiedView = function (targetSelector) {
       })
     })
     connect(".action_unified_list_select_item_assigned","click",async (e)=>{
-      var allProjects = await query.items("projects")
+      var allProjects = await query.allRelatedProjects({uuid:1, name:1, reference:1, actions:1, metaLinks:1, stakeholders:1, description:1, tags:1})
+
 
       var metalinkType = e.target.dataset.prop;
       var sourceTriggerId = e.target.dataset.id;
@@ -215,7 +216,8 @@ var createUnifiedView = function (targetSelector) {
         // },
         onChangeSelect: (ev)=>{
           var changeProp = async function (sourceTriggerId) {
-            var allProjects = await query.items("projects")
+            var allProjects = await query.allRelatedProjects({uuid:1, name:1, reference:1, actions:1, metaLinks:1, stakeholders:1, description:1, tags:1})
+            
             //update store
             var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
             var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
@@ -283,7 +285,8 @@ var createUnifiedView = function (targetSelector) {
   }
 
   var renderList = async function (container) {
-    let allProjects = await query.items("projects")
+    let allProjects = await query.allRelatedProjects({uuid:1, name:1, reference:1, actions:1, metaLinks:1, stakeholders:1, description:1, tags:1})
+
 
     if (sortBy=="projects") {
       if (showKanban) {
