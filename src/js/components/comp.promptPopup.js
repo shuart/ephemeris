@@ -95,6 +95,9 @@ var createPromptPopupView = function (inputData) {
       if ("cancelOk") {
         return theme.cancelOkButtons()
       }
+      if ("cancel") {
+        return theme.cancelButtons()
+      }
     },
     cancelOkButtons: function () {
       return `
@@ -102,6 +105,10 @@ var createPromptPopupView = function (inputData) {
         <button class="ui basic  button action_prompt_cancel">Cancel</button>
         <button class="ui teal button action_prompt_ok">Ok</button>
       </div>`
+    },
+    cancelButtons: function () {
+      return `
+        <button class="ui basic  button action_prompt_cancel">Cancel</button>`
     },
     iconHeader: function (data) {
       if (data.iconHeader) {
