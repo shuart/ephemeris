@@ -2342,7 +2342,7 @@ var createRelationsView = function () {
     }else if (nodeTypes[0] =="Requirements" && nodeTypes[1] == "Pbs") {
       push(act.add("metaLinks",{type:"originNeed", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
     }else if (nodeTypes[0] =="Functions" && nodeTypes[1] == "Requirements") {
-      push(act.add("metaLinks",{type:"originNeed", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
+      push(act.add("metaLinks",{type:"originNeed", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
     }else if (nodeTypes[0] =="Requirements" && nodeTypes[1] == "Functions") {
       push(act.add("metaLinks",{type:"originNeed", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
     }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "Functions") {
