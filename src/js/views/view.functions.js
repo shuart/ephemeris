@@ -66,11 +66,16 @@ var createFunctionsView = function () {
         idProp:"uuid",
         allowBatchActions:true,
         onEditItem: (ev)=>{
-          console.log("Edit");
-          var newValue = prompt("Edit Item",ev.target.dataset.value)
-          if (newValue) {
-            push(act.edit("functions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-          }
+          createInputPopup({
+            originalData:ev.target.dataset.value || "",
+            onSave:e =>{
+              push(act.edit("functions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:e}))
+            },
+            onClose:e =>{
+              push(act.edit("functions", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:e}))
+            }
+          })
+
         },
         onEditChoiceItem: (ev)=>{
           showUpdateLinksService.show(ev,"functions")
