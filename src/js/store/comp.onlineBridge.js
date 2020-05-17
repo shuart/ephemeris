@@ -12,15 +12,22 @@ var clientIsConfigured = false;
 var init = function () {
 
 }
-var connect = function (serverAdress) {
-  if (!clientIsConfigured && serverAdress ) {
+var connect = function (serverAdress, socketPath) {
+  if (!clientIsConfigured && serverAdress && serverAdress != "") {
     // Register socket.io to talk to our server
     // var socket = io('http://localhost:3030');
     if (!serverAdress) {
       alert("bridgeServer not found. Fallback on local server if available")
     }
     serverAdress = serverAdress ||'http://localhost:3030'
-    var socket = io(serverAdress);
+    var socket = undefined;
+    if (socketPath) {
+      socket = io(serverAdress, {path: socketPath});
+    }else {
+      socket = io(serverAdress);
+    }
+    // socket = io(app.store.userData.info.userOnlineServer, {path: app.store.userData.info.userOnlineSocket || "socket.io"});
+
     client.configure(feathers.socketio(socket));
     // Set up the Feathers authentication client
     client.configure(feathers.authentication());

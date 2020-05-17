@@ -47,7 +47,7 @@ var createPromptPopupView = function (inputData) {
         template= `
         <div style="width:100%; padding-top: 15px;" class="field input ">
           <label ${data.secondary?"style='opacity:0.5;'":""} >${data.label}${!data.optional?"<span style='opacity:0.5;'>*<span>":""}</label>
-          <input type="text" class="${data.secondary?"transparent":""} form_input_${data.id}" placeholder="${data.placeholder}">
+          <input type="${data.isPassword?"password":"text"}" class="${data.secondary?"transparent":""} form_input_${data.id}" placeholder="${data.placeholder}">
         </div>
         `
       }

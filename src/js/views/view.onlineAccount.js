@@ -97,15 +97,32 @@ var createOnlineAccountView = function ({
   }
   var connections =function () {
 
-    connect(".action_online_account_edit_item","click",(e)=>{
+    connect(".action_online_account_edit_item","click",async (e)=>{
       console.log("Edit");
-      var newValue = prompt("Edit Item",e.target.dataset.value)
-      if (newValue) {
-        //TODO move to reducer
-        app.store.userData.info[e.target.dataset.prop] = newValue
-        dbConnector.setUserInfo(app.state.currentUser , e.target.dataset.prop, newValue)
+
+
+        if (e.target.dataset.prop == "onlineAccountPassword") {
+          var popup= await createPromptPopup({
+            title:"Set your online account",
+            imageHeader:"./img/obs.png",
+            fields:{ type:"input",id:"oapass" ,label:"Password", isPassword:true }
+          })
+          if (popup && popup.result) {
+            app.store.userData.info[e.target.dataset.prop] = popup.result
+            dbConnector.setUserInfo(app.state.currentUser , e.target.dataset.prop, popup.result)
+          }
+
+        }else {
+          var newValue = prompt("Edit Item",e.target.dataset.value)
+          if (newValue) {
+          //TODO move to reducer
+            app.store.userData.info[e.target.dataset.prop] = newValue
+            dbConnector.setUserInfo(app.state.currentUser , e.target.dataset.prop, newValue)
+          }
+        }
+
         // push(act.edit("actions",{project:e.target.dataset.project, uuid:e.target.dataset.id, prop:e.target.dataset.prop, value:newValue}))
-      }
+
       sourceOccElement.remove()
       update()
     })
@@ -119,7 +136,7 @@ var createOnlineAccountView = function ({
       let i = deepCopy(dataSourceStore)
       console.log('connecting');
       let user = {email:i.mail, password:i.onlineAccountPassword}
-      await onlineBridge.connect(app.store.userData.info.bridgeServer)
+      await onlineBridge.connect(app.store.userData.info.bridgeServer, app.store.userData.info.socketPath)
       await onlineBridge.connectToOnlineAccount(user)
 
       sourceOccElement.remove()
@@ -231,6 +248,7 @@ var createOnlineAccountView = function ({
     if (!i.userUuid || !i.mail  || !i.onlineAccountPassword) {
       i.mail =i.mail || 'Set your mail'
       i.bridgeServer =i.bridgeServer || 'Set your server adress'
+      i.socketPath =i.socketPath || 'App socket (optional)'
       i.onlineAccountPassword =i.onlineAccountPassword || 'Set your password'
     }
 
@@ -243,6 +261,13 @@ var createOnlineAccountView = function ({
         <h3 class="header">Server</h3>
         ${i.bridgeServer}
         <i data-prop="bridgeServer" data-value="${i.bridgeServer}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
+
+        <h3 class="header">Server</h3>
+        ${i.socketPath}
+        <i data-prop="socketPath" data-value="${i.socketPath}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
+
+
+
         <div class="ui divider"></div>
 
         <h3 class="header">Mail</h3>
@@ -250,9 +275,9 @@ var createOnlineAccountView = function ({
         <i data-prop="mail" data-value="${i.mail}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
         <div class="ui divider"></div>
 
-        <h3 class="header">Last name</h3>
-        ${i.onlineAccountPassword}
-        <i data-prop="onlineAccountPassword" data-value="${i.onlineAccountPassword}" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
+        <h3 class="header">Password</h3>
+        ***********
+        <i data-prop="onlineAccountPassword" data-value="" data-id="${i.userUuid}" class="edit icon action_online_account_edit_item" style="opacity:0.2"></i>
         <div class="ui divider"></div>
 
         <button class="ui primary button action_online_account_login">
