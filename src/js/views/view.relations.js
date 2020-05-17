@@ -431,8 +431,15 @@ var createRelationsView = function () {
         fields:{ type:"input",id:"groupName" ,label:"Group name", placeholder:"Content" }
       })
       if (popup && popup.result) {
-        graphHelpers.groups.push({uuid:genuuid(),x:0, y:0,h:100, w:200, nodes:[], content:popup.result})
-        update()
+        let selectedNodes = activeGraph.getSelectedNodes()
+        console.log(selectedNodes);
+        if (selectedNodes && selectedNodes[0] && !selectedNodes[1]) {
+          graphHelpers.groups.push({uuid:genuuid(),x:selectedNodes[0].fx, y:selectedNodes[0].fy,h:100, w:200, master:selectedNodes[0].uuid, nodes:[], content:popup.result})
+          update()
+        }else {
+          graphHelpers.groups.push({uuid:genuuid(),x:0, y:0,h:100, w:200, nodes:[], content:popup.result})
+          update()
+        }
       }
     }, container)
     bind(".action_interface_set_new_metalink_mode","click",(e)=>{

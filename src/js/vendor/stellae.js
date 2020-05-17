@@ -53,6 +53,7 @@ function stellae(_selector, _options) {
     var linkModeStartNode = undefined;
     var linkModeEndNode = undefined;
     var currentSelectedNodes = undefined;
+    var currentLinkedSubgroup = undefined;
     var currentGroupedNodes = undefined;
     var selectionModeActive = false;
     var optimizeRenderStatus = {text:false};
@@ -177,6 +178,22 @@ function stellae(_selector, _options) {
           addNodeToGroup(result[j],g)
           return true//when found stop to avoid adding to multiple overlapping group
         }
+      }
+    };
+    function moveCurrentLinkedSubgroup(groups, delta) {
+      //first remove node rom all groups
+      let groupFound = false
+      for (var i = 0; i < groups.length; i++) {
+        let g = groups[i]
+        console.log(delta);
+        g.x +=delta[0]
+        g.y +=delta[1]
+        svg.selectAll(".group").filter(d=>d.uuid ==g.uuid)
+            .attr('transform', "translate(" + g.x  + ", " + g.y  + ")");
+            //move also asociate nodes
+            currentGroupedNodes = setGroupedNodeToMove(g, nodes)
+            moveCurrentGroupedNodes(currentGroupedNodes, delta)
+            currentGroupedNodes=undefined;
       }
     };
     function addNodeToGroup(node, group) {
@@ -481,6 +498,11 @@ function stellae(_selector, _options) {
                               //move contained node
                               console.log(currentGroupedNodes);
                               moveCurrentGroupedNodes(currentGroupedNodes, [d3.event.dx,d3.event.dy])
+
+                              if (d.master) {//move master node too
+                                let masters = nodes.filter(e=>d.master == e.id);
+                                moveCurrentGroupedNodes(masters, [d3.event.dx,d3.event.dy])
+                              }
                             })
                            .on('end', function () {
                              if (!d3.event.active) {
@@ -1078,6 +1100,14 @@ function stellae(_selector, _options) {
                               .attr("x2", 10)     // x position of the second end of the line
                               .attr("y2", 10);
         }
+        //check group to be moved
+        currentLinkedSubgroup = [];
+        for (var i = 0; i < groups.length; i++) {
+          let g = groups[i]
+          if (g.master == d.uuid){
+            currentLinkedSubgroup.push(g)
+          }
+        }
     }
 
     function extend(obj1, obj2) {
@@ -1474,6 +1504,14 @@ function stellae(_selector, _options) {
         }else {
           d.fx = d3.event.x;//move only main targeted node
           d.fy = d3.event.y;
+        }
+        //check if a group is a slave of this node and move it
+        if (currentLinkedSubgroup) {
+          let delta = [
+            d3.event.dx,
+            d3.event.dy
+          ]
+          moveCurrentLinkedSubgroup(currentLinkedSubgroup, delta)
         }
 
         if (currentSelectedNodes && !d3.event.sourceEvent.ctrlKey) {//remove selection on move without control
