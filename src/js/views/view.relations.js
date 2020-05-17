@@ -1800,6 +1800,30 @@ var createRelationsView = function () {
           }
         }, 1900);
       }
+      if (options.param.context && options.param.context == "extractDirect") {
+        elementVisibility = {
+          functions : true,
+          requirements : true,
+          stakeholders : true,
+          physicalSpaces : true,
+          workPackages : true,
+          metaLinks : true,
+          interfaces : true,
+          compose : true
+        }
+        objectIsActive = true;
+        fixedValues = false
+        hiddenItemsFromSideView= []
+        currentSnapshot = undefined
+        await updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source
+        isolateSelectedNodesWithInterfaces([{uuid:options.param.uuid}], false)
+        //fix graph after a few seconds
+        setTimeout(function () {
+          if (activeGraph) {
+            setGraphToFixed()
+          }
+        }, 1900);
+      }
       if (options.param.context && options.param.context == "quickstart") {
         objectIsActive = true;
         await updateItemsToDisplayAndRelations(elementVisibility)//populate or update the current module copy of the source

@@ -51,6 +51,15 @@ var createPromptPopupView = function (inputData) {
         </div>
         `
       }
+      if (data.type == "button") {
+        template= `
+        <div style="width:100%; padding-top: 15px;" class="field input ">
+          <button class="ui fluid teal button button_input_${data.id}">
+            ${data.label}
+          </button>
+        </div>
+        `
+      }
       if (data.type == "select") {
         template= `
         <div class="ui multiple dropdown form_select_${data.id}">
@@ -92,10 +101,10 @@ var createPromptPopupView = function (inputData) {
         </div>`
     },
     buttons:function (type) {
-      if ("cancelOk") {
+      if (type == "cancelOk") {
         return theme.cancelOkButtons()
       }
-      if ("cancel") {
+      if (type == "cancel") {
         return theme.cancelButtons()
       }
     },
@@ -108,7 +117,7 @@ var createPromptPopupView = function (inputData) {
     },
     cancelButtons: function () {
       return `
-        <button class="ui basic  button action_prompt_cancel">Cancel</button>`
+        <button class="ui basic fluid button button action_prompt_cancel">Cancel</button>`
     },
     iconHeader: function (data) {
       if (data.iconHeader) {
@@ -271,6 +280,7 @@ var createPromptPopupView = function (inputData) {
 
 
     setupDropdowns(inputData.fields)
+    setupButtons(inputData.fields)
   }
 
   var setupDropdowns = function (fields) {
@@ -289,6 +299,25 @@ var createPromptPopupView = function (inputData) {
       if (item.type=="select") {
         $('.form_select_'+item.id)
           .dropdown('destroy')
+      }
+    });
+  }
+
+  var setupButtons = function (fields) {
+    fields.forEach((item, i) => {
+      if (item.type=="button") {
+        let button= document.querySelector(".button_input_"+item.id)
+        if (item.onClick) {
+          button.addEventListener("click", function () {
+            item.onClick(item.value)
+            closePopup()
+          })
+        }else if (item.value) {
+          button.addEventListener("click", function () {
+            inputData.resolvePromise( {result:element.value})
+            closePopup()
+          })
+        }
       }
     });
   }

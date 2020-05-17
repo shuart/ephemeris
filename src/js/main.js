@@ -123,8 +123,23 @@ var reparse = false;
   connect(".action_toogle_diag_relations","click",(e)=>{
     pageManager.setActivePage("relations")
   })
-  connect(".action_toogle_diag_relations_options","click",(e)=>{
-    pageManager.setActivePage("relations", {param:{context:"extract", uuid:e.target.dataset.id}})
+  connect(".action_toogle_diag_relations_options","click",async (e)=>{
+
+    var popup= await createPromptPopup({
+      title:"Show related items in a graph",
+      iconHeader:"sitemap",
+      fields:[
+        { type:"button",id:"directRel" ,label:"Direct relations", onClick:v=>{
+          pageManager.setActivePage("relations", {param:{context:"extractDirect", uuid:e.target.dataset.id}})
+        } },
+        { type:"button",id:"allRel" ,label:"All relations", onClick:v=>{
+          pageManager.setActivePage("relations", {param:{context:"extract", uuid:e.target.dataset.id}})
+        } }
+      ],
+      confirmationType:"cancel"
+    })
+
+
   })
   connect(".action_toogle_diag_relations_quickstart","click",(e)=>{
     pageManager.setActivePage("relations", {param:{context:"quickstart"}})
