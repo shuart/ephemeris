@@ -54,7 +54,7 @@ var createPromptPopupView = function (inputData) {
       if (data.type == "button") {
         template= `
         <div style="width:100%; padding-top: 15px;" class="field input ">
-          <button class="ui fluid teal button button_input_${data.id}">
+          <button style="${data.customColor?"background-color:"+data.customColor+";":""}" class="ui fluid teal button button_input_${data.id}">
             ${data.label}
           </button>
         </div>
@@ -226,7 +226,7 @@ var createPromptPopupView = function (inputData) {
 
     container.style.position = "relative"
     container.style.height = "100%"
-    container.style.overflow = "visible"
+    container.style.overflow = "auto"
     container.classList = "fieldsArea"
 
     containerBottom = document.createElement('div');

@@ -617,7 +617,8 @@ function stellae(_selector, _options) {
                        }
 
                        if (typeof options.onNodeClick === 'function') {
-                           options.onNodeClick(d);
+                          // var xy = d3.mouse(base.node()); TODO not usefull remove
+                           options.onNodeClick(d,{canvasPosition: undefined});
                        }
                    })
                    .on('dblclick', function(d) {

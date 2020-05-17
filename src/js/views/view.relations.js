@@ -77,6 +77,7 @@ var createRelationsView = function () {
   var relationsTree = {}
   var relationsTargetTree = {}
   var interfacesToTypesMapping = {}
+  var nodeWalkType="menu"
 
   var sideListe = undefined
 
@@ -267,6 +268,15 @@ var createRelationsView = function () {
     bind(".action_relations_toogle_show_metalinks","click",(e)=>{ elementVisibility.metaLinks = !elementVisibility.metaLinks; update(); }, container)
     bind(".action_relations_toogle_show_interfaces","click",(e)=>{ elementVisibility.interfaces = !elementVisibility.interfaces; update(); }, container)
     bind(".action_relations_toogle_show_compose","click",(e)=>{ elementVisibility.compose = !elementVisibility.compose; update(); }, container)
+
+    bind(".action_relations_toogle_nodewalk_type","click",(e)=>{
+      if (nodeWalkType=="menu") {
+        nodeWalkType = "explode";
+      }else {
+        nodeWalkType = "menu"
+      }
+      update()
+    }, container)
 
 
     bind(".action_relations_export_png","click",(e)=>{
@@ -1555,6 +1565,54 @@ var createRelationsView = function () {
     })
     update()
   }
+  var nodeWalkMenu = async function (currentSelected, eventData) {
+
+    let selectedNodes = currentSelected
+    let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
+    let selectedNodesAndChildrenUuid = []
+
+
+    let relatedNodes = findRelatedUuid(selectedNodes, itemsToDisplay, relations)
+
+    // let walkMenu = document.createElement("div")
+    // for (var i = 0; i < itemsToDisplay.length; i++) {
+    //   let e = itemsToDisplay[i]
+    //   if (relatedNodes.includes(e.uuid) ) {
+    //     walkMenu.innerHTML += " <div> "+e.name+"</div>"
+    //   }
+    // }
+    // walkMenu.style.zIndex="999999999999999999999999999";
+    // walkMenu.style.position="absolute";
+    // walkMenu.style.top=eventData.canvasPosition[0]+"px";
+    // walkMenu.style.left=eventData.canvasPosition[1]+"px";
+    // document.body.appendChild(walkMenu)
+
+    let nodeViewable = [{ type:"button",id:uuid(), label:"Show all", onClick:v=>{
+        nodeWalk(currentSelected, false)
+      } }]
+    for (var i = 0; i < itemsToDisplay.length; i++) {
+      let e = itemsToDisplay[i]
+      if (relatedNodes.includes(e.uuid) ) {
+        let field = { type:"button",id:uuid(),customColor:e.customColor,value:e.uuid, label:e.name, onClick:v=>{
+          console.log(v);
+          hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, v)
+          update()
+        } }
+        nodeViewable.push(field)
+      }
+    }
+
+    var popup= await createPromptPopup({
+      title:"Related Nodes",
+      iconHeader:"sitemap",
+      fields:nodeViewable,
+      confirmationType:"cancel"
+    })
+
+    console.log(relatedNodes);
+
+  }
+
   var deleteSelectedNodes = async function (currentSelected, showChildren) {
     var store = await query.currentProject()
     let selectedNodes = currentSelected
@@ -2084,6 +2142,12 @@ var createRelationsView = function () {
         <a class="${groupElements.workPackages ? 'active teal':''} ui item action_relations_toogle_group_workPackages">Work Packages</a>
         </div>
       </div>
+      <div class="item">
+        <div class="header">Tools Options</div>
+        <div class="menu">
+        <a class="${nodeWalkType=="menu" ? 'active teal':''} ui item action_relations_toogle_nodewalk_type">Show a menu in Nodewalk tool</a>
+        </div>
+      </div>
 
     `
     container.querySelector('.menuSnapshotGraph').innerHTML=`
@@ -2293,14 +2357,21 @@ var createRelationsView = function () {
       onLinkContextMenu:function (link) {
         showEditMenu(link)
       },
-      onNodeClick:function (node) {
+      onNodeClick:function (node,eventData) {
         previousSelectedNode = lastSelectedNode;
         lastSelectedNode = node;
         if (addLinkMode) {
           renderMenu()
         }
         if (nodeWalkModeActive) {
-          nodeWalk([node, false])
+          if (nodeWalkType == "explode") {
+            nodeWalk([node, false])
+          }else if (nodeWalkType =="menu") {
+            nodeWalkMenu([node], eventData)
+          }
+
+
+
         }
         console.log(lastSelectedNode,previousSelectedNode);
       },
