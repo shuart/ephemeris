@@ -143,7 +143,7 @@ var createImportXMLService = function () {
       }
     }
 
-    var addChildToDiagram = function (child, diagram, offset) {
+    var addChildToDiagram = function (child, diagram, offset, currentGroup) {
       let offsetFromParent = offset || {x:0,y:0}
       let relatedNode = child.getAttribute("archimateElement")
       let positionX = child.children[0].getAttribute("x")
@@ -158,9 +158,27 @@ var createImportXMLService = function () {
       //
       // let nodeInDiagram= {uuid:relatedNode, fx:parseInt(positionX), fy:parseInt(positionY)}
       // diagram.nodes.push(nodeInDiagram)
+
+      //if object is already a child, add it to the previous element groups
+      if (currentGroup) {
+        currentGroup.nodes.push(relatedNode)
+      }
+      let subgroup = undefined
       doForEach(child.children, function (item) {//check if there is a second level of children
         if (item.tagName.toLowerCase() == "child" && item.getAttribute("xsi:type")== "archimate:DiagramObject") {
-          addChildToDiagram(item,diagram, {x:parseInt(positionX),y:parseInt(positionY)})
+
+          if (!subgroup) { // if no group yet, add one
+            let id = genuuid()
+            let height = child.children[0].getAttribute("height")
+            let width = child.children[0].getAttribute("width")
+            let content =child.getAttribute("name")
+            let relatedNodes = []
+            let master = child.getAttribute("archimateElement")
+            subgroup= {uuid:id, x:parseInt(positionX)+ offsetFromParent.x, y:parseInt(positionY)+offsetFromParent.y,h:parseInt(height), w:parseInt(width), master:master, nodes:relatedNodes,content:content}
+            diagram.groups.push(subgroup)
+          }
+
+          addChildToDiagram(item,diagram, {x:parseInt(positionX)+offsetFromParent.x+15,y:parseInt(positionY)+offsetFromParent.y+15}, subgroup)
         }
       })
 
