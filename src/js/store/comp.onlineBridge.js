@@ -135,7 +135,7 @@ var checkSyncStatus = async function(user) {
 
 }
 
-var checkProjectToLoad = async function () {
+var checkProjectToLoad = async function () {//TODO deprecated
   let dbs = dbConnector.getDbReferences()
 
   const messages = await client.service('messages').find();
@@ -159,7 +159,7 @@ var checkProjectToLoad = async function () {
    }
 }
 
- var sendCopy = async function(localApp, actionItem) {
+ var sendCopy = async function(localApp, actionItem) {//TODO deprecated
 
    console.log("sending data");
 
@@ -194,6 +194,43 @@ var checkProjectToLoad = async function () {
        }
 
    });
+  }else {
+    console.log("Not Syncying update as project is not supposed to sync");
+  }
+}
+ var sendHistoryItem = async function(localApp, actionItem) {
+
+   console.log("sending data");
+
+  let dbs = dbConnector.getDbReferences()
+  // let projectUuid = localApp.state.currentProject
+  let projectUuid = actionItem.projectUuid
+
+  if (localApp.store.userData.info.syncingProjects && localApp.store.userData.info.syncingProjects.includes(projectUuid)) {//check if project is supposed to sync
+
+       try { //get the online id of the project
+         let onlineProjectId = await client.service('projects').find({
+           query: {
+             uuid: projectUuid,
+             $select: [ '_id', 'uuid' ]
+           }
+
+         });
+         console.log(onlineProjectId);
+         if (onlineProjectId.data[0]) { //update the online project
+           // sendAllProject(onlineProjectId.data[0]._id,docs[0])
+           // console.log("data sent");
+           sendChangeToServer(onlineProjectId.data[0]._id,actionItem)
+           console.log("partial data sent");
+         }else {
+           console.log("could not find project");
+         }
+
+       } catch (e) {
+         console.log("data could not be saved online");
+         console.log(e);
+       }
+
   }else {
     console.log("Not Syncying update as project is not supposed to sync");
   }
@@ -350,6 +387,7 @@ var getDiffFromOnlineProject =async function (onlineProject) {
 var insertInDbFromOnlineProject = async function (changes) {
   let change = changes.data.items[changes.data.items.length-1]
 
+  console.log(change);
   if (change.user) {
     if (change.user.mail == app.store.userData.info.mail) {
       return undefined //cancel update as it's a self one
@@ -382,6 +420,7 @@ self.logOutFromOnlineAccount = logOutFromOnlineAccount
 self.checkSyncStatus = checkSyncStatus
 self.connect = connect
 self.sendCopy = sendCopy
+self.sendHistoryItem = sendHistoryItem
 self.init = init
 
 return self

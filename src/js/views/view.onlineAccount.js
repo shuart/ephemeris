@@ -161,6 +161,8 @@ var createOnlineAccountView = function ({
       if (loadedProject.data[0]) {
         console.log(loadedProject.data[0]);
         await dbConnector.addProject(loadedProject.data[0])
+        let revPro = await query.allRelatedProjects()
+        console.log(revPro);
       }
       setProjectAsSyncing(loadedProject.data[0].uuid)
 

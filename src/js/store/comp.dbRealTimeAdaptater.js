@@ -217,11 +217,12 @@ var createDbRealTimeAdaptater = function () {
     console.log(actionItem);
 
     let onlineHistoryItem = actionItem
+    console.log(actionItem)
 
     await addOnlineHistoryItem(onlineHistoryItem)
     //data has been persisted, now try to synchronise it
 
-    onlineBridge.sendCopy(app, actionItem)
+    onlineBridge.sendHistoryItem(app, actionItem)
 
   }
   async function logCallbackWithoutSync(actionItem) {
