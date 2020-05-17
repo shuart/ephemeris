@@ -1,29 +1,45 @@
 var createChangeManagerView = function () {
   var self ={};
   var objectIsActive = false;
+  var currentVisibleList = undefined;
 
   var init = function () {
     connections()
 
   }
   var connections =function () {
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentVisibleList) {
+        var store = await query.currentProject()
+        ephHelpers.updateListElements(currentVisibleList,{
+          items:store.changes.items,
+          links:store.changes.links,
+          metaLinks:store.metaLinks.items,
+          displayRules:setDisplayRules(store)
+        })
+      }
+    })
+  }
 
+  var setDisplayRules = function (store) {
+    var displayRules = [
+      {prop:"name", displayAs:"Name", edit:true},
+      {prop:"desc", displayAs:"Description", edit:true},
+      {prop:"reqChangedBy",isTarget:true, displayAs:"Changed Requirement", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
+      {prop:"assignedTo", displayAs:"Assigned to", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
+      {prop:"createdAt", displayAs:"Added", edit:"true", time:true}
+    ]
+    return displayRules
   }
 
   var render = async function () {
     var store = await query.currentProject()
-    showListMenu({
+    currentVisibleList = showListMenu({
       sourceData:store.changes.items,
       displayProp:"name",
       targetDomContainer:".center-container",
       fullScreen:true,// TODO: perhaps not full screen?
-      display:[
-        {prop:"name", displayAs:"Name", edit:true},
-        {prop:"desc", displayAs:"Description", edit:true},
-        {prop:"reqChangedBy",isTarget:true, displayAs:"Changed Requirement", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
-        {prop:"assignedTo", displayAs:"Assigned to", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
-        {prop:"createdAt", displayAs:"Added", edit:"true", time:true}
-      ],
+      display:setDisplayRules(store),
       idProp:"uuid",
       onEditItem: (ev)=>{
         console.log("Edit");
