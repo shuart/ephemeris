@@ -2397,13 +2397,23 @@ var createRelationsView = function () {
         await linkNodes(e[0],e[1])
         update()
       },
-      onCanvasDoubleClick:function (e) {//TODO finish implementation
+      onCanvasDoubleClick:async function (e) {
         console.log(e);
+        let availableItems =[
+          {name:'Product', type:'currentPbs', icon:"dolly"},
+          {name:'Stakeholder', type:'stakeholders',  icon:"user"},
+          {name:'Requirement', type:'requirements', icon:"comment"},
+          {name:'Function', type:'functions', icon:"cogs"}
+        ]
         if (addItemMode) {//if item mode engaged
-          var initValue = prompt("Add an item")
-          if (initValue) {
+          var popup= await createPromptPopup({
+            title:"Add a new "+availableItems.find(a=>a.type==addItemMode).name,
+            iconHeader:availableItems.find(a=>a.type==addItemMode).icon,
+            fields:{ type:"input",id:"itemNewName" ,label:"Item name", placeholder:"Set a name for the item" }
+          })
+          if (popup && popup.result) {
             var uuid = genuuid()
-            addItems(addItemMode, uuid, initValue, addItemCatType)
+            addItems(addItemMode, uuid, popup.result, addItemCatType)
             //itemsToFixAtNextUpdate=[]
             itemsToFixAtNextUpdate.push({uuid:uuid, fx:e.x, fy:e.y})
             update()
