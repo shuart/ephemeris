@@ -470,12 +470,14 @@ function showListMenu({
         }
         if (event.target.classList.contains("action_list_go_to_item")) {
           let link = event.target.dataset.value
-          if (link.substring(0, 6)!="http://" || link.substring(0, 7)!="https://") {
+          console.log(link.substring(0, 8));
+          if (link.substring(0, 7)!="http://" && link.substring(0, 8)!="https://") {
             link = "http://"+link
           }
           if (typeof nw !== "undefined" && link) {//if using node webkit
             nw.Shell.openExternal(link)
           }else if (link) {//if in browser
+            console.log(link);
             window.open(link, '_blank')
           }else {
             console.log("no link to reach");
