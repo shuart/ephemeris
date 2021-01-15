@@ -4,7 +4,7 @@ var objectIsActive = true;
 // Set up socket.io
 // const socket = io('http://localhost:3030');
   // Initialize a Feathers client
-const client = feathers();
+const client = createOnlineClient();
 var clientIsConfigured = false;
 
 
@@ -12,6 +12,7 @@ var clientIsConfigured = false;
 var init = function () {
 
 }
+
 var connect = function (serverAdress, socketPath) {
   if (!clientIsConfigured && serverAdress && serverAdress != "") {
     // Register socket.io to talk to our server
@@ -20,45 +21,41 @@ var connect = function (serverAdress, socketPath) {
       alert("bridgeServer not found. Fallback on local server if available")
     }
     serverAdress = serverAdress ||'http://localhost:3030'
-    var socket = undefined;
-    if (socketPath) {
-      socket = io(serverAdress, {path: socketPath});
-    }else {
-      socket = io(serverAdress);
-    }
-    // socket = io(app.store.userData.info.userOnlineServer, {path: app.store.userData.info.userOnlineSocket || "socket.io"});
+    // var socket = undefined;
+    // if (socketPath) {
+    //   socket = io(serverAdress, {path: socketPath});
+    // }else {
+    //   socket = io(serverAdress);
+    // }
 
-    client.configure(feathers.socketio(socket));
-    // Set up the Feathers authentication client
-    client.configure(feathers.authentication());
+    client.configure(serverAdress,socketPath);
 
-    console.log("socket initialized")
-    clientIsConfigured = true
+    console.log("client initialized")
+    clientIsConfigured = true;
 
 
-    function addMessage (message) {
-      //document.getElementById('main').innerHTML += `<p>${message.text}</p>`;
-      console.log(message);
-      let receivedProject = message
-      if (app.store.userData.info.syncingProjects && app.store.userData.info.syncingProjects.includes(receivedProject.uuid )) {//check if project is supposed to sync
-        resyncFromOnlineProject(message)
-      }else {
-        console.log("Not Syncying update as project is not supposed to sync");
-      }
-    }
-
-    function updateOnStatus (message) {
-      console.log(message);
-      let receivedProject = message
-      if (app.store.userData.info.syncingProjects && app.store.userData.info.syncingProjects.includes(receivedProject.uuid )) {//check if project is supposed to sync
-        insertInDbFromOnlineProject(message)
-      }else {
-        console.log("Not Syncying update as project is not supposed to sync");
-      }
-    }
-
-    // client.service('projects').on('updated', addMessage);
-    client.service('projects').on('status', updateOnStatus );
+    // function addMessage (message) {
+    //   //document.getElementById('main').innerHTML += `<p>${message.text}</p>`;
+    //   console.log(message);
+    //   let receivedProject = message
+    //   if (app.store.userData.info.syncingProjects && app.store.userData.info.syncingProjects.includes(receivedProject.uuid )) {//check if project is supposed to sync
+    //     resyncFromOnlineProject(message)
+    //   }else {
+    //     console.log("Not Syncying update as project is not supposed to sync");
+    //   }
+    // }
+    //
+    // function updateOnStatus (message) {
+    //   console.log(message);
+    //   let receivedProject = message
+    //   if (app.store.userData.info.syncingProjects && app.store.userData.info.syncingProjects.includes(receivedProject.uuid )) {//check if project is supposed to sync
+    //     insertInDbFromOnlineProject(message)
+    //   }else {
+    //     console.log("Not Syncying update as project is not supposed to sync");
+    //   }
+    // }
+    //
+    // client.service('projects').on('status', updateOnStatus );
   }
   login()
 }
@@ -74,11 +71,13 @@ var isAuthenticated = async function () {
 }
 
 const login = async function (credentials) {
+
   try {
     if(!credentials) {
       // Try to authenticate using an existing token
       await client.reAuthenticate();
     } else {
+
       // Otherwise log in with the `local` strategy using the credentials we got
       await client.authenticate({
         strategy: 'local',
@@ -106,14 +105,14 @@ var connectToOnlineAccount = async function (user) {
 
   await login(credentials);
 
-  try {
-    console.log("sending message");
-    await client.service('messages').create({
-       text: 'connected'
-     });
-  } catch (e) {
-    console.log(e);
-  }
+  // try {
+  //   console.log("sending message");
+  //   await client.service('messages').create({
+  //      text: 'connected'
+  //    });
+  // } catch (e) {
+  //   console.log(e);
+  // }
 
 
 
