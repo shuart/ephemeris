@@ -211,7 +211,6 @@ var checkProjectToLoad = async function () {//TODO deprecated
              uuid: projectUuid,
              $select: [ '_id', 'uuid' ]
            }
-
          });
          console.log(onlineProjectId);
          if (onlineProjectId.data[0]) { //update the online project

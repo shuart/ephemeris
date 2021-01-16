@@ -33,10 +33,20 @@ var createOnlineClient = function () {
   var service = function (serviceName) {
 
     var handler = {};
-    handler.find = function () {
+    handler.find = function (data) {
 
       return new Promise(function(resolve, reject) {
 
+        var searchFields=""
+        if (data && data.query) {
+          let keys = Object.keys(data.query)
+          keys.forEach((key, i) => {
+            if (key[0] != "$") {
+              searchFields+="&fields["+key+"]="+data.query[key]
+            }
+          });
+
+        }
 
         var requestOptions = {
           method: 'GET',
@@ -44,7 +54,7 @@ var createOnlineClient = function () {
           redirect: 'follow'
         };
 
-        fetch("http://localhost:8080/collections/get/"+serviceName+"?id="+currentMainToken+"&token="+currenToken, requestOptions)
+        fetch("http://localhost:8080/collections/get/"+serviceName+"?id="+currentMainToken+searchFields+"&token="+currenToken, requestOptions)
           .then(response => response.text())
           .then(result => resolve(JSON.parse(result)))
           .catch(error => console.log('error', error));
@@ -78,6 +88,21 @@ var createOnlineClient = function () {
           .then(result => resolve(result))
           .catch(error => console.log('error', error));
 
+        }).catch(function(err) {
+          // reject(err)
+          console.log(err);
+          alert("error communicate")
+        });
+    }
+    handler.update = function (onlineId,actionItem, payload) {
+      console.log(onlineId,actionItem);
+
+      return new Promise(function(resolve, reject) {
+
+        //clean because remote DB use different  _ID
+        // if (payload._id) {
+        //   delete payload._id
+        // }
         }).catch(function(err) {
           // reject(err)
           console.log(err);
