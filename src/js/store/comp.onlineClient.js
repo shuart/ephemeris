@@ -46,7 +46,36 @@ var createOnlineClient = function () {
 
         fetch("http://localhost:8080/collections/get/"+serviceName+"?id="+currentMainToken+"&token="+currenToken, requestOptions)
           .then(response => response.text())
-          .then(result => console.log(result))
+          .then(result => resolve(JSON.parse(result)))
+          .catch(error => console.log('error', error));
+
+        }).catch(function(err) {
+          // reject(err)
+          console.log(err);
+          alert("error communicate")
+        });
+    }
+    handler.create = function (payload) {
+
+      return new Promise(function(resolve, reject) {
+
+        //clean because remote DB use different  _ID
+        if (payload._id) {
+          delete payload._id
+        }
+
+        var raw = JSON.stringify({"payload":payload});
+
+        var requestOptions = {
+          method: 'POST',
+          headers: myHeaders,
+          body: raw,
+          redirect: 'follow'
+        };
+
+        fetch("http://localhost:8080/collections/post/"+serviceName+"?id="+currentMainToken+"&token="+currenToken, requestOptions)
+          .then(response => response.text())
+          .then(result => resolve(result))
           .catch(error => console.log('error', error));
 
         }).catch(function(err) {
@@ -60,6 +89,34 @@ var createOnlineClient = function () {
 
 
   var reAuthenticate = function () {
+    return new Promise(function(resolve, reject) {
+      console.log("check authentification");
+      if (currenToken!="") {
+        // TODO add better check
+        resolve(true)
+      }else {
+        throw 'Not logged in';
+      }
+    }).catch(function(err) {
+      throw 'Not logged in';
+    });
+
+  }
+
+  var logout = function () {
+    return new Promise(function(resolve, reject) {
+      console.log("check authentification");
+      if (currenToken!="") {
+        currenToken=""
+
+        resolve(true)
+      }else {
+        throw 'Not logged in';
+      }
+    }).catch(function(err) {
+      throw 'Not logged in';
+    });
+
   }
 
   var authenticate = function (data) {
@@ -81,7 +138,8 @@ var createOnlineClient = function () {
 
       var recordAuth = function (data) {
         currenToken = data.jwt
-        resolve()
+        console.log(currenToken);
+        resolve(true)
       }
 
       fetch( currentServer + "/authenticate?id="+currentMainToken, requestOptions)
@@ -90,7 +148,6 @@ var createOnlineClient = function () {
         .catch(error => console.log('error', error));
         // let commits = await response.html()
         // console.log(commits);
-        // resolve()
 
       }).catch(function(err) {
         // reject(err)
@@ -124,6 +181,7 @@ var createOnlineClient = function () {
 
       // If successful, show the chat page
       console.log("logged")
+      resolve(true)
     } catch(error) {
       // If we got an error, show the login page
       console.log("login refused")
@@ -132,6 +190,7 @@ var createOnlineClient = function () {
   };
 
 
+self.logout = logout
 self.service = service
 self.reAuthenticate = reAuthenticate
 self.authenticate = authenticate

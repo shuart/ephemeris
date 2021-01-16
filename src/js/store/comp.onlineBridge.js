@@ -15,8 +15,7 @@ var init = function () {
 
 var connect = function (serverAdress, socketPath) {
   if (!clientIsConfigured && serverAdress && serverAdress != "") {
-    // Register socket.io to talk to our server
-    // var socket = io('http://localhost:3030');
+
     if (!serverAdress) {
       alert("bridgeServer not found. Fallback on local server if available")
     }
@@ -33,17 +32,6 @@ var connect = function (serverAdress, socketPath) {
     console.log("client initialized")
     clientIsConfigured = true;
 
-
-    // function addMessage (message) {
-    //   //document.getElementById('main').innerHTML += `<p>${message.text}</p>`;
-    //   console.log(message);
-    //   let receivedProject = message
-    //   if (app.store.userData.info.syncingProjects && app.store.userData.info.syncingProjects.includes(receivedProject.uuid )) {//check if project is supposed to sync
-    //     resyncFromOnlineProject(message)
-    //   }else {
-    //     console.log("Not Syncying update as project is not supposed to sync");
-    //   }
-    // }
     //
     // function updateOnStatus (message) {
     //   console.log(message);
@@ -57,7 +45,7 @@ var connect = function (serverAdress, socketPath) {
     //
     // client.service('projects').on('status', updateOnStatus );
   }
-  login()
+  //login()
 }
 
 var isAuthenticated = async function () {
@@ -84,7 +72,8 @@ const login = async function (credentials) {
         ...credentials
       });
       //TODO remove: test
-      await client.service("collname").find();
+      //let test = await client.service("projects").find();
+      //console.log(test);
     }
 
     // If successful, show the chat page
@@ -121,9 +110,9 @@ var connectToOnlineAccount = async function (user) {
 }
 var logOutFromOnlineAccount = async function () {
   try {
-    await client.service('messages').create({
-       text: 'leaving'
-     });
+    // await client.service('messages').create({
+    //    text: 'leaving'
+    //  });
     await client.logout();
     alert("unlogged")
 
@@ -332,7 +321,7 @@ var getSharedProject = async function (uuid) {
 }
 var createOnlineProject = async function (project) {
   const messages = await client.service('projects').create(project);
-
+  alert("created")
   return messages
 }
 

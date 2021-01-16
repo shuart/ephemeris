@@ -138,7 +138,6 @@ var createOnlineAccountView = function ({
       let user = {email:i.mail, password:i.onlineAccountPassword}
       await onlineBridge.connect(app.store.userData.info.bridgeServer, app.store.userData.info.socketPath)
       await onlineBridge.connectToOnlineAccount(user)
-
       sourceOccElement.remove()
       update()
     })
@@ -192,6 +191,8 @@ var createOnlineAccountView = function ({
   }
 
   var render = function (uuid) {
+
+
     sourceOccElement = document.createElement('div');
     sourceOccElement.style.height = "100%"
     sourceOccElement.style.width = "100%"
