@@ -83,6 +83,8 @@ const login = async function (credentials) {
         strategy: 'local',
         ...credentials
       });
+      //TODO remove: test
+      await client.service("collname").find();
     }
 
     // If successful, show the chat page

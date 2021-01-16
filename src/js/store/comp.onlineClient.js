@@ -6,6 +6,7 @@ var createOnlineClient = function () {
   var type = "epochPHP"
   var currentServer = ""
   var currentMainToken = ""
+  var currenToken = ""
 
   var myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
@@ -20,13 +21,45 @@ var createOnlineClient = function () {
 
   }
 
+  var getMyProjects = function () {
+
+  }
+
   var configure = function (serverAdress,socketPath) {
     currentServer = serverAdress;
     currentMainToken = socketPath;
   }
 
-  var reAuthenticate = function (serverAdress) {
+  var service = function (serviceName) {
 
+    var handler = {};
+    handler.find = function () {
+
+      return new Promise(function(resolve, reject) {
+
+
+        var requestOptions = {
+          method: 'GET',
+          headers: myHeaders,
+          redirect: 'follow'
+        };
+
+        fetch("http://localhost:8080/collections/get/"+serviceName+"?id="+currentMainToken+"&token="+currenToken, requestOptions)
+          .then(response => response.text())
+          .then(result => console.log(result))
+          .catch(error => console.log('error', error));
+
+        }).catch(function(err) {
+          // reject(err)
+          console.log(err);
+          alert("error communicate")
+        });
+    }
+    return handler
+  }
+
+
+  var reAuthenticate = function () {
   }
 
   var authenticate = function (data) {
@@ -34,7 +67,6 @@ var createOnlineClient = function () {
     var email = data.email;
     var password = data.password;
     console.log(data);
-    alert(email,password)
 
     return new Promise(function(resolve, reject) {
 
@@ -47,9 +79,14 @@ var createOnlineClient = function () {
         redirect: 'follow'
       };
 
+      var recordAuth = function (data) {
+        currenToken = data.jwt
+        resolve()
+      }
+
       fetch( currentServer + "/authenticate?id="+currentMainToken, requestOptions)
-        .then(response => response.text())
-        .then(result => console.log(result))
+        .then(response => response.json())
+        .then(result => recordAuth(result))
         .catch(error => console.log('error', error));
         // let commits = await response.html()
         // console.log(commits);
@@ -95,6 +132,7 @@ var createOnlineClient = function () {
   };
 
 
+self.service = service
 self.reAuthenticate = reAuthenticate
 self.authenticate = authenticate
 self.configure = configure
