@@ -167,7 +167,7 @@ var createUnifiedView = function (targetSelector) {
       var metalinkType = e.target.dataset.prop;
       var sourceTriggerId = e.target.dataset.id;
       var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
-      var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+      var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
 
       let data = undefined
@@ -175,7 +175,7 @@ var createUnifiedView = function (targetSelector) {
       let showColoredIcons = false
 
       if (metalinkType == 'assignedTo') {
-        data = projectStore.stakeholders.items
+        data = projectStore.stakeholders
         display = [
           {prop:"name", displayAs:"First name", edit:false},
           {prop:"lastName", displayAs:"Last Name", edit:false},
@@ -183,7 +183,7 @@ var createUnifiedView = function (targetSelector) {
         ]
         showColoredIcons = lettersFromNames
       }else {
-        data = projectStore[e.target.dataset.prop].items
+        data = projectStore[e.target.dataset.prop]
         display = [
           {prop:"name", displayAs:"Name", edit:false}
         ]
@@ -205,22 +205,22 @@ var createUnifiedView = function (targetSelector) {
         },
         // onChangeSelect: (ev)=>{
         //   console.log(ev.select.getSelected());
-        //   console.log(projectStore.metaLinks.items);
-        //   projectStore.metaLinks.items = projectStore.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
+        //   console.log(projectStore.metaLinks);
+        //   projectStore.metaLinks = projectStore.metaLinks.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
         //   for (newSelected of ev.select.getSelected()) {
-        //     projectStore.metaLinks.items.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
+        //     projectStore.metaLinks.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
         //   }
-        //   // console.log(projectStore.metaLinks.items);
+        //   // console.log(projectStore.metaLinks);
         //   // saveDB()
         //   // update()
         // },
         onChangeSelect: (ev)=>{
           var changeProp = async function (sourceTriggerId) {
             var allProjects = await query.allRelatedProjects({uuid:1, name:1, reference:1, actions:1, metaLinks:1, stakeholders:1, description:1, tags:1})
-            
+
             //update store
             var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
-            var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+            var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks;
 
             await batchRemoveMetaLinks(projectStore, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), "source", sourceTriggerId, projectStore.uuid)
             await batchAddMetaLinks(projectStore, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), "source", sourceTriggerId, projectStore.uuid)
@@ -309,7 +309,7 @@ var createUnifiedView = function (targetSelector) {
 
       acc += generateProjectTitleHTML(i.uuid, i.name, i.reference)
       acc += generateAddTaskArea(i.uuid)
-      var items = i.actions.items.filter( e => fuzzysearch(filterText, e.name))
+      var items = i.actions.filter( e => fuzzysearch(filterText, e.name))
       items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
       acc += generateTasksHTML(items.reverse() , i.uuid, allProjects)
       return acc
@@ -321,7 +321,7 @@ var createUnifiedView = function (targetSelector) {
     let sortedVisibleSearchedProject = getProjectListForActionExtraction(allProjects)
 
     let sortedProjectsAndActions = sortedVisibleSearchedProject.map(p=>{
-      let currentProjectActions = p.actions.items.filter( e => fuzzysearch(filterText, e.name))
+      let currentProjectActions = p.actions.filter( e => fuzzysearch(filterText, e.name))
       currentProjectActions = currentProjectActions.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
       return {
         title:p.name,
@@ -385,7 +385,7 @@ var createUnifiedView = function (targetSelector) {
   //   let sortedVisibleSearchedProject = getProjectListForActionExtraction(allProjects)
   //
   //   var allActions = sortedVisibleSearchedProject.reduce((acc,i)=>{
-  //     var items = i.actions.items.filter( e => fuzzysearch(filterText, e.name))
+  //     var items = i.actions.filter( e => fuzzysearch(filterText, e.name))
   //     items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
   //     for (action of items.reverse()) {
   //       //find if
@@ -414,7 +414,7 @@ var createUnifiedView = function (targetSelector) {
     let sortedVisibleSearchedProject = getProjectListForActionExtraction(allProjects)
 
     var allActions = sortedVisibleSearchedProject.reduce((acc,i)=>{
-      var items = i.actions.items.filter( e => fuzzysearch(filterText, e.name))
+      var items = i.actions.filter( e => fuzzysearch(filterText, e.name))
       items = items.filter( e => howLongAgo(e.closedOn)<filterClosedDaysAgo)
       for (action of items.reverse()) {
         //find if
@@ -483,7 +483,7 @@ var createUnifiedView = function (targetSelector) {
     console.log(allProjects);
     //get owners relevant infos
     var ownerTable = allProjects
-        .map(e => e[storeGroup].items)
+        .map(e => e[storeGroup])
         .reduce((a, b) => {return a.concat(b)},[])
         .map((e) => {
           let currentName = e.name
@@ -513,7 +513,7 @@ var createUnifiedView = function (targetSelector) {
         //       </h5>
         //       <div class="description">
         //         Created ${moment(i.created).fromNow() }, ${generateCloseInfo(i.closedOn)}  assigned to
-        //         ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectuuid).stakeholders.items, i.projectuuid)}
+        //         ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectuuid).stakeholders, i.projectuuid)}
         //         ${generateTimeFromMeta("dueDate", i.uuid, i.dueDate, i.projectuuid)}
         //       </div>
         //     </div>
@@ -541,7 +541,7 @@ var createUnifiedView = function (targetSelector) {
     console.log(allProjects);
     //get owners relevant infos
     var ownerTable = allProjects
-        .map(e => e[storeGroup].items)
+        .map(e => e[storeGroup])
         .reduce((a, b) => {return a.concat(b)},[])
         .map((e) => {
           let currentName = e.name
@@ -570,7 +570,7 @@ var createUnifiedView = function (targetSelector) {
     if (groupByActor) {
       var actorsTable = allProjects.map(e =>{
             if (e.actors) {
-              return e.actors.items.map(i => Object.assign({projectid:e.uuid, projectName:e.name, appearIn:[{projectid:e.uuid, projectName:e.name}]}, i)) //add project prop to all items
+              return e.actors.map(i => Object.assign({projectid:e.uuid, projectName:e.name, appearIn:[{projectid:e.uuid, projectName:e.name}]}, i)) //add project prop to all items
             }else {
               return []
             }
@@ -696,7 +696,7 @@ var createUnifiedView = function (targetSelector) {
     var i = action
     var tagsHtml = ''
     if (showTags) {
-      tagsHtml = generateListeFromMeta(allProjects, "tags",i.uuid, allProjects.filter(e=>e.uuid == projectUuid)[0].tags.items, projectUuid)
+      tagsHtml = generateListeFromMeta(allProjects, "tags",i.uuid, allProjects.filter(e=>e.uuid == projectUuid)[0].tags, projectUuid)
     }
     var html =`
         <div style="${i.open?'':'opacity:0.6;'}" data-id="${i.uuid}" class="item">
@@ -708,7 +708,7 @@ var createUnifiedView = function (targetSelector) {
             </h5>
             <div class="description">
               Created ${moment(i.created).fromNow() }, ${generateCloseInfo(i.closedOn)}  assigned to
-              ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.filter(e=>e.uuid == projectUuid)[0].stakeholders.items, projectUuid)}
+              ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.filter(e=>e.uuid == projectUuid)[0].stakeholders, projectUuid)}
               ${tagsHtml}
               ${generateTimeFromMeta("dueDate", i.uuid, i.dueDate, projectUuid)}
             </div>
@@ -826,12 +826,12 @@ var createUnifiedView = function (targetSelector) {
   }
 
   var getIdsOfTargets = function (allProjects, projectuuid,propName, sourceId) {
-    var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
+    var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks;
     return meta.filter(e => (e.type == propName && e.source == sourceId )).map(e => e.target)
   }
 
   var generateListeFromMeta = function (allProjects, propName, sourceId, targetList, projectuuid, isEditable) {
-    var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
+    var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks;
     var metalist = meta.filter(e => (e.type == propName && e.source == sourceId )).map(e => e.target)
     var editHtml = `<i data-prop="${propName}" data-value='${JSON.stringify(metalist)}' data-id="${sourceId}" data-project="${projectuuid}" class="edit icon action_unified_list_select_item_assigned" style="opacity:0.2"></i>`
 

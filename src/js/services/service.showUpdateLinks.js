@@ -36,8 +36,8 @@ var createShowUpdateLinksService = function () {
     if (metalinkType == "originNeed") {
       if (callerType != "requirements") {
         sourceGroup="requirements"
-        sourceLinks=store.requirements.links
-        sourceData=store.requirements.items
+        sourceLinks=store.links
+        sourceData=store.requirements
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false}
         ]
@@ -46,8 +46,8 @@ var createShowUpdateLinksService = function () {
         invert = true;
         source = "target"//invert link order for after
         target = "source"
-        sourceLinks=store.currentPbs.links
-        sourceData=store.currentPbs.items
+        sourceLinks=store.links
+        sourceData=store.currentPbs
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false},
           {prop:"desc", displayAs:"Description", fullText:true, edit:false}
@@ -56,8 +56,8 @@ var createShowUpdateLinksService = function () {
     }else if (metalinkType == "originFunction") {
       if (callerType != "functions") {
         sourceGroup="functions"
-        sourceLinks=store.functions.links
-        sourceData=store.functions.items
+        sourceLinks=store.links
+        sourceData=store.functions
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false}
         ]
@@ -66,8 +66,8 @@ var createShowUpdateLinksService = function () {
         invert = true;
         source = "target"//invert link order for after
         target = "source"
-        sourceLinks=store.currentPbs.links
-        sourceData=store.currentPbs.items
+        sourceLinks=store.links
+        sourceData=store.currentPbs
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false},
           {prop:"desc", displayAs:"Description", fullText:true, edit:false}
@@ -86,15 +86,15 @@ var createShowUpdateLinksService = function () {
         invert = true;
         source = "target"//invert link order for after
         target = "source"
-        sourceLinks=store.physicalSpaces.links
-        sourceData=store.physicalSpaces.items
+        sourceLinks=store.links
+        sourceData=store.physicalSpaces
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false}
         ]
       }else{
         sourceGroup="currentPbs";
-        sourceLinks=store.currentPbs.links
-        sourceData=store.currentPbs.items
+        sourceLinks=store.links
+        sourceData=store.currentPbs
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false},
           {prop:"desc", displayAs:"Description", fullText:true, edit:false}
@@ -108,7 +108,7 @@ var createShowUpdateLinksService = function () {
       ];
     }else if (metalinkType == "interfacesType") {
       sourceGroup="interfacesTypes";
-      sourceData=store.interfacesTypes.items
+      sourceData=store.interfacesTypes
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -123,16 +123,16 @@ var createShowUpdateLinksService = function () {
         invert = true;
         source = "target"//invert link order for after
         target = "source"
-        sourceLinks=store.workPackages.links
-        sourceData=store.workPackages.items
+        sourceLinks=store.links
+        sourceData=store.workPackages
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false}
         ]
       }else {
 
         sourceGroup='currentPbs';
-        sourceData=store.currentPbs.items
-        sourceLinks=store.currentPbs.links
+        sourceData=store.currentPbs
+        sourceLinks=store.links
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false},
           {prop:"desc", displayAs:"Description", fullText:true, edit:false}
@@ -145,16 +145,16 @@ var createShowUpdateLinksService = function () {
         invert = true;
         source = "target"//invert link order for after
         target = "source"
-        sourceLinks=store.workPackages.links
-        sourceData=store.workPackages.items
+        sourceLinks=store.links
+        sourceData=store.workPackages
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false},
           {prop:"desc", displayAs:"Description", fullText:true, edit:false}
         ]
       }else{
         sourceGroup="requirements";
-        sourceData=store.requirements.items
-        sourceLinks=store.requirements.links
+        sourceData=store.requirements
+        sourceLinks=store.links
         displayRules = [
           {prop:"name", displayAs:"Name", edit:false},
           {prop:"desc", displayAs:"Description", fullText:true, edit:false}
@@ -163,8 +163,8 @@ var createShowUpdateLinksService = function () {
 
     }else if (metalinkType == "reqChangedBy") {
       sourceGroup="changes"
-      sourceLinks=store.changes.links
-      sourceData=store.changes.items
+      sourceLinks=store.links
+      sourceData=store.changes
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", edit:false}
@@ -175,7 +175,7 @@ var createShowUpdateLinksService = function () {
         prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
         onLoaded = function (ev) {
           dropAreaService.setDropZone(".prepend", function () {
-            ev.select.updateData(store.documents.items)
+            ev.select.updateData(store.documents)
             ev.select.refreshList()
             setTimeout(function () {
               ev.select.scrollDown()
@@ -192,7 +192,7 @@ var createShowUpdateLinksService = function () {
       prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`,
       onLoaded = function (ev) {
         dropAreaService.setDropZone(".prepend", function () {
-          ev.select.updateData(store.documents.items)
+          ev.select.updateData(store.documents)
           ev.select.refreshList()
           setTimeout(function () {
             ev.select.scrollDown()
@@ -210,11 +210,14 @@ var createShowUpdateLinksService = function () {
       ];
     }
 
-    var sourceData = store[sourceGroup].items
+    var sourceData = store[sourceGroup]
     var sourceLinks = undefined
-    if (store[sourceGroup].links && store[sourceGroup].links[0]) {
-       sourceLinks= store[sourceGroup].links
+    if (store.links && store.links[0]) {
+       sourceLinks= store.links
     }
+    // if (store[sourceGroup].links && store[sourceGroup].links[0]) {
+    //    sourceLinks= store[sourceGroup].links
+    // }
 
     showListMenu({
       sourceData:sourceData,
@@ -243,8 +246,8 @@ var createShowUpdateLinksService = function () {
 
         setTimeout(async function () {
           var store = await query.currentProject()
-          ev.select.updateData(store[sourceGroup].items)//TODO remove extra call
-          ev.select.updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          ev.select.updateData(store[sourceGroup])//TODO remove extra call
+          ev.select.updateMetaLinks(store.metaLinks)//TODO remove extra call
           ev.select.refreshList()
         }, 2000);
 
@@ -255,10 +258,10 @@ var createShowUpdateLinksService = function () {
         // }, 100);
 
         // ev.select.setEditItemMode({
-        //   item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+        //   item:store[sourceGroup].filter(e=> e.uuid == uuid)[0],
         //   onLeave: (ev)=>{
         //     push(act.remove(sourceGroup,{uuid:uuid}))
-        //     ev.select.updateData(store[sourceGroup].items)
+        //     ev.select.updateData(store[sourceGroup])
         //   }
         // })
       },
@@ -281,10 +284,10 @@ var createShowUpdateLinksService = function () {
           await batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
           await batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
 
-          ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          ev.select.getParent().updateMetaLinks(store.metaLinks)//TODO remove extra call
           ev.select.getParent().refreshList()
         }
-        //ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+        //ev.select.getParent().updateMetaLinks(store.metaLinks)//TODO remove extra call
         // ev.select.getParent().update()
         if (batch[0]) { //check if batch action is needed
           batch.forEach(function (sourceTriggerId) {

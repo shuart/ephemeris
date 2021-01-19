@@ -124,11 +124,11 @@ var createActivityFeed = function ({
 
   var renderFeed = async function (originalData) {
     var store = await query.currentProject()
-    let activityStore = store.onlineHistory.items
+    let activityStore = store.onlineHistory
     if (activityStore[0]) {
       let formatedData = activityStore
       .reverse()
-      .slice(0, maxElements || store.history.items.length)
+      .slice(0, maxElements || store.history.length)
       .filter(i=>(i.type !='addLink' && i.type !='removeLink'))
       .map(i=>({
         uuid:i.uuid,

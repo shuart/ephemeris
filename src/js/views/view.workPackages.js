@@ -13,9 +13,9 @@ var createWorkPackagesView = function () {
       if (objectIsActive && currentVisibleList) {
         var store = await query.currentProject()
         ephHelpers.updateListElements(currentVisibleList,{
-          items:store.workPackages.items,
-          links:store.workPackages.links,
-          metaLinks:store.metaLinks.items,
+          items:store.workPackages,
+          links:store.links,
+          metaLinks:store.metaLinks,
           displayRules:setDisplayRules(store)
         })
       }
@@ -25,9 +25,9 @@ var createWorkPackagesView = function () {
   var setDisplayRules = function (store) {
     var displayRules = [
       {prop:"name", displayAs:"Name", edit:true},
-      {prop:"assignedTo", displayAs:"Assigned to", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
-      {prop:"WpOwn", displayAs:"Products Owned", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-      {prop:"WpOwnNeed", displayAs:"Requirements Owned", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
+      {prop:"assignedTo", displayAs:"Assigned to", meta:()=>store.metaLinks, choices:()=>store.stakeholders, edit:true},
+      {prop:"WpOwn", displayAs:"Products Owned", meta:()=>store.metaLinks, choices:()=>store.currentPbs, edit:true},
+      {prop:"WpOwnNeed", displayAs:"Requirements Owned", meta:()=>store.metaLinks, choices:()=>store.requirements, edit:true}
     ]
     return displayRules
   }
@@ -35,7 +35,7 @@ var createWorkPackagesView = function () {
   var render = async function () {
     var store = await query.currentProject()
     currentVisibleList = showListMenu({
-      sourceData:store.workPackages.items,
+      sourceData:store.workPackages,
       displayProp:"name",
       targetDomContainer:".center-container",
       fullScreen:true,// TODO: perhaps not full screen?
@@ -51,7 +51,7 @@ var createWorkPackagesView = function () {
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("workPackages",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.workPackages.items)
+          ev.select.updateData(store.workPackages)
         }
       },
       onAdd: async (ev)=>{
@@ -74,8 +74,8 @@ var createWorkPackagesView = function () {
       },
       onClick: (ev)=>{
         showSingleItemService.showById(ev.target.dataset.id, function (e) {
-          ev.select.updateData(store.workPackages.items)
-          ev.select.updateLinks(store.workPackages.links)
+          ev.select.updateData(store.workPackages)
+          ev.select.updateLinks(store.links)
           ev.select.refreshList()
         })
       },
@@ -98,7 +98,7 @@ var createWorkPackagesView = function () {
 
   var exportToCSV = function () {
     let store = query.currentProject()
-    let data = store.workPackages.items.map(i=>{
+    let data = store.workPackages.map(i=>{
       let linkToTextsh = getRelatedItems(store, i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
       let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"source", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
       let linkToTextReq = getRelatedItems(store, i, "requirements",{objectIs:"source", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
@@ -109,105 +109,7 @@ var createWorkPackagesView = function () {
     JSONToCSVConvertor(data, 'Pbs', true)
   }
 
-  // async function startSelection(ev) {
-  //   var store = await query.currentProject()
-  //   var metalinkType = ev.target.dataset.prop;
-  //   var sourceTriggerId = ev.target.dataset.id;
-  //   var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-  //   var sourceGroup = undefined
-  //   var sourceData = undefined
-  //   var invert = false
-  //   var source = "source"
-  //   var target = "target"
-  //   var sourceLinks= undefined
-  //   var displayRules= undefined
-  //   if (metalinkType == "assignedTo") {
-  //     sourceData=store.stakeholders.items
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false},
-  //       {prop:"lastName", displayAs:"Last name", edit:false}
-  //     ]
-  //   }else if (metalinkType == "WpOwn") {
-  //     sourceGroup="currentPbs"
-  //     sourceData=store.currentPbs.items
-  //     sourceLinks=store.currentPbs.links
-  //     displayRules = [
-  //       {prop:"name", displayAs:"First name", edit:false},
-  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-  //     ]
-  //   }else if (metalinkType == "WpOwnNeed") {
-  //     sourceGroup="requirements"
-  //     sourceData=store.requirements.items
-  //     sourceLinks=store.requirements.links
-  //     displayRules = [
-  //       {prop:"name", displayAs:"First name", edit:false},
-  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-  //     ]
-  //   }else if (metalinkType == "originNeed") {
-  //     sourceGroup="currentPbs"
-  //     invert = true;
-  //     sourceData=store.currentPbs.items
-  //     source = "target"//invert link order for after
-  //     target = "source"
-  //     sourceLinks=store.currentPbs.links
-  //     displayRules = [
-  //       {prop:"name", displayAs:"First name", edit:false},
-  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-  //     ]
-  //   }else if (metalinkType == "tags") {
-  //     sourceData=store.tags.items
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false}
-  //     ]
-  //   }
-  //   showListMenu({
-  //     sourceData:sourceData,
-  //     sourceLinks:sourceLinks,
-  //     parentSelectMenu:ev.select ,
-  //     multipleSelection:currentLinksUuidFromDS,
-  //     displayProp:"name",
-  //     searchable : true,
-  //     display:displayRules,
-  //     idProp:"uuid",
-  //     onAdd:(ev)=>{//TODO experimental, replace with common service
-  //       var uuid = genuuid()
-  //       push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
-  //       if (sourceGroup == "currentPbs") {
-  //         push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
-  //       }
-  //       ev.select.setEditItemMode({
-  //         item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
-  //         onLeave: (ev)=>{
-  //           push(act.remove(sourceGroup,{uuid:uuid}))
-  //           if (sourceGroup == "currentPbs") {
-  //             push(removePbsLink({target:uuid}))
-  //           }
-  //           ev.select.updateData(store[sourceGroup].items)
-  //           ev.select.updateLinks(store[sourceGroup].links)          }
-  //       })
-  //     },
-  //     onEditItem: (ev)=>{
-  //       var newValue = prompt("Edit Item",ev.target.dataset.value)
-  //       if (newValue) {
-  //         push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-  //       }
-  //     },
-  //     onCloseMenu: (ev)=>{
-  //       console.log(ev.select);
-  //       ev.select.getParent().refreshList()
-  //     },
-  //     onChangeSelect: (ev)=>{
-  //       batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-  //       batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-  //
-  //       ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-  //       ev.select.getParent().refreshList()
-  //     },
-  //     onClick: (ev)=>{
-  //       console.log("select");
-  //     }
-  //   })
-  // }
+
 
   var update = function () {
     render()

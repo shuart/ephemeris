@@ -16,9 +16,9 @@ var createPbsView = function () {
       if (objectIsActive && currentVisibleList) {
         var store = await query.currentProject()
         ephHelpers.updateListElements(currentVisibleList,{
-          items:store.currentPbs.items,
-          links:store.currentPbs.links,
-          metaLinks:store.metaLinks.items,
+          items:store.currentPbs,
+          links:store.links,
+          metaLinks:store.metaLinks,
           displayRules:setDisplayRules(store)
         })
       }
@@ -29,29 +29,29 @@ var createPbsView = function () {
     var displayRules = [
       {prop:"name", displayAs:"Name", edit:"true"},
       {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-      {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
-      {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"}
+      {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks, choices:()=>store.requirements, edit:"true"},
+      {prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks, choices:()=>store.functions, edit:"true"}
     ]
 
     extraFields = [
       {uuid:"name", prop:"name", displayAs:"Name", edit:"true"},
       {uuid:"desc", prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-      {uuid:"originNeed", prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
-      {uuid:"originFunction", prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks.items, choices:()=>store.functions.items, edit:"true"},
-      {uuid:"tags", prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
-      {uuid:"category", prop:"category", displayAs:"Category", meta:()=>store.metaLinks.items, choices:()=>store.categories.items, edit:true},
-      {uuid:"contains", prop:"contains",isTarget:true, displayAs:"Physical Spaces", meta:()=>store.metaLinks.items, choices:()=>store.physicalSpaces.items, edit:true},
-      {uuid:"fakeInterfaces", prop:"fakeInterfaces", displayAs:"Interfaces", meta:()=>workarounds.generateLinksToInterfaceTargets(store.interfaces.items), choices:()=>store.currentPbs.items, customChoiceName:e=>e.target, dataIdIsLinkId:true,edit:false},//TODO clean as this is a bit of an hack
-      {uuid:"WpOwn", prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
-      {uuid:"documents", prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
+      {uuid:"originNeed", prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks, choices:()=>store.requirements, edit:"true"},
+      {uuid:"originFunction", prop:"originFunction", displayAs:"Linked to functions", meta:()=>store.metaLinks, choices:()=>store.functions, edit:"true"},
+      {uuid:"tags", prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks, choices:()=>store.tags, edit:true},
+      {uuid:"category", prop:"category", displayAs:"Category", meta:()=>store.metaLinks, choices:()=>store.categories, edit:true},
+      {uuid:"contains", prop:"contains",isTarget:true, displayAs:"Physical Spaces", meta:()=>store.metaLinks, choices:()=>store.physicalSpaces, edit:true},
+      {uuid:"fakeInterfaces", prop:"fakeInterfaces", displayAs:"Interfaces", meta:()=>workarounds.generateLinksToInterfaceTargets(store.interfaces), choices:()=>store.currentPbs, customChoiceName:e=>e.target, dataIdIsLinkId:true,edit:false},//TODO clean as this is a bit of an hack
+      {uuid:"WpOwn", prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks, choices:()=>store.workPackages, edit:true},
+      {uuid:"documents", prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks, choices:()=>store.documents, edit:true}
     ]
 
-    let storeSettings = store.settings.items.find(s=>s.type == "pbsListViewVisibleFields")
+    let storeSettings = store.settings.find(s=>s.type == "pbsListViewVisibleFields")
     if (storeSettings && storeSettings.value[0]) { //if store settings exist and array is populated
       displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
       //displayRules = extraFields
     }
-    let customFields = store.extraFields.items.filter(s=>s.linkedTo == "currentPbs")
+    let customFields = store.extraFields.filter(s=>s.linkedTo == "currentPbs")
     if (customFields && customFields[0]) { //if store settings exist and array is populated
       displayRules = displayRules.concat(ephHelpers.formatCustomFields(customFields))
       //displayRules = extraFields
@@ -65,11 +65,11 @@ var createPbsView = function () {
 
   var render = async function () {
     var store = await query.currentProject()
-    console.log(store.currentPbs.items);
+    console.log(store.currentPbs);
       currentVisibleList = showListMenu({
-        sourceData:store.currentPbs.items,
-        sourceLinks:store.currentPbs.links,
-        metaLinks:store.metaLinks.items,
+        sourceData:store.currentPbs,
+        sourceLinks:store.links,
+        metaLinks:store.metaLinks,
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
@@ -104,7 +104,7 @@ var createPbsView = function () {
           if (confirm("remove item ?")) {
             push(removePbs({uuid:ev.target.dataset.id}))
             push(removePbsLink({target:ev.target.dataset.id}))
-            ev.select.updateData(store.currentPbs.items)
+            ev.select.updateData(store.currentPbs)
           }
         },
         onMove: (ev)=>{
@@ -117,11 +117,11 @@ var createPbsView = function () {
             if (ev.targetParentId && ev.targetParentId != "undefined") {
               push(addPbsLink({source:ev.targetParentId, target:ev.originTarget.dataset.id}))
             }else {
-              push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:ev.originTarget.dataset.id}))
+              push(addPbsLink({source:query.currentProject().currentPbs[0].uuid, target:ev.originTarget.dataset.id}))
 
             }
-            // ev.select.updateData(store.currentPbs.items)
-            // ev.select.updateLinks(store.currentPbs.links)
+            // ev.select.updateData(store.currentPbs)
+            // ev.select.updateLinks(store.links)
           }
         },
         onAdd: async (ev)=>{
@@ -134,7 +134,7 @@ var createPbsView = function () {
           var newReq = popup.result
           if (newReq) {
             push(addPbs({uuid:id, name:newReq}))
-            push(addPbsLink({source:store.currentPbs.items[0].uuid, target:id}))
+            push(addPbsLink({source:store.currentPbs[0].uuid, target:id}))
           }
         },
         onAddFromPopup: (ev)=>{
@@ -145,14 +145,14 @@ var createPbsView = function () {
             if (ev.target && ev.target != "undefined") {
               push(act.move("currentPbs", {origin:uuid, target:ev.target.dataset.id}))
               //check for parenting
-              let parent = store.currentPbs.links.find(l=>l.target == ev.target.dataset.id)
+              let parent = store.links.find(l=>l.target == ev.target.dataset.id)
               if (parent) {
                 push(act.addLink("currentPbs",{source:parent.source, target:uuid}))
               }else {
-                push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+                push(addPbsLink({source:query.currentProject().currentPbs[0].uuid, target:uuid}))
               }
             }
-            ev.select.updateData(store.currentPbs.items)
+            ev.select.updateData(store.currentPbs)
           }
         },
         onAddFromExtraField: (ev)=>{
@@ -166,8 +166,8 @@ var createPbsView = function () {
         },
         onClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id, function (e) {
-            // ev.select.updateData(store.currentPbs.items)
-            // ev.select.updateLinks(store.currentPbs.links)
+            // ev.select.updateData(store.currentPbs)
+            // ev.select.updateLinks(store.links)
             // ev.select.refreshList()
           })
         },
@@ -220,8 +220,8 @@ var createPbsView = function () {
             action:(ev)=>{
               // showPbsTree(ev)
               showTreeFromListService.showByStoreGroup("currentPbs", function (e) {
-                ev.select.updateData(store.currentPbs.items)
-                ev.select.updateLinks(store.currentPbs.links)
+                ev.select.updateData(store.currentPbs)
+                ev.select.updateLinks(store.links)
                 ev.select.update() //TODO find a better way
               })
             }
@@ -232,7 +232,7 @@ var createPbsView = function () {
 
   var exportToCSV = function () {
     let store = query.currentProject()
-    let data = store.currentPbs.items.map(i=>{
+    let data = store.currentPbs.map(i=>{
       let linkToTextFunc = getRelatedItems(store, i, "functions").map(s=> s.name ? s.name:"").join(",")
       let linkToTextReq = getRelatedItems(store, i, "requirements").map(s=> s.name ? s.name:"").join(",")
       let linkToTextSpaces = getRelatedItems(store, i, "physicalSpaces",{objectIs:"target", metalinksType:"contains"}).map(s=> s.name? s.name : '').join(",")
@@ -261,7 +261,7 @@ var createPbsView = function () {
 
   // function generateExtraFieldsList(store) {
   //   if (isExtraFieldsVisible) {
-  //     let extras = store.extraFields.items.filter(i=>(i.type == "currentPbs" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+  //     let extras = store.extraFields.filter(i=>(i.type == "currentPbs" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
   //     if (!extras[0]) {
   //       if (confirm("No custom Fields yet. Add one?")) {
   //         addCustomField()
@@ -284,15 +284,15 @@ var createPbsView = function () {
   //   var newReq = prompt("add a new Field?")
   //   if (newReq) {
   //     let clearedName = "_"+slugify(newReq)+"_"+(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
-  //     if (store.extraFields.items.filter(i=>i.prop == clearedName)[0]) {
-  //       console.log(store.extraFields.items.filter(i=>i.prop == clearedName)[0]);
+  //     if (store.extraFields.filter(i=>i.prop == clearedName)[0]) {
+  //       console.log(store.extraFields.filter(i=>i.prop == clearedName)[0]);
   //       alert("This field has already been registered")//in rare case where an identical field would be generated
   //     }
   //     if (true) {
   //       console.log('adding');
   //       push(act.add("extraFields",{name: newReq, prop:clearedName, type: "currentPbs"}))
   //     }else {//add to main item (only pbs)
-  //       // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+  //       // push(addPbsLink({source:query.currentProject().currentPbs[0].uuid, target:id}))
   //     }
   //   }
   //   if (callback) {

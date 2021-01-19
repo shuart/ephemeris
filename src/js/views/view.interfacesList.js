@@ -12,7 +12,7 @@ var createInterfacesListView = function () {
 
   var getObjectNameByUuid = function (uuid, store) {
     // let foundItem = query.items("all", i=> i.uuid == uuid)[0]
-    let foundItem= store.currentPbs.items.find(i=> i.uuid == uuid)
+    let foundItem= store.currentPbs.find(i=> i.uuid == uuid)
     if (foundItem) {
       return foundItem.name
     }else {
@@ -21,7 +21,7 @@ var createInterfacesListView = function () {
   }
 
   var readifyInterfaces = function (store) {
-    var originalLinks = store.interfaces.items
+    var originalLinks = store.interfaces
     let data = originalLinks.map(function (l) {
 
       let newItem = {uuid:l.uuid,//TODO check if still necessary
@@ -48,11 +48,11 @@ var createInterfacesListView = function () {
       // fullScreen:true,// TODO: perhaps not full screen?
       display:[
         {prop:"name", displayAs:"Name", edit:true},
-        {prop:"interfacesType", displayAs:"Type", meta:()=>store.metaLinks.items, choices:()=>store.interfacesTypes.items, edit:true},
+        {prop:"interfacesType", displayAs:"Type", meta:()=>store.metaLinks, choices:()=>store.interfacesTypes, edit:true},
         {prop:"description", displayAs:"Description", edit:true},
         {prop:"source", displayAs:"Source item", custom:e=>getObjectNameByUuid(e, store), actionable:e=>e,edit:false},
         {prop:"target", displayAs:"Target item", custom:e=>getObjectNameByUuid(e, store), actionable:e=>e,edit:false},
-        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true}
+        {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks, choices:()=>store.tags, edit:true}
       ],
       idProp:"uuid",
       onEditItem: (ev)=>{
@@ -132,7 +132,7 @@ var createInterfacesListView = function () {
     var showColoredIconsRule = undefined
     if (metalinkType == "origin") {
       sourceGroup="stakeholders";
-      sourceData=store.stakeholders.items
+      sourceData=store.stakeholders
       showColoredIconsRule= lettersFromNames,
       displayRules = [
         {prop:"name", displayAs:"First Name", edit:false},
@@ -141,23 +141,23 @@ var createInterfacesListView = function () {
     }else if (metalinkType == "originNeed") {
       sourceGroup="currentPbs"
       invert = true;
-      sourceData=store.currentPbs.items
+      sourceData=store.currentPbs
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.currentPbs.links
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "tags") {
       sourceGroup="tags";
-      sourceData=store.tags.items
+      sourceData=store.tags
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "interfacesType") {
       sourceGroup="interfacesTypes";
-      sourceData=store.interfacesTypes.items
+      sourceData=store.interfacesTypes
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -166,8 +166,8 @@ var createInterfacesListView = function () {
       invert = true;
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.workPackages.links
-      sourceData=store.workPackages.items
+      sourceLinks=store.links
+      sourceData=store.workPackages
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -186,10 +186,10 @@ var createInterfacesListView = function () {
         var uuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
         ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+          item:store[sourceGroup].filter(e=> e.uuid == uuid)[0],
           onLeave: (ev)=>{
             push(act.remove(sourceGroup,{uuid:uuid}))
-            ev.select.updateData(store[sourceGroup].items)
+            ev.select.updateData(store[sourceGroup])
           }
         })
       },
@@ -207,7 +207,7 @@ var createInterfacesListView = function () {
         batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
         batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
 
-        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+        ev.select.getParent().updateMetaLinks(store.metaLinks)//TODO remove extra call
         ev.select.getParent().refreshList()
       },
       onClick: (ev)=>{
@@ -237,10 +237,10 @@ var createInterfacesListView = function () {
     })
     let nodes = []
     let links = []
-    store.currentPbs.items.forEach(function (p,index) {
+    store.currentPbs.forEach(function (p,index) {
       nodes.push({name:p.name, group:undefined, index:index, uuid:p.uuid})
     })
-    store.interfaces.items.forEach(function (i) {
+    store.interfaces.forEach(function (i) {
       console.log(nodes.find(n=>n.uuid == i.source));
       let sourceNode=nodes.find(n=>n.uuid == i.source)
       let source=sourceNode.index

@@ -23,7 +23,7 @@ var createLeftMenu = function () {
     connect(".action_link_pbs_req","click",(e)=>{
       var store = query.currentProject()
       ShowSelectMenu({
-        sourceData:store.requirements.items,
+        sourceData:store.requirements,
         displayProp:"name",
         display:[
           {prop:"name", displayAs:"name", edit: false},
@@ -32,10 +32,10 @@ var createLeftMenu = function () {
         idProp:"uuid",
         onClick: (ev)=>{
           //mutations
-          store.metaLinks.items = store.metaLinks.items.filter((i)=>i.target != e.target.dataset.id)
+          store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
           console.log(ev.target);
-          store.metaLinks.items.push({source:ev.target.dataset.id , target:e.target.dataset.id})
-          console.log(store.metaLinks.items);
+          store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
+          console.log(store.metaLinks);
           ev.selectDiv.remove()
           renderCDC()
         },
@@ -50,8 +50,8 @@ var createLeftMenu = function () {
       //e.target.dataset.id
       var store = query.currentProject()
       ShowSelectMenu({
-        sourceData:store.currentPbs.items,
-        sourceLinks:store.currentPbs.links,
+        sourceData:store.currentPbs,
+        sourceLinks:store.links,
         display:[
           {prop:"name", displayAs:"name", edit:false},
         ],
@@ -59,15 +59,15 @@ var createLeftMenu = function () {
         idProp:"uuid",
         onClick: (ev)=>{
           //mutations
-          store.metaLinks.items = store.metaLinks.items.filter((i)=>i.target != e.target.dataset.id)
+          store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
           console.log(ev.target);
-          store.metaLinks.items.push({source:ev.target.dataset.id , target:e.target.dataset.id})
+          store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
           ev.selectDiv.remove()
           renderCDC()
         },
         onClear: (ev)=>{
           //mutations
-          store.metaLinks.items = store.metaLinks.items.filter((i)=>i.target != e.target.dataset.id)
+          store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
           ev.selectDiv.remove()
           renderCDC()
         }
@@ -79,8 +79,8 @@ var createLeftMenu = function () {
         var tree = renderDTree(app.cscDB.db)
         console.log(tree);
         var data =undefined
-        if (store.currentPbs.items[0]) {
-          data = hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0]
+        if (store.currentPbs[0]) {
+          data = hierarchiesList(store.currentPbs, store.currentPbs.links)[0]
           console.log(data);
         }
         displayThree({
@@ -94,13 +94,13 @@ var createLeftMenu = function () {
             var newName = prompt("Name?")
             push(addPbs({uuid:uuid, name:newName}))
             push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-            ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
+            ev.sourceTree.setData(hierarchiesList(store.currentPbs, store.currentPbs.links)[0])
             //ev.sourceTree.updateFromRoot(ev.element)
           },
           onMove:(ev)=>{
             push(removePbsLink({source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
             push(addPbsLink({source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
-            ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
+            ev.sourceTree.setData(hierarchiesList(store.currentPbs, store.currentPbs.links)[0])
           },
           onRemove:(ev)=>{
             if (confirm("Keep Childs?")) {
@@ -114,13 +114,13 @@ var createLeftMenu = function () {
             //addNewLinks
             push(removePbs({uuid:ev.element.data.uuid}))
             //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-            ev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
+            ev.sourceTree.setData(hierarchiesList(store.currentPbs, store.currentPbs.links)[0])
           },
           onNodeClicked:(originev)=>{
-            var originItem = store.currentPbs.items.filter(e=> e.uuid == originev.element.data.uuid)
+            var originItem = store.currentPbs.filter(e=> e.uuid == originev.element.data.uuid)
             ShowSelectMenu({
-              sourceData:store.currentPbs.items,
-              sourceLinks:store.currentPbs.links,
+              sourceData:store.currentPbs,
+              sourceLinks:store.links,
               displayProp:"name",
               searchable : false,
               singleElement:originItem[0],
@@ -135,7 +135,7 @@ var createLeftMenu = function () {
                 //console.log("fefsefse");
                 console.log(originev.sourceTree);
                 // ev.select.getParent().update()
-                originev.sourceTree.setData(hierarchiesList(store.currentPbs.items, store.currentPbs.links)[0])
+                originev.sourceTree.setData(hierarchiesList(store.currentPbs, store.currentPbs.links)[0])
                 originev.sourceTree.hardUpdate()//TODO find better way
               },
               onEditItem: (ev)=>{
@@ -168,8 +168,8 @@ var createLeftMenu = function () {
       lastTopCat ={ name:undefined};
       lastMiddleCat = { name:undefined};
       lastSubCat= { name:undefined};
-      if (store.currentCDC.items[0]) {
-        console.log(store.currentCDC.items);
+      if (store.currentCDC[0]) {
+        console.log(store.currentCDC);
         var tocCurrentHTML = app.cscDB.db.items.filter(createListIDFilter(store.currentCDC.items)).reduce(renderCurrentTocHTML,"")
         var downloadHTML = `
           <div class="item">

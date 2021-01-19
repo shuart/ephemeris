@@ -171,7 +171,7 @@ var createSingleActionView = function ({
       var metalinkType = e.target.dataset.prop;
       var sourceTriggerId = e.target.dataset.id;
       var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
-      var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+      var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
 
       let data = undefined
@@ -179,7 +179,7 @@ var createSingleActionView = function ({
       let showColoredIcons = false
 
       if (metalinkType == 'assignedTo') {
-        data = projectStore.stakeholders.items
+        data = projectStore.stakeholders
         display = [
           {prop:"name", displayAs:"First name", edit:false},
           {prop:"lastName", displayAs:"Last Name", edit:false},
@@ -187,7 +187,7 @@ var createSingleActionView = function ({
         ]
         showColoredIcons = lettersFromNames
       }else {
-        data = projectStore[e.target.dataset.prop].items
+        data = projectStore[e.target.dataset.prop]
         display = [
           {prop:"name", displayAs:"Name", edit:false}
         ]
@@ -212,7 +212,7 @@ var createSingleActionView = function ({
             var allProjects = await query.items("projects")
             //update store
             var projectStore = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0];
-            var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+            var metaLinks = allProjects.filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks;
 
             await batchRemoveMetaLinks(projectStore, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), "source", sourceTriggerId, projectStore.uuid)
             await batchAddMetaLinks(projectStore, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), "source", sourceTriggerId, projectStore.uuid)
@@ -301,12 +301,12 @@ var createSingleActionView = function ({
 
         <h3 class="header">Assigned to</h3>
         <p>
-          ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectUuid).stakeholders.items, i.projectUuid)}
+          ${generateListeFromMeta(allProjects, "assignedTo",i.uuid, allProjects.find(e=>e.uuid == i.projectUuid).stakeholders, i.projectUuid)}
         </p>
         <div class="ui divider"></div>
         <h3 class="header">Tags to</h3>
         <p>
-          ${generateListeFromMeta(allProjects, "tags",i.uuid, allProjects.filter(e=>e.uuid == i.projectUuid)[0].tags.items, i.projectUuid)}
+          ${generateListeFromMeta(allProjects, "tags",i.uuid, allProjects.filter(e=>e.uuid == i.projectUuid)[0].tags, i.projectUuid)}
         </p>
         <div class="ui divider"></div>
 
@@ -344,7 +344,7 @@ var createSingleActionView = function ({
     console.log(allProjects);
     let allActions = []
     allProjects.forEach(function (store) {
-      let formatedActions = store.actions.items.map(a=>{//TODO only check open action
+      let formatedActions = store.actions.map(a=>{//TODO only check open action
         let copy = deepCopy(a)
         copy.projectName = store.name;
         copy.urgent = lessThanInSomeDays(a.dueDate,2)
@@ -356,7 +356,7 @@ var createSingleActionView = function ({
     return allActions.find(a=>a.uuid == uuid)
   }
   var generateListeFromMeta = function (allProjects, propName, sourceId, targetList, projectuuid, isEditable) {
-    var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
+    var meta = allProjects.filter(i=>i.uuid == projectuuid)[0].metaLinks;
     var metalist = meta.filter(e => (e.type == propName && e.source == sourceId )).map(e => e.target)
     var editHtml = `<i data-prop="${propName}" data-value='${JSON.stringify(metalist)}' data-id="${sourceId}" data-project="${projectuuid}" class="edit icon action_unified_list_select_item_assigned" style="opacity:0.2"></i>`
     function reduceChoices(acc, e) {

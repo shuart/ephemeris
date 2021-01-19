@@ -15,7 +15,7 @@ var createTagsView = function () {
     setTimeout(async function () {
       var store = await query.currentProject()
       ephHelpers.updateListElements(currentVisibleList,{
-        items:store.tags.items
+        items:store.tags
       })
     }, 1500);
   }
@@ -23,7 +23,7 @@ var createTagsView = function () {
   var render = async function () {
     var store = await query.currentProject()
     currentVisibleList = showListMenu({
-      sourceData:store.tags.items,
+      sourceData:store.tags,
       displayProp:"name",
       // targetDomContainer:".center-container",
       // fullScreen:true,// TODO: perhaps not full screen?

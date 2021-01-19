@@ -15,8 +15,8 @@ var createStakeholdersView = function () {
     setTimeout(async function () {
       var store = await query.currentProject()
       ephHelpers.updateListElements(currentVisibleList,{
-        items:store.stakeholders.items,
-        links:store.stakeholders.links,
+        items:store.stakeholders,
+        links:store.links,
       })
     }, 1500);
   }
@@ -25,8 +25,8 @@ var createStakeholdersView = function () {
     var store = await query.currentProject()
     //e.target.dataset.id
     currentVisibleList = showListMenu({
-      sourceData:store.stakeholders.items,
-      sourceLinks:store.stakeholders.links,
+      sourceData:store.stakeholders,
+      sourceLinks:store.links,
       displayProp:"name",
       display:[
         {prop:"name", displayAs:"First name", edit:"true"},
@@ -62,7 +62,7 @@ var createStakeholdersView = function () {
       //     if (ev.targetParentId && ev.targetParentId != "undefined") {
       //       push(act.addLink("stakeholders",{source:ev.targetParentId, target:ev.originTarget.dataset.id}))
       //     }
-      //     ev.select.updateData(store.stakeholders.items)
+      //     ev.select.updateData(store.stakeholders)
       //     ev.select.updateLinks(store.stakeholders.links)
       //   }
       // },
@@ -100,7 +100,7 @@ var createStakeholdersView = function () {
           if (ev.target && ev.target != "undefined") {
             push(act.move("stakeholders", {origin:uuid, target:ev.target.dataset.id}))
             //check for parenting
-            let parent = store.stakeholders.links.find(l=>l.target == ev.target.dataset.id)
+            let parent = store.links.find(l=>l.target == ev.target.dataset.id)
             if (parent) {
               push(act.addLink("stakeholders",{source:parent.source, target:uuid}))
             }

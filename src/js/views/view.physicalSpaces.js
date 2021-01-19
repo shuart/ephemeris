@@ -14,9 +14,9 @@ var createWorkPhysicalSpacesView = function () {
       if (objectIsActive && currentVisibleList) {
         var store = await query.currentProject()
         ephHelpers.updateListElements(currentVisibleList,{
-          items:store.physicalSpaces.items,
-          links:store.physicalSpaces.links,
-          metaLinks:store.metaLinks.items,
+          items:store.physicalSpaces,
+          links:store.links,
+          metaLinks:store.metaLinks,
           displayRules:setDisplayRules(store)
         })
       }
@@ -27,7 +27,7 @@ var createWorkPhysicalSpacesView = function () {
     var displayRules = [
       {prop:"name", displayAs:"Name", edit:true},
       {prop:"desc", displayAs:"Description", fullText:true, edit:true},
-      {prop:"contains", displayAs:"Products contained", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+      {prop:"contains", displayAs:"Products contained", meta:()=>store.metaLinks, choices:()=>store.currentPbs, edit:true}
     ]
     return displayRules
   }
@@ -39,8 +39,8 @@ var createWorkPhysicalSpacesView = function () {
   var render = async function () {
     var store = await query.currentProject()
     currentVisibleList = showListMenu({
-      sourceData:store.physicalSpaces.items,
-      sourceLinks:store.physicalSpaces.links,
+      sourceData:store.physicalSpaces,
+      sourceLinks:store.links,
       displayProp:"name",
       targetDomContainer:".center-container",
       fullScreen:true,// TODO: perhaps not full screen?
@@ -57,7 +57,7 @@ var createWorkPhysicalSpacesView = function () {
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("physicalSpaces",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.physicalSpaces.items)
+          ev.select.updateData(store.physicalSpaces)
         }
       },
       onMove: (ev)=>{
@@ -69,8 +69,8 @@ var createWorkPhysicalSpacesView = function () {
           if (ev.targetParentId && ev.targetParentId != "undefined") {
             push(act.addLink("physicalSpaces",{source:ev.targetParentId, target:ev.originTarget.dataset.id}))
           }
-          ev.select.updateData(store.physicalSpaces.items)
-          ev.select.updateLinks(store.physicalSpaces.links)
+          ev.select.updateData(store.physicalSpaces)
+          ev.select.updateLinks(store.links)
         }
       },
       onAdd: async (ev)=>{
@@ -90,13 +90,13 @@ var createWorkPhysicalSpacesView = function () {
           if (ev.target && ev.target != "undefined") {
             push(act.move("physicalSpaces", {origin:uuid, target:ev.target.dataset.id}))
             //check for parenting
-            let parent = store.physicalSpaces.links.find(l=>l.target == ev.target.dataset.id)
+            let parent = store.links.find(l=>l.target == ev.target.dataset.id)
             if (parent) {
               push(act.addLink("physicalSpaces",{source:parent.source, target:uuid}))
             }
           }
-          ev.select.updateData(store.physicalSpaces.items)
-          ev.select.updateLinks(store.physicalSpaces.links)
+          ev.select.updateData(store.physicalSpaces)
+          ev.select.updateLinks(store.links)
         }
       },
       onEditChoiceItem: (ev)=>{
@@ -107,8 +107,8 @@ var createWorkPhysicalSpacesView = function () {
       },
       onClick: (ev)=>{
         showSingleItemService.showById(ev.target.dataset.id, function (e) {
-          // ev.select.updateData(store.physicalSpaces.items)
-          // ev.select.updateLinks(store.physicalSpaces.links)
+          // ev.select.updateData(store.physicalSpaces)
+          // ev.select.updateLinks(store.links)
           // ev.select.refreshList()
         })
         //mutations
@@ -140,8 +140,8 @@ var createWorkPhysicalSpacesView = function () {
           name:"Diagramme",
           action:(ev)=>{
             showTreeFromListService.showByStoreGroup("physicalSpaces", function (e) {
-              ev.select.updateData(store.physicalSpaces.items)
-              ev.select.updateLinks(store.physicalSpaces.links)
+              ev.select.updateData(store.physicalSpaces)
+              ev.select.updateLinks(store.links)
               ev.select.update() //TODO find a better way
             })
           }
@@ -150,89 +150,10 @@ var createWorkPhysicalSpacesView = function () {
     })
   }
 
-  // async function startSelection(ev) {
-  //   var store = await query.currentProject()
-  //   var metalinkType = ev.target.dataset.prop;
-  //   var sourceTriggerId = ev.target.dataset.id;
-  //   var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-  //   var sourceData = undefined
-  //   var invert = false
-  //   var source = "source"
-  //   var target = "target"
-  //   var sourceLinks= undefined
-  //   var displayRules= undefined
-  //   if (metalinkType == "assignedTo") {
-  //     sourceData=store.stakeholders.items
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false},
-  //       {prop:"lastName", displayAs:"Last name", edit:false}
-  //     ]
-  //   }else if (metalinkType == "WpOwn") {
-  //     sourceData=store.currentPbs.items
-  //     sourceLinks=store.currentPbs.links
-  //     displayRules = [
-  //       {prop:"name", displayAs:"First name", edit:false},
-  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-  //     ]
-  //   }else if (metalinkType == "WpOwnNeed") {
-  //     sourceData=store.requirements.items
-  //     sourceLinks=store.requirements.links
-  //     displayRules = [
-  //       {prop:"name", displayAs:"First name", edit:false},
-  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-  //     ]
-  //   }else if (metalinkType == "contains") {
-  //     sourceData=store.currentPbs.items
-  //     sourceLinks=store.currentPbs.links
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false},
-  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-  //     ]
-  //   }else if (metalinkType == "originNeed") {
-  //     invert = true;
-  //     sourceData=store.currentPbs.items
-  //     source = "target"//invert link order for after
-  //     target = "source"
-  //     sourceLinks=store.currentPbs.links
-  //     displayRules = [
-  //       {prop:"name", displayAs:"First name", edit:false},
-  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-  //     ]
-  //   }else if (metalinkType == "tags") {
-  //     sourceData=store.tags.items
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false}
-  //     ]
-  //   }
-  //   showListMenu({
-  //     sourceData:sourceData,
-  //     sourceLinks:sourceLinks,
-  //     parentSelectMenu:ev.select ,
-  //     multipleSelection:currentLinksUuidFromDS,
-  //     displayProp:"name",
-  //     searchable : true,
-  //     display:displayRules,
-  //     idProp:"uuid",
-  //     onCloseMenu: (ev)=>{
-  //       console.log(ev.select);
-  //       ev.select.getParent().refreshList()
-  //     },
-  //     onChangeSelect: (ev)=>{
-  //       batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-  //       batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-  //
-  //       ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-  //       ev.select.getParent().refreshList()
-  //     },
-  //     onClick: (ev)=>{
-  //       console.log("select");
-  //     }
-  //   })
-  // }
 
   var exportToCSV = function () {
     let store = query.currentProject()
-    let data = store.physicalSpaces.items.map(i=>{
+    let data = store.physicalSpaces.map(i=>{
       let linkToTextPbs = getRelatedItems(store, i, "currentPbs", {metalinksType:"contains"}).map(s=> s.name? s.name : "").join(",")
       return {id:i.uuid, name:i.name, description:i.desc, products:linkToTextPbs}
     })

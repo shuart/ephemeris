@@ -125,14 +125,14 @@ var createProjectSettingsView = function ({
     // }
 
     //check if default are there
-    console.log(dataSourceStore.settings.items);
-    let projectImageSetting = dataSourceStore.settings.items.find(s=>s.type == "projectLogo")
+    console.log(dataSourceStore.settings);
+    let projectImageSetting = dataSourceStore.settings.find(s=>s.type == "projectLogo")
     if (!projectImageSetting) {
       push(act.add("settings",{name:"Project Logo",type:"projectLogo", value:""}))
       sourceOccElement.remove()
       update()
     }
-    // projectImageSetting = i.settings.items.find(s=>s.type = "projectLogo")
+    // projectImageSetting = i.settings.find(s=>s.type = "projectLogo")
 
     let html =`
     <h2 class="header">
@@ -210,7 +210,7 @@ var createProjectSettingsView = function ({
   var getActionObjectCopyFromUuid = function (uuid) {
     let allActions = []
     query.items("projects").forEach(function (store) {
-      let formatedActions = store.actions.items.map(a=>{//TODO only check open action
+      let formatedActions = store.actions.map(a=>{//TODO only check open action
         let copy = deepCopy(a)
         copy.projectName = store.name;
         copy.urgent = lessThanInSomeDays(a.dueDate,2)

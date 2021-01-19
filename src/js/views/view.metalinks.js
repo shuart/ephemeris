@@ -14,8 +14,8 @@ var createMetalinksView = function () {
     let allItems = []
     for (var keys in store) {
       if (store.hasOwnProperty(keys)) {
-        if (store[keys].items) {
-          allItems = allItems.concat(store[keys].items)
+        if (store[keys]) {
+          allItems = allItems.concat(store[keys])
         }
       }
     }
@@ -28,7 +28,7 @@ var createMetalinksView = function () {
   }
 
   var readifyMetalinks = function (store) {
-    var originalLinks =store.metaLinks.items
+    var originalLinks =store.metaLinks
     let data = originalLinks.map(function (l) {
 
       let newItem = {uuid:l.uuid,

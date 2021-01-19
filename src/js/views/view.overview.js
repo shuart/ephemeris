@@ -49,7 +49,7 @@ var createOverview = function (targetSelector) {
     <h4>Quickstart guide</h4>
 
       <div class="ui small steps">
-      
+
         <div class="link step action_toogle_stakeholders">
           <i class="address book icon"></i>
           <div class="content">
@@ -86,7 +86,7 @@ var createOverview = function (targetSelector) {
       alert("Select your name in the stakeholder list to mark it as yourself, or add yourself as a new stakeholder")
       var projectScope = await query.currentProject()
       showListMenu({
-        sourceData:projectScope.stakeholders.items,
+        sourceData:projectScope.stakeholders,
         displayProp:"name",
         display:[
           {prop:"name", displayAs:"Prénom", edit:false},
@@ -106,8 +106,8 @@ var createOverview = function (targetSelector) {
 
             push(act.edit("stakeholders", {project:projectScope.uuid, uuid:idToReplace, prop:"uuid", value:app.store.userData.info.userUuid}))
 
-            var metalinksOriginToChange = projectScope.metaLinks.items.filter(m=>m.source==idToReplace)
-            var metalinksTargetToChange = projectScope.metaLinks.items.filter(m=>m.target==idToReplace)
+            var metalinksOriginToChange = projectScope.metaLinks.filter(m=>m.source==idToReplace)
+            var metalinksTargetToChange = projectScope.metaLinks.filter(m=>m.target==idToReplace)
             for (link of metalinksOriginToChange) {
               // link.source = ev.target.dataset.id
               push(act.edit("metaLinks", {project:projectScope.uuid, uuid:link.uuid, prop:"source", value:app.store.userData.info.userUuid}))
@@ -144,7 +144,7 @@ var createOverview = function (targetSelector) {
       await clearUncompleteLinks()//clean all uncomplete metalink of the project
       updateFileForRetroCompatibility(store) //check file for retrocompatbiity
       // //create a PBS and current user stakholder if first opening of project
-      // if (!store.currentPbs.items[0]) {
+      // if (!store.currentPbs[0]) {
       //   createPBS()
       //   createUserStakeholder()
       // }
@@ -167,7 +167,7 @@ var createOverview = function (targetSelector) {
                 <div class="statistic">
                   <div class="value">
                     <i class="comment icon"></i>
-                    ${store.requirements.items.length}
+                    ${store.requirements.length}
                   </div>
                   <div class="label">
                     Requirements
@@ -176,7 +176,7 @@ var createOverview = function (targetSelector) {
                 <div class="statistic">
                   <div class="value">
                     <i class="users icon"></i>
-                    ${store.stakeholders.items.length}
+                    ${store.stakeholders.length}
                   </div>
                   <div class="label">
                     Stakeholders
@@ -184,7 +184,7 @@ var createOverview = function (targetSelector) {
                 </div>
                 <div class="statistic">
                   <div class="value">
-                    <i class="sitemap icon"></i> ${(store.currentPbs.items.length - 1)}
+                    <i class="sitemap icon"></i> ${(store.currentPbs.length - 1)}
                   </div>
                   <div class="label">
                     Sub-Systems
@@ -192,7 +192,7 @@ var createOverview = function (targetSelector) {
                 </div>
                 <div class="statistic">
                   <div class="value">
-                    <i class="cogs icon"></i> ${(store.functions.items.length)}
+                    <i class="cogs icon"></i> ${(store.functions.length)}
                   </div>
                   <div class="label">
                     functions
@@ -216,7 +216,7 @@ var createOverview = function (targetSelector) {
       // <div class="statistic">
       //   <div class="value">
       //     <img src="/images/avatar/small/joe.jpg" class="ui circular inline image">
-      //     ${(store.currentCDC.items.length)}
+      //     ${(store.currentCDC.length)}
       //   </div>
       //   <div class="label">
       //     Specs
@@ -235,21 +235,21 @@ var createOverview = function (targetSelector) {
   }
 
   function checkIfCurrentUserIsInStakeholders(store) {
-    return store.stakeholders.items.find(s=>s.uuid == app.store.userData.info.userUuid)
+    return store.stakeholders.find(s=>s.uuid == app.store.userData.info.userUuid)
   }
 
   // function createPBS() {
   //   var store = query.currentProject()
-  //   store.currentPbs.items.push({name: store.reference+store.name, uuid: "ita2215151-a50f-4dd3-904e-146118d5d444"})
-  //   store.currentPbs.items.push({name: "A linked product", uuid:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
-  //   store.currentPbs.items.push({name: "Another linked product", uuid:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
+  //   store.currentPbs.push({name: store.reference+store.name, uuid: "ita2215151-a50f-4dd3-904e-146118d5d444"})
+  //   store.currentPbs.push({name: "A linked product", uuid:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
+  //   store.currentPbs.push({name: "Another linked product", uuid:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
   //   store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
   //   store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
   // }
   function createUserStakeholder() {
     var store = query.currentProject()
     let i = app.store.userData.info
-    store.stakeholders.items[0] = {uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""}
+    store.stakeholders[0] = {uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""}
   }
   async function addUserStakeholder() {
     var store = await query.currentProject()
@@ -318,9 +318,9 @@ var createOverview = function (targetSelector) {
       dbConnector.addProjectCollection(store.uuid, "physicalSpaces", store.physicalSpaces)
       alertAboutUpdate("Physical Spaces feature has been added.")
     }
-    // if (store.interfaces.items.find(i=>(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )) {
+    // if (store.interfaces.find(i=>(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )) {
     //
-    //   store.interfaces.items = store.interfaces.items.filter(i=>!(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )
+    //   store.interfaces = store.interfaces.filter(i=>!(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )
     //
     //   alertAboutUpdate("Interfaces list feature has been added.")
     // }

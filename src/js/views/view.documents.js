@@ -12,8 +12,8 @@ var createDocumentsView = function () {
       if (objectIsActive && currentVisibleList) {
         var store = await query.currentProject()
         ephHelpers.updateListElements(currentVisibleList,{
-          items:store.documents.items,
-          metaLinks:store.metaLinks.items,
+          items:store.documents,
+          metaLinks:store.metaLinks,
           displayRules:displayRules(store)
         })
       }
@@ -26,11 +26,11 @@ var createDocumentsView = function () {
       {prop:"name", displayAs:"Name", edit:true},
       {prop:"osPath", displayAs:"Local", fullText:true, localPath:true, edit:false},
       {prop:"link", displayAs:"Link", fullText:true, link:true, edit:true},
-      {prop:"documents",isTarget:true, displayAs:"Products", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-      {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true}
+      {prop:"documents",isTarget:true, displayAs:"Products", meta:()=>store.metaLinks, choices:()=>store.currentPbs, edit:true},
+      {prop:"documentsNeed",isTarget:true, displayAs:"requirements", meta:()=>store.metaLinks, choices:()=>store.requirements, edit:true}
 
-      // {prop:"documented", displayAs:"Products documented", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:false},
-      // {prop:"documented", displayAs:"Requirements documented", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false}
+      // {prop:"documented", displayAs:"Products documented", meta:()=>store.metaLinks, choices:()=>store.currentPbs, edit:false},
+      // {prop:"documented", displayAs:"Requirements documented", meta:()=>store.metaLinks, choices:()=>store.requirements, edit:false}
     ]
   }
 
@@ -43,7 +43,7 @@ var createDocumentsView = function () {
       prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
       onLoaded = function (ev) {
         dropAreaService.setDropZone(".prepend", function () {
-          ev.select.updateData(store.documents.items)
+          ev.select.updateData(store.documents)
           ev.select.refreshList()
           setTimeout(function () {
             ev.select.scrollDown()
@@ -53,7 +53,7 @@ var createDocumentsView = function () {
     }
 
     currentVisibleList = showListMenu({
-      sourceData:store.documents.items,
+      sourceData:store.documents,
       displayProp:"name",
       targetDomContainer:".center-container",
       fullScreen:true,// TODO: perhaps not full screen?
@@ -70,7 +70,7 @@ var createDocumentsView = function () {
       },
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
-          let item = store.documents.items.find(i=>i.uuid == ev.target.dataset.id)
+          let item = store.documents.find(i=>i.uuid == ev.target.dataset.id)
           //delete from db or FS
           if (item && item.osPath) {
             if (typeof nw !== "undefined" && link) {//if using node webkit
@@ -80,7 +80,7 @@ var createDocumentsView = function () {
 
           //delete from list
           push(act.remove("documents",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.documents.items)
+          ev.select.updateData(store.documents)
 
         }
       },
@@ -108,8 +108,8 @@ var createDocumentsView = function () {
       },
       onClick: (ev)=>{
         // showSingleItemService.showById(ev.target.dataset.id, function (e) {
-        //   ev.select.updateData(store.workPackages.items)
-        //   ev.select.updateLinks(store.workPackages.links)
+        //   ev.select.updateData(store.workPackages)
+        //   ev.select.updateLinks(store.links)
         //   ev.select.refreshList()
         // })
       },
@@ -122,7 +122,7 @@ var createDocumentsView = function () {
       return [{
         name:"Folder",
         action:(ev)=>{
-          let osDoc = query.currentProject().documents.items.find(i=>i.osPath)
+          let osDoc = query.currentProject().documents.find(i=>i.osPath)
           if (osDoc) {
             nw.Shell.showItemInFolder(osDoc.osPath);
           }else {
@@ -149,7 +149,7 @@ var createDocumentsView = function () {
 
   // var exportToCSV = function () {
   //   let store = query.currentProject()
-  //   let data = store.workPackages.items.map(i=>{
+  //   let data = store.workPackages.map(i=>{
   //     let linkToTextsh = getRelatedItems(store, i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
   //     let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"source", metalinksType:"WpOwn"}).map(s=> s[0]? s[0].name : '').join(",")
   //     let linkToTextReq = getRelatedItems(store, i, "requirements",{objectIs:"source", metalinksType:"WpOwnNeed"}).map(s=> s[0]? s[0].name : '').join(",")
@@ -173,23 +173,23 @@ var createDocumentsView = function () {
     var sourceLinks= undefined
     var displayRules= undefined
     if (metalinkType == "assignedTo") {
-      sourceData=store.stakeholders.items
+      sourceData=store.stakeholders
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"lastName", displayAs:"Last name", edit:false}
       ]
     }else if (metalinkType == "WpOwn") {
       sourceGroup="currentPbs"
-      sourceData=store.currentPbs.items
-      sourceLinks=store.currentPbs.links
+      sourceData=store.currentPbs
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "WpOwnNeed") {
       sourceGroup="requirements"
-      sourceData=store.requirements.items
-      sourceLinks=store.requirements.links
+      sourceData=store.requirements
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
@@ -197,10 +197,10 @@ var createDocumentsView = function () {
     }else if (metalinkType == "originNeed") {
       sourceGroup="currentPbs"
       invert = true;
-      sourceData=store.currentPbs.items
+      sourceData=store.currentPbs
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.currentPbs.links
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
@@ -208,10 +208,10 @@ var createDocumentsView = function () {
     }else if (metalinkType == "documentsNeed") {
       sourceGroup="requirements"
       invert = true;
-      sourceData=store.requirements.items
+      sourceData=store.requirements
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.requirements.links
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
@@ -219,16 +219,16 @@ var createDocumentsView = function () {
     }else if (metalinkType == "documents") {
       sourceGroup="currentPbs"
       invert = true;
-      sourceData=store.currentPbs.items
+      sourceData=store.currentPbs
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.currentPbs.links
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "tags") {
-      sourceData=store.tags.items
+      sourceData=store.tags
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -246,10 +246,10 @@ var createDocumentsView = function () {
         var uuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
         ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+          item:store[sourceGroup].filter(e=> e.uuid == uuid)[0],
           onLeave: (ev)=>{
             push(act.remove(sourceGroup,{uuid:uuid}))
-            ev.select.updateData(store[sourceGroup].items)
+            ev.select.updateData(store[sourceGroup])
           }
         })
       },
@@ -267,7 +267,7 @@ var createDocumentsView = function () {
         batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
         batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
 
-        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+        ev.select.getParent().updateMetaLinks(store.metaLinks)//TODO remove extra call
         ev.select.getParent().refreshList()
       },
       onClick: (ev)=>{

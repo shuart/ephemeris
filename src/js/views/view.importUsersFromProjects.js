@@ -49,7 +49,7 @@ var createImportUsersFromProjects = function (targetSelector) {
     var ownerTable = relatedProjects
         .filter(p=> p.uuid!=store.uuid)
         .map(e =>{
-          return e.stakeholders.items.map(i => Object.assign({projectId:e.uuid, projectName:e.name}, i)) //add project prop to all items
+          return e.stakeholders.map(i => Object.assign({projectId:e.uuid, projectName:e.name}, i)) //add project prop to all items
         } )
         .reduce((a, b) => {return a.concat(b)},[])
         // .map((e) => {return {uuid:e.uuid, name:e.name}});
@@ -89,10 +89,10 @@ var createImportUsersFromProjects = function (targetSelector) {
           console.log(orev);
           var allProjectsList= await query.items("projects")
           let project = allProjectsList.find(p=>p.uuid == orev.dataset.extra)
-          let userToImport= project.stakeholders.items.find(s=>s.uuid == orev.dataset.id)
+          let userToImport= project.stakeholders.find(s=>s.uuid == orev.dataset.id)
           console.log(userToImport)
           var storeChecked = await query.currentProject()
-          if(storeChecked.stakeholders.items.find(s=> s.uuid == userToImport.uuid)){
+          if(storeChecked.stakeholders.find(s=> s.uuid == userToImport.uuid)){
             alert("This user already exist in the current project")
           }else if (confirm("add user"+ userToImport.name+" "+userToImport.lastName+ " from project "+ project.name+ "?")) {
             push(act.add("stakeholders",deepCopy(userToImport)))
@@ -107,7 +107,7 @@ var createImportUsersFromProjects = function (targetSelector) {
         console.log(ev.target.dataset.id);
         var newValue = prompt("Edit Item",ev.target.dataset.value)
         if (newValue) {
-          var item = store.stakeholders.items.filter((item)=>item.uuid == ev.target.dataset.id)
+          var item = store.stakeholders.filter((item)=>item.uuid == ev.target.dataset.id)
           console.log(item);
           console.log(item[0][ev.target.dataset.prop]);
           item[0][ev.target.dataset.prop] = newValue
@@ -117,10 +117,10 @@ var createImportUsersFromProjects = function (targetSelector) {
       onRemoveNOTYET: (ev)=>{
         console.log("remove");
         if (confirm("remove item ?")) {
-          store.stakeholders.items = store.stakeholders.items.filter((item)=>item.uuid != ev.target.dataset.id)
-          store.stakeholders.links = store.stakeholders.links.filter((item)=>item.source != ev.target.dataset.id && item.target != ev.target.dataset.id   )
-          ev.select.updateData(store.stakeholders.items)
-          console.log(store.stakeholders.items);
+          store.stakeholders = store.stakeholders.filter((item)=>item.uuid != ev.target.dataset.id)
+          store.links = store.links.filter((item)=>item.source != ev.target.dataset.id && item.target != ev.target.dataset.id   )
+          ev.select.updateData(store.stakeholders)
+          console.log(store.stakeholders);
         }
       },
       onClick: (ev)=>{
@@ -157,7 +157,7 @@ var createImportUsersFromProjects = function (targetSelector) {
 
           var projectScope = relatedProjects.find(p=> p.uuid==ProjectWhereFusedIs)
           console.log(projectScope);
-          var idToChange = projectScope.stakeholders.items.find(s=>s.uuid==IdToFuse)
+          var idToChange = projectScope.stakeholders.find(s=>s.uuid==IdToFuse)
           idToChange.uuid = ev.target.dataset.id //TODO BAD, Move to API
           var metalinksOriginToChange = projectScope.metaLinks.filter(m=>m.source==IdToFuse)
           var metalinksTargetToChange = projectScope.metaLinks.filter(m=>m.target==IdToFuse)

@@ -36,7 +36,7 @@ var createCurrentUserView = function ({
       console.log("Edit");
       var newValue = prompt("Edit Item",e.target.dataset.value)
       if (newValue) {
-        editCurrentUserItem(e.target.dataset.value, newValue)  
+        editCurrentUserItem(e.target.dataset.value, newValue)
       }
       sourceOccElement.remove()
       update()
@@ -72,10 +72,10 @@ var createCurrentUserView = function ({
       var metalinkType = e.target.dataset.prop;
       var sourceTriggerId = e.target.dataset.id;
       var projectStore = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0];
-      var metaLinks = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks.items;
+      var metaLinks = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
       showListMenu({
-        sourceData:projectStore.stakeholders.items,
+        sourceData:projectStore.stakeholders,
         parentSelectMenu:e.select ,
         multipleSelection:currentLinksUuidFromDS,
         displayProp:"name",
@@ -91,12 +91,12 @@ var createCurrentUserView = function ({
         },
         onChangeSelect: (ev)=>{
           console.log(ev.select.getSelected());
-          console.log(projectStore.metaLinks.items);
-          projectStore.metaLinks.items = projectStore.metaLinks.items.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
+          console.log(projectStore.metaLinks);
+          projectStore.metaLinks = projectStore.metaLinks.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
           for (newSelected of ev.select.getSelected()) {
-            projectStore.metaLinks.items.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
+            projectStore.metaLinks.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
           }
-          console.log(projectStore.metaLinks.items);
+          console.log(projectStore.metaLinks);
           saveDB()
           sourceOccElement.remove()
           update()
@@ -203,7 +203,7 @@ var createCurrentUserView = function ({
   var getActionObjectCopyFromUuid = function (uuid) {
     let allActions = []
     query.items("projects").forEach(function (store) {
-      let formatedActions = store.actions.items.map(a=>{//TODO only check open action
+      let formatedActions = store.actions.map(a=>{//TODO only check open action
         let copy = deepCopy(a)
         copy.projectName = store.name;
         copy.urgent = lessThanInSomeDays(a.dueDate,2)
@@ -215,7 +215,7 @@ var createCurrentUserView = function ({
     return allActions.find(a=>a.uuid == uuid)
   }
   var generateListeFromMeta = function (propName, sourceId, targetList, projectuuid, isEditable) {
-    var meta = query.items("projects").filter(i=>i.uuid == projectuuid)[0].metaLinks.items;
+    var meta = query.items("projects").filter(i=>i.uuid == projectuuid)[0].metaLinks;
     var metalist = meta.filter(e => (e.type == propName && e.source == sourceId )).map(e => e.target)
     var editHtml = `<i data-prop="${propName}" data-value='${JSON.stringify(metalist)}' data-id="${sourceId}" data-project="${projectuuid}" class="edit icon action_single_action_select_item_assigned" style="opacity:0.2"></i>`
     function reduceChoices(acc, e) {

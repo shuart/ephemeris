@@ -15,7 +15,7 @@ var createCategoriesView = function () {
     setTimeout(async function () {
       var store = await query.currentProject()
       ephHelpers.updateListElements(currentVisibleList,{
-        items:store.categories.items
+        items:store.categories
       })
     }, 1500);
   }
@@ -23,7 +23,7 @@ var createCategoriesView = function () {
   var render = async function () {
     var store = await query.currentProject()
     currentVisibleList= showListMenu({
-      sourceData:store.categories.items,
+      sourceData:store.categories,
       displayProp:"name",
       // targetDomContainer:".center-container",
       // fullScreen:true,// TODO: perhaps not full screen?

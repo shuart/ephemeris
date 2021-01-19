@@ -12,7 +12,7 @@ var createHistoryView = function () {
 
   var render = async function () {
     var store = await query.currentProject()
-    let formatedData = store.onlineHistory.items.reverse().map(i=>({
+    let formatedData = store.onlineHistory.reverse().map(i=>({
       uuid:i.uuid,
       id:i.uuid,
       storeGroup:i.selectorProperty,
@@ -38,7 +38,7 @@ var createHistoryView = function () {
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("history",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.history.items)
+          ev.select.updateData(store.history)
         }
       },
       onAdd: (ev)=>{

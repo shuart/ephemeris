@@ -139,7 +139,7 @@ var createTimelineView = function ({
 
   }
   var renderMenu =function (uuid, store){
-    // let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
+    // let currentSet = store.vvSets.find(s=>s.uuid == currentSetUuid)
     return theme.menu("timeline")
   }
 
@@ -290,17 +290,17 @@ var createTimelineView = function ({
     }
     if (ganttMode == "capacity") {
 
-      let relevantMetalinks = store.metaLinks.items.filter(i=> i.type== "eventContainsStakeholders")
+      let relevantMetalinks = store.metaLinks.filter(i=> i.type== "eventContainsStakeholders")
       //create the data to display each element on his own lane
       for (var i = 0; i < newPlanningData.length; i++) {
         let item = newPlanningData[i]
-        let relatedEvent = store.events.items.find(e=>e.uuid == item.relatedEvent)
+        let relatedEvent = store.events.find(e=>e.uuid == item.relatedEvent)
         let relevantStakeholders = relevantMetalinks.filter(m=> m.source == relatedEvent.uuid)
         let relevantStakeholder =undefined
         if (!relevantStakeholders[0]) {//in case the iutem is not connected add it to a default group
           relevantStakeholder = {uuid:"unallocated", name:"unallocated", lastName:""}
         }else {
-          relevantStakeholder =store.stakeholders.items.find(i=> i.uuid== relevantStakeholders[0].target )
+          relevantStakeholder =store.stakeholders.find(i=> i.uuid== relevantStakeholders[0].target )
         }
 
         items.push({
@@ -331,16 +331,16 @@ var createTimelineView = function ({
 
   var preparePlanningData = async function (planningUuid) {
     var store = await query.currentProject()
-    let relevantTimeLinks = store.timeLinks.items.filter(l=>l.type == "planning" && l.source == planningUuid)
+    let relevantTimeLinks = store.timeLinks.filter(l=>l.type == "planning" && l.source == planningUuid)
     let relevantTimeTracksUuid = relevantTimeLinks.map(r => r.target)
     console.log(relevantTimeTracksUuid);
-    let relevantTimeTracks = store.timeTracks.items.filter(l => relevantTimeTracksUuid.includes(l.uuid))
+    let relevantTimeTracks = store.timeTracks.filter(l => relevantTimeTracksUuid.includes(l.uuid))
     console.log(relevantTimeTracks);
     if (!relevantTimeTracks || !relevantTimeTracks[0]) {
       return []
     }
     let planningData = relevantTimeTracks.map(function (t) {
-      let relatedEvent = store.events.items.find(e=>e.uuid == t.relatedEvent)
+      let relatedEvent = store.events.find(e=>e.uuid == t.relatedEvent)
       return {
         uuid:t.uuid,
         relatedEvent:relatedEvent.uuid,

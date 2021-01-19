@@ -67,7 +67,7 @@ var createExportProjectInfoView = function () {
       appendHtml(container, theme.title(store.name))
       //List All Items
       appendHtml(container, theme.section("Stakeholders","All project stakeholders"))
-      for (stakeholder of store.stakeholders.items) {
+      for (stakeholder of store.stakeholders) {
         let name = stakeholder.name +" "+ stakeholder.lastName
         let uuid = stakeholder.uuid
         let desc = stakeholder.role||"" +"  "+ stakeholder.org||"" + "  " + stakeholder.mail||""
@@ -77,18 +77,18 @@ var createExportProjectInfoView = function () {
 
       if (productStyle == "tree") {
         //generate a tree of the products
-        let productTree = renderRecursiveList(store.currentPbs.items,store.currentPbs.links)
+        let productTree = renderRecursiveList(store.currentPbs,store.currentPbs.links)
         let treeHTML = renderTreeHTML(productTree, 3, store)
         appendHtml(container, treeHTML)
       }else {
-        for (product of store.currentPbs.items) {
+        for (product of store.currentPbs) {
           let linkToText = getRelatedItems(store, i, patate, {metalinksType:"originFunction"}).map(s=> s[0]? s[0].name : "").join(",")
           + "," +getRelatedItems(store, i, "requirements", {metalinksType:"originNeed"}).map(s=> s[0]? s[0].name : "").join(",")
           appendHtml(container, theme.item(product.name,product.uuid, product.desc, linkToText))
         }
       }
       appendHtml(container, theme.section("functions","All project functions"))
-      for (item of store.functions.items) {
+      for (item of store.functions) {
         let linkToText = getRelatedItems(store, item, "requirements").reduce(function (acc, item) {
           if (item[0]) {
             return acc += item[0].name +","
@@ -97,7 +97,7 @@ var createExportProjectInfoView = function () {
         appendHtml(container, theme.item(item.name,item.uuid, item.desc, linkToText))
       }
       appendHtml(container, theme.section("requirements","All project requirements"))
-      for (requirement of store.requirements.items) {
+      for (requirement of store.requirements) {
         let linkToText = getRelatedItems(store, requirement, "stakeholders").reduce(function (acc, item) {
           if (item && item[0]) {
             return acc += item[0].name +" "+item[0].lastName+" "

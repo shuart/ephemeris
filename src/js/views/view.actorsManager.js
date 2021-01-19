@@ -199,7 +199,7 @@ var createActorsManagerView = function ({
       if (confirm("Remove this actor?")) {
         var projects = await getRelevantProject()
         projects.forEach((item, i) => {
-          if (item.actors.items.find(i=>i.uuid = e.target.dataset.id)) {
+          if (item.actors.find(i=>i.uuid = e.target.dataset.id)) {
             push(act.remove("actors",{project:item.uuid, uuid:e.target.dataset.id}))
           }
         });
@@ -214,7 +214,7 @@ var createActorsManagerView = function ({
         var firstName = prompt("New actor first name")
         var lastName = prompt("New actor last name")
         projects.forEach((item, i) => {
-          if (item.actors.items.find(i=>i.uuid = e.target.dataset.id)) {
+          if (item.actors.find(i=>i.uuid = e.target.dataset.id)) {
             // push(act.remove("actors",{project:item.uuid, uuid:e.target.dataset.id}))
             push(act.edit("actors",{uuid:e.target.dataset.id,prop:"name", value:firstName, project:item.uuid}))
             push(act.edit("actors",{uuid:e.target.dataset.id,prop:"lastName", value:lastName, project:item.uuid}))
@@ -355,7 +355,7 @@ var createActorsManagerView = function ({
     var allProjects = await query.items("projects")
     var relatedProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
     var ownerTable = relatedProjects.map(e =>{
-          return e.stakeholders.items.map(i => Object.assign({projectid:e.uuid, projectName:e.name}, i)) //add project prop to all items
+          return e.stakeholders.map(i => Object.assign({projectid:e.uuid, projectName:e.name}, i)) //add project prop to all items
         } )
         .reduce((a, b) => {return a.concat(b)},[])
         // .map((e) => {return {uuid:e.uuid, name:e.name}});
@@ -367,7 +367,7 @@ var createActorsManagerView = function ({
     var relatedProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
     var actorsTable = relatedProjects.map(e =>{
           if (e.actors) {
-            return e.actors.items.map(i => Object.assign({projectid:e.uuid, projectName:e.name, appearIn:[{projectid:e.uuid, projectName:e.name}]}, i)) //add project prop to all items
+            return e.actors.map(i => Object.assign({projectid:e.uuid, projectName:e.name, appearIn:[{projectid:e.uuid, projectName:e.name}]}, i)) //add project prop to all items
           }else {
             return []
           }
@@ -460,7 +460,7 @@ var createActorsManagerView = function ({
         // console.log(IdToFuse, ProjectWhereFusedIs);
         console.log(ev);
         // if (confirm("Fuse the users? The original id of the user will be replace with this one.")) {
-        //   var allProjects = await query.items("projects")
+        //   var allProjects = await query("projects")
         //   var relatedProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
         //
         //   var projectScope = relatedProjects.find(p=> p.uuid==ProjectWhereFusedIs)
@@ -468,8 +468,8 @@ var createActorsManagerView = function ({
         //
         //   push(act.edit("stakeholders", {project:ProjectWhereFusedIs, uuid:IdToFuse, prop:"uuid", value:ev.target.dataset.id}))
         //
-        //   var metalinksOriginToChange = projectScope.metaLinks.items.filter(m=>m.source==IdToFuse)
-        //   var metalinksTargetToChange = projectScope.metaLinks.items.filter(m=>m.target==IdToFuse)
+        //   var metalinksOriginToChange = projectScope.metaLinks.filter(m=>m.source==IdToFuse)
+        //   var metalinksTargetToChange = projectScope.metaLinks.filter(m=>m.target==IdToFuse)
         //   for (link of metalinksOriginToChange) {
         //     // link.source = ev.target.dataset.id
         //     push(act.edit("metaLinks", {project:ProjectWhereFusedIs, uuid:link.uuid, prop:"source", value:ev.target.dataset.id}))

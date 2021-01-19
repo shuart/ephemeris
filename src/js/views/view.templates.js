@@ -13,7 +13,7 @@ var createTemplatesView = function () {
   var render = async function () {
     var store = await query.currentProject()
     showListMenu({
-      sourceData:store.templates.items,
+      sourceData:store.templates,
       displayProp:"name",
       // targetDomContainer:".center-container",
       // fullScreen:true,// TODO: perhaps not full screen?
@@ -31,7 +31,7 @@ var createTemplatesView = function () {
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("templates",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.templates.items)
+          ev.select.updateData(store.templates)
         }
       },
       // onAdd: (ev)=>{

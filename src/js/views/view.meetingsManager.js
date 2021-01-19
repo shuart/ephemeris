@@ -22,11 +22,11 @@ var createMeetingsManager = function (targetSelector) {
     </div>`
   }
   theme.editor = function (e, store) {//editor start point
-    console.log(store.settings.items.find(s=>s.type=="projectLogo"));
-    console.log(store.settings.items);
+    console.log(store.settings.find(s=>s.type=="projectLogo"));
+    console.log(store.settings);
      html =`
      <div style="width:80%; margin-left:10%;" id="meetingAreaEditor" class="meetingAreaEditor">
-        <img style="margin-left:70%;" class="ui small image" src=${store.settings.items.find(s=>s.type=="projectLogo")?store.settings.items.find(s=>s.type=="projectLogo").value:""}>
+        <img style="margin-left:70%;" class="ui small image" src=${store.settings.find(s=>s.type=="projectLogo")?store.settings.find(s=>s.type=="projectLogo").value:""}>
         <h1 class="ui header">${e.title}
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_rename_meeting">Rename</button>
           <button data-name="${e.title}" data-id="${e.uuid}" class="ui basic mini button action_meeting_manager_add_meeting_follow_up">Follow-up</button>
@@ -198,11 +198,11 @@ var createMeetingsManager = function (targetSelector) {
     if (linkObject && !isObjectMissing) {
       let elementName= undefined
       if (item.type == 'action') {
-        elementName = store.actions.items.find(i=>i.uuid == linkObject.target).name
+        elementName = store.actions.find(i=>i.uuid == linkObject.target).name
       } else {
         console.log(isObjectMissing);
         console.log(linkObject.target);
-        elementName = store.requirements.items.find(i=>i.uuid == linkObject.target).name
+        elementName = store.requirements.find(i=>i.uuid == linkObject.target).name
       }
 
       html= `
@@ -223,7 +223,7 @@ var createMeetingsManager = function (targetSelector) {
     let html = ''
     if (!item.resolved) {
       let linkObject = currentMeetingObject.relations.find(r=>r.source == item.uuid)
-      if (linkObject && !store.actions.items.find( i=>i.uuid == linkObject.target).open) {
+      if (linkObject && !store.actions.find( i=>i.uuid == linkObject.target).open) {
         html= `
         <div data-id="${item.uuid}" class="ui mini basic circular icon button action_meeting_manager_set_resolved_partial" data-tooltip="The linked item has been resolved. Click to mark the item resolved here">
           <i data-id="${item.uuid}" class="flag checkered icon"></i>
@@ -490,7 +490,7 @@ var createMeetingsManager = function (targetSelector) {
       if (confirm("This meeting will be deleted")) {
         let meetingId = e.target.dataset.id
         //TODO This has to be removed and routes must be used
-        store.meetings.items= store.meetings.items.filter(n=>n.uuid != meetingId)
+        store.meetings= store.meetings.filter(n=>n.uuid != meetingId)
         update()
       }
     })
@@ -500,7 +500,7 @@ var createMeetingsManager = function (targetSelector) {
       if (newName) {
         let meetingId = e.target.dataset.id
         //TODO This has to be removed and routes must be used
-        let meeting = store.meetings.items.filter(n=>n.uuid == meetingId)[0]
+        let meeting = store.meetings.filter(n=>n.uuid == meetingId)[0]
         if (meeting) {
           meeting.title = newName
           update()
@@ -511,7 +511,7 @@ var createMeetingsManager = function (targetSelector) {
     connect(".action_meeting_manager_add_chapter", "click", (e)=>{
       let newName = prompt("Enter a new Chapter name", e.target.dataset.name)
       if (newName) {//TODO This has to be removed and routes must be used
-        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.id)[0]
+        let meeting = store.meetings.filter(n=>n.uuid == e.target.dataset.id)[0]
         if (meeting) {
           meeting.chapters.push({uuid:uuid(),name:newName,topics:[]})
           update()
@@ -522,7 +522,7 @@ var createMeetingsManager = function (targetSelector) {
     connect(".action_meeting_manager_add_topic", "click", (e)=>{
       let newName = prompt("Enter a new Topic name")
       if (newName) {//TODO This has to be removed and routes must be used
-        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let meeting = store.meetings.filter(n=>n.uuid == e.target.dataset.meeting)[0]
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         if (chapter) {
           chapter.topics.push({uuid:uuid(),name:newName,items:[]})
@@ -535,7 +535,7 @@ var createMeetingsManager = function (targetSelector) {
       let newName = prompt("Enter a item name")
       let type = e.target.dataset.type
       if (newName) {//TODO This has to be removed and routes must be used
-        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let meeting = store.meetings.filter(n=>n.uuid == e.target.dataset.meeting)[0]
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         let topic = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
         if (topic) {
@@ -549,7 +549,7 @@ var createMeetingsManager = function (targetSelector) {
       var sourceTriggerId = e.target.dataset.id;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
       showListMenu({
-        sourceData:store.stakeholders.items,
+        sourceData:store.stakeholders,
         parentSelectMenu:e.select ,
         multipleSelection:currentLinksUuidFromDS,
         displayProp:"name",
@@ -579,7 +579,7 @@ var createMeetingsManager = function (targetSelector) {
       var sourceTriggerId = e.target.dataset.id;
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
       showListMenu({
-        sourceData:store.currentPbs.items,
+        sourceData:store.currentPbs,
         parentSelectMenu:e.select ,
         multipleSelection:currentLinksUuidFromDS,
         displayProp:"name",
@@ -609,7 +609,7 @@ var createMeetingsManager = function (targetSelector) {
       console.log(e.target.dataset.value);
       var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
       showListMenu({
-        sourceData:store.stakeholders.items,
+        sourceData:store.stakeholders,
         parentSelectMenu:e.select ,
         multipleSelection:currentLinksUuidFromDS,
         displayProp:"name",
@@ -626,7 +626,7 @@ var createMeetingsManager = function (targetSelector) {
           // renderMeeting(currentOpenedMeeting)
         },
         onChangeSelect: (ev)=>{
-          store.meetings.items.find(m=>m.uuid == meetingId).participants[meetingProp] = ev.select.getSelected()
+          store.meetings.find(m=>m.uuid == meetingId).participants[meetingProp] = ev.select.getSelected()
           console.log(ev.select.getSelected());
           update()
         },
@@ -660,7 +660,7 @@ var createMeetingsManager = function (targetSelector) {
       event.target.style.display ="none"
       baseElem.onchange = function (ev) {
         //onEditItemTime({select:self, selectDiv:sourceEl, target:ev.target})
-        let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]//TODO move to reducer
+        let meeting = store.meetings.filter(n=>n.uuid == currentOpenedMeeting)[0]//TODO move to reducer
         meeting.createdOn = ev.target.valueAsDate
         // push(act.edit("actions",{uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:ev.target.valueAsDate, project:ev.target.dataset.project}))
         update()
@@ -671,7 +671,7 @@ var createMeetingsManager = function (targetSelector) {
     connect(".action_meetingmanager_list_edit_chapter","click",(e)=>{
       let newName = prompt("Enter a item name",e.target.dataset.value)
       if (newName) {
-        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let meeting = store.meetings.filter(n=>n.uuid == e.target.dataset.meeting)[0]
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         chapter.name = newName;
         update()
@@ -681,7 +681,7 @@ var createMeetingsManager = function (targetSelector) {
     connect(".action_meetingmanager_list_delete_chapter","click",(e)=>{
         let newName = confirm("Delete this chapter definitely")
         if (newName) {
-          let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+          let meeting = store.meetings.filter(n=>n.uuid == e.target.dataset.meeting)[0]
           meeting.chapters = meeting.chapters.filter(n=>n.uuid != e.target.dataset.chapter)
           update()
           renderMeeting(meeting)
@@ -690,7 +690,7 @@ var createMeetingsManager = function (targetSelector) {
     connect(".action_meetingmanager_list_edit_topic","click",(e)=>{
       let newName = prompt("Enter a item name",e.target.dataset.value)
       if (newName) {
-        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let meeting = store.meetings.filter(n=>n.uuid == e.target.dataset.meeting)[0]
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         let targetItem = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
         if (targetItem) {
@@ -703,7 +703,7 @@ var createMeetingsManager = function (targetSelector) {
     connect(".action_meetingmanager_list_archive_topic","click",(e)=>{
       let newName = confirm("Archive this topic")
       if (newName) {
-        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let meeting = store.meetings.filter(n=>n.uuid == e.target.dataset.meeting)[0]
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         let targetItem = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
         if (targetItem) {
@@ -720,7 +720,7 @@ var createMeetingsManager = function (targetSelector) {
     connect(".action_meetingmanager_list_delete_topic","click",(e)=>{
       let newName = confirm("This topic will be deleted definitely!")
       if (newName) {
-        let meeting = store.meetings.items.filter(n=>n.uuid == e.target.dataset.meeting)[0]
+        let meeting = store.meetings.filter(n=>n.uuid == e.target.dataset.meeting)[0]
         let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         chapter.topics = chapter.topics.filter(n=>n.uuid != e.target.dataset.topic) //TODO use reducer
 
@@ -752,7 +752,7 @@ var createMeetingsManager = function (targetSelector) {
       });
       // let type = e.target.dataset.type
       if (false) {//TODO This has to be removed and routes must be used
-        let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+        let meeting = store.meetings.filter(n=>n.uuid == currentOpenedMeeting)[0]
         // let chapter = meeting.chapters.filter(n=>n.uuid == e.target.dataset.chapter)[0]
         // let topic = chapter.topics.filter(n=>n.uuid == e.target.dataset.topic)[0]
         if (topic) {
@@ -819,7 +819,7 @@ var createMeetingsManager = function (targetSelector) {
       update()
     })
     connect(".action_meeting_manager_close_edit", "click", (e)=>{
-      let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+      let meeting = store.meetings.filter(n=>n.uuid == currentOpenedMeeting)[0]
       if (meeting) {
         update()
         renderMeeting(meeting)
@@ -861,7 +861,7 @@ var createMeetingsManager = function (targetSelector) {
     })
     connect(".action_meeting_manager_add_meeting_follow_up", "click", (e)=>{
 
-      let meeting = store.meetings.items.find(m=>m.uuid == currentOpenedMeeting)
+      let meeting = store.meetings.find(m=>m.uuid == currentOpenedMeeting)
       if (meeting) {
         let newMeeting = deepCopy(meeting)
         newMeeting.uuid = uuid()
@@ -930,7 +930,7 @@ var createMeetingsManager = function (targetSelector) {
             document.querySelector('.main-container').style.height = "100%"
             document.querySelector('.main-container').style.paddingLeft= "50px"
 
-            let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+            let meeting = store.meetings.filter(n=>n.uuid == currentOpenedMeeting)[0]
             if (meeting) {
               update()
               renderMeeting(meeting)
@@ -947,7 +947,7 @@ var createMeetingsManager = function (targetSelector) {
         meeting.relations.push(actionObject)
       }
 
-      let meeting = store.meetings.items.find(m=>m.uuid == currentOpenedMeeting)
+      let meeting = store.meetings.find(m=>m.uuid == currentOpenedMeeting)
       if (meeting) {
         meeting.chapters.forEach(function (c) {
           c.topics.forEach(function (t) {
@@ -996,7 +996,7 @@ var createMeetingsManager = function (targetSelector) {
         meeting.relations.push(actionObject)
       }
 
-      let meeting = store.meetings.items.find(m=>m.uuid == currentOpenedMeeting)
+      let meeting = store.meetings.find(m=>m.uuid == currentOpenedMeeting)
       let targetItem = getTopicItemByUuid(e.target.dataset.id)
       if (targetItem && meeting) {
         let i = targetItem //todo create a function for to resolve this and previous connection
@@ -1124,14 +1124,14 @@ var createMeetingsManager = function (targetSelector) {
   function renderMeetingTree() {
 
     let html = ""
-    store.meetings.items.forEach(function (e) {//todo add proper routes
+    store.meetings.forEach(function (e) {//todo add proper routes
       html += theme.notePreviewItem(e)
     })
     return theme.meetingPreviewList(html)
   }
   function updateMeetingTree(container) {
     let html = ""
-    store.meetings.items.forEach(function (e) {//todo add proper routes
+    store.meetings.forEach(function (e) {//todo add proper routes
       html += theme.notePreviewItem(e)
     })
     container.innerHTML = html
@@ -1184,7 +1184,7 @@ var createMeetingsManager = function (targetSelector) {
   }
 
   function loadMeetingByUuid(meetingId) {
-    let meeting = store.meetings.items.filter(n=>n.uuid == meetingId)[0]
+    let meeting = store.meetings.filter(n=>n.uuid == meetingId)[0]
     if (meeting) {
       currentOpenedMeeting = meeting.uuid
       currentMeetingObject = meeting
@@ -1195,7 +1195,7 @@ var createMeetingsManager = function (targetSelector) {
   var getTopicItemByUuid = function (uuid) {
     console.log(uuid);
     let item = undefined
-    let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+    let meeting = store.meetings.filter(n=>n.uuid == currentOpenedMeeting)[0]
     meeting.chapters.forEach(function (c) {
       c.topics.forEach(function (t) {
         if (!item) {
@@ -1213,7 +1213,7 @@ var createMeetingsManager = function (targetSelector) {
     console.log(uuid);
     let item = undefined
     let info = {}
-    let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+    let meeting = store.meetings.filter(n=>n.uuid == currentOpenedMeeting)[0]
     info.meeting=meeting
     meeting.chapters.forEach(function (c) {
       c.topics.forEach(function (t) {
@@ -1238,7 +1238,7 @@ var createMeetingsManager = function (targetSelector) {
 
     function reduceChoices(acc, e) {
       console.log(e);
-      var foudItem = store.stakeholders.items.find(i=>i.uuid == e)
+      var foudItem = store.stakeholders.find(i=>i.uuid == e)
       var newItem = foudItem.name + " "+ (foudItem.lastName+" " || " ")+(foudItem.org || "")+" "
       var formatedNewItem = newItem
       if(formatedNewItem.length > 25) {
@@ -1266,7 +1266,7 @@ var createMeetingsManager = function (targetSelector) {
 
     function reduceChoices(acc, e) {
       console.log(e);
-      var foudItem = store.currentPbs.items.find(i=>i.uuid == e)
+      var foudItem = store.currentPbs.find(i=>i.uuid == e)
       var newItem = foudItem.name
       var formatedNewItem = newItem
       if(formatedNewItem.length > 25) {
@@ -1290,7 +1290,7 @@ var createMeetingsManager = function (targetSelector) {
   var generateParticipantHtml= function (participants) {
     let html = ""
     participants.forEach(function (p) {
-      let stakeholder = store.stakeholders.items.find(s=>s.uuid == p)
+      let stakeholder = store.stakeholders.find(s=>s.uuid == p)
       if (stakeholder) {
         html += theme.meetingParticipant(stakeholder)
       }
@@ -1299,8 +1299,8 @@ var createMeetingsManager = function (targetSelector) {
   }
 
   function checkIfTargetIsReachable(store, uuid){
-    if (store.actions.items.find(i=>i.uuid == uuid)) {return true }
-    else if (store.requirements.items.find(i=>i.uuid == uuid)) {return true }
+    if (store.actions.find(i=>i.uuid == uuid)) {return true }
+    else if (store.requirements.find(i=>i.uuid == uuid)) {return true }
     // else if (store.functions.items.find(i=>i.uuid == uuid)) { return true}
     // else if (store.stakeholders.items.find(i=>i.uuid == uuid)) {return true }
     // else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) {return true }
@@ -1311,7 +1311,7 @@ var createMeetingsManager = function (targetSelector) {
 
   async function saveCurrentMeetingToDB() {
     if (currentOpenedMeeting) {
-      let meeting = store.meetings.items.filter(n=>n.uuid == currentOpenedMeeting)[0]
+      let meeting = store.meetings.filter(n=>n.uuid == currentOpenedMeeting)[0]
       if (meeting) {
         await dbConnector.replaceProjectItem(app.state.currentProject,"meetings",currentOpenedMeeting, meeting)
       }else {

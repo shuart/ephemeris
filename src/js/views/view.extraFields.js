@@ -15,7 +15,7 @@ var createExtraFieldsView = function () {
     //   if (objectIsActive && currentVisibleList) {
     //     var store = await query.currentProject()
     //     ephHelpers.updateListElements(currentVisibleList,{
-    //       items:store.extraFields.items,
+    //       items:store.extraFields,
     //       displayRules:setDisplayRules(store)
     //     })
     //   }
@@ -26,7 +26,7 @@ var createExtraFieldsView = function () {
     setTimeout(async function () {
       var store = await query.currentProject()
       ephHelpers.updateListElements(currentVisibleList,{
-        items:store.extraFields.items,
+        items:store.extraFields,
         displayRules:setDisplayRules(store)
       })
     }, 1500);
@@ -55,7 +55,7 @@ var createExtraFieldsView = function () {
   }
 
   var readifyExtraLinks = function (store) {
-    var originalLinks = store.extraFields.items
+    var originalLinks = store.extraFields
     var visibleLinks = undefined
     if (currentViewFilter) {
       visibleLinks = originalLinks.filter(l=>l.linkedTo == currentViewFilter)
@@ -97,7 +97,7 @@ var createExtraFieldsView = function () {
   var render = async function () {
     var store = await query.currentProject()
     currentVisibleList = showListMenu({
-      sourceData:store.extraFields.items,
+      sourceData:store.extraFields,
       displayProp:"name",
       // targetDomContainer:".center-container",
       // fullScreen:true,// TODO: perhaps not full screen?
@@ -112,7 +112,7 @@ var createExtraFieldsView = function () {
         var newProp = popup.result
         let slug = ephHelpers.slugify(newProp)
         let propAlreadyExist = false
-        if (store.extraFields.items.find(i=>i.prop == 'custom_prop_'+slug)) {
+        if (store.extraFields.find(i=>i.prop == 'custom_prop_'+slug)) {
           alert("This field has already been registered")//in rare case where an identical field would be generated
           propAlreadyExist =true
         }
@@ -132,12 +132,12 @@ var createExtraFieldsView = function () {
       },
       onRemove: (ev)=>{
         if (confirm("remove item definitively?")) {
-          // let itemToRemove = store.extraFields.items.find(i=>i.uuid == ev.target.dataset.id)
+          // let itemToRemove = store.extraFields.find(i=>i.uuid == ev.target.dataset.id)
           // if (itemToRemove) {
           //   let type = itemToRemove.type
           //   let prop = itemToRemove.prop
           //   //clean all items from this property TODO do in reducer
-          //   store[type].items.forEach(function (i) {
+          //   store[type].forEach(function (i) {
           //     if (i[prop]) {
           //       console.log(i);
           //       console.log(i[prop]);

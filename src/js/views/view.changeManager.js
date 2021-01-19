@@ -12,9 +12,9 @@ var createChangeManagerView = function () {
       if (objectIsActive && currentVisibleList) {
         var store = await query.currentProject()
         ephHelpers.updateListElements(currentVisibleList,{
-          items:store.changes.items,
-          links:store.changes.links,
-          metaLinks:store.metaLinks.items,
+          items:store.changes,
+          links:store.links,
+          metaLinks:store.metaLinks,
           displayRules:setDisplayRules(store)
         })
       }
@@ -25,8 +25,8 @@ var createChangeManagerView = function () {
     var displayRules = [
       {prop:"name", displayAs:"Name", edit:true},
       {prop:"desc", displayAs:"Description", edit:true},
-      {prop:"reqChangedBy",isTarget:true, displayAs:"Changed Requirement", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
-      {prop:"assignedTo", displayAs:"Assigned to", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
+      {prop:"reqChangedBy",isTarget:true, displayAs:"Changed Requirement", meta:()=>store.metaLinks, choices:()=>store.requirements, edit:true},
+      {prop:"assignedTo", displayAs:"Assigned to", meta:()=>store.metaLinks, choices:()=>store.stakeholders, edit:true},
       {prop:"createdAt", displayAs:"Added", edit:"true", time:true}
     ]
     return displayRules
@@ -35,7 +35,7 @@ var createChangeManagerView = function () {
   var render = async function () {
     var store = await query.currentProject()
     currentVisibleList = showListMenu({
-      sourceData:store.changes.items,
+      sourceData:store.changes,
       displayProp:"name",
       targetDomContainer:".center-container",
       fullScreen:true,// TODO: perhaps not full screen?
@@ -54,7 +54,7 @@ var createChangeManagerView = function () {
       onRemove: (ev)=>{
         if (confirm("remove item ?")) {
           push(act.remove("changes",{uuid:ev.target.dataset.id}))
-          ev.select.updateData(store.workPackages.items)
+          ev.select.updateData(store.workPackages)
         }
       },
       onAdd: (ev)=>{
@@ -69,8 +69,8 @@ var createChangeManagerView = function () {
       },
       onClick: (ev)=>{
         showSingleItemService.showById(ev.target.dataset.id, function (e) {
-          ev.select.updateData(store.changes.items)
-          ev.select.updateLinks(store.changes.links)
+          ev.select.updateData(store.changes)
+          ev.select.updateLinks(store.links)
           ev.select.refreshList()
         })
       },
@@ -93,7 +93,7 @@ var createChangeManagerView = function () {
 
   var exportToCSV = function () {
     let store = query.currentProject()
-    let data = store.changes.items.map(i=>{
+    let data = store.changes.map(i=>{
       let linkToTextsh = getRelatedItems(store, i, "stakeholders",{objectIs:"source", metalinksType:"assignedTo"}).map(s=> s[0]? s[0].name +" "+s[0].lastName : "").join(",")
       let linkToTextReq = getRelatedItems(store, i, "requirements",{objectIs:"target", metalinksType:"reqChangedBy"}).map(s=> s[0]? s[0].name : '').join(",")
 
@@ -115,23 +115,23 @@ var createChangeManagerView = function () {
     var sourceLinks= undefined
     var displayRules= undefined
     if (metalinkType == "assignedTo") {
-      sourceData=store.stakeholders.items
+      sourceData=store.stakeholders
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"lastName", displayAs:"Last name", edit:false}
       ]
     }else if (metalinkType == "WpOwn") {
       sourceGroup="currentPbs"
-      sourceData=store.currentPbs.items
-      sourceLinks=store.currentPbs.links
+      sourceData=store.currentPbs
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "WpOwnNeed") {
       sourceGroup="requirements"
-      sourceData=store.requirements.items
-      sourceLinks=store.requirements.links
+      sourceData=store.requirements
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
@@ -139,24 +139,24 @@ var createChangeManagerView = function () {
     }else if (metalinkType == "originNeed") {
       sourceGroup="currentPbs"
       invert = true;
-      sourceData=store.currentPbs.items
+      sourceData=store.currentPbs
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.currentPbs.links
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "tags") {
-      sourceData=store.tags.items
+      sourceData=store.tags
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "reqChangedBy") {
       sourceGroup="requirements"
       invert = true;
-      sourceData=store.requirements.items
-      sourceLinks=store.requirements.links
+      sourceData=store.requirements
+      sourceLinks=store.links
       source = "target"//invert link order for after
       target = "source"
       displayRules = [
@@ -177,17 +177,17 @@ var createChangeManagerView = function () {
         var uuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
         if (sourceGroup == "currentPbs") {
-          push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
+          push(addPbsLink({source:query.currentProject().currentPbs[0].uuid, target:uuid}))
         }
         ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+          item:store[sourceGroup].filter(e=> e.uuid == uuid)[0],
           onLeave: (ev)=>{
             push(act.remove(sourceGroup,{uuid:uuid}))
             if (sourceGroup == "currentPbs") {
               push(removePbsLink({target:uuid}))
             }
-            ev.select.updateData(store[sourceGroup].items)
-            ev.select.updateLinks(store[sourceGroup].links)          }
+            ev.select.updateData(store[sourceGroup])
+            ev.select.updateLinks(store.links)          }
         })
       },
       onEditItem: (ev)=>{
@@ -204,7 +204,7 @@ var createChangeManagerView = function () {
         batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
         batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
 
-        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+        ev.select.getParent().updateMetaLinks(store.metaLinks)//TODO remove extra call
         ev.select.getParent().refreshList()
       },
       onClick: (ev)=>{

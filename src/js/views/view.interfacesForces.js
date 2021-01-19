@@ -13,10 +13,10 @@ var createInterfacesView = function () {
   var render = async function () {
     var store = await query.currentProject()
 
-    var array1 =store.functions.items.map((e) => {e.color="#3da4ab"; return e})
-    var array2 =store.currentPbs.items.map((e) => {e.color="#2ebf91"; return e})
-    var array3 = store.requirements.items.map((e) => {e.color="#e6e6ea"; return e})
-    var array4 = store.stakeholders.items.map((e) => {e.color="#fed766 "; return e})
+    var array1 =store.functions.map((e) => {e.color="#3da4ab"; return e})
+    var array2 =store.currentPbs.map((e) => {e.color="#2ebf91"; return e})
+    var array3 = store.requirements.map((e) => {e.color="#e6e6ea"; return e})
+    var array4 = store.stakeholders.map((e) => {e.color="#fed766 "; return e})
     var concatData = array1.concat(array2).concat(array3).concat(array4)
 
     var groupLinks =[]

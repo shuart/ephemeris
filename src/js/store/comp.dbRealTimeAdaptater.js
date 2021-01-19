@@ -239,7 +239,7 @@ var createDbRealTimeAdaptater = function () {
     let projectUuid = item.projectUuid
     console.log(projectUuid);
     let selector = {}
-    // selector["onlineHistory.items"] = JSON.stringify(item)
+    // selector["onlineHistory"] = JSON.stringify(item)
 
     if (!item.user) {//check if a user already exist (there should be one if the action come form an online sync)
       let userMail = app.store.userData.info.mail
@@ -251,7 +251,7 @@ var createDbRealTimeAdaptater = function () {
 
 
 
-    selector["onlineHistory.items"] = item
+    selector["onlineHistory"] = item
     let actionItem = { $push: selector }
 
     console.log(actionItem);
@@ -324,15 +324,14 @@ var createDbRealTimeAdaptater = function () {
 
   function addProjectItem(projectUuid, collectionName, item) {
 
-    let selectorProperty = collectionName+".items"
+    let selectorProperty = collectionName
     let callBackItem = {type:"update",subtype:"$push", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:item}
-
     return updateDB(callBackItem)
 
   }
   function addProjectLink(projectUuid, collectionName, link) {
-
-    let selectorProperty = collectionName+".links"
+    link.type = collectionName
+    let selectorProperty = "links"
     let callBackItem = {type:"update",subtype:"$push", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:link}
 
     return updateDB(callBackItem)
@@ -340,14 +339,14 @@ var createDbRealTimeAdaptater = function () {
   }
   function removeProjectItem(projectUuid, collectionName, item) {
 
-    let selectorProperty = collectionName+".items"
+    let selectorProperty = collectionName
     let callBackItem = {type:"update",subtype:"$pull", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:{uuid:item}}
 
     return updateDB(callBackItem)
 
   }
   function removeProjectLink(projectUuid, collectionName, link) {
-
+    //TODO, Optimize
     let item = undefined
     if (typeof link === "string") {
       item = {uuid:link}
@@ -359,7 +358,7 @@ var createDbRealTimeAdaptater = function () {
       item = {source:link.source, target:link.target}
     }
 
-    let selectorProperty = collectionName+".links"
+    let selectorProperty = "links"
     let callBackItem = {type:"update",subtype:"$pull", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:item}
 
     return updateDB(callBackItem)
@@ -370,9 +369,9 @@ var createDbRealTimeAdaptater = function () {
     return new Promise(async function(resolve, reject) {
 
       await projects.find({uuid: projectUuid}, async function (err, docs) {
-        let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
+        let indexToChange = docs[0][collectionName].findIndex(i=>i.uuid == itemId)
 
-        let selectorProperty = collectionName+".items."+indexToChange+"."+prop
+        let selectorProperty = collectionName+"."+indexToChange+"."+prop
         let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value}
 
         await updateDB(callBackItem)
@@ -384,8 +383,8 @@ var createDbRealTimeAdaptater = function () {
   function replaceProjectItem(projectUuid, collectionName, itemId, value) {
     return new Promise(async function(resolve, reject) {
       await projects.find({uuid: projectUuid}, async function (err, docs) {
-        let indexToChange = docs[0][collectionName].items.findIndex(i=>i.uuid == itemId)
-        let selectorProperty = collectionName+".items."+indexToChange
+        let indexToChange = docs[0][collectionName].findIndex(i=>i.uuid == itemId)
+        let selectorProperty = collectionName+indexToChange
         let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value}
         await updateDB(callBackItem)
         resolve()
@@ -396,16 +395,16 @@ var createDbRealTimeAdaptater = function () {
 
     return new Promise(async function(resolve, reject) {
       await projects.find({uuid: projectUuid}, async function (err, docs) {
-        let collectionOrderIndex = docs[0].itemsOrder.items.findIndex(o=>o.collectionName==collectionName)
+        let collectionOrderIndex = docs[0].itemsOrder.findIndex(o=>o.collectionName==collectionName)
         if (collectionOrderIndex<0) { //if order is not yet defined
-          let selectorProperty = "itemsOrder.items"
+          let selectorProperty = "itemsOrder"
           let callBackItem = {type:"update",subtype:"$push", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:{uuid:genuuid(),collectionName:collectionName, order:value }}
 
           await updateDB(callBackItem)
           resolve()
         }else {
           let indexToChange = collectionOrderIndex
-          let selectorProperty = "itemsOrder.items."+indexToChange+".order"
+          let selectorProperty = "itemsOrder."+indexToChange+".order"
           let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value}
 
           await updateDB(callBackItem)

@@ -81,7 +81,7 @@ var createPlanningView = function () {
         let updatedData = await preparePlanningData(currentPlanning.uuid)
         ephHelpers.updateListElements(currentList,{
           items:updatedData,
-          metaLinks:store.metaLinks.items,
+          metaLinks:store.metaLinks,
           displayRules:prepareListDisplay(store),
         })
       }
@@ -109,16 +109,16 @@ var createPlanningView = function () {
 
   var preparePlanningData = async function (planningUuid) {
     var store = await query.currentProject()
-    let relevantTimeLinks = store.timeLinks.items.filter(l=>l.type == "planning" && l.source == planningUuid)
+    let relevantTimeLinks = store.timeLinks.filter(l=>l.type == "planning" && l.source == planningUuid)
     let relevantTimeTracksUuid = relevantTimeLinks.map(r => r.target)
     console.log(relevantTimeTracksUuid);
-    let relevantTimeTracks = store.timeTracks.items.filter(l => relevantTimeTracksUuid.includes(l.uuid))
+    let relevantTimeTracks = store.timeTracks.filter(l => relevantTimeTracksUuid.includes(l.uuid))
     console.log(relevantTimeTracks);
     if (!relevantTimeTracks || !relevantTimeTracks[0]) {
       return []
     }
     let planningData = relevantTimeTracks.map(function (t) {
-      let relatedEvent = store.events.items.find(e=>e.uuid == t.relatedEvent)
+      let relatedEvent = store.events.find(e=>e.uuid == t.relatedEvent)
       return {
         uuid:t.uuid,
         relatedEvent:relatedEvent.uuid,
@@ -145,7 +145,7 @@ var createPlanningView = function () {
         searchArea.innerHTML=theme.planningSearchArea()
         updatePlanningTree(planningPreviewArea, store)
       //update search event
-      setUpSearch(document.querySelector(".planning_search_input"), store.plannings.items)
+      setUpSearch(document.querySelector(".planning_search_input"), store.plannings)
     }else {
       alert("element missing")
     }
@@ -154,7 +154,7 @@ var createPlanningView = function () {
 
   var updatePlanningTree = async function(container, store) {
     let html = ""
-    store.plannings.items.slice()
+    store.plannings.slice()
     .sort(function(a, b) {
         var nameA = a.name.toUpperCase(); // ignore upper and lowercase
         var nameB = b.name.toUpperCase(); // ignore upper and lowercase
@@ -170,7 +170,7 @@ var createPlanningView = function () {
 
   var setCurrentPlanning = async function (uuid) {
     let store = await query.currentProject()
-    currentPlanning = store.plannings.items.find(p=>p.uuid == uuid)//TODO remove
+    currentPlanning = store.plannings.find(p=>p.uuid == uuid)//TODO remove
     if (currentPlanning) {
       renderPlanning()
     }
@@ -182,8 +182,8 @@ var createPlanningView = function () {
       {prop:"desc", displayAs:"Description", edit:"true"},
       {prop:"start", displayAs:"Start", edit:"true", time:true},
       {prop:"duration", displayAs:"Duration", edit:"true"},
-      {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-      {prop:"eventContainsStakeholders", displayAs:"Stakeholders", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
+      {prop:"eventContainsPbs", displayAs:"Products contained", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks, choices:()=>store.currentPbs, edit:true},
+      {prop:"eventContainsStakeholders", displayAs:"Stakeholders", deferredIdProp:"relatedEvent", meta:()=>store.metaLinks, choices:()=>store.stakeholders, edit:true},
       {prop:"capacityToll", displayAs:"Capacity toll", edit:true},
     ]
   }
@@ -192,7 +192,7 @@ var createPlanningView = function () {
       var planningData = await preparePlanningData(currentPlanning.uuid);
       currentList= showListMenu({
         sourceData:planningData,
-        // sourceLinks:store.plannings.items[0].links,
+        // sourceLinks:store.plannings[0].links,
         targetDomContainer:".planning-list-area",
         fullScreen:true,
         displayProp:"name",
@@ -207,7 +207,7 @@ var createPlanningView = function () {
               var newPlanningData = await preparePlanningData(currentPlanning.uuid)
               ev.select.updateData(newPlanningData)
             }else {
-              let eventsUuid = store.timeTracks.items.find(t => t.uuid == ev.target.dataset.id).relatedEvent
+              let eventsUuid = store.timeTracks.find(t => t.uuid == ev.target.dataset.id).relatedEvent
               console.log(eventsUuid);
               push(act.edit("events",{uuid:eventsUuid, prop:ev.target.dataset.prop, value:newValue}))
               var newPlanningData = await preparePlanningData(currentPlanning.uuid)
@@ -254,9 +254,9 @@ var createPlanningView = function () {
             // let currentDisplayOrder =  ephHelpers.setDisplayOrder(store,"functions")
             //let newDisplayOrder = moveElementInArray (currentDisplayOrder, ev.originTarget.dataset.id, ev.target.dataset.id)
             push(act.move("timeTracks", {value:ev.newOrder}))
-            // var sourceItem = storeGroup.items.filter((item)=>item.uuid == pl.origin)[0]
-            // var targetItem = storeGroup.items.filter((item)=>item.uuid == pl.target)[0]
-            // storeGroup.items = moveElementInArray(storeGroup.items,sourceItem,targetItem)
+            // var sourceItem = storeGroup.filter((item)=>item.uuid == pl.origin)[0]
+            // var targetItem = storeGroup.filter((item)=>item.uuid == pl.target)[0]
+            // storeGroup = moveElementInArray(storeGroup,sourceItem,targetItem)
             //console.log(newDisplayOrder);
 
 
@@ -265,7 +265,7 @@ var createPlanningView = function () {
             if (ev.targetParentId && ev.targetParentId != "undefined") {
               push(act.addLink("timeTracks",{source:ev.targetParentId, target:ev.originTarget.dataset.id}))
             }
-            //ev.select.updateData(store.functions.items)
+            //ev.select.updateData(store.functions)
             //ev.select.updateLinks(store.functions.links)
           }
         },
@@ -278,8 +278,8 @@ var createPlanningView = function () {
         //     if (ev.targetParentId && ev.targetParentId != "undefined") {
         //       push(addPlanningLink({source:ev.targetParentId, target:ev.originTarget.dataset.id}))
         //     }
-        //     ev.select.updateData(store.plannings.items[0].items)
-        //     ev.select.updateLinks(store.plannings.items[0].links)
+        //     ev.select.updateData(store.plannings[0])
+        //     ev.select.updateLinks(store.plannings[0].links)
         //   }
         // },
         onAdd: async(ev)=>{
@@ -357,9 +357,9 @@ var createPlanningView = function () {
                 push(act.add("plannings",{uuid:newId, name:currentPlanning.name+"_copy"}))
 
                 //duplicate tracks and links
-                let relevantTimeLinks = store.timeLinks.items.filter(l=>l.type == "planning" && l.source == currentPlanning.uuid)
+                let relevantTimeLinks = store.timeLinks.filter(l=>l.type == "planning" && l.source == currentPlanning.uuid)
                 let relevantTimeTracksUuid = relevantTimeLinks.map(r => r.target)
-                let relevantTimeTracks = store.timeTracks.items.filter(l => relevantTimeTracksUuid.includes(l.uuid))
+                let relevantTimeTracks = store.timeTracks.filter(l => relevantTimeTracksUuid.includes(l.uuid))
                 relevantTimeTracks.forEach(function (t) {
                   let newTrack = deepCopy(t)
                   let newTrackId = uuid()
@@ -431,7 +431,7 @@ var createPlanningView = function () {
         let updatedData = await preparePlanningData(currentPlanning.uuid)
         ephHelpers.updateListElements(currentList,{
           items:updatedData,
-          metaLinks:store.metaLinks.items,
+          metaLinks:store.metaLinks,
           displayRules:prepareListDisplay(store),
         })
       }
@@ -468,17 +468,17 @@ var createPlanningView = function () {
     }
     if (ganttMode == "capacity") {
 
-      let relevantMetalinks = store.metaLinks.items.filter(i=> i.type== "eventContainsStakeholders")
+      let relevantMetalinks = store.metaLinks.filter(i=> i.type== "eventContainsStakeholders")
       //create the data to display each element on his own lane
       for (var i = 0; i < newPlanningData.length; i++) {
         let item = newPlanningData[i]
-        let relatedEvent = store.events.items.find(e=>e.uuid == item.relatedEvent)
+        let relatedEvent = store.events.find(e=>e.uuid == item.relatedEvent)
         let relevantStakeholders = relevantMetalinks.filter(m=> m.source == relatedEvent.uuid)
         let relevantStakeholder =undefined
         if (!relevantStakeholders[0]) {//in case the iutem is not connected add it to a default group
           relevantStakeholder = {uuid:"unallocated", name:"unallocated", lastName:""}
         }else {
-          relevantStakeholder =store.stakeholders.items.find(i=> i.uuid== relevantStakeholders[0].target )
+          relevantStakeholder =store.stakeholders.find(i=> i.uuid== relevantStakeholders[0].target )
         }
 
         items.push({
@@ -527,7 +527,7 @@ var createPlanningView = function () {
       }
       console.log('injecting data');
       ganttGroups = new vis.DataSet(ganttData.groups);
-      ganttDataSet = new vis.DataSet(ganttData.items);
+      ganttDataSet = new vis.DataSet(ganttData);
       // var items = new vis.DataSet([
       //  {id: 4, group:3, content: 'item 4', start: '2014-04-16', end: '2014-04-19'},
       //  {id: 5, group:"t5454", content: 'item 5', start: '2014-04-25'},
@@ -583,7 +583,7 @@ var createPlanningView = function () {
     var store = await query.currentProject()
     var metalinkType = ev.target.dataset.prop;
     var sourceTriggerId = ev.target.dataset.id; //alredy modified by defferedIdProp rule
-    // var sourceTriggerId = store.timeTracks.items.find(t => t.uuid == ev.target.dataset.id).relatedEvent;
+    // var sourceTriggerId = store.timeTracks.find(t => t.uuid == ev.target.dataset.id).relatedEvent;
     var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
     var sourceData = undefined
     var invert = false
@@ -592,57 +592,57 @@ var createPlanningView = function () {
     var sourceLinks= undefined
     var displayRules= undefined
     if (metalinkType == "assignedTo") {
-      sourceData=store.stakeholders.items
+      sourceData=store.stakeholders
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"lastName", displayAs:"Last name", edit:false}
       ]
     }else if (metalinkType == "WpOwn") {
-      sourceData=store.currentPbs.items
-      sourceLinks=store.currentPbs.links
+      sourceData=store.currentPbs
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "WpOwnNeed") {
-      sourceData=store.requirements.items
-      sourceLinks=store.requirements.links
+      sourceData=store.requirements
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "contains") {
-      sourceData=store.currentPbs.items
-      sourceLinks=store.currentPbs.links
+      sourceData=store.currentPbs
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "originNeed") {
       invert = true;
-      sourceData=store.currentPbs.items
+      sourceData=store.currentPbs
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.currentPbs.links
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"First name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "tags") {
-      sourceData=store.tags.items
+      sourceData=store.tags
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "eventContainsPbs") {
-      sourceData=store.currentPbs.items
-      sourceLinks=store.currentPbs.links
+      sourceData=store.currentPbs
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"desc", displayAs:"Description", fullText:true, edit:false}
       ]
     }else if (metalinkType == "eventContainsStakeholders") {
-      sourceData=store.stakeholders.items
-      sourceLinks=store.stakeholders.links
+      sourceData=store.stakeholders
+      sourceLinks=store.links
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"lastName", displayAs:"Last Name", fullText:true, edit:false}
@@ -665,7 +665,7 @@ var createPlanningView = function () {
         batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
         batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
 
-        ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+        ev.select.getParent().updateMetaLinks(store.metaLinks)//TODO remove extra call
         ev.select.getParent().refreshList()
       },
       onClick: (ev)=>{

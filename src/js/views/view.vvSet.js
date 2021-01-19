@@ -45,7 +45,7 @@ var createVvSet = function ({
         console.log(updatedWorkSet);
         ephHelpers.updateListElements(currentSetList,{
           items:updatedWorkSet,
-          metaLinks:store.metaLinks.items,
+          metaLinks:store.metaLinks,
           displayRules:generateDisplayRules(store),
         })
       }
@@ -113,7 +113,7 @@ var createVvSet = function ({
     await displayWorkSet(workSet, ".vvDefinitionsArea")
   }
   var renderMenu =function (uuid, store){
-    let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
+    let currentSet = store.vvSets.find(s=>s.uuid == currentSetUuid)
     return theme.menu(currentSet.name)
   }
 
@@ -121,18 +121,18 @@ var createVvSet = function ({
 
   var generateRelevantSet = async function (currentSetUuid) {
     var store = await query.currentProject()
-    return store.vvDefinitions.items.filter(i=>i.sourceSet == currentSetUuid)
+    return store.vvDefinitions.filter(i=>i.sourceSet == currentSetUuid)
   }
 
   var generateDisplayRules = function (store) {
     return [
       {prop:"name", displayAs:"Name", edit:"true"},
-      {prop:"vvDefinitionNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:true},
-      {prop:"vvDefinitionInterface", displayAs:"Related Interface", meta:()=>store.metaLinks.items, choices:()=>store.interfaces.items, edit:true},
+      {prop:"vvDefinitionNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks, choices:()=>store.requirements, edit:true},
+      {prop:"vvDefinitionInterface", displayAs:"Related Interface", meta:()=>store.metaLinks, choices:()=>store.interfaces, edit:true},
       {prop:"shallStatement", displayAs:"Shall Statement", edit:true},
       {prop:"successCriteria", displayAs:"Success Criteria", edit:true},
       {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:true},
-      {uuid:"documents", prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true}
+      {uuid:"documents", prop:"documents", displayAs:"Documents", meta:()=>store.metaLinks, choices:()=>store.documents, edit:true}
     ]
   }
 
@@ -140,7 +140,7 @@ var createVvSet = function ({
     var store = await query.currentProject()
     currentSetList = showListMenu({
       sourceData:workSet,
-      metaLinks:store.metaLinks.items,
+      metaLinks:store.metaLinks,
       displayProp:"name",
       targetDomContainer:container,
       fullScreen:true,// TODO: perhaps not full screen?
@@ -207,7 +207,7 @@ var createVvSet = function ({
         {
           name:"Rename",
           action:(ev)=>{
-            let currentSet = store.vvSets.items.find(s=>s.uuid == currentSetUuid)
+            let currentSet = store.vvSets.find(s=>s.uuid == currentSetUuid)
             let newName = prompt("Change Set Name", currentSet.name)
             if (newName) {
               push(act.edit("vvSets", {uuid:currentSetUuid, prop:"name", value:newName}))
@@ -224,10 +224,10 @@ var createVvSet = function ({
 
   function generateFromRequirements(store) {
     showListMenu({
-      sourceData:store.requirements.items,
-      sourceLinks:store.requirements.links,
+      sourceData:store.requirements,
+      sourceLinks:store.links,
       multipleSelection:currentSetGenerateBuffer,
-      metaLinks:store.metaLinks.items,
+      metaLinks:store.metaLinks,
       displayProp:"name",
       // targetDomContainer:container,
       // fullScreen:true,// TODO: perhaps not full screen?
@@ -254,7 +254,7 @@ var createVvSet = function ({
             // createListFromBuffer()
             currentSetGenerateBuffer.forEach(b=>{
               let id = genuuid()
-              let relatedRequirement = store.requirements.items.find(r=>r.uuid == b)
+              let relatedRequirement = store.requirements.find(r=>r.uuid == b)
               push(act.add("vvDefinitions",{
                 uuid:id,
                 sourceSet:currentSetUuid,
@@ -273,10 +273,10 @@ var createVvSet = function ({
   }
   function generateFromInterfaces(store) {
     showListMenu({
-      sourceData:store.interfaces.items,
-      sourceLinks:store.interfaces.links,
+      sourceData:store.interfaces,
+      sourceLinks:store.links,
       multipleSelection:currentSetGenerateInterfaceBuffer,
-      metaLinks:store.metaLinks.items,
+      metaLinks:store.metaLinks,
       displayProp:"name",
       // targetDomContainer:container,
       // fullScreen:true,// TODO: perhaps not full screen?
@@ -304,7 +304,7 @@ var createVvSet = function ({
             // createListFromBuffer()
             currentSetGenerateInterfaceBuffer.forEach(b=>{
               let id = genuuid()
-              let relatedInterfaces = store.interfaces.items.find(r=>r.uuid == b)
+              let relatedInterfaces = store.interfaces.find(r=>r.uuid == b)
               push(act.add("vvDefinitions",{
                 uuid:id,
                 sourceSet:currentSetUuid,
@@ -345,21 +345,21 @@ var createVvSet = function ({
     var onLoaded = undefined
     if (metalinkType == "originNeed") {
       sourceGroup="requirements"
-      sourceData=store.requirements.items
-      sourceLinks= store.requirements.links
+      sourceData=store.requirements
+      sourceLinks= store.links
     }else if (metalinkType == "originFunction") {
       sourceGroup="functions"
-      sourceData=store.functions.items
-      sourceLinks=store.functions.links
+      sourceData=store.functions
+      sourceLinks=store.links
     }else if (metalinkType == "tags") {
       sourceGroup="tags"
-      sourceData=store.tags.items
+      sourceData=store.tags
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "category") {
       sourceGroup="categories"
-      sourceData=store.categories.items
+      sourceData=store.categories
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -368,8 +368,8 @@ var createVvSet = function ({
       invert = true;
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.physicalSpaces.links
-      sourceData=store.physicalSpaces.items
+      sourceLinks=store.links
+      sourceData=store.physicalSpaces
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -378,22 +378,22 @@ var createVvSet = function ({
       invert = true;
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.workPackages.links
-      sourceData=store.workPackages.items
+      sourceLinks=store.links
+      sourceData=store.workPackages
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "vvDefinitionNeed") {
       sourceGroup="requirements"
-      sourceLinks=store.requirements.links
-      sourceData=store.requirements.items
+      sourceLinks=store.links
+      sourceData=store.requirements
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "vvDefinitionInterface") {
       sourceGroup="interfaces"
-      sourceLinks=store.interfaces.links
-      sourceData=store.interfaces.items
+      sourceLinks=store.links
+      sourceData=store.interfaces
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"type", displayAs:"Type", edit:false},
@@ -404,14 +404,14 @@ var createVvSet = function ({
         prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
         onLoaded = function (ev) {
           dropAreaService.setDropZone(".prepend", function () {
-            ev.select.updateData(store.documents.items)
+            ev.select.updateData(store.documents)
             ev.select.refreshList()
           })
         }
       }
       sourceGroup="documents"
-      sourceLinks=store.documents.links
-      sourceData=store.documents.items
+      sourceLinks=store.links
+      sourceData=store.documents
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -420,7 +420,7 @@ var createVvSet = function ({
       prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`,
       onLoaded = function (ev) {
         dropAreaService.setDropZone(".prepend", function () {
-          ev.select.updateData(store.documents.items)
+          ev.select.updateData(store.documents)
           ev.select.refreshList()
           setTimeout(function () {
             ev.select.scrollDown()
@@ -447,10 +447,10 @@ var createVvSet = function ({
         var uuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
         ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+          item:store[sourceGroup].filter(e=> e.uuid == uuid)[0],
           onLeave: (ev)=>{
             push(act.remove(sourceGroup,{uuid:uuid}))
-            ev.select.updateData(store[sourceGroup].items)
+            ev.select.updateData(store[sourceGroup])
           }
         })
       },
@@ -469,7 +469,7 @@ var createVvSet = function ({
         var changeProp = function (sourceTriggerId) {
           console.log(currentLinksUuidFromDS)
           batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-          //store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
+          //store.metaLinks = store.metaLinks.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
           // for (newSelected of ev.select.getSelected()) {
           //   if (!invert) {
           //     push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
@@ -480,7 +480,7 @@ var createVvSet = function ({
           // }
           batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
 
-          // ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          // ev.select.getParent().updateMetaLinks(store.metaLinks)//TODO remove extra call
           // ev.select.getParent().refreshList()
         }
         if (batch[0]) { //check if batch action is needed

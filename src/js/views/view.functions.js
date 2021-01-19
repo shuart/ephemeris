@@ -15,9 +15,9 @@ var createFunctionsView = function () {
       if (objectIsActive && currentVisibleList) {
         var store = await query.currentProject()
         ephHelpers.updateListElements(currentVisibleList,{
-          items:store.functions.items,
-          links:store.functions.links,
-          metaLinks:store.metaLinks.items,
+          items:store.functions,
+          links:store.links,
+          metaLinks:store.metaLinks,
           displayRules:setDisplayRules(store)
         })
       }
@@ -28,18 +28,18 @@ var createFunctionsView = function () {
     var displayRules = [
       {prop:"name", displayAs:"Name", edit:"true"},
       {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-      {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
-      {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+      {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks, choices:()=>store.requirements, edit:"true"},
+      {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks, choices:()=>store.currentPbs, edit:true}
     ]
 
     extraFields = [
       {prop:"name", displayAs:"Name", edit:"true"},
       {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-      {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:"true"},
-      {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true}
+      {prop:"originNeed", displayAs:"Linked to requirements", meta:()=>store.metaLinks, choices:()=>store.requirements, edit:"true"},
+      {prop:"originFunction",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks, choices:()=>store.currentPbs, edit:true}
     ]
 
-    // let storeSettings = store.settings.items.find(s=>s.type == "requirementsListViewVisibleFields")
+    // let storeSettings = store.settings.find(s=>s.type == "requirementsListViewVisibleFields")
     // if (storeSettings && storeSettings.value[0]) { //if store settings exist and array is populated
     //   displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
     //   //displayRules = extraFields
@@ -54,9 +54,9 @@ var createFunctionsView = function () {
   var render = async function () {
       var store = await query.currentProject()
       currentVisibleList = showListMenu({
-        sourceData:store.functions.items,
-        sourceLinks:store.functions.links,
-        metaLinks:store.metaLinks.items,
+        sourceData:store.functions,
+        sourceLinks:store.links,
+        metaLinks:store.metaLinks,
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
@@ -84,7 +84,7 @@ var createFunctionsView = function () {
           console.log("remove");
           if (confirm("remove item ?")) {
             push(act.remove("functions",{uuid:ev.target.dataset.id}))
-            // ev.select.updateData(store.functions.items)
+            // ev.select.updateData(store.functions)
           }
         },
         onMove: (ev)=>{
@@ -93,9 +93,9 @@ var createFunctionsView = function () {
             // let currentDisplayOrder =  ephHelpers.setDisplayOrder(store,"functions")
             //let newDisplayOrder = moveElementInArray (currentDisplayOrder, ev.originTarget.dataset.id, ev.target.dataset.id)
             push(act.move("functions", {value:ev.newOrder}))
-            // var sourceItem = storeGroup.items.filter((item)=>item.uuid == pl.origin)[0]
-            // var targetItem = storeGroup.items.filter((item)=>item.uuid == pl.target)[0]
-            // storeGroup.items = moveElementInArray(storeGroup.items,sourceItem,targetItem)
+            // var sourceItem = storeGroup.filter((item)=>item.uuid == pl.origin)[0]
+            // var targetItem = storeGroup.filter((item)=>item.uuid == pl.target)[0]
+            // storeGroup = moveElementInArray(storeGroup,sourceItem,targetItem)
             //console.log(newDisplayOrder);
 
 
@@ -104,8 +104,8 @@ var createFunctionsView = function () {
             if (ev.targetParentId && ev.targetParentId != "undefined") {
               push(act.addLink("functions",{source:ev.targetParentId, target:ev.originTarget.dataset.id}))
             }
-            //ev.select.updateData(store.functions.items)
-            //ev.select.updateLinks(store.functions.links)
+            //ev.select.updateData(store.functions)
+            //ev.select.updateLinks(store.links)
           }
         },
         onAdd: async (ev)=>{
@@ -121,10 +121,10 @@ var createFunctionsView = function () {
           // push(act.add("functions", {uuid:uuid,name:"Add a function"}))
           // console.log(ev);
           // ev.select.setEditItemMode({
-          //     item:store.functions.items.filter(e=> e.uuid == uuid)[0],
+          //     item:store.functions.filter(e=> e.uuid == uuid)[0],
           //     onLeave: (ev)=>{
           //       push(act.remove("functions",{uuid:uuid}))
-          //       ev.select.updateData(store.functions.items)
+          //       ev.select.updateData(store.functions)
           //     }
           //   }
           // )
@@ -137,17 +137,17 @@ var createFunctionsView = function () {
             if (ev.target && ev.target != "undefined") {
               push(act.move("functions", {origin:uuid, target:ev.target.dataset.id}))
               //check for parenting
-              let parent = store.functions.links.find(l=>l.target == ev.target.dataset.id)
+              let parent = store.links.find(l=>l.target == ev.target.dataset.id)
               console.log(parent);
 
               if (parent) {
                 push(act.addLink("functions",{source:parent.source, target:uuid}))
               }
             }else {//add to main item (only pbs)
-              // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+              // push(addPbsLink({source:query.currentProject().currentPbs[0].uuid, target:id}))
             }
-            ev.select.updateData(store.functions.items)
-            ev.select.updateLinks(store.functions.links)
+            ev.select.updateData(store.functions)
+            ev.select.updateLinks(store.links)
           }
         },
         onAddFromExtraField: (ev)=>{
@@ -162,8 +162,8 @@ var createFunctionsView = function () {
         },
         onClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id, function (e) {
-            // ev.select.updateData(store.functions.items)
-            // ev.select.updateLinks(store.functions.links)
+            // ev.select.updateData(store.functions)
+            // ev.select.updateLinks(store.links)
             // ev.select.refreshList()
           })
         },
@@ -195,8 +195,8 @@ var createFunctionsView = function () {
             name:"Diagramme",
             action:(ev)=>{
               showTreeFromListService.showByStoreGroup("functions", function (e) {
-                ev.select.updateData(store.functions.items)
-                ev.select.updateLinks(store.functions.links)
+                ev.select.updateData(store.functions)
+                ev.select.updateLinks(store.links)
                 ev.select.update() //TODO find a better way
               })
             }
@@ -205,100 +205,10 @@ var createFunctionsView = function () {
       })
   }
 
-  // async function startSelection(ev) {
-  //   var store = await query.currentProject()
-  //   var metalinkType = ev.target.dataset.prop;
-  //   var sourceTriggerId = ev.target.dataset.id;
-  //   var batch = ev.batch;
-  //   var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-  //   var sourceGroup = undefined
-  //   var sourceData = undefined
-  //   var invert = false
-  //   var source = "source"
-  //   var target = "target"
-  //   var sourceLinks= undefined
-  //   var displayRules= undefined
-  //   if (metalinkType == "originNeed") {
-  //     sourceGroup="requirements";
-  //     sourceData=store.requirements.items
-  //     sourceLinks=store.requirements.links
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false},
-  //       {prop:"desc", displayAs:"Description",fullText:true, edit:false}
-  //     ]
-  //   }else if (metalinkType == "originFunction") {
-  //     sourceGroup="currentPbs";
-  //     invert = true;
-  //     sourceData=store.currentPbs.items
-  //     source = "target"//invert link order for after
-  //     target = "source"
-  //     sourceLinks=store.currentPbs.links
-  //     displayRules = [
-  //       {prop:"name", displayAs:"First name", edit:false},
-  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-  //     ]
-  //   }else if (metalinkType == "tags") {
-  //     sourceGroup="tags";
-  //     sourceData=store.tags.items
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false}
-  //     ]
-  //   }
-  //   showListMenu({
-  //     sourceData:sourceData,
-  //     sourceLinks:sourceLinks,
-  //     parentSelectMenu:ev.select ,
-  //     multipleSelection:currentLinksUuidFromDS,
-  //     displayProp:"name",
-  //     searchable : true,
-  //     display:displayRules,
-  //     idProp:"uuid",
-  //     onAdd:(ev)=>{//TODO experimental, replace with common service
-  //       var uuid = genuuid()
-  //       push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
-  //       ev.select.setEditItemMode({
-  //         item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
-  //         onLeave: (ev)=>{
-  //           push(act.remove(sourceGroup,{uuid:uuid}))
-  //           ev.select.updateData(store[sourceGroup].items)
-  //         }
-  //       })
-  //     },
-  //     onEditItem: (ev)=>{
-  //       var newValue = prompt("Edit Item",ev.target.dataset.value)
-  //       if (newValue) {
-  //         push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-  //       }
-  //     },
-  //     onCloseMenu: (ev)=>{
-  //       console.log(ev.select);
-  //       ev.select.getParent().refreshList()
-  //     },
-  //     onChangeSelect: (ev)=>{
-  //       var changeProp = function (sourceTriggerId) {
-  //         batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-  //         batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-  //
-  //         ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-  //         ev.select.getParent().refreshList()
-  //       }
-  //       if (batch[0]) { //check if batch action is needed
-  //         batch.forEach(function (sourceTriggerId) {
-  //           changeProp(sourceTriggerId)
-  //         })
-  //       }else {
-  //         changeProp(sourceTriggerId)
-  //       }
-  //     },
-  //     onClick: (ev)=>{
-  //       console.log("select");
-  //     }
-  //   })
-  // }
 
   var exportToCSV = async function () {
     let store = await query.currentProject()
-    let data = store.functions.items.map(i=>{
+    let data = store.functions.map(i=>{
       let linkToText = getRelatedItems(store, i, "requirements").map(s=> s.name ? s.name:'').join(",")
       let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"target", metalinksType:"originFunction"}).map(s=> s.name? s.name : '').join(",")
       return {id:i.uuid, name:i.name, description:i.desc, Requirements:linkToText, Products:linkToTextPbs}
@@ -322,7 +232,7 @@ var createFunctionsView = function () {
 
   function generateExtraFieldsList(store) {
     if (isExtraFieldsVisible) {
-      let extras = store.extraFields.items.filter(i=>(i.type == "functions" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+      let extras = store.extraFields.filter(i=>(i.type == "functions" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
         if (confirm("No custom Fields yet. Add one?")) {
           addCustomField()
@@ -345,15 +255,15 @@ var createFunctionsView = function () {
     var newReq = prompt("add a new Fieldss?")
     if (newReq) {
       let clearedName = "_"+slugify(newReq)+"_"+(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
-      if (store.extraFields.items.filter(i=>i.prop == clearedName)[0]) {
-        console.log(store.extraFields.items.filter(i=>i.prop == clearedName)[0]);
+      if (store.extraFields.filter(i=>i.prop == clearedName)[0]) {
+        console.log(store.extraFields.filter(i=>i.prop == clearedName)[0]);
         alert("This field has already been registered")//in rare case where an identical field would be generated
       }
       if (true) {
         console.log('adding');
         push(act.add("extraFields",{name: newReq, prop:clearedName, type: "functions"}))
       }else {//add to main item (only pbs)
-        // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+        // push(addPbsLink({source:query.currentProject().currentPbs[0].uuid, target:id}))
       }
     }
     if (callback) {

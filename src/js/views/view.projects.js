@@ -45,7 +45,7 @@ var createProjectsView = function () {
         // var sourceTriggerId = ev.target.dataset.id;
         // var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
         // showListMenu({
-        //   sourceData:store.stakeholders.items,
+        //   sourceData:store.stakeholders,
         //   parentSelectMenu:ev.select ,
         //   multipleSelection:currentLinksUuidFromDS,
         //   displayProp:"name",
@@ -79,7 +79,7 @@ var createProjectsView = function () {
         console.log("remove");
         if (confirm("remove item ?")) {
           //push(removeRequirement({uuid:ev.target.dataset.id}))
-          //ev.select.updateData(store.requirements.items)
+          //ev.select.updateData(store.requirements)
           // var indexToRemove = app.store.projects.findIndex(p=>p.uuid == ev.target.dataset.id)
           // app.store.projects.splice(indexToRemove, 1)//TODO do that with actions
           await dbConnector.removeProject(ev.target.dataset.id)

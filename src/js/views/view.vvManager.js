@@ -128,9 +128,9 @@ var createVvManager = function (targetSelector) {
       var bRemove = confirm("Do you want to remove this set and all it's definitions?")
       if (bRemove) {
         var store = await query.currentProject()
-        let definitions= store.vvDefinitions.items.filter(d=>d.sourceSet == e.target.dataset.id)
+        let definitions= store.vvDefinitions.filter(d=>d.sourceSet == e.target.dataset.id)
         let definitionsUuids= definitions.map(d=>d.uuid)
-        let relatedMetaLinks = store.metaLinks.items.filter(l => (l.type=="vvDefinitionNeed"||l.type=="vvDefinitionInterface")  && definitionsUuids.includes(l.source))
+        let relatedMetaLinks = store.metaLinks.filter(l => (l.type=="vvDefinitionNeed"||l.type=="vvDefinitionInterface")  && definitionsUuids.includes(l.source))
         definitions.forEach(d=>{push(act.remove("vvDefinitions",{uuid:d.uuid}))})
         relatedMetaLinks.forEach(d=>{push(act.remove("metaLinks",{uuid:d.uuid}))})
         push(act.remove("vvSets",{uuid:e.target.dataset.id}))
@@ -141,9 +141,9 @@ var createVvManager = function (targetSelector) {
       var bRemove = confirm("Do you want to remove this report and all it's definitions?")
       if (bRemove) {
         var store = await query.currentProject()
-        let actions= store.vvActions.items.filter(d=>d.sourceReport == e.target.dataset.id)
+        let actions= store.vvActions.filter(d=>d.sourceReport == e.target.dataset.id)
         let actionsUuids= actions.map(d=>d.uuid)
-        let relatedMetaLinks = store.metaLinks.items.filter(l => (l.type=="vvReportNeed"||l.type=="vvReportInterface") && actionsUuids.includes(l.source))
+        let relatedMetaLinks = store.metaLinks.filter(l => (l.type=="vvReportNeed"||l.type=="vvReportInterface") && actionsUuids.includes(l.source))
         actions.forEach(d=>{push(act.remove("vvActions",{uuid:d.uuid}))})
         relatedMetaLinks.forEach(d=>{push(act.remove("metaLinks",{uuid:d.uuid}))})
         push(act.remove("vvReports",{uuid:e.target.dataset.id}))
@@ -155,11 +155,11 @@ var createVvManager = function (targetSelector) {
       let reportUuid = genuuid()
       push(act.add("vvReports",{uuid:reportUuid, name:"Report based on "+ e.target.dataset.name}))
       //generate the report action based on the set
-      let vvDefinitionsInOrigin = deepCopy( store.vvDefinitions.items.filter(def=> def.sourceSet == e.target.dataset.id) )
+      let vvDefinitionsInOrigin = deepCopy( store.vvDefinitions.filter(def=> def.sourceSet == e.target.dataset.id) )
       vvDefinitionsInOrigin.forEach(function (def) {
         let newDefUuid = genuuid()
         //copy related metalinks
-        let relatedMetalink = deepCopy(store.metaLinks.items.filter(l=> l.source == def.uuid && l.type == 'vvDefinitionNeed'))
+        let relatedMetalink = deepCopy(store.metaLinks.filter(l=> l.source == def.uuid && l.type == 'vvDefinitionNeed'))
         relatedMetalink.forEach(function (relatedLink) {
           relatedLink.uuid = genuuid()
           relatedLink.source =newDefUuid
@@ -167,7 +167,7 @@ var createVvManager = function (targetSelector) {
           push(act.add("metaLinks",relatedLink))
         })
         //copy related metalinks of interfaces
-        let relatedMetalinkInterface = deepCopy(store.metaLinks.items.filter(l=> l.source == def.uuid && l.type == 'vvDefinitionInterface'))
+        let relatedMetalinkInterface = deepCopy(store.metaLinks.filter(l=> l.source == def.uuid && l.type == 'vvDefinitionInterface'))
         relatedMetalinkInterface.forEach(function (relatedLink) {
           relatedLink.uuid = genuuid()
           relatedLink.source =newDefUuid
@@ -175,7 +175,7 @@ var createVvManager = function (targetSelector) {
           push(act.add("metaLinks",relatedLink))
         })
         //copy related metalinks of documents
-        let relatedMetalinkDocument = deepCopy(store.metaLinks.items.filter(l=> l.source == def.uuid && l.type == 'documents'))
+        let relatedMetalinkDocument = deepCopy(store.metaLinks.filter(l=> l.source == def.uuid && l.type == 'documents'))
         relatedMetalinkDocument.forEach(function (relatedLink) {
           relatedLink.uuid = genuuid()
           relatedLink.source =newDefUuid
@@ -196,11 +196,11 @@ var createVvManager = function (targetSelector) {
     container.innerHTML = ""
     if (store) {
       // let vvSetsList = [1,2,3,4]
-      let vvSetsList = store.vvSets.items
+      let vvSetsList = store.vvSets
       container.appendChild(
         toNode(theme.vvSetArea(vvSetsList, store))
       )
-      let vvReportsList = store.vvReports.items
+      let vvReportsList = store.vvReports
       container.appendChild(
         toNode(theme.vvReportArea(vvReportsList, store))
       )
@@ -213,30 +213,30 @@ var createVvManager = function (targetSelector) {
   }
 
   var getGlobalStatistics = function (store) {
-    // let requirementsConvered= store.vvDefinitions.items.map().filter(d=>d.sourceSet == set.uuid)
+    // let requirementsConvered= store.vvDefinitions.map().filter(d=>d.sourceSet == set.uuid)
     // let definitionsUuids= definitions.map(d=>d.uuid)
-    let coveredNeedsRawList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed").map(l=>l.target)
+    let coveredNeedsRawList = store.metaLinks.filter(l => l.type=="vvDefinitionNeed").map(l=>l.target)
     let coveredNeedList = coveredNeedsRawList.filter((item,index)=>coveredNeedsRawList.indexOf(item)===index)
-    let percentOfCoveredNeeds = store.requirements.items[0]? Math.round(coveredNeedList.length/store.requirements.items.length*100):0
-    let coveredInterfaceRawList = store.metaLinks.items.filter(l => l.type=="vvDefinitionInterface").map(l=>l.target)
+    let percentOfCoveredNeeds = store.requirements[0]? Math.round(coveredNeedList.length/store.requirements.length*100):0
+    let coveredInterfaceRawList = store.metaLinks.filter(l => l.type=="vvDefinitionInterface").map(l=>l.target)
     let coveredInterfaceList = coveredInterfaceRawList.filter((item,index)=>coveredInterfaceRawList.indexOf(item)===index)
-    let percentOfCoveredInterfaces = store.interfaces.items[0]? Math.round(coveredInterfaceList.length/store.interfaces.items.length*100):0
-    // let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
+    let percentOfCoveredInterfaces = store.interfaces[0]? Math.round(coveredInterfaceList.length/store.interfaces.length*100):0
+    // let coveredNeedsList = store.metaLinks.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
     return {coveredNeeds: coveredNeedList, percentOfCoveredNeeds:percentOfCoveredNeeds,percentOfCoveredInterfaces:percentOfCoveredInterfaces}
   }
   var getSetStatistics = function (set, store) {
-    let definitions= store.vvDefinitions.items.filter(d=>d.sourceSet == set.uuid)
+    let definitions= store.vvDefinitions.filter(d=>d.sourceSet == set.uuid)
     let definitionsUuids= definitions.map(d=>d.uuid)
-    let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
-    let coveredInterfacesList = store.metaLinks.items.filter(l => l.type=="vvDefinitionInterface" && definitionsUuids.includes(l.source))
+    let coveredNeedsList = store.metaLinks.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
+    let coveredInterfacesList = store.metaLinks.filter(l => l.type=="vvDefinitionInterface" && definitionsUuids.includes(l.source))
     return {numberOfDefinitions: definitions.length, coveredNeeds: coveredNeedsList,coveredInterfaces: coveredInterfacesList}
   }
   var getReportStatistics = function (report, store) {
-    let actions= store.vvActions.items.filter(d=>d.sourceReport == report.uuid)
+    let actions= store.vvActions.filter(d=>d.sourceReport == report.uuid)
     let completedActions= actions.filter(d=>d.status == 2)
     let failedActions= actions.filter(d=>d.status == 1)
     let actionsUuids= actions.map(d=>d.uuid)
-    //let coveredNeedsList = store.metaLinks.items.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
+    //let coveredNeedsList = store.metaLinks.filter(l => l.type=="vvDefinitionNeed" && definitionsUuids.includes(l.source))
 
     return {actions:actions, completedActions: completedActions, failedActions: failedActions}
   }
@@ -244,7 +244,7 @@ var createVvManager = function (targetSelector) {
 
   var exportToCSV = function () {
     let store = query.currentProject()
-    let data = store.physicalSpaces.items.map(i=>{
+    let data = store.physicalSpaces.map(i=>{
       let linkToTextPbs = getRelatedItems(store, i, "currentPbs", {metalinksType:"contains"}).map(s=> s[0]? s[0].name : "").join(",")
       return {id:i.uuid, name:i.name, description:i.desc, products:linkToTextPbs}
     })

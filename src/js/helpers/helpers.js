@@ -307,14 +307,14 @@ function getRelatedItems(store, sourceItem, groupToSearch, paramOptions) {//todo
   let linkTotextItemType = options.objectIs == "source"? "target" : "source"
 
   // var store = query.currentProject()
-  let metaLinksToSearch = store.metaLinks.items
+  let metaLinksToSearch = store.metaLinks
   if (options.metalinksType) {
-    metaLinksToSearch =store.metaLinks.items.filter(e=>e.type == options.metalinksType)
+    metaLinksToSearch =store.metaLinks.filter(e=>e.type == options.metalinksType)
   }
 
   let linkedTo = metaLinksToSearch.filter(e=>e[options.objectIs] == sourceItem.uuid)
   console.log(linkedTo);
-  let linkToText = linkedTo.map(e=>store[groupToSearch].items.find(function (i) {
+  let linkToText = linkedTo.map(e=>store[groupToSearch].find(function (i) {
     return i.uuid == e[linkTotextItemType]
   }))
   console.log(linkToText);
@@ -329,7 +329,7 @@ function getCategoryFromItemUuid(sourceItemId, store, catStore) {//todo limit me
   // console.log(sourceItemId);
   // console.log(categoryLink);
   if (categoryLink) {
-    category = store.categories.items.find(c=>c.uuid == categoryLink)
+    category = store.categories.find(c=>c.uuid == categoryLink)
   }
   return category
 }
@@ -337,7 +337,7 @@ function getCategoryFromItemUuid(sourceItemId, store, catStore) {//todo limit me
 //clear links with missing items
 var clearUncompleteLinks = async function () {
   var collection = await query.collection("metaLinks")
-  var store = collection.items
+  var store = collection
   console.log(collection);
   console.log(store);
   console.log('Warning link should be cleaned');
@@ -402,13 +402,13 @@ var getObjectNameByUuid = function (uuid, store) {
 }
 var getObjectGroupByUuid = function (uuid, store) {
   let storeGroup = undefined
-  if (store.currentPbs.items.find(i=>i.uuid == uuid)) { storeGroup = "currentPbs"; }
-  else if (store.requirements.items.find(i=>i.uuid == uuid)) { storeGroup = "requirements"; }
-  else if (store.functions.items.find(i=>i.uuid == uuid)) { storeGroup = "functions"; }
-  else if (store.stakeholders.items.find(i=>i.uuid == uuid)) { storeGroup = "stakeholders"; }
-  else if (store.physicalSpaces.items.find(i=>i.uuid == uuid)) { storeGroup = "physicalSpaces"; }
-  else if (store.workPackages.items.find(i=>i.uuid == uuid)) { storeGroup = "workPackages"; }
-  else if (store.interfaces.items.find(i=>i.uuid == uuid)) { storeGroup = "interfaces"; }
+  if (store.currentPbs.find(i=>i.uuid == uuid)) { storeGroup = "currentPbs"; }
+  else if (store.requirements.find(i=>i.uuid == uuid)) { storeGroup = "requirements"; }
+  else if (store.functions.find(i=>i.uuid == uuid)) { storeGroup = "functions"; }
+  else if (store.stakeholders.find(i=>i.uuid == uuid)) { storeGroup = "stakeholders"; }
+  else if (store.physicalSpaces.find(i=>i.uuid == uuid)) { storeGroup = "physicalSpaces"; }
+  else if (store.workPackages.find(i=>i.uuid == uuid)) { storeGroup = "workPackages"; }
+  else if (store.interfaces.find(i=>i.uuid == uuid)) { storeGroup = "interfaces"; }
 
   if (!storeGroup) {
     console.log("no group available");
@@ -421,9 +421,9 @@ var batchRemoveMetaLinks = function (store, type, originalSet, targetSet, initia
   console.log(idsToRemove);
   let relatedMetaLinks =[]
   if (initiatorType == "source") {
-    relatedMetaLinks= store.metaLinks.items.filter(l => l.type==type && l.source== initId && idsToRemove.includes(l.target))
+    relatedMetaLinks= store.metaLinks.filter(l => l.type==type && l.source== initId && idsToRemove.includes(l.target))
   }else {
-    relatedMetaLinks= store.metaLinks.items.filter(l => l.type==type && l.target== initId && idsToRemove.includes(l.source))
+    relatedMetaLinks= store.metaLinks.filter(l => l.type==type && l.target== initId && idsToRemove.includes(l.source))
   }
   relatedMetaLinks.forEach(d=>{
     push(act.remove("metaLinks",{uuid:d.uuid,project:projectUuid }))
@@ -435,9 +435,9 @@ var batchAddMetaLinks = function (store, type, originalSet, targetSet, initiator
 
   let alreadyConnected =[]
   if (initiatorType == "source") {
-    alreadyConnected= store.metaLinks.items.filter(l => l.type==type && l.source== initId && targetSet.includes(l.target)).map(l=>l.target)
+    alreadyConnected= store.metaLinks.filter(l => l.type==type && l.source== initId && targetSet.includes(l.target)).map(l=>l.target)
   }else {
-    alreadyConnected= store.metaLinks.items.filter(l => l.type==type && l.target== initId && targetSet.includes(l.source)).map(l=>l.source)
+    alreadyConnected= store.metaLinks.filter(l => l.type==type && l.target== initId && targetSet.includes(l.source)).map(l=>l.source)
   }
   let idsToAdd= targetSet.filter(os=>!alreadyConnected.includes(os))
     console.log(idsToAdd);
@@ -459,15 +459,15 @@ ephHelpers.startSelectionToShowFields = async function (ev,sourceList, settingsT
   // setup option if not exist
   let store = await query.currentProject()
   let settingsUuid = undefined
-  if (!store.settings.items.find(s=>s.type == settingsType)) {
+  if (!store.settings.find(s=>s.type == settingsType)) {
     settingsUuid = uuid()
     push(act.add("settings",{uuid:settingsUuid, type:settingsType, name:settingsName, value:[]}))
   }else {
-    settingsUuid = store.settings.items.find(s=>s.type == settingsType).uuid
+    settingsUuid = store.settings.find(s=>s.type == settingsType).uuid
   }
   showListMenu({
     sourceData:sourceList,
-    multipleSelection: store.settings.items.find(s=>s.type == settingsType).value,
+    multipleSelection: store.settings.find(s=>s.type == settingsType).value,
     displayProp:"prop",
     searchable : true,
     display:[
@@ -482,7 +482,7 @@ ephHelpers.startSelectionToShowFields = async function (ev,sourceList, settingsT
     onChangeSelect: (ev)=>{
 
       push(act.edit("settings",{uuid:settingsUuid, prop:"value", value:ev.select.getSelected()}))
-      console.log(store.settings.items.find(s=>s.type == settingsType));
+      console.log(store.settings.find(s=>s.type == settingsType));
       //app.store.userData.preferences.hiddenProject = ev.select.getSelected()
     },
     onClick: (ev)=>{
@@ -539,7 +539,7 @@ ephHelpers.updateListElements = function(list, data) {
 }
 
 ephHelpers.setDisplayOrder = function(store, collectionName) {
-  let currentOrder = store.itemsOrder.items.find(o=>o.collectionName==collectionName)
+  let currentOrder = store.itemsOrder.find(o=>o.collectionName==collectionName)
   if (!currentOrder) {
     return []
   }else {

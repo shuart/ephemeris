@@ -15,7 +15,7 @@ var createInterfacesTypesView = function () {
     setTimeout(async function () {
       var store = await query.currentProject()
       ephHelpers.updateListElements(currentVisibleList,{
-        items:store.interfacesTypes.items
+        items:store.interfacesTypes
       })
     }, 2000);
   }
@@ -23,7 +23,7 @@ var createInterfacesTypesView = function () {
   var render = async function () {
     var store = await query.currentProject()
     currentVisibleList = showListMenu({
-      sourceData:store.interfacesTypes.items,
+      sourceData:store.interfacesTypes,
       displayProp:"name",
       // targetDomContainer:".center-container",
       // fullScreen:true,// TODO: perhaps not full screen?

@@ -31,10 +31,10 @@ var createLeftMenuProjectTree = function () {
   }
 
   var renderSideListe = async function () {
-    var store = await query.currentProject({currentPbs:1})
+    var store = await query.currentProject({currentPbs:1, links:1})
     //{uuid:1, name:1, reference:1, currentPbs:1, functions:1
-    var itemsToDisplay =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
-    var relations = store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
+    var itemsToDisplay =store.currentPbs.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
+    var relations = store.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
 
     document.querySelector(".left-menu-area .title").innerHTML = "Overview"
 
@@ -53,8 +53,8 @@ var createLeftMenuProjectTree = function () {
   var udapteSideListe = async function () {
     document.querySelector(".left-menu-area .title").innerHTML = "Overview"
     var store = await query.currentProject()
-    var itemsToDisplay =store.currentPbs.items.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
-    var relations = store.currentPbs.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
+    var itemsToDisplay =store.currentPbs.map((e) => {e.customColor="#6dce9e";e.labels = ["Pbs"]; return e})
+    var relations = store.links.map((e) => {e.customColor="#6dce9e";e.type = "Composed by"; return e})
 
     sideListe.refresh(itemsToDisplay, relations)
     // updateSideListeVisibility()

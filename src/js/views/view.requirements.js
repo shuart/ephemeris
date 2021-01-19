@@ -16,9 +16,9 @@ var createRequirementsView = function () {
       if (objectIsActive && currentVisibleList) {
         var store = await query.currentProject()
         ephHelpers.updateListElements(currentVisibleList,{
-          items:store.requirements.items,
-          links:store.requirements.links,
-          metaLinks:store.metaLinks.items,
+          items:store.requirements,
+          links:store.links,
+          metaLinks:store.metaLinks,
           displayRules:setDisplayRules(store)
         })
       }
@@ -29,23 +29,23 @@ var createRequirementsView = function () {
     var displayRules = [
         {prop:"name", displayAs:"Name", edit:"true"},
         {prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-        {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
-        {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
+        {prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks, choices:()=>store.stakeholders, edit:true},
+        {prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks, choices:()=>store.currentPbs, edit:true},
       ]
 
     extraFields = [
       {uuid:"name", prop:"name", displayAs:"Name", edit:"true"},
       {uuid:"desc", prop:"desc", displayAs:"Description", fullText:true, edit:"true"},
-      {uuid:"origin", prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks.items, choices:()=>store.stakeholders.items, edit:true},
-      {uuid:"originNeed", prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks.items, choices:()=>store.currentPbs.items, edit:true},
-      {uuid:"tags", prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:true},
-      {uuid:"WpOwnNeed", prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:true},
-      {uuid:"reqChangedBy", prop:"reqChangedBy", displayAs:"Changed by", meta:()=>store.metaLinks.items, choices:()=>store.changes.items, edit:true},
-      {uuid:"documentsNeed", prop:"documentsNeed", displayAs:"Documents", droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true},
-      {uuid:"vvReportNeed", prop:"vvReportNeed", isTarget:true, displayAs:"V&V", choiceStyle: (item) =>item.status=="Pass"? 'background-color:#21ba45 !important;':'background-color:#dd4b39 !important;', meta:()=>store.metaLinks.items, choices:()=>store.vvActions.items, edit:false}
+      {uuid:"origin", prop:"origin", displayAs:"Received from", meta:()=>store.metaLinks, choices:()=>store.stakeholders, edit:true},
+      {uuid:"originNeed", prop:"originNeed",isTarget:true, displayAs:"linked to", meta:()=>store.metaLinks, choices:()=>store.currentPbs, edit:true},
+      {uuid:"tags", prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks, choices:()=>store.tags, edit:true},
+      {uuid:"WpOwnNeed", prop:"WpOwnNeed",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks, choices:()=>store.workPackages, edit:true},
+      {uuid:"reqChangedBy", prop:"reqChangedBy", displayAs:"Changed by", meta:()=>store.metaLinks, choices:()=>store.changes, edit:true},
+      {uuid:"documentsNeed", prop:"documentsNeed", displayAs:"Documents", droppable:true,meta:()=>store.metaLinks, choices:()=>store.documents, edit:true},
+      {uuid:"vvReportNeed", prop:"vvReportNeed", isTarget:true, displayAs:"V&V", choiceStyle: (item) =>item.status=="Pass"? 'background-color:#21ba45 !important;':'background-color:#dd4b39 !important;', meta:()=>store.metaLinks, choices:()=>store.vvActions, edit:false}
     ]
 
-    let storeSettings = store.settings.items.find(s=>s.type == "requirementsListViewVisibleFields")
+    let storeSettings = store.settings.find(s=>s.type == "requirementsListViewVisibleFields")
     if (storeSettings && storeSettings.value[0]) { //if store settings exist and array is populated
       displayRules = extraFields.filter(ef=> storeSettings.value.includes(ef.uuid))
       //displayRules = extraFields
@@ -60,9 +60,9 @@ var createRequirementsView = function () {
   var render = async function () {
     var store = await query.currentProject()
       currentVisibleList = showListMenu({
-        sourceData:store.requirements.items,
-        sourceLinks:store.requirements.links,
-        metaLinks:store.metaLinks.items,
+        sourceData:store.requirements,
+        sourceLinks:store.links,
+        metaLinks:store.metaLinks,
         targetDomContainer:".center-container",
         fullScreen:true,
         displayProp:"name",
@@ -91,7 +91,7 @@ var createRequirementsView = function () {
           console.log("remove");
           if (confirm("remove item ?")) {
             push(removeRequirement({uuid:ev.target.dataset.id}))
-            ev.select.updateData(store.requirements.items)
+            ev.select.updateData(store.requirements)
           }
         },
         onMove: (ev)=>{
@@ -103,8 +103,8 @@ var createRequirementsView = function () {
             if (ev.targetParentId && ev.targetParentId != "undefined") {
               push(addRequirementLink({source:ev.targetParentId, target:ev.originTarget.dataset.id}))
             }
-            ev.select.updateData(store.requirements.items)
-            ev.select.updateLinks(store.requirements.links)
+            ev.select.updateData(store.requirements)
+            ev.select.updateLinks(store.links)
           }
         },
         onAdd: async(ev)=>{
@@ -124,13 +124,13 @@ var createRequirementsView = function () {
             if (ev.target && ev.target != "undefined") {
               push(act.move("requirements", {origin:uuid, target:ev.target.dataset.id}))
               //check for parenting
-              let parent = store.requirements.links.find(l=>l.target == ev.target.dataset.id)
+              let parent = store.links.find(l=>l.target == ev.target.dataset.id)
               if (parent) {
                 push(act.addLink("requirements",{source:parent.source, target:uuid}))
               }
             }
-            ev.select.updateData(store.requirements.items)
-            ev.select.updateLinks(store.requirements.links)
+            ev.select.updateData(store.requirements)
+            ev.select.updateLinks(store.links)
           }
         },
         onAddFromExtraField: (ev)=>{
@@ -144,7 +144,7 @@ var createRequirementsView = function () {
         },
         onClick: (ev)=>{
           showSingleItemService.showById(ev.target.dataset.id, function (e) {
-            // ev.select.updateData(store.requirements.items)
+            // ev.select.updateData(store.requirements)
             // ev.select.updateLinks(store.requirements.links)
             // ev.select.refreshList()
           })
@@ -186,8 +186,8 @@ var createRequirementsView = function () {
             name:"Diagramme",
             action:(ev)=>{
               showTreeFromListService.showByStoreGroup("requirements", function (e) {
-                ev.select.updateData(store.requirements.items)
-                ev.select.updateLinks(store.requirements.links)
+                ev.select.updateData(store.requirements)
+                ev.select.updateLinks(store.links)
                 ev.select.update() //TODO find a better way
               })
             }
@@ -198,7 +198,7 @@ var createRequirementsView = function () {
 
   var exportToCSV = async function () {
     let store = await query.currentProject()
-    let data = store.requirements.items.map(i=>{
+    let data = store.requirements.map(i=>{
       let linkToText = getRelatedItems(store, i, "stakeholders", {metalinksType:"origin"}).map(s=> s.name? s.name +" "+s.lastName : "").join(",")
       let linkToTextPbs = getRelatedItems(store, i, "currentPbs",{objectIs:"target", metalinksType:"originNeed"}).map(s=> s.name? s.name : '').join(",")
       let linkToTextTags = getRelatedItems(store, i, "tags", {metalinksType:"tags"}).map(s=> s.name? s.name : "").join(",")
@@ -223,152 +223,11 @@ var createRequirementsView = function () {
     objectIsActive = false;
   }
 
-  // async function startSelection(ev) {
-  //   var store = await query.currentProject()
-  //   var metalinkType = ev.target.dataset.prop;
-  //   var sourceTriggerId = ev.target.dataset.id;
-  //   var batch = ev.batch;
-  //   var currentLinksUuidFromDS = JSON.parse(ev.target.dataset.value)
-  //   var sourceGroup = undefined
-  //   var sourceData = undefined
-  //   var invert = false
-  //   var source = "source"
-  //   var target = "target"
-  //   var sourceLinks= undefined
-  //   var displayRules= undefined
-  //   var showColoredIconsRule = undefined
-  //   var prependContent=undefined
-  //   var onLoaded = undefined
-  //   if (metalinkType == "origin") {
-  //     sourceGroup="stakeholders";
-  //     sourceData=store.stakeholders.items
-  //     showColoredIconsRule= lettersFromNames,
-  //     displayRules = [
-  //       {prop:"name", displayAs:"First Name", edit:false},
-  //       {prop:"lastName", displayAs:"Last name", edit:false}
-  //     ]
-  //   }else if (metalinkType == "originNeed") {
-  //     sourceGroup="currentPbs"
-  //     invert = true;
-  //     sourceData=store.currentPbs.items
-  //     source = "target"//invert link order for after
-  //     target = "source"
-  //     sourceLinks=store.currentPbs.links
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false},
-  //       {prop:"desc", displayAs:"Description", fullText:true, edit:false}
-  //     ]
-  //   }else if (metalinkType == "tags") {
-  //     sourceGroup="tags";
-  //     sourceData=store.tags.items
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false}
-  //     ]
-  //   }else if (metalinkType == "WpOwnNeed") {
-  //     sourceGroup="workPackages"
-  //     invert = true;
-  //     source = "target"//invert link order for after
-  //     target = "source"
-  //     sourceLinks=store.workPackages.links
-  //     sourceData=store.workPackages.items
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false}
-  //     ]
-  //   }else if (metalinkType == "reqChangedBy") {
-  //     sourceGroup="changes"
-  //     sourceLinks=store.changes.links
-  //     sourceData=store.changes.items
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false},
-  //       {prop:"desc", displayAs:"Description", edit:false}
-  //     ]
-  //   }else if (metalinkType == "documentsNeed") {
-  //     if (typeof nw !== "undefined") {//if using node webkit
-  //       prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
-  //       onLoaded = function (ev) {
-  //         dropAreaService.setDropZone(".prepend", function () {
-  //           ev.select.updateData(store.documents.items)
-  //           ev.select.refreshList()
-  //         })
-  //       }
-  //     }
-  //     sourceGroup="documents"
-  //     sourceLinks=store.documents.links
-  //     sourceData=store.documents.items
-  //     displayRules = [
-  //       {prop:"name", displayAs:"Name", edit:false}
-  //     ]
-  //   }
-  //   showListMenu({
-  //     sourceData:sourceData,
-  //     sourceLinks:sourceLinks,
-  //     parentSelectMenu:ev.select ,
-  //     multipleSelection:currentLinksUuidFromDS,
-  //     displayProp:"name",
-  //     searchable : true,
-  //     display:displayRules,
-  //     showColoredIcons:showColoredIconsRule,
-  //     prependContent:prependContent,
-  //     onLoaded:onLoaded,
-  //     idProp:"uuid",
-  //     onAdd:(ev)=>{//TODO experimental, replace with common service
-  //       var uuid = genuuid()
-  //       var linkUuid = genuuid()
-  //       push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
-  //       if (sourceGroup == "currentPbs") {
-  //         push(addPbsLink({uuid:linkUuid,source:query.currentProject().currentPbs.items[0].uuid, target:uuid}))
-  //       }
-  //       if (sourceGroup == "changes") {
-  //         push(act.edit("changes",{uuid:uuid, prop:"createdAt", value:Date.now()}))
-  //       }
-  //       ev.select.setEditItemMode({
-  //         item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
-  //         onLeave: (ev)=>{
-  //           push(act.remove(sourceGroup,{uuid:uuid}))
-  //           if (sourceGroup == "currentPbs") {
-  //             push(removePbsLink({target:uuid}))
-  //           }
-  //           ev.select.updateData(store[sourceGroup].items)
-  //           ev.select.updateLinks(store[sourceGroup].links)
-  //         }
-  //       })
-  //     },
-  //     onEditItem: (ev)=>{
-  //       var newValue = prompt("Edit Item",ev.target.dataset.value)
-  //       if (newValue) {
-  //         push(act.edit(sourceGroup, {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-  //       }
-  //     },
-  //     onCloseMenu: (ev)=>{
-  //       console.log(ev.select);
-  //       ev.select.getParent().refreshList()
-  //     },
-  //     onChangeSelect: (ev)=>{
-  //       var changeProp = function (sourceTriggerId) {
-  //         batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-  //         batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-  //
-  //         ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
-  //         ev.select.getParent().refreshList()
-  //       }
-  //       if (batch[0]) { //check if batch action is needed
-  //         batch.forEach(function (sourceTriggerId) {
-  //           changeProp(sourceTriggerId)
-  //         })
-  //       }else {
-  //         changeProp(sourceTriggerId)
-  //       }
-  //     },
-  //     onClick: (ev)=>{
-  //       console.log("select");
-  //     }
-  //   })
-  // }
 
   function generateExtraFieldsList(store) {
     if (isExtraFieldsVisible) {
 
-      let extras = store.extraFields.items.filter(i=>(i.type == "requirements" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
+      let extras = store.extraFields.filter(i=>(i.type == "requirements" && i.hidden != true)).map(f=>({prop:f.prop, displayAs:f.name, edit:"true"}))
       if (!extras[0]) {
         if (confirm("No custom Fields yet. Add one?")) {
           addCustomField()
@@ -391,14 +250,14 @@ var createRequirementsView = function () {
     var newReq = prompt("add a new Field?")
     if (newReq) {
       let clearedName = "_"+slugify(newReq)+"_"+(Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
-      if (store.extraFields.items.filter(i=>i.prop == clearedName)[0]) {
-        console.log(store.extraFields.items.filter(i=>i.prop == clearedName)[0]);
+      if (store.extraFields.filter(i=>i.prop == clearedName)[0]) {
+        console.log(store.extraFields.filter(i=>i.prop == clearedName)[0]);
         alert("This field has already been registered")//in rare case where an identical field would be generated
       }
       if (true) {
         push(act.add("extraFields",{name: newReq, prop:clearedName, type: "requirements"}))
       }else {//add to main item (only pbs)
-        // push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+        // push(addPbsLink({source:query.currentProject().currentPbs[0].uuid, target:id}))
       }
     }
     if (callback) {

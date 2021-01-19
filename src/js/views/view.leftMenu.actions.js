@@ -86,13 +86,13 @@ var createLeftMenuActions = function () {
 
     // let relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
     relevantProjects.forEach(function (store) {
-      let formatedActions = store.actions.items.map(a=>{
+      let formatedActions = store.actions.map(a=>{
         let copy = deepCopy(a)
         copy.projectName = store.name;
         copy.urgent = lessThanInSomeDays(a.dueDate,2)
         copy.projectUuid = store.uuid
-        copy.assignedToUuid = store.metaLinks.items.filter(m=>m.type == "assignedTo" && m.source == copy.uuid).map(f=>f.target)
-        copy.assignedToStakeholderItem = store.stakeholders.items.filter(i=>i.uuid == copy.assignedToUuid)
+        copy.assignedToUuid = store.metaLinks.filter(m=>m.type == "assignedTo" && m.source == copy.uuid).map(f=>f.target)
+        copy.assignedToStakeholderItem = store.stakeholders.filter(i=>i.uuid == copy.assignedToUuid)
         return copy
       })
       allActions = allActions.concat(formatedActions)

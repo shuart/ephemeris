@@ -467,7 +467,7 @@ var createRelationsView = function () {
     bind(".action_relations_add_nodes_from_templates","click",async (e)=>{
       let store = await query.currentProject()
       showListMenu({
-        sourceData:store.templates.items,
+        sourceData:store.templates,
         displayProp:"name",
         display:[
           {prop:"name", displayAs:"Name", edit:"true"}
@@ -482,7 +482,7 @@ var createRelationsView = function () {
         onRemove: (ev)=>{
           if (confirm("remove item ?")) {
             push(act.remove("templates",{uuid:ev.target.dataset.id}))
-            ev.select.updateData(store.templates.items)
+            ev.select.updateData(store.templates)
           }
         },
         idProp:"uuid",
@@ -496,7 +496,7 @@ var createRelationsView = function () {
 
       async function loadFromTemplate(id) {
         let store = await query.currentProject()
-        let template = store.templates.items.find(t=>t.uuid == id).template
+        let template = store.templates.find(t=>t.uuid == id).template
         let selectedNodes = template.nodes
         let selectedNodesUuid = selectedNodes.map(n=>n.uuid)
         let selectedNodesUuidConversion = selectedNodes.map(n=>[n.uuid, genuuid()])
@@ -526,7 +526,7 @@ var createRelationsView = function () {
                 let hasParent = template.relatedLocalLinks.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
 
                 if (!hasParent) {
-                  push(act.addLink(storeGroup,{source:store.currentPbs.items[0].uuid, target:id}))
+                  push(act.addLink(storeGroup,{source:store.currentPbs[0].uuid, target:id}))
                 }
               }
 
@@ -593,12 +593,12 @@ var createRelationsView = function () {
         if (node.uuid) {
 
           let storeGroup = getObjectGroupByUuid(node.uuid, store)
-          // let elementToDuplicate =  await query.items("all", i=> i.uuid == node.uuid)[0]
+          // let elementToDuplicate =  await query("all", i=> i.uuid == node.uuid)[0]
           let allItems = []
           for (var keys in store) {
             if (store.hasOwnProperty(keys)) {
-              if (store[keys].items) {
-                allItems = allItems.concat(store[keys].items)
+              if (store[keys]) {
+                allItems = allItems.concat(store[keys])
               }
             }
           }
@@ -612,24 +612,24 @@ var createRelationsView = function () {
             push(act.add(storeGroup,newElement))
             if (storeGroup == "currentPbs") {
               //check if parent is copied too
-              let hasParent = store.currentPbs.links.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+              let hasParent = store.links.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
               if (!hasParent) {
-                push(act.addLink(storeGroup,{source:store.currentPbs.items[0].uuid, target:id}))
+                push(act.addLink(storeGroup,{source:store.currentPbs[0].uuid, target:id}))
               }
             }
 
             //find and duplicate links
-            let metaLinksToSearch =store.metaLinks.items
+            let metaLinksToSearch =store.metaLinks
             let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
 
-            let catLinksToSearch =store.metaLinks.items.filter(l=>l.type=="category")
+            let catLinksToSearch =store.metaLinks.filter(l=>l.type=="category")
             let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
 
-            let interfacesToSearch =store.interfaces.items
+            let interfacesToSearch =store.interfaces
             let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
             // let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
 
-            let localLinksToSearch =store[storeGroup].links
+            let localLinksToSearch =store.links
             let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
             // let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid)||(selectedNodesUuid.includes(l.target)&&l.source == node.uuid))
 
@@ -678,12 +678,12 @@ var createRelationsView = function () {
       selectedNodes.forEach(function (node) {
         if (node.uuid) {
           let storeGroup = getObjectGroupByUuid(node.uuid, store)
-          // let elementToDuplicate = query.items("all", i=> i.uuid == node.uuid)[0]
+          // let elementToDuplicate = query("all", i=> i.uuid == node.uuid)[0]
           let allItems = []
           for (var keys in store) {
             if (store.hasOwnProperty(keys)) {
-              if (store[keys].items) {
-                allItems = allItems.concat(store[keys].items)
+              if (store[keys]) {
+                allItems = allItems.concat(store[keys])
               }
             }
           }
@@ -697,22 +697,22 @@ var createRelationsView = function () {
             template.nodes.push(newElement)
             if (storeGroup == "currentPbs") {
               //check if parent is copied too
-              let hasParent = store.currentPbs.links.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
+              let hasParent = store.links.find(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
               if (!hasParent) {
-                // template.links.push({source:query.currentProject().currentPbs.items[0].uuid, target:id})
+                // template.links.push({source:query.currentProject().currentPbs[0].uuid, target:id})
               }
             }
             //find and duplicate links
-            let metaLinksToSearch =store.metaLinks.items
+            let metaLinksToSearch =store.metaLinks
             let relatedLinks = metaLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
 
-            let catLinksToSearch =store.metaLinks.items.filter(l=>l.type=="category")
+            let catLinksToSearch =store.metaLinks.filter(l=>l.type=="category")
             let relatedCatLinks = catLinksToSearch.filter(l=>l.type=="category"&&l.source == node.uuid)
 
-            let interfacesToSearch =store.interfaces.items
+            let interfacesToSearch =store.interfaces
             let relatedInterfaceLinks = interfacesToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
 
-            let localLinksToSearch =store[storeGroup].links
+            let localLinksToSearch =store.links
             let relatedLocalLinks = localLinksToSearch.filter(l=>(selectedNodesUuid.includes(l.source)&&l.target == node.uuid))
 
             relatedLinks.forEach(function (l) {
@@ -818,7 +818,7 @@ var createRelationsView = function () {
       if (confirm("Update this snapshot")) {
         let useImages = true // create a snsphot when saving graph
         let currentStore = await query.currentProject()
-        let graph = currentStore.graphs.items.find(i=> i.uuid == e.target.dataset.id)
+        let graph = currentStore.graphs.find(i=> i.uuid == e.target.dataset.id)
 
         if (useImages) {
           svgAsPngUri(container.querySelector('.stellae-graph'),{scale: 0.1}).then(function (uri) {
@@ -904,7 +904,7 @@ var createRelationsView = function () {
       var id = genuuid()
       var newReq = prompt("Nouveau Besoin")
       push(addPbs({uuid:id, name:newReq}))
-      push(addPbsLink({source:query.currentProject().currentPbs.items[0].uuid, target:id}))
+      push(addPbsLink({source:query.currentProject().currentPbs[0].uuid, target:id}))
       //activeGraph.updateWithD3Data(data);
       update()
     }, container)
@@ -948,8 +948,8 @@ var createRelationsView = function () {
     }, container)
     bind(".action_relations_qs_start_from_element","click",async (e)=>{
       let store = await query.currentProject()
-      let elements = store.currentPbs.items
-      let elementsLinks = store.currentPbs.links
+      let elements = store.currentPbs
+      let elementsLinks = store.links
       showListMenu({
         sourceData:elements,
         sourceLinks:elementsLinks,
@@ -957,8 +957,8 @@ var createRelationsView = function () {
         display:[
           {prop:"name", displayAs:"Name", edit:false},
           {prop:"desc", displayAs:"Description", fullText:true,edit:false},
-          {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks.items, choices:()=>store.tags.items, edit:false},
-          {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks.items, choices:()=>store.workPackages.items, edit:false}
+          {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks, choices:()=>store.tags, edit:false},
+          {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks, choices:()=>store.workPackages, edit:false}
 
         ],
         idProp:"uuid",
@@ -1256,13 +1256,13 @@ var createRelationsView = function () {
     document.querySelector(".center-container").appendChild(container)
 
     if (displayType == "state") {
-      var state = createStateDiagram({container:".interfaceGraph",data:concatData, links:store.metaLinks.items,positions :undefined, groupLinks:groupLinks})
+      var state = createStateDiagram({container:".interfaceGraph",data:concatData, links:store.metaLinks,positions :undefined, groupLinks:groupLinks})
       state.init()
     }else if(displayType == "network"){
       var fixedValuesList = []
       if (fixedValues) { //check if network is fixed or dynamic
         if (currentSnapshot) {// has a snapshot been activated
-          fixedValuesList = store.graphs.items.find(i=>i.uuid == currentSnapshot).nodesPositions
+          fixedValuesList = store.graphs.find(i=>i.uuid == currentSnapshot).nodesPositions
           console.log(filteredItemsToDisplay.length, fixedValuesList.length);
           if (fixedValuesList && itemsToDisplay && filteredItemsToDisplay.length-fixedValuesList.length > -1 ) {// if element to display are note the same as the snapshot
             if (!confirm("Update this snapshot with " + (filteredItemsToDisplay.length-fixedValuesList.length +1) +" newly added items?")) {//TODO why is the +1 needed?
@@ -1308,7 +1308,7 @@ var createRelationsView = function () {
 
         }else if( lastFixedNodes) {// if not go to default
           fixedValuesList = deepCopy(lastFixedNodes.nodesPositions )
-          // fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs.items[0] //check if graph is in DB backward compatibility (TODO: remove)
+          // fixedValuesList = query.currentProject().graphs.default.nodesPositions ||query.currentProject().graphs[0] //check if graph is in DB backward compatibility (TODO: remove)
         }
       }
       //concat with items to fix this time
@@ -1366,9 +1366,9 @@ var createRelationsView = function () {
     }else {
       return "Unknown Type"
     }
-    // let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
+    // let itemMetaLink = store.metaLinks.find(l=>l.type =="interfacesType" && l.source == uuid)
     // if (itemMetaLink) {
-    //   let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
+    //   let item = store.interfacesTypes.find(t=>t.uuid == itemMetaLink.target)
     //   if (item) {
     //     return item.name
     //   }else {
@@ -1376,7 +1376,7 @@ var createRelationsView = function () {
     //     return "Unknown Type"
     //   }
     // }else {
-    //   return store.interfacesTypes.items[0].name
+    //   return store.interfacesTypes[0].name
     // }
 
   }
@@ -1387,18 +1387,18 @@ var createRelationsView = function () {
     }else {
       return undefined
     }
-    // let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
+    // let itemMetaLink = store.metaLinks.find(l=>l.type =="interfacesType" && l.source == uuid)
     // if (itemMetaLink) {
-    //   let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
+    //   let item = store.interfacesTypes.find(t=>t.uuid == itemMetaLink.target)
     //   return (item && item.dashArray==1)? "3 4": undefined
     // }else {
     //   return undefined
     // }
   }
   // var getInterfaceCustomColorFromUuid = function (store, uuid) {
-  //   let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
+  //   let itemMetaLink = store.metaLinks.find(l=>l.type =="interfacesType" && l.source == uuid)
   //   if (itemMetaLink) {
-  //     let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
+  //     let item = store.interfacesTypes.find(t=>t.uuid == itemMetaLink.target)
   //     return item.dashArray==1? "3 4": undefined
   //   }else {
   //     return undefined
@@ -1620,7 +1620,7 @@ var createRelationsView = function () {
     selectedNodes.forEach(function (n) {
       let nodeType = getObjectGroupByUuid(n.uuid, store)
       if (nodeType) {
-        let object = store[nodeType].items.find(i=>i.uuid == n.uuid)
+        let object = store[nodeType].find(i=>i.uuid == n.uuid)
         if (confirm("Delete "+ object.name)) {
           push(act.remove(nodeType, {uuid:object.uuid}))
         }
@@ -1650,18 +1650,18 @@ var createRelationsView = function () {
   var updateItemsToDisplayAndRelations= async function (elementVisibility) {//only side effect TODO: find a better way?
     var store = await query.currentProject()
     var categoryStore = {}
-    for (var i = 0; i < store.metaLinks.items.length; i++) {
-      let metaType = store.metaLinks.items[i].type
+    for (var i = 0; i < store.metaLinks.length; i++) {
+      let metaType = store.metaLinks[i].type
       if (metaType == "category") {
-        categoryStore[store.metaLinks.items[i].source] = store.metaLinks.items[i].target
+        categoryStore[store.metaLinks[i].source] = store.metaLinks[i].target
       }
     }
-    var array1 =store.functions.items.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
-    var array2 =store.currentPbs.items.map((e) => {e.customColor=getCustomColorFromItemId(e.uuid, store, categoryStore)||"#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid, store, categoryStore); return e})
-    var array3 = store.requirements.items.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
-    var array4 = store.stakeholders.items.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
-    var array5 = store.physicalSpaces.items.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
-    var array6 = store.workPackages.items.map((e) => {e.customColor="#b8431f ";e.labels = ["workPackages"]; return e})
+    var array1 =store.functions.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
+    var array2 =store.currentPbs.map((e) => {e.customColor=getCustomColorFromItemId(e.uuid, store, categoryStore)||"#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid, store, categoryStore); return e})
+    var array3 = store.requirements.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
+    var array4 = store.stakeholders.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
+    var array5 = store.physicalSpaces.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
+    var array6 = store.workPackages.map((e) => {e.customColor="#b8431f ";e.labels = ["workPackages"]; return e})
 
     itemsToDisplay = []
     itemsToDisplay = itemsToDisplay.concat(array2)
@@ -1678,19 +1678,19 @@ var createRelationsView = function () {
 
     var mapInterfacesToIds = function (store) {//build mapping for performances
 
-      for (var i = 0; i < store.metaLinks.items.length; i++) {
-        let ml=  store.metaLinks.items[i]
+      for (var i = 0; i < store.metaLinks.length; i++) {
+        let ml=  store.metaLinks[i]
         if (ml.type =="interfacesType") {
-          let item = store.interfacesTypes.items.find(t=>t.uuid == ml.target)
+          let item = store.interfacesTypes.find(t=>t.uuid == ml.target)
           if (!interfacesToTypesMapping[ml.source]) {
             interfacesToTypesMapping[ml.source] = item
           }
         }
       }
 
-      // let itemMetaLink = store.metaLinks.items.find(l=>l.type =="interfacesType" && l.source == uuid)
+      // let itemMetaLink = store.metaLinks.find(l=>l.type =="interfacesType" && l.source == uuid)
       // if (itemMetaLink) {
-      //   let item = store.interfacesTypes.items.find(t=>t.uuid == itemMetaLink.target)
+      //   let item = store.interfacesTypes.find(t=>t.uuid == itemMetaLink.target)
       //   if (item) {
       //     return item.name
       //   }else {
@@ -1698,7 +1698,7 @@ var createRelationsView = function () {
       //     return "Unknown Type"
       //   }
       // }else {
-      //   return store.interfacesTypes.items[0].name
+      //   return store.interfacesTypes[0].name
       // }
 
     }
@@ -1730,20 +1730,20 @@ var createRelationsView = function () {
       console.log(relationsTree);
     }
     if (elementVisibility.metaLinks) {
-      //relations = relations.concat(store.metaLinks.items.map((e) => { e.displayType = e.type; return e}))
+      //relations = relations.concat(store.metaLinks.map((e) => { e.displayType = e.type; return e}))
       //
-      transferToRelationsForEach(relations,relationsTree, store.metaLinks.items, e=> {e.displayType = e.type;})
+      transferToRelationsForEach(relations,relationsTree, store.metaLinks, e=> {e.displayType = e.type;})
     }
     if (elementVisibility.interfaces ) {
-      // relations = relations.concat(store.interfaces.items.map((e) => { e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customDashArray = getInterfaceDashArrayTypeFromUuid(store, e.uuid); e.customColor="#6dce9e"; return e}))
-      transferToRelationsForEach(relations,relationsTree, store.interfaces.items, e=> {e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customDashArray = getInterfaceDashArrayTypeFromUuid(store, e.uuid); e.customColor="#6dce9e";})
+      // relations = relations.concat(store.interfaces.map((e) => { e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customDashArray = getInterfaceDashArrayTypeFromUuid(store, e.uuid); e.customColor="#6dce9e"; return e}))
+      transferToRelationsForEach(relations,relationsTree, store.interfaces, e=> {e.displayType = getInterfaceTypeFromUuid(store, e.uuid); e.customDashArray = getInterfaceDashArrayTypeFromUuid(store, e.uuid); e.customColor="#6dce9e";})
     }
     if (elementVisibility.compose) {
       // relations = relations.concat(store.currentPbs.links.map((e) => { e.displayType = "Composed by";  e.type = "Composed by"; return e}))
-      transferToRelationsForEach(relations,relationsTree, store.currentPbs.links, e=> {e.displayType = "Composed by";  e.type = "Composed by";})
+      transferToRelationsForEach(relations,relationsTree, store.links, e=> {e.displayType = "Composed by";  e.type = "Composed by";})
       if (elementVisibility.physicalSpaces) {
         // relations = relations.concat(store.physicalSpaces.links.map((e) => {e.displayType = "Contains"; e.type = "Contains"; return e}))
-        transferToRelationsForEach(relations,relationsTree, store.physicalSpaces.links, e=> {e.displayType = "Contains"; e.type = "Contains";})
+        transferToRelationsForEach(relations,relationsTree, store.links, e=> {e.displayType = "Contains"; e.type = "Contains";})
       }
       groupLinks = []//TODO WHat is the point?
     }
@@ -1797,7 +1797,7 @@ var createRelationsView = function () {
     //Add viewSelectionMenu
     let graphCollection= await query.collection("graphs")
     console.log(graphCollection);
-    let relationViews = graphCollection.items
+    let relationViews = graphCollection
     console.log(relationViews);
     let viewMenuObjects =relationViews.slice()
     if (activeMode=="interfaces") {
@@ -2009,12 +2009,12 @@ var createRelationsView = function () {
     `
     let addElementsMenu = `
       <div class="ui secondary vertical mini compact basic menu" style="margin-top:0px;">
-        ${theme.viewItemsList(categoriesListItems.items)}
+        ${theme.viewItemsList(categoriesListItems)}
       </div>
     `
     let addLinksMenu = `
       <div class="ui secondary vertical mini compact basic menu" style="margin-top:0px;">
-          ${theme.viewInterfaceList(interfaceListItems.items)}
+          ${theme.viewInterfaceList(interfaceListItems)}
       </div>
     `
     let commonMenuHTML = `
@@ -2052,7 +2052,7 @@ var createRelationsView = function () {
           Other items
           <i class="dropdown icon"></i>
           <div class="menu" style="margin-top:0px;">
-            ${theme.viewItemsList(categoriesListItems.items)}
+            ${theme.viewItemsList(categoriesListItems)}
           </div>
         </div>
 
@@ -2079,7 +2079,7 @@ var createRelationsView = function () {
         Types
         <i class="dropdown icon"></i>
         <div class="menu" style="margin-top:0px;">
-          ${theme.viewInterfaceList(interfaceListItems.items)}
+          ${theme.viewInterfaceList(interfaceListItems)}
         </div>
       </div>
     </div>`
@@ -2161,10 +2161,10 @@ var createRelationsView = function () {
     </div>
     `
     //Add viewSelectionMenu
-    let relationViews = store.graphs.items
-    // if (query.currentProject().graphs && query.currentProject().graphs.items[0]) {
-    //   relationViews = query.currentProject().graphs.items[0] //check if graph is in DB
-    //   // fixedValuesList = query.currentProject().graphs.items[0] //check if graph is in DB
+    let relationViews = store.graphs
+    // if (query.currentProject().graphs && query.currentProject().graphs[0]) {
+    //   relationViews = query.currentProject().graphs[0] //check if graph is in DB
+    //   // fixedValuesList = query.currentProject().graphs[0] //check if graph is in DB
     // }
     let viewMenuObjects =relationViews.slice()
     if (activeMode=="interfaces") {
@@ -2331,7 +2331,7 @@ var createRelationsView = function () {
           // //TODO test to clean
           // if (!query.currentProject().graphs ) {//backward compatibility DBCHANGE
           //   query.currentProject().graphs = {}
-          //   query.currentProject().graphs.items =[]
+          //   query.currentProject().graphs =[]
           // }
           let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all"), graphHelpers:activeGraph.exportHelpers()}
           //append to graph DB
@@ -2480,7 +2480,7 @@ var createRelationsView = function () {
     }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "Pbs") {
       //check for circular references
       if (addMode == "physical") {
-          let isCircularRef = store.interfaces.items.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
+          let isCircularRef = store.interfaces.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
           if (!isCircularRef) {
             let newInterfaceUuid = uuid()
             push(act.add("interfaces",{uuid:newInterfaceUuid, type:"Physical connection", name:"Interface between "+lastSelectedNode.name+" and "+previousSelectedNode.name, source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
@@ -2491,8 +2491,8 @@ var createRelationsView = function () {
             alert("Circular reference. Action not possible")
           }
       }else if (addMode == "compose") {
-          let isCircularRef = store.currentPbs.links.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
-          let targetIsRoot = !store.currentPbs.links.find(i=> i.target == previousSelectedNode.uuid)
+          let isCircularRef = store.links.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
+          let targetIsRoot = !store.links.find(i=> i.target == previousSelectedNode.uuid)
 
           if (!isCircularRef && !targetIsRoot) {
             // push(movePbs({origin:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
@@ -2539,7 +2539,7 @@ var createRelationsView = function () {
     }else if (type == 'currentPbs') {
       let store = await query.currentProject()
       push(addPbs({uuid:uuid, name:initValue}))
-      push(addPbsLink({source:store.currentPbs.items[0].uuid, target:uuid}))
+      push(addPbsLink({source:store.currentPbs[0].uuid, target:uuid}))
       if (addItemCatType) {
         push(act.add("metaLinks",{type:"category", source:uuid, target:addItemCatType}))
       }
@@ -2552,7 +2552,7 @@ var createRelationsView = function () {
 
   async function setSnapshot(uuid) {
     let store = await query.currentProject()
-    let graph = store.graphs.items.find(i=> i.uuid == uuid)
+    let graph = store.graphs.find(i=> i.uuid == uuid)
     lastFixedNodes = graph
     fixedValues = true
     hiddenItemsFromSideView= graph.hiddenItems || []
@@ -2572,7 +2572,7 @@ var createRelationsView = function () {
       //TODO test to clean
       // if (!query.currentProject().graphs ) {//backward compatibility
       //   query.currentProject().graphs = {}
-      //   query.currentProject().graphs.items =[]
+      //   query.currentProject().graphs =[]
       // }
       let graphItem = {uuid:genuuid(), name:"Last", nodesPositions:activeGraph.exportNodesPosition("all")}
       //append to graph to local state

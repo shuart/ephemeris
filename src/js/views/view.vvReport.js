@@ -43,7 +43,7 @@ var createVvReport = function ({
         console.log(updatedWorkSet);
         ephHelpers.updateListElements(currentReportList,{
           items:updatedWorkSet,
-          metaLinks:store.metaLinks.items,
+          metaLinks:store.metaLinks,
           displayRules:generateDisplayRules(store),
         })
       }
@@ -119,19 +119,19 @@ var createVvReport = function ({
   var generateRelevantActions = async function (currentReportUuid) {
     var store = await query.currentProject()
     console.log(currentReportUuid)
-    console.log(store.vvActions.items.filter(i=>i.sourceReport == currentReportUuid));
-    return store.vvActions.items.filter(i=>i.sourceReport == currentReportUuid)
+    console.log(store.vvActions.filter(i=>i.sourceReport == currentReportUuid));
+    return store.vvActions.filter(i=>i.sourceReport == currentReportUuid)
   }
 
   var generateDisplayRules = function (store) {
     return [
       {prop:"name", displayAs:"Name", edit:false},
-      {prop:"vvReportNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks.items, choices:()=>store.requirements.items, edit:false},
-      {prop:"vvReportInterface", displayAs:"Related Interfaces", meta:()=>store.metaLinks.items, choices:()=>store.interfaces.items, edit:false},
+      {prop:"vvReportNeed", displayAs:"Related Requirements", meta:()=>store.metaLinks, choices:()=>store.requirements, edit:false},
+      {prop:"vvReportInterface", displayAs:"Related Interfaces", meta:()=>store.metaLinks, choices:()=>store.interfaces, edit:false},
       {prop:"shallStatement", displayAs:"Shall Statement", edit:false},
       {prop:"successCriteria", displayAs:"Success Criteria", edit:false},
       {prop:"verificationMethod", displayAs:"Verification Method", options:listOptions.vv_verification_type, edit:false},
-      {prop:"documents", displayAs:"Documents",droppable:true,meta:()=>store.metaLinks.items, choices:()=>store.documents.items, edit:true},
+      {prop:"documents", displayAs:"Documents",droppable:true,meta:()=>store.metaLinks, choices:()=>store.documents, edit:true},
       {prop:"result", displayAs:"Result", edit:true},
       {prop:"status", displayAs:"Status", options:listOptions.vv_status,edit:true}
     ]
@@ -142,7 +142,7 @@ var createVvReport = function ({
     var store = await query.currentProject()
     currentReportList = showListMenu({
       sourceData:workSet,
-      metaLinks:store.metaLinks.items,
+      metaLinks:store.metaLinks,
       displayProp:"name",
       targetDomContainer:container,
       fullScreen:true,// TODO: perhaps not full screen?
@@ -199,7 +199,7 @@ var createVvReport = function ({
           name:"Rename",
           action:(ev)=>{
             var store = query.currentProject()
-            let currentReport = store.vvReports.items.find(s=>s.uuid == currentReportUuid)
+            let currentReport = store.vvReports.find(s=>s.uuid == currentReportUuid)
             let newName = prompt("Change Report Name", currentReport.name)
             if (newName) {
               push(act.edit("vvReports", {uuid:currentReportUuid, prop:"name", value:newName}))
@@ -236,21 +236,21 @@ var createVvReport = function ({
     var onLoaded = undefined
     if (metalinkType == "originNeed") {
       sourceGroup="requirements"
-      sourceData=store.requirements.items
-      sourceLinks= store.requirements.links
+      sourceData=store.requirements
+      sourceLinks= store.links
     }else if (metalinkType == "originFunction") {
       sourceGroup="functions"
-      sourceData=store.functions.items
-      sourceLinks=store.functions.links
+      sourceData=store.functions
+      sourceLinks=store.links
     }else if (metalinkType == "tags") {
       sourceGroup="tags"
-      sourceData=store.tags.items
+      sourceData=store.tags
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "category") {
       sourceGroup="categories"
-      sourceData=store.categories.items
+      sourceData=store.categories
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -259,8 +259,8 @@ var createVvReport = function ({
       invert = true;
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.physicalSpaces.links
-      sourceData=store.physicalSpaces.items
+      sourceLinks=store.links
+      sourceData=store.physicalSpaces
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -269,22 +269,22 @@ var createVvReport = function ({
       invert = true;
       source = "target"//invert link order for after
       target = "source"
-      sourceLinks=store.workPackages.links
-      sourceData=store.workPackages.items
+      sourceLinks=store.links
+      sourceData=store.workPackages
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "vvDefinitionNeed") {
       sourceGroup="requirements"
-      sourceLinks=store.requirements.links
-      sourceData=store.requirements.items
+      sourceLinks=store.links
+      sourceData=store.requirements
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
     }else if (metalinkType == "vvDefinitionInterface") {
       sourceGroup="interfaces"
-      sourceLinks=store.interfaces.links
-      sourceData=store.interfaces.items
+      sourceLinks=store.links
+      sourceData=store.interfaces
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false},
         {prop:"type", displayAs:"Type", edit:false},
@@ -295,14 +295,14 @@ var createVvReport = function ({
         prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`
         onLoaded = function (ev) {
           dropAreaService.setDropZone(".prepend", function () {
-            ev.select.updateData(store.documents.items)
+            ev.select.updateData(store.documents)
             ev.select.refreshList()
           })
         }
       }
       sourceGroup="documents"
-      sourceLinks=store.documents.links
-      sourceData=store.documents.items
+      sourceLinks=store.links
+      sourceData=store.documents
       displayRules = [
         {prop:"name", displayAs:"Name", edit:false}
       ]
@@ -311,7 +311,7 @@ var createVvReport = function ({
       prependContent = `<div class="ui basic prepend button"><i class="upload icon"></i>Drop new documents here</div>`,
       onLoaded = function (ev) {
         dropAreaService.setDropZone(".prepend", function () {
-          ev.select.updateData(store.documents.items)
+          ev.select.updateData(store.documents)
           ev.select.refreshList()
           setTimeout(function () {
             ev.select.scrollDown()
@@ -338,10 +338,10 @@ var createVvReport = function ({
         var uuid = genuuid()
         push(act.add(sourceGroup, {uuid:uuid,name:"Edit Item"}))
         ev.select.setEditItemMode({
-          item:store[sourceGroup].items.filter(e=> e.uuid == uuid)[0],
+          item:store[sourceGroup].filter(e=> e.uuid == uuid)[0],
           onLeave: (ev)=>{
             push(act.remove(sourceGroup,{uuid:uuid}))
-            ev.select.updateData(store[sourceGroup].items)
+            ev.select.updateData(store[sourceGroup])
           }
         })
       },
@@ -360,7 +360,7 @@ var createVvReport = function ({
         var changeProp = function (sourceTriggerId) {
           console.log(currentLinksUuidFromDS)
           batchRemoveMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
-          //store.metaLinks.items = store.metaLinks.items.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
+          //store.metaLinks = store.metaLinks.filter(l=>!(l.type == metalinkType && l[source] == sourceTriggerId && currentLinksUuidFromDS.includes(l[target])))
           // for (newSelected of ev.select.getSelected()) {
           //   if (!invert) {
           //     push(act.add("metaLinks",{type:metalinkType, source:sourceTriggerId, target:newSelected}))
@@ -371,7 +371,7 @@ var createVvReport = function ({
           // }
           batchAddMetaLinks(store, metalinkType,currentLinksUuidFromDS, ev.select.getSelected(), source, sourceTriggerId)
 
-          // ev.select.getParent().updateMetaLinks(store.metaLinks.items)//TODO remove extra call
+          // ev.select.getParent().updateMetaLinks(store.metaLinks)//TODO remove extra call
           // ev.select.getParent().refreshList()
         }
         if (batch[0]) { //check if batch action is needed

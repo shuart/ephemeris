@@ -193,9 +193,9 @@ var createProjectSelectionView = function (targetSelector) {
       let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
       var html = sortedVisibleProject.filter(e=> fuzzysearch(filterText,e.name) || fuzzysearch(filterText,e.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))).reduce((acc,i)=>{
         let projectInfos = {
-          currentPbsNbr  : (i.currentPbs.items.length - 1),
-          requirementsNbr  : (i.requirements.items.length),
-          stakeholdersNbr  : (i.stakeholders.items.length)
+          currentPbsNbr  : (i.currentPbs.length - 1),
+          requirementsNbr  : (i.requirements.length),
+          stakeholdersNbr  : (i.stakeholders.length)
         }
         let projectImage = i.coverImage || undefined
         acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description.short || 'A new project', projectInfos, projectImage)

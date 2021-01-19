@@ -85,14 +85,14 @@ var createExtraGraphsView = function (targetSelector) {
     var store = await query.currentProject()
 
     let allObjects = []
-          .concat(store.currentPbs.items)
-          .concat(store.requirements.items)
-          .concat(store.functions.items)
-          .concat(store.stakeholders.items)
-    // let links = store.metaLinks.items.map(m=>m.source+"-->"+m.target).join("\n")
+          .concat(store.currentPbs)
+          .concat(store.requirements)
+          .concat(store.functions)
+          .concat(store.stakeholders)
+    // let links = store.metaLinks.map(m=>m.source+"-->"+m.target).join("\n")
     // let header = "graph LR\n"
     let nbr =0
-    let links = store.metaLinks.items.map(function (m) {
+    let links = store.metaLinks.map(function (m) {
       let sourceObject = allObjects.find(i=>i.uuid == m.source)
       let targetObject = allObjects.find(i=>i.uuid == m.target)
       if (sourceObject && targetObject) {
@@ -105,14 +105,14 @@ var createExtraGraphsView = function (targetSelector) {
   }
   function createGraphEDR(store) {
     let allObjects = []
-          .concat(store.currentPbs.items)
-          .concat(store.requirements.items)
-          .concat(store.functions.items)
-          .concat(store.stakeholders.items)
-    // let links = store.metaLinks.items.map(m=>m.source+"-->"+m.target).join("\n")
+          .concat(store.currentPbs)
+          .concat(store.requirements)
+          .concat(store.functions)
+          .concat(store.stakeholders)
+    // let links = store.metaLinks.map(m=>m.source+"-->"+m.target).join("\n")
     // let header = "graph LR\n"
     let nbr =0
-    let links = store.currentPbs.links.map(function (m) {
+    let links = store.links.map(function (m) {
       let sourceObject = allObjects.find(i=>i.uuid == m.source)
       let targetObject = allObjects.find(i=>i.uuid == m.target)
       if (sourceObject && targetObject && sourceObject.name && targetObject.name) {
@@ -122,8 +122,8 @@ var createExtraGraphsView = function (targetSelector) {
 
 
     let definitions = []
-    for (var i = 0; i < store.currentPbs.items.length; i++) {
-      let p = store.currentPbs.items[i]
+    for (var i = 0; i < store.currentPbs.length; i++) {
+      let p = store.currentPbs[i]
 
       let relatedReq = getRelatedItems(store, p, "requirements", {metalinksType:"originNeed"})
       console.log(relatedReq);
