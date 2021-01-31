@@ -3,6 +3,7 @@ var self ={};
 var objectIsActive = true;
 
 var persist = {}
+var memoryDataset = {}
 
 var localDB = undefined
 
@@ -18,6 +19,13 @@ var connectToPersistence = function () {
 
 var debug = function () {
   console.log(persist)
+
+  memoryDataset = {}
+  persist[app.state.currentProject].forEach((item, i) => {
+    applyToInMemoryData(item, memoryDataset)
+  });
+  console.log(memoryDataset);
+
 }
 
 var appendToDB = function(project, messages){
@@ -28,6 +36,26 @@ var appendToDB = function(project, messages){
   for (var i = 0; i < messages.length; i++) {// add all messages to the persistence layer
     localDB[project].push(messages[i]);
   }
+}
+
+var applyToInMemoryData = function(msg, data) {
+  memoryDataset = data
+  if (!memoryDataset[msg.dataset]) {
+    memoryDataset[msg.dataset] = []
+  }
+  let table = memoryDataset[msg.dataset];
+  if (!table) {
+    throw new Error('Unknown dataset: ' + msg.dataset);
+  }
+
+  let row = table.find(row => row.uuid === msg.row);
+  if (!row) {
+    table.push({ uuid: msg.row, [msg.column]: msg.value });
+  } else {
+    row[msg.column] = msg.value;
+  }
+
+  return data
 }
 
 var _insert = function(project, table, row){
@@ -71,20 +99,16 @@ var _update = function(project, table, row){
 }
 
 var _delete = function(project, table, row){
-  let fields = Object.keys(row).filter(k => k !== 'uuid');;
-  //transpose row of type {uuid:XXXX, fieldA:xxx, fieldB:xxx}
   appendToDB(
     project,
-    fields.map(k => {
-      return {
+      [{
         dataset: table,
         row: row.uuid,
         column:'tombstone',
         value: 1,
         // timestamp: Timestamp.send(getClock()).toString()
         timestamp: Date.now()
-      };
-    })
+      }]
   );
   debug()
 }

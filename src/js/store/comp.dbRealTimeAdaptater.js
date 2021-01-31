@@ -308,6 +308,12 @@ var createDbRealTimeAdaptater = function () {
         row[callBackItem.col] = callBackItem.item
         crdtsDB._update(projectUuid,callBackItem.table, row)
       }
+      if (callBackItem.subtype == "$pull") {
+        let row = {}
+        row.uuid = callBackItem.row
+        row[callBackItem.col] = callBackItem.item
+        crdtsDB._delete(projectUuid,callBackItem.selectorProperty, callBackItem.item )
+      }
 
       return new Promise(function(resolve, reject) {
           projects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
