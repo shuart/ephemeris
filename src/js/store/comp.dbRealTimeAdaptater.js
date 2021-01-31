@@ -299,6 +299,16 @@ var createDbRealTimeAdaptater = function () {
       let actionItem = {}
       actionItem[callBackItem.subtype] = selector
 
+      if (callBackItem.subtype == "$push") {
+        crdtsDB._insert(projectUuid,callBackItem.selectorProperty, callBackItem.item )
+      }
+      if (callBackItem.subtype == "$set") {
+        let row = {}
+        row.uuid = callBackItem.row
+        row[callBackItem.col] = callBackItem.item
+        crdtsDB._update(projectUuid,callBackItem.table, row)
+      }
+
       return new Promise(function(resolve, reject) {
           projects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
 
@@ -372,7 +382,7 @@ var createDbRealTimeAdaptater = function () {
         let indexToChange = docs[0][collectionName].findIndex(i=>i.uuid == itemId)
 
         let selectorProperty = collectionName+"."+indexToChange+"."+prop
-        let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value}
+        let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value, table:collectionName, row:itemId, col:prop}
 
         await updateDB(callBackItem)
         resolve()
@@ -385,7 +395,7 @@ var createDbRealTimeAdaptater = function () {
       await projects.find({uuid: projectUuid}, async function (err, docs) {
         let indexToChange = docs[0][collectionName].findIndex(i=>i.uuid == itemId)
         let selectorProperty = collectionName+indexToChange
-        let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value}
+        let callBackItem = {type:"update",subtype:"$set", projectUuid:projectUuid,  selectorProperty:selectorProperty, item:value, table:collectionName, row:itemId, col:prop}
         await updateDB(callBackItem)
         resolve()
         });
