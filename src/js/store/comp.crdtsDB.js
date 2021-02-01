@@ -11,21 +11,55 @@ var localDB = undefined
 
 var init = function () {
   localDB = connectToPersistence()
+  //generateMessagesFromProject(JSON.stringify(store))
 }
 
 var connectToPersistence = function () {
   return persist
 }
 
-var debug = function () {
+var debug = function (target) {
+  var debugTaret = {}
+  if (!target) {
+    debugTaret = store
+  }else {
+    debugTaret = JSON.parse(JSON.stringify(target))
+    debugTaret.uuid=[];
+    debugTaret.name=[];
+    debugTaret.reference=[];
+    debugTaret.description=[];
+  }
   console.log(persist)
 
-  memoryDataset = {}
-  persist[app.state.currentProject].forEach((item, i) => {
-    applyToInMemoryData(item, memoryDataset)
-  });
-  console.log(memoryDataset);
+  if (!target) {
+    memoryDataset = {}
+    persist[app.state.currentProject].forEach((item, i) => {
+      applyToInMemoryData(item, memoryDataset)
+    });
+    console.log(memoryDataset);
+  }
 
+  console.time("transcribe");
+  let transcribed = generateMessagesFromProject(debugTaret)
+  console.timeEnd("transcribe");
+  console.log(transcribed);
+  let retranscribed = {}
+  let retranscribed2 = {}
+  console.time("rtrans");
+  transcribed.forEach((item, i) => {
+    applyToInMemoryData(item, retranscribed)
+  });
+  console.timeEnd("rtrans");
+
+  console.time("rtrans2");
+  for (var i = 0; i < transcribed.length; i++) {
+
+    applyToInMemoryData(transcribed[i], retranscribed2)
+  }
+  console.timeEnd("rtrans2");
+
+  console.log(retranscribed);
+  console.log(retranscribed2);
 }
 
 var appendToDB = function(project, messages){
@@ -36,6 +70,31 @@ var appendToDB = function(project, messages){
   for (var i = 0; i < messages.length; i++) {// add all messages to the persistence layer
     localDB[project].push(messages[i]);
   }
+}
+
+var generateMessagesFromProject = function (projectTree) {
+  console.log(projectTree);
+  let fields = Object.keys(projectTree)
+
+  let messages = []
+  fields.forEach((field, i) => {
+    projectTree[field].forEach((item, i) => {
+      let currentItemUuid = item.uuid;
+      let itemProps = Object.keys(item)
+      itemProps.forEach((prop, i) => {
+        let newMessage= {
+          dataset: field,
+          row: currentItemUuid,
+          column: prop,
+          value: item[prop],
+          // timestamp: Timestamp.send(getClock()).toString()
+          timestamp: Date.now()
+        };
+        messages.push(newMessage)
+      });
+    });
+  });
+  return messages
 }
 
 var applyToInMemoryData = function(msg, data) {
@@ -60,7 +119,8 @@ var applyToInMemoryData = function(msg, data) {
 
 var _insert = function(project, table, row){
   let id = genuuid();
-  let fields = Object.keys(row).filter(k => k !== 'uuid');//TODO is this filter necessayr?
+  let fields = Object.keys(row);
+  // let fields = Object.keys(row).filter(k => k !== 'uuid');//TODO is this filter necessayr?
   //transpose row of type {uuid:XXXX, fieldA:xxx, fieldB:xxx}
   appendToDB(
     project,
@@ -117,6 +177,7 @@ self.init = init
 self._insert = _insert
 self._update = _update
 self._delete = _delete
+self._import= debug//POC
 
 return self
 }

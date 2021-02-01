@@ -1,9 +1,9 @@
 var store = {
-  uuid:uuid(),
-  name:"My Project",
-  reference:"REF-001",
-  description:{
-  },
+  // uuid:uuid(),
+  // name:"My Project",
+  // reference:"REF-001",
+  // description:{
+  // },
   currentPbs:[],
   plannings:[],
   events:[],

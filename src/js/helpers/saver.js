@@ -191,9 +191,38 @@ async function loadSavedData(data, callback) {
       //   }
       // }
       if (confirm("Import this project?")) {
+
         jsonContent.data.uuid=genuuid()
         jsonContent.data.name +="_imported"
-        dbConnector.addProject(jsonContent.data)
+        let importedProject = jsonContent.data
+        let newProjectSchema = {links:[]}
+        let fields = Object.keys(importedProject)
+
+        fields.forEach((field, i) => {
+          if (field != "links") { //avoid links as it was added manualy
+            newProjectSchema[field] = []
+            if (importedProject[field].items) {
+              newProjectSchema[field] = importedProject[field].items
+            }
+            if (importedProject[field].links) {
+              importedProject[field].links.forEach((link, i) => {
+                newProjectSchema.links.push(link)
+              });
+            }
+          }
+        });
+
+        newProjectSchema.uuid=genuuid();
+        newProjectSchema.name=jsonContent.data.name +"_imported";
+        newProjectSchema.reference=jsonContent.data.reference ;
+        newProjectSchema.description=jsonContent.data.description ;
+        console.log(newProjectSchema);
+
+        crdtsDB._import(newProjectSchema)//TODO remove
+
+
+        dbConnector.addProject(newProjectSchema)
+
         pageManager.setActivePage("projectSelection")
         alert("Project has been imported")
       }
