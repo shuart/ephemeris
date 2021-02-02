@@ -5,22 +5,18 @@ var createDbRealTimeAdaptater = function () {
   var users
   var projects
   var localProjects
+  var localDB
 
 
   var init = function () {
     connectDB()
   }
-  var connectDB =function () {
-    // projects = localforage.createInstance({name: "ephemerisProjects"});
-    // users = localforage.createInstance({name: "ephemerisUsers"});
-    // projects = new Nedb({ filename: 'ephemeris_local_projects', autoload: true });   // Create an in-memory only datastore
+  var connectDB = async function () {
+
+
+
     localProjects = new Nedb({ filename: 'ephemeris_local_projects_testground', autoload: true });   // Create an indedDB  datastore
-    //erase deb for // DEBUG:
-    // localProjects.remove({ }, { multi: true }, function (err, numRemoved) {
-    //   localProjects.loadDatabase(function (err) {
-    //     // done
-    //   });
-    // });
+
 
     projects = new Nedb();   // Create an in-memory only datastore
     localUsers = new Nedb({ filename: 'ephemeris_local_users_testground', autoload: true });   // Create an in-memory only datastore
@@ -60,41 +56,36 @@ var createDbRealTimeAdaptater = function () {
         // });
       }
     });
+
+    localDB = await idb.openDB('localDB', 1, {
+      upgrade(db) {
+        const store = db.createObjectStore('projects');
+        db.createObjectStore('users', {keyPath:"uuid"});
+        db.createObjectStore('messages');
+        //store.createIndex('date', 'date');
+
+      }
+    });
+
+    // await localDB.add('users', {
+    //   uuid: 'Article 1',
+    //   date: new Date('2019-01-01'),
+    //   body: '…',
+    // });
+    // await localDB.add('users', {
+    //   uuid: 'Article 1',
+    //   date: new Date('2019-01-01'),
+    //   body: '…',
+    // }, 'test');
   }
 
-  function transfertDBfromOldVersion(users) {
-    startupScreen.showLoader()
-    for (var i = 0; i < users.length; i++) {
-      persist.getUser(users[i].uuid).then(function (user) {
-        user.relatedProjects = []
-        console.log(user.projects);
-        user.projects.forEach((project, i) => {
-          user.relatedProjects.push(project.uuid)
 
-          projects.insert(project, (err,docs)=>console.log(docs))
-          localProjects.insert(project, (err,docs)=>console.log(docs))
-        });
-        localUsers.insert(user, (err,docs)=>console.log(docs))
-      }).catch(function(err) {
-          console.log(err);
-      });
-    }
-    setTimeout(function () {
-      startupScreen.update()
-    }, 4000);
-  }
 
-  function getUser(id) {
-    return new Promise(function(resolve, reject) {
-        localUsers.find({uuid:id}, function (err, docs) {
-          console.log(docs);
-          resolve(docs[0])
-        })
-      }).catch(function(err) {
-        reject(err)
-      });
+  async function getUser(id) {
+    let user = await localDB.get('users', id);
+    return user
   }
-  function setUserInfo(id, prop, value) {
+  function setUserInfo(id, prop, value) { //TODO move to indexedDB
     let selector = {}
     selector["userData.info."+prop] = value
     return new Promise(function(resolve, reject) {
@@ -108,18 +99,13 @@ var createDbRealTimeAdaptater = function () {
       });
   }
 
-  function getUsers() {
-    return new Promise(function(resolve, reject) {
-        localUsers.find({}, function (err, docs) {
-          console.log(docs);
-          resolve(docs)
-        })
-      }).catch(function(err) {
-        reject(err)
-      });
+  async function getUsers() {
+    let users = await localDB.getAll('users')
+    // console.log(users.map(u=>u[Object.keys[0]]));
+    return users
   }
 
-  function setUser(data) { //name
+  async function setUser(data) { //name
     var newUuid = uuid()
     var newNoteUuid = uuid()
     var userObject = {
@@ -157,27 +143,11 @@ var createDbRealTimeAdaptater = function () {
       },
       projects:data.projects||[]
     }
-    return new Promise(function(resolve, reject) {
-        localUsers.insert(userObject, function (err, docs) {
-          console.log(docs);
-          resolve(docs)
-        })
-      }).catch(function(err) {
-        console.log(err);
-        reject(err)
-      });
+    await localDB.add('users', userObject);
   }
 
-  function removeUser(uuid) {
-    return new Promise(function(resolve, reject) {
-        localUsers.remove({uuid:uuid}, function (err, docs) {
-          console.log(docs);
-          resolve(docs)
-        })
-      }).catch(function(err) {
-        console.log(err);
-        reject(err)
-      });
+  async function removeUser(uuid) {
+    await localDB.delete('users', uuid);
   }
 
   function addUserProject() {
