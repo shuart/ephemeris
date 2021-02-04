@@ -71,9 +71,9 @@ function createStartUp() {
               }
 
               app.store.userData.info.userFirstName = popup.result.firstName
-              dbConnector.setUserInfo(event.target.dataset.id, "userFirstName", app.store.userData.info.userFirstName)
+              await dbConnector.setUserInfo(event.target.dataset.id, "userFirstName", app.store.userData.info.userFirstName)
               app.store.userData.info.userLastName = popup.result.lastName
-              dbConnector.setUserInfo(event.target.dataset.id, "userLastName", app.store.userData.info.userLastName)
+              await dbConnector.setUserInfo(event.target.dataset.id, "userLastName", app.store.userData.info.userLastName)
 
             }
             if (!app.store.userData.info.userUuid) {

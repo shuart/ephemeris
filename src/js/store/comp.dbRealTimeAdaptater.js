@@ -85,18 +85,16 @@ var createDbRealTimeAdaptater = function () {
     let user = await localDB.get('users', id);
     return user
   }
-  function setUserInfo(id, prop, value) { //TODO move to indexedDB
+  async function setUserInfo(id, prop, value) { //TODO move to indexedDB
     let selector = {}
-    selector["userData.info."+prop] = value
-    return new Promise(function(resolve, reject) {
-        localUsers.update({ uuid: id }, { $set: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-          console.log('user data changed');
-          console.log(affectedDocuments[0]);
-          resolve(affectedDocuments[0])
-        });
-      }).catch(function(err) {
-        reject(err)
-      });
+    let currentUserObject= await localDB.get('users', id);
+    console.log(prop);
+    currentUserObject.userData.info[prop] = value
+    await localDB.put('users', currentUserObject);
+    console.log(await localDB.get('users', id));
+    return currentUserObject
+    // store.createIndex('strengthIndex', 'strength');
+
   }
 
   async function getUsers() {
@@ -455,17 +453,28 @@ var createDbRealTimeAdaptater = function () {
       });
   }
 
-  function addProjectToUser(userUuid, projectUuid) {
-    let selector = {}
-    selector["relatedProjects"] = projectUuid
-    return new Promise(function(resolve, reject) {
-        localUsers.update({ uuid: userUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
-          console.log(affectedDocuments);
-          resolve(affectedDocuments[0])
-        });
-      }).catch(function(err) {
-        reject(err)
-      });
+  async function addProjectToUser(userUuid, projectUuid) {
+
+    let currentUserObject= await localDB.get('users', userUuid);
+    if (!currentUserObject.relatedProjects) {
+      currentUserObject.relatedProjects = []
+    }
+    currentUserObject.relatedProjects.push(projectUuid)
+    await localDB.put('users', currentUserObject);
+    console.log(await localDB.get('users', userUuid));
+    return currentUserObject
+    // store.createIndex('strengthIndex', 'strength');
+
+    // let selector = {}
+    // selector["relatedProjects"] = projectUuid
+    // return new Promise(function(resolve, reject) {
+    //     localUsers.update({ uuid: userUuid }, { $push: selector }, {returnUpdatedDocs:true}, function (err, numAffected, affectedDocuments, upsert) {
+    //       console.log(affectedDocuments);
+    //       resolve(affectedDocuments[0])
+    //     });
+    //   }).catch(function(err) {
+    //     reject(err)
+    //   });
   }
 
 

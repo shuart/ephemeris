@@ -36,7 +36,7 @@ var createCurrentUserView = function ({
       console.log("Edit");
       var newValue = prompt("Edit Item",e.target.dataset.value)
       if (newValue) {
-        editCurrentUserItem(e.target.dataset.value, newValue)
+        editCurrentUserItem(e.target.dataset.prop, newValue)
       }
       sourceOccElement.remove()
       update()

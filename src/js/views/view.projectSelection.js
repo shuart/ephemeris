@@ -198,7 +198,10 @@ var createProjectSelectionView = function (targetSelector) {
           stakeholdersNbr  : (i.stakeholders.length)
         }
         let projectImage = i.coverImage || undefined
-        acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description.short || 'A new project', projectInfos, projectImage)
+        console.log(i);
+
+        acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description || 'A new project', projectInfos, projectImage)
+        // acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description.short || 'A new project', projectInfos, projectImage)
         return acc
       },'')
       container.querySelector('.cardSelectionlist').innerHTML = html
