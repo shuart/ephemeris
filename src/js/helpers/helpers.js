@@ -297,6 +297,14 @@ var getOrderedProjectList= function (list, displayOrder) {
   return list.slice().sort(comparePositions)
 }
 
+function getCriticalInfos(project) {
+  if (!project.infos) {
+
+      return {uuid: uuid(), projectUuid:project.uuid, type:'critical', name: project.name, reference: project.reference, description:project.description}
+  }
+  return project.infos.filter( info=>info.type == "critical")[0]
+}
+
 //get related item
 function getRelatedItems(store, sourceItem, groupToSearch, paramOptions) {//todo limit metalinks type
   var paramOptions = paramOptions || {}

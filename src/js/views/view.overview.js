@@ -140,6 +140,7 @@ var createOverview = function (targetSelector) {
   var render = async function () {
     var store = await query.currentProject()
     if (store) {
+      var projectInfos = getCriticalInfos(store)
       // alert("uncoment here")
       await clearUncompleteLinks()//clean all uncomplete metalink of the project
       updateFileForRetroCompatibility(store) //check file for retrocompatbiity
@@ -152,7 +153,7 @@ var createOverview = function (targetSelector) {
       var headerHtml =`
       <h2 class="ui center aligned icon header">
         <i class="circular building outline icon"></i>
-        ${store.reference}, ${store.name}
+        ${projectInfos.reference}, ${projectInfos.name}
       </h2>
       `
       var html = `

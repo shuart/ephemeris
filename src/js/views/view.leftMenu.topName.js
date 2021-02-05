@@ -36,6 +36,7 @@ var createLeftMenuTopName = function () {
     var store = await query.currentProject() //TODO no need to download everything DBCHANGE
     let currentView = app.state.currentView;
     if (store) {
+      var projectInfos = getCriticalInfos(store)
       //update document title
       //add current cdc area
       document.querySelector(".current-area-title").innerHTML = ""//Temporary blank
@@ -48,7 +49,7 @@ var createLeftMenuTopName = function () {
         <h5 class="ui header">
           <i class="building outline icon"></i>
           <div class="content">
-            ${store.reference}, ${store.name}
+            ${projectInfos.reference}, ${projectInfos.name}
           </div>
         </h5>
         `

@@ -186,7 +186,7 @@ var createProjectSelectionView = function (targetSelector) {
   }
 
   var renderList = async function (container) {
-    let relevantProjects = await query.allRelatedProjects({uuid:1, name:1, reference:1,coverImage:1, currentPbs:1, functions:1, requirements:1, stakeholders:1, description:1})
+    let relevantProjects = await query.allRelatedProjects({uuid:1, name:1, infos:1, reference:1,coverImage:1, currentPbs:1, functions:1, requirements:1, stakeholders:1, description:1})
 
     if (app.store.relatedProjects && app.store.relatedProjects[0]) {
       let sortedProject = getOrderedProjectList(relevantProjects, app.store.userData.preferences.projectDisplayOrder)
@@ -197,10 +197,11 @@ var createProjectSelectionView = function (targetSelector) {
           requirementsNbr  : (i.requirements.length),
           stakeholdersNbr  : (i.stakeholders.length)
         }
+        let projectCriticalInfo = getCriticalInfos(i)
         let projectImage = i.coverImage || undefined
         console.log(i);
 
-        acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description || 'A new project', projectInfos, projectImage)
+        acc += theme.generateProjectCardHTML(i.uuid, projectCriticalInfo.name, projectCriticalInfo.reference, projectCriticalInfo.description || 'A new project', projectInfos, projectImage)
         // acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description.short || 'A new project', projectInfos, projectImage)
         return acc
       },'')
@@ -240,11 +241,11 @@ var createProjectSelectionView = function (targetSelector) {
     if (currentProject) {
       let newName = prompt("Change Project Name?", currentProject.name)
       let newRef = prompt("Change Project Reference?", currentProject.reference)
-      let newDesc = prompt("Change Project Description?", currentProject.description.short)
+      let newDesc = prompt("Change Project Description?", currentProject.description)
 
       if (newName) { dbConnector.setProjectData(uuid, 'name',newName) }
       if (newRef) { dbConnector.setProjectData(uuid, 'reference',newRef) }
-      if (newDesc) { dbConnector.setProjectData(uuid, 'description',{short:newDesc}) }
+      if (newDesc) { dbConnector.setProjectData(uuid, 'description',newDesc) }
     }
     setTimeout(function () {
       update()

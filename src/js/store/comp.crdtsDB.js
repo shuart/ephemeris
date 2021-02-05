@@ -31,7 +31,7 @@ var debug = function (target) {
   }
   console.log(persist)
 
-  if (!target) {
+  if (!target && app.state.currentProject) {
     memoryDataset = {}
     persist[app.state.currentProject].forEach((item, i) => {
       applyToInMemoryData(item, memoryDataset)

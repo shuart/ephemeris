@@ -4,6 +4,9 @@ var store = {
   // reference:"REF-001",
   // description:{
   // },
+  infos:[
+      {uuid: uuid(), projectUuid:uuid(), type:'critical', name: "New project", reference: "REF-001", description:""}
+  ],
   currentPbs:[],
   plannings:[],
   events:[],
@@ -117,8 +120,10 @@ var projectTemplate = JSON.stringify(store)
 var createNewProject = function (name, optionsData) {
   var options = optionsData || {}
   var secondProject = JSON.parse(projectTemplate)
-  secondProject.uuid =genuuid()
-  secondProject.name =name
+  var projectUuid = genuuid()
+  secondProject.infos[0].projectUuid = projectUuid
+  secondProject.infos[0].name = name
+  secondProject.uuid = projectUuid
   console.log(secondProject);
   if (options.placeholder) {
     createPBS(secondProject)
