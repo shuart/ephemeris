@@ -11,8 +11,11 @@ function saveDB() {
   }
 }
 
-function setCurrentProject(project) {
+async function setCurrentProject(project) {
   app.state.currentProject = project
+  if (project) {
+    await dbConnector.loadProjectInMemory(project)
+  }
   document.dispatchEvent(new Event('storeUpdated'))
   //TODO ugly remove!!!!
   if (project) {

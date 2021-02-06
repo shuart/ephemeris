@@ -68,12 +68,20 @@ var appendToDB = function(project, messages){
   }
   //persistence layer
   for (var i = 0; i < messages.length; i++) {// add all messages to the persistence layer
-    localDB[project].push(messages[i]);
+    messages[i].project = project //add project id to message
+    messages[i].uuid = genuuid()
+    localDB[project].push(messages[i]);//TODO for test remove
+    dbConnector.getDbReferences().localDB.add("messages", messages[i])
   }
 }
 
 var generateMessagesFromProject = function (projectTree) {
   console.log(projectTree);
+  projectTree = JSON.parse(JSON.stringify(projectTree))//TODO see if needed
+  projectTree.uuid=[];
+  projectTree.name=[];
+  projectTree.reference=[];
+  projectTree.description=[];
   let fields = Object.keys(projectTree)
 
   let messages = []
@@ -173,7 +181,23 @@ var _delete = function(project, table, row){
   debug()
 }
 
+var recordInitialMessagesFromTemplate = function (projectId, template) {
+  let transcribed = generateMessagesFromProject(template)
+  appendToDB(projectId,transcribed);
+}
+var buildProjectFromMessages = async function (projectId) {
+  let relevantMessages = await dbConnector.getDbReferences().localDB.getAllFromIndex('messages', 'projectIndex', projectId);
+  let messages = {}
+  relevantMessages.forEach((item, i) => {
+    applyToInMemoryData(item, messages)
+  });
+  console.log(messages);
+  return messages
+}
+
 self.init = init
+self.recordInitialMessagesFromTemplate = recordInitialMessagesFromTemplate
+self.buildProjectFromMessages = buildProjectFromMessages
 self._insert = _insert
 self._update = _update
 self._delete = _delete

@@ -61,8 +61,8 @@ var createDbRealTimeAdaptater = function () {
       upgrade(db) {
         const store = db.createObjectStore('projects');
         db.createObjectStore('users', {keyPath:"uuid"});
-        db.createObjectStore('messages');
-        //store.createIndex('date', 'date');
+        var messages = db.createObjectStore('messages', {keyPath:"uuid"});
+        messages.createIndex('projectIndex', 'project');
 
       }
     });
@@ -237,26 +237,6 @@ var createDbRealTimeAdaptater = function () {
       });
   }
   //=====END Connect to online Bridge=====
-
-
-  function addProject(newProject) {
-    if (app.state.currentUser) {
-      addProjectToUser(app.state.currentUser, newProject.uuid)
-      app.store.relatedProjects.push(newProject.uuid)
-    }
-
-    return new Promise(function(resolve, reject) {
-
-        projects.insert(newProject, function (err, docs) {
-          console.log(docs);
-          localProjects.insert(newProject, function (err, docs) {})
-          resolve(docs)
-        })
-      }).catch(function(err) {
-        console.log(err);
-        reject(err)
-      });
-  }
 
   function updateDB(callBackItem, preventSync) {
     if (callBackItem.type == "update") {
@@ -537,8 +517,44 @@ var createDbRealTimeAdaptater = function () {
       });
   }
 
+  function addProject(newProject) {
+    if (app.state.currentUser) {
+      addProjectToUser(app.state.currentUser, newProject.uuid)
+      app.store.relatedProjects.push(newProject.uuid)
+    }
+
+    crdtsDB.recordInitialMessagesFromTemplate(newProject.uuid,newProject)
+
+    return new Promise(function(resolve, reject) {
+
+        projects.insert(newProject, function (err, docs) {
+          console.log(docs);
+          localProjects.insert(newProject, function (err, docs) {})
+          resolve(docs)
+        })
+      }).catch(function(err) {
+        console.log(err);
+        reject(err)
+      });
+  }
+
+  async function loadProjectInMemory(uuid) {
+    console.log(uuid);
+    let current = await getProject(uuid)
+    console.log(current);
+    let projectFromStorage = await crdtsDB.buildProjectFromMessages(uuid)
+    console.log(projectFromStorage);
+    projectFromStorage.uuid = uuid
+    await projects.update({ uuid: uuid }, projectFromStorage, {}, function (err, numReplaced) {
+      document.dispatchEvent(new Event('storeUpdated'))
+      console.log('projectLoaded');
+    });
+    let current2 = await getProject(uuid)
+    console.log(current2);
+  }
+
   function getDbReferences() {
-    return {users:users,projects:projects,localProjects:localProjects}
+    return {users:users,projects:projects,localProjects:localProjects, localDB:localDB}
   }
 
   self.getUser = getUser
@@ -554,6 +570,7 @@ var createDbRealTimeAdaptater = function () {
   self.addProject = addProject
   self.addProjectItem = addProjectItem
   self.addProjectLink = addProjectLink
+  self.loadProjectInMemory = loadProjectInMemory
   self.removeProjectItem = removeProjectItem
   self.removeProjectLink = removeProjectLink
   self.updateProjectItem = updateProjectItem

@@ -117,8 +117,8 @@ var createProjectSelectionView = function (targetSelector) {
   }
 
   var connections =function () {
-    connect(".action_project_selection_load_project","click",(e)=>{
-      setCurrentProject(e.target.dataset.id)
+    connect(".action_project_selection_load_project","click",async (e)=>{
+      await setCurrentProject(e.target.dataset.id)
       pageManager.setActivePage("overview")
     })
     connect(".action_project_selection_add_project","click", async (e)=>{
