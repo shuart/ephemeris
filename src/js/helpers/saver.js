@@ -167,7 +167,7 @@ async function loadSavedData(data, callback) {
     if (jsonContent.data._id) {
       delete jsonContent.data._id;
     }
-    let allProjects = await query.items("projects")
+    // let allProjects = await query.items("projects")
     if (app.state.currentUser) {
       // if (allProjects.find(e=> e.uuid == jsonContent.data.uuid )) {
       //   if (confirm("This project exist already. Do you want to replace it?")) {
@@ -192,36 +192,52 @@ async function loadSavedData(data, callback) {
       // }
       if (confirm("Import this project?")) {
 
-        jsonContent.data.uuid=genuuid()
-        jsonContent.data.name +="_imported"
-        let importedProject = jsonContent.data
-        let newProjectSchema = {links:[]}
-        let fields = Object.keys(importedProject)
+        if (!jsonContent.data.infos) { //add compatibility with old projects
+          jsonContent.data.uuid=genuuid()
+          let importedProject = jsonContent.data
+          let newProjectSchema = {links:[]}
+          let fields = Object.keys(importedProject)
 
-        fields.forEach((field, i) => {
-          if (field != "links") { //avoid links as it was added manualy
-            newProjectSchema[field] = []
-            if (importedProject[field].items) {
-              newProjectSchema[field] = importedProject[field].items
+          fields.forEach((field, i) => {
+            if (field != "links") { //avoid links as it was added manualy
+              newProjectSchema[field] = []
+              if (importedProject[field].items) {
+                newProjectSchema[field] = importedProject[field].items
+              }
+              if (importedProject[field].links) {
+                importedProject[field].links.forEach((link, i) => {
+                  newProjectSchema.links.push(link)
+                });
+              }
             }
-            if (importedProject[field].links) {
-              importedProject[field].links.forEach((link, i) => {
-                newProjectSchema.links.push(link)
-              });
-            }
-          }
-        });
+          });
+          newProjectSchema.uuid=genuuid();
+          newProjectSchema.name=jsonContent.data.name +"_imported";
+          newProjectSchema.reference=jsonContent.data.reference ;
+          newProjectSchema.description=jsonContent.data.description ;
 
-        newProjectSchema.uuid=genuuid();
-        newProjectSchema.name=jsonContent.data.name +"_imported";
-        newProjectSchema.reference=jsonContent.data.reference ;
-        newProjectSchema.description=jsonContent.data.description ;
-        console.log(newProjectSchema);
+          newProjectSchema.infos=[{uuid: uuid(), projectUuid:uuid(), type:'critical', name: "New project", reference: "REF-001", description:""}]
+          newProjectSchema.infos[0].projectUuid =genuuid();
+          newProjectSchema.infos[0].name = jsonContent.data.name +"_imported"
+          newProjectSchema.infos[0].reference = jsonContent.data.reference ;
+          newProjectSchema.infos[0].description = jsonContent.data.description.short ;
 
-        crdtsDB._import(newProjectSchema)//TODO remove
+          console.log(newProjectSchema);
+          dbConnector.addProject(newProjectSchema)
+
+        }else {
+          let importedProject = jsonContent.data
+          importedProject.uuid=genuuid();
+
+          let infosField = importedProject.infos.find(f=>f.type=='critical')
+          infosField.projectUuid =importedProject.uuid;
+          infosField.name += "_imported";
+
+          console.log(importedProject);
+          dbConnector.addProject(importedProject)
+        }
 
 
-        dbConnector.addProject(newProjectSchema)
 
         pageManager.setActivePage("projectSelection")
         alert("Project has been imported")

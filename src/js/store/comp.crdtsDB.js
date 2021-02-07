@@ -186,6 +186,10 @@ var _delete = function(project, table, row){
   debug()
 }
 
+var _import = function (template) {
+  recordInitialMessagesFromTemplate(template.uuid, template)
+}
+
 var recordInitialMessagesFromTemplate = function (projectId, template) {
   let transcribed = generateMessagesFromProject(template)
   appendToDB(projectId,transcribed);
@@ -202,32 +206,104 @@ var buildProjectFromMessages = async function (projectId) {
 
 var getTablesFromMessages = async function(tables) {
   let db = await dbConnector.getDbReferences().localDB
-  const tx = db.transaction("messages");
-  // console.log(tx);
-  // for await (const cursor of tx.store) {
-  //   console.log(cursor.value);
-  //   // Skip the next item
-  //   //cursor.advance(2);
-  // }
-  let cursor = await tx.store.openCursor();
-  let relevant={}
-  while (cursor) {
-    let relevantProject = cursor.value.project
-    if (!relevant[relevantProject]) {
-      relevant[relevantProject] = {}
+  let bruteforce = false
+  if (bruteforce) {//optimize but with bigger memroy footprint
+    // const tx = db.transaction("messages");
+    // const range = IDBKeyRange.only(tables[0]);
+    // let cursor = await tx.store.index('datasetIndex').openCursor(range);
+    //
+    // let relevant={}
+    // while (cursor) {
+    //   let relevantProject = cursor.value.project
+    //   if (!relevant[relevantProject]) {
+    //     relevant[relevantProject] = {}
+    //   }
+    //   if (tables) {
+    //     if (tables.includes(cursor.value.dataset)) {
+    //       applyToInMemoryData(cursor.value, relevant[relevantProject])
+    //     }
+    //   }else {
+    //     applyToInMemoryData(cursor.value, relevant[relevantProject])
+    //   }
+    //   //console.log(cursor.key, cursor.value);
+    //   cursor = await cursor.continue();
+    // }
+    //
+    // return relevant
+
+    let relevantMessages = await dbConnector.getDbReferences().localDB.getAll('messages');
+    let relevant={}
+    for (var i = 0; i < relevantMessages.length; i++) {
+      let item = relevantMessages[i]
+
+      let relevantProject = item.project
+      if (!relevant[relevantProject]) {
+        relevant[relevantProject] = {}
+      }
+      if (tables) {
+        if (tables.includes(item.dataset)) {
+          applyToInMemoryData(item, relevant[relevantProject])
+        }
+      }else {
+        applyToInMemoryData(item, relevant[relevantProject])
+      }
     }
-    if (tables) {
-      if (tables.includes(cursor.value.dataset)) {
+    return relevant
+  }else {
+    // let relevant={}
+    // const unwrapped = idb.unwrap(db);
+    // const transaction = db.transaction(["messages"], 'readonly');
+    // console.log(transaction);
+    // var objectStore = transaction.objectStore("messages");
+    // objectStore.openCursor().onsuccess = function(event) {
+    //   var cursor = event.target.result;
+    //   console.log(cursor.value);
+    //   if(cursor) {
+    //     let relevantProject = cursor.value.project
+    //     if (!relevant[relevantProject]) {
+    //       relevant[relevantProject] = {}
+    //     }
+    //     if (tables) {
+    //       if (tables.includes(cursor.value.dataset)) {
+    //         applyToInMemoryData(cursor.value, relevant[relevantProject])
+    //       }
+    //     }else {
+    //       applyToInMemoryData(cursor.value, relevant[relevantProject])
+    //     }
+    //     cursor.continue();
+    //   } else {
+    //     console.log('Entries all displayed.');
+    //   }
+    // }
+
+    // db.transaction("messages").store.openCursor().then(function handleCursor(cursor) {
+    //   // console.log(cursor.key, cursor.value);
+    //   return cursor.continue().then(handleCursor);
+    // }).then(() => {
+    //   console.log('done!');
+    // });
+
+    const tx = db.transaction("messages", 'readonly');
+    let cursor = await tx.store.openCursor();
+    console.log(cursor);
+    let relevant={}
+    while (cursor) {
+      let relevantProject = cursor.value.project
+      if (!relevant[relevantProject]) {
+        relevant[relevantProject] = {}
+      }
+      if (tables) {
+        if (tables.includes(cursor.value.dataset)) {
+          applyToInMemoryData(cursor.value, relevant[relevantProject])
+        }
+      }else {
         applyToInMemoryData(cursor.value, relevant[relevantProject])
       }
-    }else {
-      applyToInMemoryData(cursor.value, relevant[relevantProject])
+      cursor = await cursor.continue();
     }
-    //console.log(cursor.key, cursor.value);
-    cursor = await cursor.continue();
+    return relevant
   }
 
-  return relevant
 }
 
 self.init = init
@@ -237,7 +313,7 @@ self.getTablesFromMessages = getTablesFromMessages
 self._insert = _insert
 self._update = _update
 self._delete = _delete
-self._import= debug//POC
+self._import= _import
 
 return self
 }

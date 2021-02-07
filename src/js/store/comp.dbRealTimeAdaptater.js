@@ -21,7 +21,8 @@ var createDbRealTimeAdaptater = function () {
         db.createObjectStore('users', {keyPath:"uuid"});
         var messages = db.createObjectStore('messages', {keyPath:"timestamp"});
         messages.createIndex('projectIndex', 'project');
-        messages.createIndex('idIndex', 'uuid');
+        // messages.createIndex('idIndex', 'uuid');
+        messages.createIndex('datasetIndex', 'dataset');
 
       }
     });
