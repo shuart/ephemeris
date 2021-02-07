@@ -10,12 +10,17 @@ var localDB = undefined
 
 
 var init = function () {
+  setClock(makeClock(new Timestamp(0, 0, makeClientId())));
   localDB = connectToPersistence()
   //generateMessagesFromProject(JSON.stringify(store))
 }
 
 var connectToPersistence = function () {
   return persist
+}
+
+var getSendTimestamp = function () {
+  return Timestamp.send(getClock()).toString()
 }
 
 var debug = function (target) {
@@ -96,7 +101,7 @@ var generateMessagesFromProject = function (projectTree) {
           column: prop,
           value: item[prop],
           // timestamp: Timestamp.send(getClock()).toString()
-          timestamp: Date.now()
+          timestamp: getSendTimestamp()
         };
         messages.push(newMessage)
       });
@@ -139,7 +144,7 @@ var _insert = function(project, table, row){
         column: k,
         value: row[k],
         // timestamp: Timestamp.send(getClock()).toString()
-        timestamp: Date.now()
+        timestamp: getSendTimestamp()
       };
     })
   );
@@ -159,7 +164,7 @@ var _update = function(project, table, row){
         column: k,
         value: row[k],
         // timestamp: Timestamp.send(getClock()).toString()
-        timestamp: Date.now()
+        timestamp: getSendTimestamp()
       };
     })
   );
@@ -175,7 +180,7 @@ var _delete = function(project, table, row){
         column:'tombstone',
         value: 1,
         // timestamp: Timestamp.send(getClock()).toString()
-        timestamp: Date.now()
+        timestamp: getSendTimestamp()
       }]
   );
   debug()

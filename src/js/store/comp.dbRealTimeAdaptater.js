@@ -19,8 +19,9 @@ var createDbRealTimeAdaptater = function () {
       upgrade(db) {
         const store = db.createObjectStore('projects');
         db.createObjectStore('users', {keyPath:"uuid"});
-        var messages = db.createObjectStore('messages', {keyPath:"uuid"});
+        var messages = db.createObjectStore('messages', {keyPath:"timestamp"});
         messages.createIndex('projectIndex', 'project');
+        messages.createIndex('idIndex', 'uuid');
 
       }
     });
