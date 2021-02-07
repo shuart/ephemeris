@@ -263,7 +263,7 @@ var createOverview = function (targetSelector) {
       alert("This project was created with an earlier version and was updated. " +extraInfos)
     }
     //Tags from 1.7.2
-    if (!store.tags) {
+    if (!store.tags[0]) {
       store.tags = [
           {uuid: uuid(), name: "Approved", color: "#ffffff"},
           {uuid: uuid(), name: "Closed", color: "#ffffff"},
@@ -272,14 +272,7 @@ var createOverview = function (targetSelector) {
       dbConnector.addProjectCollection(store.uuid, "tags", store.tags)
       alertAboutUpdate("Tags feature has been added.")
     }
-    if (!store.workPackages) {
-      store.workPackages = [
-          {uuid: uuid(), name: "A work package"}
-        ]
-      dbConnector.addProjectCollection(store.uuid, "workPackages", store.workPackages)
-      alertAboutUpdate("Work Packages feature has been added.")
-    }
-    if (!store.meetings) {
+    if (!store.meetings[0]) {
       store.meetings = [{uuid:uuid(),relations:[],  createdOn:new Date(),title:"Meeting exemple",content:"Use Markdown",
           participants:{
             present:["f896546e"],
@@ -296,25 +289,7 @@ var createOverview = function (targetSelector) {
       dbConnector.addProjectCollection(store.uuid, "meetings", store.meetings)
       alertAboutUpdate("Meetings feature has been added.")
     }
-    if (!store.extraFields) {
-      store.extraFields=[]
-      dbConnector.addProjectCollection(store.uuid, "extraFields", store.extraFields)
-      alertAboutUpdate("Extra Fields feature has been added.")
-    }
-    if (!store.physicalSpaces) {
-      store.physicalSpaces=[
-          {uuid: uuid(), name: "A physical space"}
-        ]
-      dbConnector.addProjectCollection(store.uuid, "physicalSpaces", store.physicalSpaces)
-      alertAboutUpdate("Physical Spaces feature has been added.")
-    }
-    // if (store.interfaces.find(i=>(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )) {
-    //
-    //   store.interfaces = store.interfaces.filter(i=>!(i.description=="Un interface" && i.type=="physical connection" && i.source=="555sfse" && i.target=="f896546e") )
-    //
-    //   alertAboutUpdate("Interfaces list feature has been added.")
-    // }
-    if (!store.categories) {
+    if (!store.categories[0]) {
       store.categories=[
           {uuid: uuid(), name: "Space", svgPath: "M504 352H136.4c-4.4 0-8 3.6-8 8l-.1 48c0 4.4 3.6 8 8 8H504c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zm0 96H136.1c-4.4 0-8 3.6-8 8l-.1 48c0 4.4 3.6 8 8 8h368c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zm0-192H136.6c-4.4 0-8 3.6-8 8l-.1 48c0 4.4 3.6 8 8 8H504c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8zm106.5-139L338.4 3.7a48.15 48.15 0 0 0-36.9 0L29.5 117C11.7 124.5 0 141.9 0 161.3V504c0 4.4 3.6 8 8 8h80c4.4 0 8-3.6 8-8V256c0-17.6 14.6-32 32.6-32h382.8c18 0 32.6 14.4 32.6 32v248c0 4.4 3.6 8 8 8h80c4.4 0 8-3.6 8-8V161.3c0-19.4-11.7-36.8-29.5-44.3z"},
           {uuid: uuid(), name: "Electrical", svgPath: "M296 160H180.6l42.6-129.8C227.2 15 215.7 0 200 0H56C44 0 33.8 8.9 32.2 20.8l-32 240C-1.7 275.2 9.5 288 24 288h118.7L96.6 482.5c-3.6 15.2 8 29.5 23.3 29.5 8.4 0 16.4-4.4 20.8-12l176-304c9.3-15.9-2.2-36-20.7-36z"},
@@ -325,64 +300,7 @@ var createOverview = function (targetSelector) {
       dbConnector.addProjectCollection(store.uuid, "categories", store.categories)
       alertAboutUpdate("Categories feature has been added.")
     }
-    if (!store.templates) {
-      store.templates=[]
-      dbConnector.addProjectCollection(store.uuid, "templates", store.templates)
-      alertAboutUpdate("Templates management feature has been added.")
-    }
-    if (!store.documents) {
-      store.documents=[
-          {uuid:uuid(), name:"Ephemeris Handbook",type:"html", osPath:undefined, idb:undefined, link:"https://github.com/shuart/ephemeris/blob/master/README.md", description:"Quickstart guide for Ephemeris"}
-        ]
-      dbConnector.addProjectCollection(store.uuid, "documents", store.documents)
-      alertAboutUpdate("Documents management feature has been added.")
-    }
-    if (!store.history) {
-      store.history=[]
-      dbConnector.addProjectCollection(store.uuid, "history", store.history)
-      alertAboutUpdate("activities history feature has been added.")
-    }
-    if (!store.events) {
-      store.events=[]
-      dbConnector.addProjectCollection(store.uuid, "events", store.events)
-      alertAboutUpdate("planning feature has been added.")
-    }
-    if (!store.timeTracks) {
-      store.timeTracks=[]
-      dbConnector.addProjectCollection(store.uuid, "timeTracks", store.timeTracks)
-      alertAboutUpdate("planning feature has been added.")
-    }
-    if (!store.timeLinks) {
-      store.timeLinks=[]
-      dbConnector.addProjectCollection(store.uuid, "timeLinks", store.timeLinks)
-      alertAboutUpdate("planning feature has been added.")
-    }
-    if (!store.vvSets) {
-      store.vvSets=[]
-      dbConnector.addProjectCollection(store.uuid, "vvSets", store.vvSets)
-      alertAboutUpdate("Verification feature (V&V sets) has been added.")
-    }
-    if (!store.vvDefinitions) {
-      store.vvDefinitions=[]
-      dbConnector.addProjectCollection(store.uuid, "vvDefinitions", store.vvDefinitions)
-      alertAboutUpdate("Verification feature (V&V definitions) has been added.")
-    }
-    if (!store.vvDefinitions) {
-      store.vvReports=[]
-      dbConnector.addProjectCollection(store.uuid, "vvDefinitions", store.vvDefinitions)
-      alertAboutUpdate("Verification feature (V&V reports) has been added.")
-    }
-    if (!store.vvActions) {
-      store.vvActions=[]
-      dbConnector.addProjectCollection(store.uuid, "vvActions", store.vvActions)
-      alertAboutUpdate("Verification feature (V&V actions) has been added.")
-    }
-    if (!store.settings) {
-      store.settings=[]
-      dbConnector.addProjectCollection(store.uuid, "settings", store.settings)
-      alertAboutUpdate("Project Settings view has been added.")
-    }
-    if (!store.interfacesTypes) {
+    if (!store.interfacesTypes[0]) {
       store.interfacesTypes=[
           {uuid: uuid(), name: "Interface", color: "#ffffff"},
           {uuid: uuid(), name: "Physical connection", color: "#ffffff"},
@@ -395,28 +313,6 @@ var createOverview = function (targetSelector) {
       dbConnector.addProjectCollection(store.uuid, "interfacesTypes", store.interfacesTypes)
       alertAboutUpdate("Interfaces types have been added.")
     }
-    if (!store.changes) {
-      store.changes=[],
-      dbConnector.addProjectCollection(store.uuid, "changes", store.changes)
-      alertAboutUpdate("Changes have been added.")
-    }
-    if (!store.itemsOrder) {
-      store.itemsOrder=[],
-      dbConnector.addProjectCollection(store.uuid, "itemsOrder", store.itemsOrder)
-      alertAboutUpdate("custom item order have been added.")
-    }
-    if (!store.onlineHistory) {
-      store.onlineHistory=[],
-      dbConnector.addProjectCollection(store.uuid, "onlineHistory", store.onlineHistory)
-      alertAboutUpdate("Online History have been added.")
-    }
-    if (!store.actors) {
-      store.actors=[],
-      dbConnector.addProjectCollection(store.uuid, "actors", store.onlineHistory)
-      alertAboutUpdate("Actors have been added.")
-    }
-
-
   }
 
 

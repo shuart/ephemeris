@@ -298,7 +298,7 @@ var getOrderedProjectList= function (list, displayOrder) {
 }
 
 function getCriticalInfos(project) {
-  if (!project.infos) {
+  if (!project.infos || !project.infos.find(info=>info.type == "critical") ) {
 
       return {uuid: uuid(), projectUuid:project.uuid, type:'critical', name: project.name, reference: project.reference, description:project.description}
   }

@@ -13,13 +13,12 @@ query.collection = async function (collectionName) {
 }
 
 query.allRelatedProjects = async ( limit) => {
-  let allProjects = await dbConnector.getUserProjectList(limit)
-  let relevantProjects = []
-  if (app.store.relatedProjects) {
-    relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
+  let allProjects = await dbConnector.getProjects(limit)
 
+  if (app.store.relatedProjects) {
+    allProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
   }
-  return relevantProjects
+  return allProjects
 }
 
  query.items = async (group, condition) => {

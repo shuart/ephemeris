@@ -13,49 +13,7 @@ var createDbRealTimeAdaptater = function () {
   }
   var connectDB = async function () {
 
-
-
-    localProjects = new Nedb({ filename: 'ephemeris_local_projects_testground', autoload: true });   // Create an indedDB  datastore
-
-
     projects = new Nedb();   // Create an in-memory only datastore
-    localUsers = new Nedb({ filename: 'ephemeris_local_users_testground', autoload: true });   // Create an in-memory only datastore
-
-    localProjects.find({}, function (err, docs) {
-      console.log(docs);
-      console.log("indexedDB is loaded");
-      if (!docs[0]) {
-        persist.getUsers().then(function (users) {
-          console.log(users);
-          if (users[0]) {
-            let migrateDB = confirm("DB needs to be updated. Do you want to magriate your DB")
-            if (migrateDB) {
-              transfertDBfromOldVersion(users)
-            }
-
-          }else {
-
-          }
-        }).catch(function(err) {
-        // This code runs if there were any errors
-            console.log(err);
-        });
-      }else {
-        // startupScreen.showLoader()
-        localProjects.find({}, function (err, docs) {
-          projects.insert(docs, function (err, newDocs) {
-            console.log(docs);
-            setTimeout(function () {
-              startupScreen.update()
-            }, 0);
-          });
-        });
-        // // index the DB
-        // db.ensureIndex({ fieldName: 'somefield', unique: true }, function (err) {
-        //   console.log(err);
-        // });
-      }
-    });
 
     localDB = await idb.openDB('localDB', 1, {
       upgrade(db) {
@@ -67,16 +25,10 @@ var createDbRealTimeAdaptater = function () {
       }
     });
 
-    // await localDB.add('users', {
-    //   uuid: 'Article 1',
-    //   date: new Date('2019-01-01'),
-    //   body: '…',
-    // });
-    // await localDB.add('users', {
-    //   uuid: 'Article 1',
-    //   date: new Date('2019-01-01'),
-    //   body: '…',
-    // }, 'test');
+    setTimeout(function () {
+      console.log('Connection to local DB established');
+      startupScreen.update()
+    }, 0);
   }
 
 
@@ -152,31 +104,25 @@ var createDbRealTimeAdaptater = function () {
 
   }
 
-  function getUserProjectList(limit) {
-    if (limit) {
-      return new Promise(function(resolve, reject) {
-          projects.find({}, limit, function (err, docs) {
-            console.log(docs);
-            resolve(docs)
-          })
-        }).catch(function(err) {
-          reject(err)
-        });
-    }else {
-      return new Promise(function(resolve, reject) {
-          projects.find({}, function (err, docs) {
-            console.log(docs);
-            resolve(docs)
-          })
-        }).catch(function(err) {
-          reject(err)
-        });
-    }
+  async function getProjects(limit) {
+    let projectsArray = []
+    let projectList = await crdtsDB.getTablesFromMessages(limit)
+    Object.keys(projectList).forEach((key, i) => {
+      projectList[key].uuid= key
+      if (limit) {//populate with an empty array if nothing was found in messages
+        for (var i = 0; i < limit.length; i++) {
+          let field = limit[i]
+          if (!projectList[key][field]) {
+            projectList[key][field] = []
+          }
+        }
+      }
+      projectsArray.push(projectList[key])
+    });
 
-  }
 
-  function getProjects() {
-
+    console.log(projectsArray);
+    return projectsArray
   }
 
   //=====Connect to online Bridge=====
@@ -204,37 +150,37 @@ var createDbRealTimeAdaptater = function () {
   }
 
   function addOnlineHistoryItem(item) {
-    let projectUuid = item.projectUuid
-    console.log(projectUuid);
-    let selector = {}
-    // selector["onlineHistory"] = JSON.stringify(item)
-
-    if (!item.user) {//check if a user already exist (there should be one if the action come form an online sync)
-      let userMail = app.store.userData.info.mail
-      let timestamp = Date.now()
-      item.user = {mail:userMail}
-      item.localTimestamp=timestamp
-      item.uuid=genuuid()
-    }
-
-
-
-    selector["onlineHistory"] = item
-    let actionItem = { $push: selector }
-
-    console.log(actionItem);
-    console.log(selector);
-
-    return new Promise(function(resolve, reject) {
-        projects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
-          localProjects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
-            console.log("persisted online item");
-          });
-          resolve(affectedDocuments)
-        });
-      }).catch(function(err) {
-        reject(err)
-      });
+    // let projectUuid = item.projectUuid
+    // console.log(projectUuid);
+    // let selector = {}
+    // // selector["onlineHistory"] = JSON.stringify(item)
+    //
+    // if (!item.user) {//check if a user already exist (there should be one if the action come form an online sync)
+    //   let userMail = app.store.userData.info.mail
+    //   let timestamp = Date.now()
+    //   item.user = {mail:userMail}
+    //   item.localTimestamp=timestamp
+    //   item.uuid=genuuid()
+    // }
+    //
+    //
+    //
+    // selector["onlineHistory"] = item
+    // let actionItem = { $push: selector }
+    //
+    // console.log(actionItem);
+    // console.log(selector);
+    //
+    // return new Promise(function(resolve, reject) {
+    //     projects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
+    //       localProjects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
+    //         console.log("persisted online item");
+    //       });
+    //       resolve(affectedDocuments)
+    //     });
+    //   }).catch(function(err) {
+    //     reject(err)
+    //   });
   }
   //=====END Connect to online Bridge=====
 
@@ -271,10 +217,6 @@ var createDbRealTimeAdaptater = function () {
             }else {
               logCallbackWithoutSync(callBackItem)
             }
-
-            localProjects.update({ uuid: projectUuid }, actionItem, {}, function (err, numAffected, affectedDocuments, upsert) {
-              console.log("persisted");
-            });
             resolve(affectedDocuments)
           });
         }).catch(function(err) {
@@ -524,18 +466,17 @@ var createDbRealTimeAdaptater = function () {
     }
 
     crdtsDB.recordInitialMessagesFromTemplate(newProject.uuid,newProject)
+  }
 
-    return new Promise(function(resolve, reject) {
-
-        projects.insert(newProject, function (err, docs) {
-          console.log(docs);
-          localProjects.insert(newProject, function (err, docs) {})
-          resolve(docs)
-        })
-      }).catch(function(err) {
-        console.log(err);
-        reject(err)
-      });
+  function addAllKeysToProject(project) { //when not all tables have been created beacause there are not message related, this function will generate theme
+    let keys = Object.keys(store)
+    for (var i = 0; i < keys.length; i++) {
+      let key = keys[i]
+      if (!project[key]) {
+        project[key] = []
+      }
+    }
+    return project
   }
 
   async function loadProjectInMemory(uuid) {
@@ -543,14 +484,20 @@ var createDbRealTimeAdaptater = function () {
     let current = await getProject(uuid)
     console.log(current);
     let projectFromStorage = await crdtsDB.buildProjectFromMessages(uuid)
+    projectFromStorage= addAllKeysToProject(projectFromStorage)
     console.log(projectFromStorage);
     projectFromStorage.uuid = uuid
-    await projects.update({ uuid: uuid }, projectFromStorage, {}, function (err, numReplaced) {
-      document.dispatchEvent(new Event('storeUpdated'))
-      console.log('projectLoaded');
-    });
-    let current2 = await getProject(uuid)
-    console.log(current2);
+    if (!current) { //if project was never loaded
+      await projects.insert(projectFromStorage,function (err, numReplaced) {
+        document.dispatchEvent(new Event('storeUpdated'))
+        console.log('project '+uuid+' Loaded');
+      });
+    }else {
+      await projects.update({ uuid: uuid }, projectFromStorage, {}, function (err, numReplaced) {
+        document.dispatchEvent(new Event('storeUpdated'))
+        console.log('project '+uuid+' Loaded');
+      });
+    }
   }
 
   function getDbReferences() {
@@ -563,7 +510,6 @@ var createDbRealTimeAdaptater = function () {
   self.setUserInfo = setUserInfo
   self.removeUser = removeUser
   self.addUserProject = addUserProject
-  self.getUserProjectList = getUserProjectList
   self.getProjects = getProjects
   self.getProject = getProject
   self.getProjectCollection = getProjectCollection

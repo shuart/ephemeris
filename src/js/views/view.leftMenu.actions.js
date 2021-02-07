@@ -52,11 +52,7 @@ var createLeftMenuActions = function () {
   }
 
   var render = async function () {
-    // document.querySelector(".left-menu-area").innerHTML=`
-    //   <div class="title">Next actions</div>
-    //   <div class="left-list">
-    //   </div>
-    // `
+
     if (true) {
       document.querySelector(".current-area-title").innerHTML = ""
       document.querySelector(".current-area").innerHTML = ""
@@ -82,7 +78,7 @@ var createLeftMenuActions = function () {
     var filterClosedDaysAgo = -2
     let allActions = []
     // let allProjects = await query.items("projects")
-    let relevantProjects = await query.allRelatedProjects({uuid:1, name:1, reference:1, actions:1, metaLinks:1, stakeholders:1, description:1})
+    let relevantProjects = await query.allRelatedProjects(["actions", "metaLinks", "stakeholders", "description"])
 
     // let relevantProjects = allProjects.filter(p=>app.store.relatedProjects.includes(p.uuid))
     relevantProjects.forEach(function (store) {
@@ -139,30 +135,6 @@ var createLeftMenuActions = function () {
         </div>`
     }).join('')
 
-    // var html = query.items("projects").reduce((acc,project)=>{
-    //   var filterText = ""
-    //   var filterClosedDaysAgo = -2
-    //   var items = project.actions.items.filter( e => fuzzysearch(filterText, e.name))
-    //   items = items.filter( e => e.open)
-    //   items = items.filter( e => lessThanInSomeDays(e.dueDate,7))
-    //   //acc += generateTasksHTML(items.reverse() , i.uuid)
-    //   var actionListHtml = items
-    //     .sort(function(a, b) {
-    //     if (a.dueDate && b.dueDate) {
-    //       if (a.dueDate < b.dueDate) {return -1;}
-    //       if (a.dueDate > b.dueDate) {return 1;}
-    //     }
-    //     return 0;})
-    //     .reduce((out,i)=>{
-    //     return out + `
-    //       <div  class="list-item ">
-    //         <i data-project="${i.project}" data-id="${i.uuid}" class="far fa-calendar-times action_left_menu_action_list_close_action"></i>
-    //         ${i.dueDate? new Date(i.dueDate).toLocaleString('en-GB', { timeZone: 'UTC' }).substr(0, 5):""} - ${i.name}
-    //
-    //       </div>`
-    //   },'')
-    //   return acc + actionListHtml
-    // },'')
     if (!html[0]) { //si pas d'action
       html = `
       <div class="list-item action_toogle_unified">

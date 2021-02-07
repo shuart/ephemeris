@@ -186,12 +186,19 @@ var createProjectSelectionView = function (targetSelector) {
   }
 
   var renderList = async function (container) {
-    let relevantProjects = await query.allRelatedProjects({uuid:1, name:1, infos:1, reference:1,coverImage:1, currentPbs:1, functions:1, requirements:1, stakeholders:1, description:1})
-
+    //let relevantProjects = await query.allRelatedProjects({uuid:1, name:1, infos:1, reference:1,coverImage:1, currentPbs:1, functions:1, requirements:1, stakeholders:1, description:1})
+    let relevantProjects = await query.allRelatedProjects(["infos","currentPbs","requirements","stakeholders"])
+    //TODOREMOVE
+    console.log(relevantProjects);
     if (app.store.relatedProjects && app.store.relatedProjects[0]) {
       let sortedProject = getOrderedProjectList(relevantProjects, app.store.userData.preferences.projectDisplayOrder)
       let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
       var html = sortedVisibleProject.filter(e=> fuzzysearch(filterText,e.name) || fuzzysearch(filterText,e.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))).reduce((acc,i)=>{
+        if (!i.currentPbs || !i.requirements || !i.stakeholders) { //in case an issue preveted to get the correct count
+          i.currentPbs = [];
+          i.requirements = [];
+          i.stakeholders = [];
+        }
         let projectInfos = {
           currentPbsNbr  : (i.currentPbs.length - 1),
           requirementsNbr  : (i.requirements.length),

@@ -195,9 +195,40 @@ var buildProjectFromMessages = async function (projectId) {
   return messages
 }
 
+var getTablesFromMessages = async function(tables) {
+  let db = await dbConnector.getDbReferences().localDB
+  const tx = db.transaction("messages");
+  // console.log(tx);
+  // for await (const cursor of tx.store) {
+  //   console.log(cursor.value);
+  //   // Skip the next item
+  //   //cursor.advance(2);
+  // }
+  let cursor = await tx.store.openCursor();
+  let relevant={}
+  while (cursor) {
+    let relevantProject = cursor.value.project
+    if (!relevant[relevantProject]) {
+      relevant[relevantProject] = {}
+    }
+    if (tables) {
+      if (tables.includes(cursor.value.dataset)) {
+        applyToInMemoryData(cursor.value, relevant[relevantProject])
+      }
+    }else {
+      applyToInMemoryData(cursor.value, relevant[relevantProject])
+    }
+    //console.log(cursor.key, cursor.value);
+    cursor = await cursor.continue();
+  }
+
+  return relevant
+}
+
 self.init = init
 self.recordInitialMessagesFromTemplate = recordInitialMessagesFromTemplate
 self.buildProjectFromMessages = buildProjectFromMessages
+self.getTablesFromMessages = getTablesFromMessages
 self._insert = _insert
 self._update = _update
 self._delete = _delete
