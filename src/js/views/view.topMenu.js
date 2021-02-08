@@ -72,6 +72,7 @@ var createTopMenu = function (containerSelector) {
       // <a class="item action_toogle_csc"><i class="clipboard outline icon"></i>CSC</a>
       // <a class="item action_toogle_requirements_view"><i class="calculator icon"></i>Borderau</a>
       document.querySelector('.target_context_settings').innerHTML=`
+      <a class="item action_toogle_table_view"><i class="book icon"></i>table</a>
       <a class="item action_toogle_documents"><i class="book icon"></i>Documents</a>
       <a class="item action_toogle_work_packages"><i class="briefcase icon"></i>Work packages</a>
       <a class="item action_toogle_change_manager_view"><i class="random icon"></i>Changes</a>
