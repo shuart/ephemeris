@@ -184,6 +184,9 @@ var reparse = false;
   connect(".action_toogle_table_view","click",async (e)=>{
     pageManager.setActivePage("tableView")
   })
+  connect(".action_toogle_type_view","click",async (e)=>{
+    pageManager.setActivePage("tableView")
+  })
 
 
 
