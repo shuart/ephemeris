@@ -1,4 +1,4 @@
-var createTableView = function ({
+var createTableComp = function ({
   originalData = "",
   container=".center-container",
   onClick = undefined,
@@ -177,7 +177,7 @@ var createTableView = function ({
     render()
   }
 
-  var setData =function ({
+  var create =function ({
     data = [],
     columns=undefined
     }={}) {
@@ -186,27 +186,32 @@ var createTableView = function ({
 
     update()
   }
-  var setActive =async function ({
-    type = "Network"
-    }={}) {
-      let cat = type
-      var store = await query.currentProject()
-      console.log(store);
-      console.log(store.categories);
-      let catObject = store.categories.find(c=>c.name==type)
-      console.log(catObject);
-      let relatedNodes = store.metaLinks.filter(m=>m.target==catObject.uuid)
-      let relatedNodesId = relatedNodes.map(rn=>rn.source)
-      console.log(relatedNodesId);
-      let nodes =  store.currentPbs.filter(n=>relatedNodesId.includes(n.uuid))
-      console.log(nodes);
-      let data = nodes.map(n=>{
-        return {id:1, name:n.name, progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1}
-      })
-      console.log(data);
-      let columns = [{title:"Name", field:"name", editor:"input"}]
-      setData({data:data, columns:columns})
-  }
+  // var setActive =async function ({
+  //   type = "Network",
+  //   typeId = undefined
+  //   }={}) {
+  //     let cat = type
+  //     var store = await query.currentProject()
+  //     console.log(store);
+  //     console.log(store.categories);
+  //     console.log(typeId);
+  //     let typeToDisplay = typeId
+  //     if (!typeToDisplay) {
+  //       let catObject = store.categories.find(c=>c.name==type)
+  //       typeToDisplay = catObject.uuid
+  //     }
+  //     let relatedNodes = store.metaLinks.filter(m=>m.target==typeToDisplay)
+  //     let relatedNodesId = relatedNodes.map(rn=>rn.source)
+  //     console.log(relatedNodesId);
+  //     let nodes =  store.currentPbs.filter(n=>relatedNodesId.includes(n.uuid))
+  //     console.log(nodes);
+  //     let data = nodes.map(n=>{
+  //       return {id:1, name:n.name, progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1}
+  //     })
+  //     console.log(data);
+  //     let columns = [{title:"Name", field:"name", editor:"input"}]
+  //     setData({data:data, columns:columns})
+  // }
 
   var setInactive = function () {
     objectIsActive = false;
@@ -214,12 +219,13 @@ var createTableView = function ({
 
   init()
 
-  self.setActive = setActive
-  self.setInactive = setInactive
+  // self.setActive = setActive
+  // self.setInactive = setInactive
+  self.create = create
   self.update = update
   self.init = init
 
   return self
 }
-var tableView = createTableView();
-tableView.init();
+var tableComp = createTableComp();
+tableComp.init();

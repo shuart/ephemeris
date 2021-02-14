@@ -76,7 +76,7 @@ var reparse = false;
   pageManager.addComponent({name:"history",object:historyView, haveSideBar:false})
   pageManager.addComponent({name:"changeManagerView",object:changeManagerView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"projectSettings",object:projectSettingsView, haveSideBar:false})
-  pageManager.addComponent({name:"tableView",object:tableView, haveSideBar:false})
+  pageManager.addComponent({name:"explorerView",object:explorerView, haveSideBar:false})
   //side menu component
   pageManager.addComponent({name:"leftMenu",object:leftMenu})
   pageManager.addComponent({name:"leftMenuActions",object:leftMenuActions})
@@ -182,10 +182,10 @@ var reparse = false;
     pageManager.setActivePage("changeManagerView")
   })
   connect(".action_toogle_table_view","click",async (e)=>{
-    pageManager.setActivePage("tableView")
+    pageManager.setActivePage("explorerView")
   })
   connect(".action_toogle_type_view","click",async (e)=>{
-    pageManager.setActivePage("tableView")
+    pageManager.setActivePage("explorerView", {})
   })
 
 
