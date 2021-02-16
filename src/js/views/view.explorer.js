@@ -113,7 +113,9 @@ var createExplorerView = function ({
         return {id:1, name:n.name, progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1}
       })
       console.log(data);
-      let columns = [{title:"Name", field:"name", editor:"input"}]
+      let columns = [
+        {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
+        {title:"Name", field:"name", editor:"input"}]
       table = tableComp.create({data:data, columns:columns})
   }
 

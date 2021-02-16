@@ -78,8 +78,22 @@ var createTableComp = function ({
           </div>
         </div>
       </div>`
+    },
+    button:function (name, color) {
+      return `
+      <div style="display:inline-block;padding:0.2em 1.45em;margin:0.1em;border:0.15em solid #CCCCCC;box-sizing: border-box;text-decoration:none;
+       font-family:'Segoe UI','Roboto',sans-serif;font-weight:400;color:#000000;background-color:#CCCCCC;text-align:center; position:relative;" class="tableListButton">
+      ${name}
+      </div>`
     }
   }
+
+
+  var customFields = {}
+  customFields.action = function(cell, formatterParams){ //plain text value
+    // return "<i class='fa fa-print'></i>";
+    return theme.button(formatterParams.name|| "action");
+};
 
   var init = function () {
     // connections()
@@ -104,11 +118,26 @@ var createTableComp = function ({
       document.querySelector(container).innerHTML=html
       // let data = await generateDataset()
       // console.log(store.currentPbs);
+      tableCols = addCustomformatters(tableCols)
       generateTable({data:tabledata ,columns:tableCols})
     }else {
 
     }
 
+  }
+
+  var addCustomformatters = function (cols) {
+    cols.forEach((item, i) => {
+      if (item.formatter) {
+        if (item.formatter == "action") {
+          item.formatter = customFields.action
+          item.width= 100
+        }
+
+      }
+    });
+
+    return cols
   }
 
   // var generateDataset = async function () {
