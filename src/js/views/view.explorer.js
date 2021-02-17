@@ -8,6 +8,7 @@ var createExplorerView = function ({
   var self ={};
   var objectIsActive = false;
   var table = undefined
+  var currentData = undefined
 
   var tabledata = [
     {id:1, name:"Oli Bob", progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1},
@@ -83,11 +84,15 @@ var createExplorerView = function ({
   }
 
   var init = function () {
-    // connections()
+    connections()
     // render()
   }
   var connections =function () {
-
+    document.addEventListener("storeUpdated", async function () {
+      if (objectIsActive && currentData) {
+        update(currentData)
+      }
+    })
   }
 
   var render =async function ({
@@ -109,14 +114,34 @@ var createExplorerView = function ({
       console.log(relatedNodesId);
       let nodes =  store.currentPbs.filter(n=>relatedNodesId.includes(n.uuid))
       console.log(nodes);
+
+
       let data = nodes.map(n=>{
-        return {id:1, name:n.name, progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1}
+        return n
+        // return {id:1, uuid:n.uuid, name:n.name, progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1}
       })
       console.log(data);
       let columns = [
         {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
-        {title:"Name", field:"name", editor:"input"}]
-      table = tableComp.create({data:data, columns:columns})
+        {title:"Name", field:"name", editor:"modalInput"}
+        // {title:"Name", field:"name", editor:"input"}
+      ]
+
+      //extraFields
+      let fields = store.extraFields.filter(i=>i.target == typeToDisplay).map(e=> {
+          return {title:e.name, field:e.uuid, editor:"modalInput"}
+      })
+      fields.forEach((item, i) => {
+        columns.push(item)
+      });
+
+      let onUpdate  =function () {
+        //alert("fesfef")
+        //update({type,typeId, onUpdate:onUpdate})
+      }
+
+      //
+      table = tableComp.create({data:data, columns:columns, onUpdate:onUpdate})
   }
 
 
@@ -139,7 +164,7 @@ var createExplorerView = function ({
 
 
   var setActive =function (data) {
-    let imput = data||{}
+    currentData = data||{}
     objectIsActive = true;
     update(data)
   }

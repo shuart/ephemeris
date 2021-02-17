@@ -26,6 +26,8 @@ var createTableComp = function ({
       {title:"Driver", field:"car", width:90,  hozAlign:"center", formatter:"tickCross", sorter:"boolean", editor:true},
   ]
 
+  var tableOnUpdate = undefined
+
   var theme={
     table:function () {
       return `
@@ -135,6 +137,32 @@ var createTableComp = function ({
         }
 
       }
+
+
+      //editor
+      if (item.editor) {
+        if (item.editor == "modalInput") {
+          item.cellClick = async function (e, cell) {
+            var popup= await createPromptPopup({
+              title:"Edit",
+              iconHeader:"dolly",
+              fields:{ type:"input",id:"producttName" ,label:"Product name", placeholder:"Set a name for the new product" }
+            })
+            var id = genuuid()
+            var newReq = popup.result
+            console.log(popup);
+            if (newReq) {
+              let target = cell.getRow().getData()
+              push(act.edit("currentPbs", {uuid:target.uuid, prop:item.field,  value:newReq}))
+              if (tableOnUpdate) {
+                tableOnUpdate()
+              }
+
+            }
+          }
+        }
+
+      }
     });
 
     return cols
@@ -208,10 +236,12 @@ var createTableComp = function ({
 
   var create =function ({
     data = [],
-    columns=undefined
+    columns=undefined,
+    onUpdate=undefined
     }={}) {
       tabledata = data;
       tableCols = columns;
+      tableOnUpdate = onUpdate;
 
     update()
   }

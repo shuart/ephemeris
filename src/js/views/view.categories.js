@@ -72,6 +72,7 @@ var createCategoriesView = function () {
       onClick: (ev)=>{
         //mutations
         pageManager.setActivePage("explorerView", {typeId:ev.target.dataset.id})
+        categoryEditorView.update(ev.target.dataset.id)
         // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
         // console.log(ev.target);
         // store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
