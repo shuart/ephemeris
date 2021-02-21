@@ -88,9 +88,9 @@ var createTableComp = function ({
       ${name}
       </div>`
     },
-    tag:function (name, color) {
+    tag:function (name,id, color) {
       return `
-      <div style="cursor:pointer;" data-inverted="" data-id="itdd864b5e-c7ef-428d-bd9a-1591da9f8d54" data-tooltip="${name}   " class="ui mini teal label action_list_click_label">
+      <div style="margin-bottom: 2px;cursor:pointer;" data-inverted="" data-id="${id}" data-tooltip="${name}   " class="ui mini teal label action_list_click_label">
       ${name}
       </div>`
     }
@@ -112,13 +112,13 @@ var createTableComp = function ({
     console.log(cell.getRow());
     console.log(listTarget);
     console.log(formatterParams.relationTargets);
-    let listObject = formatterParams.relationTargets.filter(t=>listTarget.includes(t.uuid)).map(t=>t.name)
+    let listObject = formatterParams.relationTargets.filter(t=>listTarget.includes(t.uuid))
     let html =''
     listObject.forEach((item, i) => {
-      html+=theme.tag(item);
+      html+=theme.tag(item.name, item.uuid);
     });
     onRendered(function(){
-      cell.getElement()
+      cell.getElement().style.whiteSpace='initial'
       console.log(cell.getElement());
     });
 

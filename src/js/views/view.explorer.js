@@ -130,12 +130,21 @@ var createExplorerView = function ({
       //extraFields
       let fields = store.extraFields.filter(i=>i.target == typeToDisplay).map(e=> {
         if (e.type == "text") {
-          return {title:e.name, field:e.uuid, editor:"modalInput"}
+          return {title:e.name, field:e.uuid, editor:"modalInput", formatter:'textarea'}
         }else if (e.type == "relation") {
-          console.log(e.relationId);
-          console.log(store.interfaces);
-          console.log(store.interfaces.filter(i=>i.typeId==e.relationId));
-          return {title:e.name, formatter:'relation', formatterParams:{relationList:store.interfaces.filter(i=>i.typeId==e.relationId), relationTargets: store.currentPbs}, field:e.uuid, editor:"modalRelation"}
+          return {
+            title:e.name,
+            formatter:'relation',
+            cellClick:function (e, cell) {
+              console.log(e);
+              if (e.target.dataset.id) {
+                showSingleItemService.showById(e.target.dataset.id)
+              }
+            },
+            formatterParams:{relationList:store.interfaces.filter(i=>i.typeId==e.relationId),
+              relationTargets: store.currentPbs},
+              field:e.uuid,
+              editor:"modalRelation"}
         }
 
       })
