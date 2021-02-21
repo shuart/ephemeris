@@ -97,6 +97,24 @@ var createTableComp = function ({
     return theme.button(formatterParams.name|| "action");
 };
 
+  customFields.relation = function(cell, formatterParams){ //plain text value
+    // return "<i class='fa fa-print'></i>";
+    // let list = formatterParams.relationList.map(r=>r.target).join(",")
+    console.log(formatterParams.relationList);
+    console.log(cell.getData());
+    let listTarget = formatterParams.relationList.filter(r=>r.source==cell.getData().uuid).map(r=>r.target)
+    console.log(cell.getRow());
+    console.log(listTarget);
+    console.log(formatterParams.relationTargets);
+    let listObject = formatterParams.relationTargets.filter(t=>listTarget.includes(t.uuid)).map(t=>t.name)
+    let html =''
+    listObject.forEach((item, i) => {
+      html+=theme.button(item);
+    });
+
+    return html;
+  };
+
   var init = function () {
     // connections()
     // render()
@@ -135,6 +153,10 @@ var createTableComp = function ({
           item.formatter = customFields.action
           item.width= 100
         }
+        if (item.formatter == "relation") {
+          item.formatter = customFields.relation
+          item.width= 100
+        }
 
       }
 
@@ -157,6 +179,26 @@ var createTableComp = function ({
               if (tableOnUpdate) {
                 tableOnUpdate()
               }
+
+            }
+          }
+        }
+        if (item.editor == "modalRelation") {
+          item.cellClick = async function (e, cell) {
+            var popup= await createPromptPopup({
+              title:"Add Relation",
+              iconHeader:"dolly",
+              fields:{ type:"input",id:"producttName" ,label:"Product name", placeholder:"Set a name for the new product" }
+            })
+            var id = genuuid()
+            var newReq = popup.result
+            console.log(popup);
+            if (newReq) {
+              // let target = cell.getRow().getData()
+              // push(act.edit("currentPbs", {uuid:target.uuid, prop:item.field,  value:newReq}))
+              // if (tableOnUpdate) {
+              //   tableOnUpdate()
+              // }
 
             }
           }

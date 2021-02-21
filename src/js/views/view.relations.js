@@ -2483,7 +2483,14 @@ var createRelationsView = function () {
           let isCircularRef = store.interfaces.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
           if (!isCircularRef) {
             let newInterfaceUuid = uuid()
-            push(act.add("interfaces",{uuid:newInterfaceUuid, type:"Physical connection", name:"Interface between "+lastSelectedNode.name+" and "+previousSelectedNode.name, source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
+            push(act.add("interfaces",{
+              uuid:newInterfaceUuid,
+              typeId:addModeInterfaceType,
+              type:"Physical connection",
+              name:"Interface between "+lastSelectedNode.name+" and "+previousSelectedNode.name,
+              source:lastSelectedNode.uuid,
+              target:previousSelectedNode.uuid
+            }))
             if (addModeInterfaceType) {
               push(act.add("metaLinks",{type:"interfacesType", source:newInterfaceUuid, target:addModeInterfaceType}))
             }

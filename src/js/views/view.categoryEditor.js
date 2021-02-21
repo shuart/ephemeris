@@ -68,7 +68,24 @@ var createCategoryEditorView = function ({
             // selectedFilter[event.target.dataset.prop] = undefined
             // document.querySelector('.target_list_menu_top_'+event.target.dataset.prop).style.display = "none"
           }else {
-            let nameArr = names.split(',')
+            let nameArr = res.result.targetCat.split(',')
+            // let nameArr = res.result.ExistingInt.split(',')
+            //add new interface
+            let uuid = genuuid()
+            push(act.add("interfacesTypes", {uuid:uuid,name:res.result.RelationName}))//TODO add await
+            //add related extrafield
+            push(act.add("extraFields", {target:currentCat.uuid, relationId:uuid, name:res.result.RelationName, type:"relation"}))
+
+
+
+            setTimeout(function () {//add element related in terface pool
+              nameArr.forEach((item, i) => {
+                push(act.edit("interfacesTypes", {uuid:uuid, prop:item, value:true}))
+              });
+
+
+            }, 100);
+            // push(act.add("extraFields", {target:e.target.dataset.id, name:newValue, type:"text"}))
             // selectedFilter[event.target.dataset.prop] = res.result.split(',')
             // document.querySelector('.target_list_menu_top_'+event.target.dataset.prop).style.display = "inline"
           }

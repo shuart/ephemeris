@@ -129,7 +129,15 @@ var createExplorerView = function ({
 
       //extraFields
       let fields = store.extraFields.filter(i=>i.target == typeToDisplay).map(e=> {
+        if (e.type == "text") {
           return {title:e.name, field:e.uuid, editor:"modalInput"}
+        }else if (e.type == "relation") {
+          console.log(e.relationId);
+          console.log(store.interfaces);
+          console.log(store.interfaces.filter(i=>i.typeId==e.relationId));
+          return {title:e.name, formatter:'relation', formatterParams:{relationList:store.interfaces.filter(i=>i.typeId==e.relationId), relationTargets: store.currentPbs}, field:e.uuid, editor:"modalRelation"}
+        }
+
       })
       fields.forEach((item, i) => {
         columns.push(item)
