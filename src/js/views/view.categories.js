@@ -76,7 +76,7 @@ var createCategoriesView = function () {
         // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
         // console.log(ev.target);
         // store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
-        // ev.selectDiv.remove()
+        ev.selectDiv.remove()
         // renderCDC(store.db, searchFilter)
       }
     })

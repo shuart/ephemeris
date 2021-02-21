@@ -226,7 +226,7 @@ var createPromptPopupView = function (inputData) {
 
     container.style.position = "relative"
     container.style.height = "100%"
-    container.style.overflow = "auto"
+    // container.style.overflow = "auto"
     container.classList = "fieldsArea"
 
     containerBottom = document.createElement('div');
