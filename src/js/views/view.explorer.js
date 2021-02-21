@@ -135,16 +135,21 @@ var createExplorerView = function ({
           return {
             title:e.name,
             formatter:'relation',
-            cellClick:function (e, cell) {
-              console.log(e);
-              if (e.target.dataset.id) {
-                showSingleItemService.showById(e.target.dataset.id)
+            cellClick:function (event, cell) {
+              console.log(event);
+              if (event.target.dataset.id) {
+                showSingleItemService.showById(event.target.dataset.id)
+              }else {
+                createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
               }
             },
-            formatterParams:{relationList:store.interfaces.filter(i=>i.typeId==e.relationId),
-              relationTargets: store.currentPbs},
-              field:e.uuid,
-              editor:"modalRelation"}
+            formatterParams:{
+              relationList:store.interfaces.filter(i=>i.typeId==e.relationId),
+              relationTargets: store.currentPbs
+            },
+            field:e.uuid,
+            editor:"modalRelation"
+          }
         }
 
       })
@@ -159,6 +164,46 @@ var createExplorerView = function ({
 
       //
       table = tableComp.create({data:data, columns:columns, onUpdate:onUpdate})
+  }
+
+  var createEditRelationPopup = function (itemIdMain,interfaceTypeId, relationList,relationTargets) {
+    let selectOptions = relationTargets.map(t=>{
+      return {name:t.name, value:t.uuid}
+    })
+
+      console.log(itemIdMain);
+      let preSelected = relationList.filter(r=>r.source==itemIdMain).map(sr=>sr.target)
+      console.log(preSelected);
+      var popup=  createPromptPopup({
+        title:"Create a new relation affecting "+itemIdMain,
+        callback :function (res) {
+          console.log(res);
+          if (res.result == "") {
+          }else {
+            let nameArr = res.result.split(',')
+            let originalSelected = preSelected
+            let added = nameArr.filter(r=>!originalSelected.includes(r))
+            let removedItems = originalSelected.filter(r=>!nameArr.includes(r))
+            let removedInterfaces = relationList.filter(r=>r.source==itemIdMain).filter(r=>removedItems.includes(r.target)).map(r=>r.uuid)
+            added.forEach((item, i) => {
+              push(act.add("interfaces",{
+                typeId:interfaceTypeId,
+                type:"Physical connection",
+                name:"Interface between "+itemIdMain+" and "+item,
+                source:itemIdMain,
+                target:item
+              }))
+            });
+            removedInterfaces.forEach((item, i) => {
+              push(act.remove("interfaces",{uuid:item}))
+            });
+          }
+        },
+        fields:[
+          { type:"select",id:"targetCat",preSelected:preSelected,selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
+        ]
+      })
+
   }
 
 
