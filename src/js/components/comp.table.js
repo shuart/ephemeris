@@ -87,6 +87,12 @@ var createTableComp = function ({
        font-family:'Segoe UI','Roboto',sans-serif;font-weight:400;color:#000000;background-color:#CCCCCC;text-align:center; position:relative;" class="tableListButton">
       ${name}
       </div>`
+    },
+    tag:function (name, color) {
+      return `
+      <div style="cursor:pointer;" data-inverted="" data-id="itdd864b5e-c7ef-428d-bd9a-1591da9f8d54" data-tooltip="${name}   " class="ui mini teal label action_list_click_label">
+      ${name}
+      </div>`
     }
   }
 
@@ -97,7 +103,7 @@ var createTableComp = function ({
     return theme.button(formatterParams.name|| "action");
 };
 
-  customFields.relation = function(cell, formatterParams){ //plain text value
+  customFields.relation = function(cell, formatterParams, onRendered ){ //plain text value
     // return "<i class='fa fa-print'></i>";
     // let list = formatterParams.relationList.map(r=>r.target).join(",")
     console.log(formatterParams.relationList);
@@ -109,7 +115,11 @@ var createTableComp = function ({
     let listObject = formatterParams.relationTargets.filter(t=>listTarget.includes(t.uuid)).map(t=>t.name)
     let html =''
     listObject.forEach((item, i) => {
-      html+=theme.button(item);
+      html+=theme.tag(item);
+    });
+    onRendered(function(){
+      cell.getElement()
+      console.log(cell.getElement());
     });
 
     return html;
@@ -184,24 +194,24 @@ var createTableComp = function ({
           }
         }
         if (item.editor == "modalRelation") {
-          item.cellClick = async function (e, cell) {
-            var popup= await createPromptPopup({
-              title:"Add Relation",
-              iconHeader:"dolly",
-              fields:{ type:"input",id:"producttName" ,label:"Product name", placeholder:"Set a name for the new product" }
-            })
-            var id = genuuid()
-            var newReq = popup.result
-            console.log(popup);
-            if (newReq) {
-              // let target = cell.getRow().getData()
-              // push(act.edit("currentPbs", {uuid:target.uuid, prop:item.field,  value:newReq}))
-              // if (tableOnUpdate) {
-              //   tableOnUpdate()
-              // }
-
-            }
-          }
+          // item.cellClick = async function (e, cell) {
+          //   var popup= await createPromptPopup({
+          //     title:"Add Relation",
+          //     iconHeader:"dolly",
+          //     fields:{ type:"input",id:"producttName" ,label:"Product name", placeholder:"Set a name for the new product" }
+          //   })
+          //   var id = genuuid()
+          //   var newReq = popup.result
+          //   console.log(popup);
+          //   if (newReq) {
+          //     // let target = cell.getRow().getData()
+          //     // push(act.edit("currentPbs", {uuid:target.uuid, prop:item.field,  value:newReq}))
+          //     // if (tableOnUpdate) {
+          //     //   tableOnUpdate()
+          //     // }
+          //
+          //   }
+          // }
         }
 
       }
