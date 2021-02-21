@@ -1678,15 +1678,24 @@ var createRelationsView = function () {
 
     var mapInterfacesToIds = function (store) {//build mapping for performances
 
-      for (var i = 0; i < store.metaLinks.length; i++) {
-        let ml=  store.metaLinks[i]
-        if (ml.type =="interfacesType") {
-          let item = store.interfacesTypes.find(t=>t.uuid == ml.target)
-          if (!interfacesToTypesMapping[ml.source]) {
-            interfacesToTypesMapping[ml.source] = item
+      for (var i = 0; i < store.interfaces.length; i++) {
+        let ml=  store.interfaces[i]
+        if (ml.typeId) {
+          let item = store.interfacesTypes.find(t=>t.uuid == ml.typeId)
+          if (!interfacesToTypesMapping[ml.uuid]) {
+            interfacesToTypesMapping[ml.uuid] = item
           }
         }
       }
+      // for (var i = 0; i < store.metaLinks.length; i++) {
+      //   let ml=  store.metaLinks[i]
+      //   if (ml.type =="interfacesType") {
+      //     let item = store.interfacesTypes.find(t=>t.uuid == ml.target)
+      //     if (!interfacesToTypesMapping[ml.source]) {
+      //       interfacesToTypesMapping[ml.source] = item
+      //     }
+      //   }
+      // }
 
       // let itemMetaLink = store.metaLinks.find(l=>l.type =="interfacesType" && l.source == uuid)
       // if (itemMetaLink) {
