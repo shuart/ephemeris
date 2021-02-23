@@ -108,6 +108,52 @@ var createCategoryEditorView = function ({
       // sourceOccElement.remove()
       // update()
     })
+    connect(".action_connect_to_relation","click", async (e)=>{
+      console.log("Edit");
+      var store = await query.currentProject()
+      let selectOptionsRelations = store.interfacesTypes.map(i=>{
+        return {name:i.name, value:i.uuid}
+      })
+      let selectOptions = store.categories.map(cat=>{
+        return {name:cat.name, value:cat.uuid}
+      })
+      let currentCat = store.categories.find(c=> c.uuid == e.target.dataset.id)
+
+      var popup=  createPromptPopup({
+        title:"Add an existing relation affecting "+currentCat.name,
+        callback :function (res) {
+          console.log(res);
+          if (res.result == "") {
+          }else {
+            let existingRelation = res.result.existingRelation.split(',')
+            let nameArr = res.result.targetCat.split(',')
+            push(act.add("extraFields", {target:currentCat.uuid, relationId:existingRelation[0], name:res.result.RelationName, type:"relation"}))
+            setTimeout(function () {//add element related in terface pool
+              nameArr.forEach((item, i) => {
+                push(act.edit("interfacesTypes", {uuid:existingRelation[0], prop:item, value:true}))
+              });
+            }, 100);
+          }
+          // refreshList()
+        },
+        fields:[
+          { type:"input",id:"RelationName" ,label:"Relation Name", placeholder:"Set the relation name" },
+          // { type:"input",id:"firstName" ,label:"First Name", placeholder:"Set your first name" },
+
+          { type:"select",id:"existingRelation",preSelected:[],selectOptions:selectOptionsRelations, label:"Existing Relation", placeholder:"Set existing relations" },
+          { type:"select",id:"targetCat",preSelected:[],selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
+          // { type:"select",id:"projectNamedffd",preSelected:["test"],selectOptions:[{name:"test", value:"fff"},{name:"teffst", value:"fffa"}], label:"Project name", placeholder:"Set a name for the project" }
+        ]
+
+        // fields:{ type:"select",id:"project_filter_"+event.target.dataset.prop,preSelected:[preselected],selectOptions:selectOptions, label:rule.displayAs, optional:true, placeholder:"Search.." }
+      })
+      // var newValue = prompt("Edit Item",)
+      // if (newValue) {
+      //   push(act.add("extraFields", {target:e.target.dataset.id, name:newValue, type:"text"}))
+      // }
+      // sourceOccElement.remove()
+      // update()
+    })
 
     connect(".action_current_user_close","click",(e)=>{
       sourceOccElement.remove()
@@ -229,6 +275,13 @@ var createCategoryEditorView = function ({
 
         <div class="ui divider"></div>
         ADD<i data-prop="userFirstName" data-value="${cat.name}" data-id="${cat.uuid}" class="edit icon action_add_extra_relation" style="opacity:0.2"></i>
+
+
+
+        <div class="ui divider"></div>
+        ${fieldsHtml}
+        <div class="ui divider"></div>
+        ADD from existing<i data-prop="userFirstName" data-value="${cat.name}" data-id="${cat.uuid}" class="edit icon action_connect_to_relation" style="opacity:0.2"></i>
 
 
 
