@@ -28,6 +28,7 @@ var createTableComp = function ({
 
   var tableOnUpdate = undefined
   var tableMenu = undefined
+  var currentTable = undefined
 
   var theme={
     table:function () {
@@ -101,16 +102,15 @@ var createTableComp = function ({
       return `
       <div style="margin-bottom: 8px;display: flex; align-items: center;width: 100%;background: #eee; padding: 10px;" class="bar">
         <div style="display:flex;" class="table_action_area"></div>
-        <div style="width: 30px;height: 30px;background: #ccc;border-radius: 50%;" class="icon icon-1"></div>
-        <div class="icon icon-2"></div>
-        <div class="icon icon-3"></div>
-        <div class="username">
-          Menu
-        </div>
-        <div style="flex: 1;" class="search">
-          <input style="width: 100%; border: none;height:28px;" type="search" placeholder="search..." />
+        <div style="width:300px" class="table_searchArea">
         </div>
       </div>`
+    },
+    search:function () {
+      return `
+        <div style="width:300px;" class="search">
+          <input style="width: 100%; border: none;height:28px;" type="search" placeholder="search..." />
+        </div>`
     }
   }
 
@@ -259,14 +259,33 @@ var createTableComp = function ({
     target.innerHTML = theme.menu()
     let targetMenuAction = target.querySelector('.table_action_area');
     menu.forEach((item, i) => {
-      let element = document.createElement('div')
-      element.addEventListener("click", function(e) {
-          item.onClick();
-      }, false);
-      element.style.width='10px'
-      element.style.height='10px'
-      element.style.backgroundColor=item.color ||"red"
-      targetMenuAction.appendChild(element)
+      if (item.type=="search") {
+        targetMenuAction = target.querySelector('.table_searchArea');
+        let element = document.createElement('div')
+        element.innerHTML=theme.search()
+        element.querySelector("input").addEventListener("keyup", function(e) {
+          if (e.target.value!="") {
+            getTable().setFilter([
+                {field:"name", type:"like", value:e.target.value}
+            ]);
+          }else {
+            getTable().clearFilter();
+          }
+
+        }, false);
+        targetMenuAction.appendChild(element)
+      }else if (item.type=="action") {
+        let element = document.createElement('div')
+        element.addEventListener("click", function(e) {
+            item.onClick();
+        }, false);
+        element.style.width='100px'
+        element.style.height='20px'
+        element.innerHTML=item.name
+        element.style.backgroundColor=item.color ||"red"
+        targetMenuAction.appendChild(element)
+      }
+
     });
 
   }
@@ -277,7 +296,7 @@ var createTableComp = function ({
     }={}) {
       initData = data;
       initCols = columns;
-    var table = new Tabulator(".example-table", {
+    currentTable = new Tabulator(".example-table", {
       data:initData,           //load row data from array
       height:"811px",
       virtualDom:true,
@@ -317,6 +336,10 @@ var createTableComp = function ({
     //       {title:"Driver", field:"car", width:90,  hozAlign:"center", formatter:"tickCross", sorter:"boolean", editor:true},
     //   ],
     // });
+  }
+
+  var getTable = function () {
+    return currentTable
   }
 
 

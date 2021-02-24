@@ -177,7 +177,8 @@ var createExplorerView = function ({
       }
       let menutest = [
         {type:'action', name:"Add", color:"grey", onClick:e=>{addAction()}},
-        {type:'action', name:"Add", color:"grey"}
+        {type:'action', name:"Add", color:"grey"},
+        {type:'search', name:"Add", color:"grey"}
       ]
       table = tableComp.create({data:data, columns:columns, menu:menutest, onUpdate:onUpdate})
   }
