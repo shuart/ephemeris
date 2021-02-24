@@ -163,7 +163,23 @@ var createExplorerView = function ({
       }
 
       //
-      table = tableComp.create({data:data, columns:columns, onUpdate:onUpdate})
+      let addAction = function () {
+        let id = genuuid()
+        push(act.add("currentPbs",{
+          uuid:id,
+          name:"Interface between"
+        }))
+        push(act.add("metaLinks",{
+          source:id,
+          target:typeToDisplay,
+          type:"category"
+        }))
+      }
+      let menutest = [
+        {type:'action', name:"Add", color:"grey", onClick:e=>{addAction()}},
+        {type:'action', name:"Add", color:"grey"}
+      ]
+      table = tableComp.create({data:data, columns:columns, menu:menutest, onUpdate:onUpdate})
   }
 
   var createEditRelationPopup = function (itemIdMain,interfaceTypeId, relationList,relationTargets) {

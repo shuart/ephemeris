@@ -27,11 +27,14 @@ var createTableComp = function ({
   ]
 
   var tableOnUpdate = undefined
+  var tableMenu = undefined
 
   var theme={
     table:function () {
       return `
-      <div class="example-table">
+      <div class="ephemeris-table">
+        <div class="ephemeris-table-menu"></div>
+        <div class="example-table"></div>
       </div>`
     },
     feed:function (events) {
@@ -93,6 +96,21 @@ var createTableComp = function ({
       <div style="margin-bottom: 2px;cursor:pointer;" data-inverted="" data-id="${id}" data-tooltip="${name}   " class="ui mini teal label action_list_click_label">
       ${name}
       </div>`
+    },
+    menu:function () {
+      return `
+      <div style="margin-bottom: 8px;display: flex; align-items: center;width: 100%;background: #eee; padding: 10px;" class="bar">
+        <div style="display:flex;" class="table_action_area"></div>
+        <div style="width: 30px;height: 30px;background: #ccc;border-radius: 50%;" class="icon icon-1"></div>
+        <div class="icon icon-2"></div>
+        <div class="icon icon-3"></div>
+        <div class="username">
+          Menu
+        </div>
+        <div style="flex: 1;" class="search">
+          <input style="width: 100%; border: none;height:28px;" type="search" placeholder="search..." />
+        </div>
+      </div>`
     }
   }
 
@@ -149,6 +167,9 @@ var createTableComp = function ({
       // let data = await generateDataset()
       // console.log(store.currentPbs);
       tableCols = addCustomformatters(tableCols)
+      if (tableMenu) {
+        generateMenu(tableMenu)
+      }
       generateTable({data:tabledata ,columns:tableCols})
     }else {
 
@@ -233,6 +254,23 @@ var createTableComp = function ({
   //   return data
   // }
 
+  var generateMenu =function (menu) {
+    let target = document.querySelector('.ephemeris-table-menu');
+    target.innerHTML = theme.menu()
+    let targetMenuAction = target.querySelector('.table_action_area');
+    menu.forEach((item, i) => {
+      let element = document.createElement('div')
+      element.addEventListener("click", function(e) {
+          item.onClick();
+      }, false);
+      element.style.width='10px'
+      element.style.height='10px'
+      element.style.backgroundColor=item.color ||"red"
+      targetMenuAction.appendChild(element)
+    });
+
+  }
+
   var generateTable = function ({
     data = [],
     columns=undefined
@@ -289,11 +327,14 @@ var createTableComp = function ({
   var create =function ({
     data = [],
     columns=undefined,
-    onUpdate=undefined
+    onUpdate=undefined,
+    menu=false
     }={}) {
+
       tabledata = data;
       tableCols = columns;
       tableOnUpdate = onUpdate;
+      tableMenu = menu;
 
     update()
   }
