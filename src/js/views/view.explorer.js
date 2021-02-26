@@ -90,36 +90,35 @@ var createExplorerView = function ({
   var connections =function () {
     document.addEventListener("storeUpdated", async function () {
       if (objectIsActive && currentData) {
-        update(currentData)
+        // update(currentData)
+        var store = await query.currentProject()
+        let data = getData(store,currentData.typeId)
+        table.updateData(data)
       }
     })
   }
 
+  var getData = function (store, typeId) {
+    let typeToDisplay = typeId
+    let relatedNodes = store.metaLinks.filter(m=>m.target==typeToDisplay)
+    let relatedNodesId = relatedNodes.map(rn=>rn.source)
+    console.log(relatedNodesId);
+    let nodes =  store.currentPbs.filter(n=>relatedNodesId.includes(n.uuid))
+    console.log(nodes);
+
+    let data = nodes.map(n=>{
+      return n
+      // return {id:1, uuid:n.uuid, name:n.name, progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1}
+    })
+    return data
+  }
+
   var render =async function ({
-    type = "Network",
     typeId = undefined
     }={}) {
-      let cat = type
       var store = await query.currentProject()
-      console.log(store);
-      console.log(store.categories);
-      console.log(typeId);
-      let typeToDisplay = typeId
-      if (!typeToDisplay) {
-        let catObject = store.categories.find(c=>c.name==type)
-        typeToDisplay = catObject.uuid
-      }
-      let relatedNodes = store.metaLinks.filter(m=>m.target==typeToDisplay)
-      let relatedNodesId = relatedNodes.map(rn=>rn.source)
-      console.log(relatedNodesId);
-      let nodes =  store.currentPbs.filter(n=>relatedNodesId.includes(n.uuid))
-      console.log(nodes);
+      let data = getData(store,typeId)
 
-
-      let data = nodes.map(n=>{
-        return n
-        // return {id:1, uuid:n.uuid, name:n.name, progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1}
-      })
       console.log(data);
       let columns = [
         {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
@@ -128,7 +127,7 @@ var createExplorerView = function ({
       ]
 
       //extraFields
-      let fields = store.extraFields.filter(i=>i.target == typeToDisplay).map(e=> {
+      let fields = store.extraFields.filter(i=>i.target == typeId).map(e=> {
         if (e.type == "text") {
           return {title:e.name, field:e.uuid, editor:"modalInput", formatter:'textarea'}
         }else if (e.type == "relation") {
@@ -171,7 +170,7 @@ var createExplorerView = function ({
         }))
         push(act.add("metaLinks",{
           source:id,
-          target:typeToDisplay,
+          target:typeId,
           type:"category"
         }))
       }
@@ -222,9 +221,6 @@ var createExplorerView = function ({
       })
 
   }
-
-
-
 
 
   var update = function (data) {

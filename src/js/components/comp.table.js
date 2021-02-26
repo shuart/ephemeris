@@ -1,12 +1,14 @@
 var createTableComp = function ({
   originalData = "",
-  container=".center-container",
+  // container=".center-container",
   onClick = undefined,
   searchForAllItemsNames = false,
   maxElements = undefined
   }={}) {
   var self ={};
   var objectIsActive = false;
+  let container = undefined;
+  let targetClassId = undefined;
 
   var tabledata = [
     {id:1, name:"Oli Bob", progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1},
@@ -34,55 +36,8 @@ var createTableComp = function ({
     table:function () {
       return `
       <div class="ephemeris-table">
-        <div class="ephemeris-table-menu"></div>
-        <div class="example-table"></div>
-      </div>`
-    },
-    feed:function (events) {
-      return `
-      <div class="ui small feed">
-        ${events}
-      </div>`
-    },
-    event:function(event) {
-      return `
-      <div data-id="${event.id}" style='cursor:pointer' class="event action_event_feed_click_content">
-        <div class="label">
-          <i class="small bullhorn icon"></i>
-        </div>
-        <div class="content">
-          <div data-id="${event.id}" class="summary action_event_feed_click_content">
-            ${(event.name && event.name!= "Missing item")? ("Item \'"+event.name + "\'" ): ("An item")} ${event.prop? (", property \'"+event.prop + "\', " ): ""} in ${event.storeGroupTxt} has been ${event.typeTxt}.
-            <div class="date">${event.user?"by "+event.user+",":""} ${moment(event.timestamp).fromNow()}</div>
-          </div>
-        </div>
-      </div>`
-    },
-    actionEvent:function(event) {//todo add separate theme for actions
-      return `
-      <div data-id="${event.id}" style='cursor:pointer' class="event action_event_feed_click_content">
-        <div class="label">
-          <i class="small bullhorn icon"></i>
-        </div>
-        <div class="content">
-          <div data-id="${event.id}" class="summary action_event_feed_click_content">
-            ${event.name? ("Item \'"+event.name + "\'" ): ("An item")} in ${event.storeGroupTxt} has been ${event.typeTxt}.
-            <div class="date">${event.user?"by "+event.user+",":""} ${moment(event.timestamp).fromNow()}</div>
-          </div>
-        </div>
-      </div>`
-    },
-    noEvent:function() {
-      return `
-      <div class="event">
-        <div class="label">
-          <i class="small bullhorn icon"></i>
-        </div>
-        <div class="content">
-          <div class="summary">
-            No events or activity yet
-          </div>
-        </div>
+        <div class="ephemeris-table-menu${targetClassId}"></div>
+        <div class="example-table${targetClassId}"></div>
       </div>`
     },
     button:function (name, color) {
@@ -157,9 +112,42 @@ var createTableComp = function ({
     }, document.querySelector(container))
   }
 
+  var updateData = function (data) {
+    currentTable.replaceData(data)
+  }
+
+  var renderModalContainer =function () {
+    let style=`
+    position: fixed;left: 0;right: 0;background-color: #fafafa;padding: 0;max-height: 70%;width: 55%;margin: auto;overflow-y: auto;border-radius: 2px;
+    `
+    let htmlBlackBow =`
+     <div style="opacity:0.5;position: fixed;z-index: 899;top: -25%;left: 0;bottom: 0;right: 0;height: 125%;width: 100%;background: #000;will-change: opacity;"></div>
+    `
+    let html = `
+     <div id="modal1" class="" style="${style} z-index: 999; display: block; opacity: 1; top: 10%; transform: scaleX(1) scaleY(1);">
+         <div style="padding:10px;" class="modalTableContent"></div>
+         <div class="modal-footer">
+           <a href="#!" class="action-modalTableContentClose">Disagree</a>
+           <a href="#!" class="modal-close waves-effect waves-green btn-flat">Agree</a>
+     </div>
+    `
+    let black = document.createElement("div");
+    let modal = document.createElement("div");
+    black.style.position="absolute";black.style.top=0;black.style.left=0;black.innerHTML=htmlBlackBow
+    modal.style.position="absolute";modal.style.top=0;modal.style.left=0;modal.innerHTML=html
+    modal.querySelector('.action-modalTableContentClose').addEventListener('click', function () {
+      black.remove()
+      modal.remove()
+    })
+    document.body.appendChild(black)
+    document.body.appendChild(modal)
+    return [black, modal]
+  }
+
   var render = async function () {
     if (container) {
       let html = theme.table()
+      console.log(container);
       // let html = await renderFeed(originalData)
       // console.log(html);
       // console.log(container);
@@ -174,6 +162,7 @@ var createTableComp = function ({
     }else {
 
     }
+    updateStyle()//update table style
 
   }
 
@@ -255,7 +244,7 @@ var createTableComp = function ({
   // }
 
   var generateMenu =function (menu) {
-    let target = document.querySelector('.ephemeris-table-menu');
+    let target = document.querySelector('.ephemeris-table-menu'+targetClassId);
     target.innerHTML = theme.menu()
     let targetMenuAction = target.querySelector('.table_action_area');
     menu.forEach((item, i) => {
@@ -296,7 +285,7 @@ var createTableComp = function ({
     }={}) {
       initData = data;
       initCols = columns;
-    currentTable = new Tabulator(".example-table", {
+    currentTable = new Tabulator(".example-table"+targetClassId, {
       data:initData,           //load row data from array
       height:"811px",
       virtualDom:true,
@@ -337,7 +326,10 @@ var createTableComp = function ({
     //   ],
     // });
   }
-
+  var updateStyle =function () {
+    let elem = document.querySelector(".example-table"+targetClassId);
+    elem.style.border ="1px solid rgb(241 241 241)"
+  }
   var getTable = function () {
     return currentTable
   }
@@ -351,42 +343,23 @@ var createTableComp = function ({
     data = [],
     columns=undefined,
     onUpdate=undefined,
-    menu=false
+    menu=false,
+    domElement=".center-container"
     }={}) {
-
+      targetClassId = Date.now()
       tabledata = data;
       tableCols = columns;
       tableOnUpdate = onUpdate;
       tableMenu = menu;
+      container = domElement;
+      if (domElement=="modal") {
+        let blackbox = renderModalContainer()
+        container = '.modalTableContent'
+      }
 
     update()
+    return self
   }
-  // var setActive =async function ({
-  //   type = "Network",
-  //   typeId = undefined
-  //   }={}) {
-  //     let cat = type
-  //     var store = await query.currentProject()
-  //     console.log(store);
-  //     console.log(store.categories);
-  //     console.log(typeId);
-  //     let typeToDisplay = typeId
-  //     if (!typeToDisplay) {
-  //       let catObject = store.categories.find(c=>c.name==type)
-  //       typeToDisplay = catObject.uuid
-  //     }
-  //     let relatedNodes = store.metaLinks.filter(m=>m.target==typeToDisplay)
-  //     let relatedNodesId = relatedNodes.map(rn=>rn.source)
-  //     console.log(relatedNodesId);
-  //     let nodes =  store.currentPbs.filter(n=>relatedNodesId.includes(n.uuid))
-  //     console.log(nodes);
-  //     let data = nodes.map(n=>{
-  //       return {id:1, name:n.name, progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1}
-  //     })
-  //     console.log(data);
-  //     let columns = [{title:"Name", field:"name", editor:"input"}]
-  //     setData({data:data, columns:columns})
-  // }
 
   var setInactive = function () {
     objectIsActive = false;
@@ -398,6 +371,7 @@ var createTableComp = function ({
   // self.setInactive = setInactive
   self.create = create
   self.update = update
+  self.updateData = updateData
   self.init = init
 
   return self

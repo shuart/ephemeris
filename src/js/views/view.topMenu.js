@@ -32,6 +32,7 @@ var createTopMenu = function (containerSelector) {
       }
     }, false)
 
+
     document.querySelector("#file-project-input").addEventListener("change", readJSON);
     reader.addEventListener("load", function() {
       loadSavedData(reader.result, function() {
@@ -42,9 +43,27 @@ var createTopMenu = function (containerSelector) {
     connect(".topmenu_action_reload_all","click", function (e) {
       startupScreen.init()
     })
+    bind(".action_toogle_custom_workspace","click",(e)=>{
+      // update()
+      pageManager.setActivePage("explorerView", {typeId:e.target.dataset.id})
+    }, container)
   }
 
-  var render = function () {
+  var renderCustomWorkspaces = async function () {
+    var store = await query.currentProject()
+    let categoriesToDisplay = store.categories
+    let html =""
+    for (var i = 0; i < categoriesToDisplay.length; i++) {
+      let item = categoriesToDisplay[i]
+      // let link = document.createElement('a')
+      // link.classList = "button top_button_pbs"
+      // link.innerHTML=
+      html+= `<a data-id="${item.uuid}" class="button top_button_pbs action_toogle_custom_workspace"><i data-id="${item.uuid}" class="dolly icon"></i><div class="content">${item.name}</div></a>`
+    }
+    return html
+  }
+
+  var render = async function () {
     if (app.state.currentProject) {
       container.innerHTML=`
       <a class="button top_button_unified action_toogle_unified"><i class="tasks icon"></i><div class="content">Tasks</div></a>
@@ -56,6 +75,7 @@ var createTopMenu = function (containerSelector) {
 
         <a class="button top_button_stakeholders action_toogle_stakeholders"><i class="address book icon"></i><div class="content">Stakeholders</div></a>
 
+        ${await renderCustomWorkspaces()}
         <a class="button top_button_requirements action_toogle_requirements_view"><i class="comment icon"></i><div class="content">Requirements</div></a>
         <a class="button top_button_functions action_toogle_functions_view"><i class="cogs icon"></i><div class="content">Functions</div></a>
         <a class="button top_button_pbs action_toogle_tree_pbs"><i class="dolly icon"></i><div class="content">Products</div></a>

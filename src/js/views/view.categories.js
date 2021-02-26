@@ -2,6 +2,7 @@ var createCategoriesView = function () {
   var self ={};
   var objectIsActive = false;
   var currentVisibleList= undefined;
+  let table=undefined
 
   var init = function () {
     connections()
@@ -22,6 +23,7 @@ var createCategoriesView = function () {
 
   var render = async function () {
     var store = await query.currentProject()
+    renderTable(store)
     currentVisibleList= showListMenu({
       sourceData:store.categories,
       displayProp:"name",
@@ -71,7 +73,6 @@ var createCategoriesView = function () {
       },
       onClick: (ev)=>{
         //mutations
-        pageManager.setActivePage("explorerView", {typeId:ev.target.dataset.id})
         categoryEditorView.update(ev.target.dataset.id)
         // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
         // console.log(ev.target);
@@ -80,6 +81,35 @@ var createCategoriesView = function () {
         // renderCDC(store.db, searchFilter)
       }
     })
+  }
+
+  var renderTable = function (store) {
+    let data= store.categories
+    let columns = [
+      {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
+      {title:"Name", field:"name", editor:"modalInput"}
+      // {title:"Name", field:"name", editor:"input"}
+    ]
+
+    let addAction = function () {
+      let id = genuuid()
+      push(act.add("currentPbs",{
+        uuid:id,
+        name:"Interface between"
+      }))
+      push(act.add("metaLinks",{
+        source:id,
+        target:typeToDisplay,
+        type:"category"
+      }))
+    }
+    let menutest = [
+      {type:'action', name:"Add", color:"grey", onClick:e=>{addAction()}},
+      {type:'action', name:"Add", color:"grey"},
+      {type:'search', name:"Add", color:"grey"}
+    ]
+    table = tableComp.create({domElement:"modal", data:data, columns:columns, menu:menutest})
+
   }
 
   var update = function () {
