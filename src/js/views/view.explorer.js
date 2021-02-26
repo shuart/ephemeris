@@ -90,7 +90,6 @@ var createExplorerView = function ({
   var connections =function () {
     document.addEventListener("storeUpdated", async function () {
       if (objectIsActive && currentData) {
-        // update(currentData)
         var store = await query.currentProject()
         let data = getData(store,currentData.typeId)
         table.updateData(data)

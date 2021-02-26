@@ -118,7 +118,7 @@ var createTableComp = function ({
 
   var renderModalContainer =function () {
     let style=`
-    position: fixed;left: 0;right: 0;background-color: #fafafa;padding: 0;max-height: 70%;width: 55%;margin: auto;overflow-y: auto;border-radius: 2px;
+    position: fixed;left: 0;right: 0;background-color: #fafafa;padding: 0;max-height: 70%;width: 55%;margin: auto;overflow-y: auto;border-radius: 4px;box-shadow: 0 2px 4px 0 rgb(34 36 38 / 12%), 0 2px 10px 0 rgb(34 36 38 / 15%);
     `
     let htmlBlackBow =`
      <div style="opacity:0.5;position: fixed;z-index: 899;top: -25%;left: 0;bottom: 0;right: 0;height: 125%;width: 100%;background: #000;will-change: opacity;"></div>
