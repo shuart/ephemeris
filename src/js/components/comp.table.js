@@ -40,16 +40,27 @@ var createTableComp = function ({
         <div class="example-table${targetClassId}"></div>
       </div>`
     },
-    button:function (name, color) {
+    button:function (name, id, color) {
       return `
-      <div style="display:inline-block;padding:0.2em 1.45em;margin:0.1em;border:0.15em solid #CCCCCC;box-sizing: border-box;text-decoration:none;
+      <div data-id="${id}" style="display:inline-block; padding:0.2em 1.45em;margin:0.1em; border:0.15em solid #CCCCCC; box-sizing: border-box;text-decoration:none;
        font-family:'Segoe UI','Roboto',sans-serif;font-weight:400;color:#000000;background-color:#CCCCCC;text-align:center; position:relative;" class="tableListButton">
       ${name}
       </div>`
     },
-    tag:function (name,id, color) {
+    removeButton:function (name, id, color) {
       return `
-      <div style="margin-bottom: 2px;cursor:pointer;" data-inverted="" data-id="${id}" data-tooltip="${name}   " class="ui mini teal label action_list_click_label">
+      <div data-id="${id}" style="display:inline-block; padding: 4px 10px; margin:0.1em; border-radius:25px; box-sizing: border-box;text-decoration:none;
+       font-family:'Segoe UI','Roboto',sans-serif;font-weight:400;color:#ec5757;border:1px solid #ec5757; text-align:center; position:relative;" class="tableListButton">
+      X
+      </div>`
+    },
+    tag:function (name,id, color) {
+      let colorStyle = "background-color:#ffffff;border-style:dashed;border-width: 2px;border-color:grey "
+      if (color) {
+        colorStyle = "background-color:"+color+ ";"
+      }
+      return `
+      <div style="${colorStyle} margin-bottom: 2px;cursor:pointer;" data-inverted="" data-id="${id}" data-tooltip="${name}   " class="ui mini teal label action_list_click_label">
       ${name}
       </div>`
     },
@@ -74,7 +85,11 @@ var createTableComp = function ({
   customFields.action = function(cell, formatterParams){ //plain text value
     // return "<i class='fa fa-print'></i>";
     return theme.button(formatterParams.name|| "action");
-};
+  };
+  customFields.remove = function(cell, formatterParams){ //plain text value
+    // return "<i class='fa fa-print'></i>";
+    return theme.removeButton(formatterParams.name|| "Remove", cell.getRow().getData().uuid);
+  };
 
   customFields.relation = function(cell, formatterParams, onRendered ){ //plain text value
     // return "<i class='fa fa-print'></i>";
@@ -94,6 +109,25 @@ var createTableComp = function ({
       cell.getElement().style.whiteSpace='initial'
       console.log(cell.getElement());
     });
+
+    return html;
+  };
+
+  customFields.colorTag = function(cell, formatterParams, onRendered ){
+
+    let html=theme.tag(cell.getValue()|| "No color", cell.getRow().getData().uuid, cell.getValue());
+
+    // let listTarget = formatterParams.relationList.filter(r=>r.source==cell.getData().uuid).map(r=>r.target)
+    //
+    // let listObject = formatterParams.relationTargets.filter(t=>listTarget.includes(t.uuid))
+    // let html =''
+    // listObject.forEach((item, i) => {
+    //   html+=theme.tag(item.name, item.uuid);
+    // });
+    // onRendered(function(){
+    //   cell.getElement().style.whiteSpace='initial'
+    //   console.log(cell.getElement());
+    // });
 
     return html;
   };
@@ -173,8 +207,23 @@ var createTableComp = function ({
           item.formatter = customFields.action
           item.width= 100
         }
+        if (item.formatter == "remove") {
+          item.formatter = customFields.remove
+          item.width= 43
+          let callBack = item.cellClick
+          item.cellClick = function (e, cell) {
+            callBack(e, cell)
+            if (tableOnUpdate) {
+              tableOnUpdate()
+            }
+          }
+        }
         if (item.formatter == "relation") {
           item.formatter = customFields.relation
+          item.width= 100
+        }
+        if (item.formatter == "colorTag") {
+          item.formatter = customFields.colorTag
           item.width= 100
         }
 
@@ -188,7 +237,7 @@ var createTableComp = function ({
             var popup= await createPromptPopup({
               title:"Edit",
               iconHeader:"dolly",
-              fields:{ type:"input",id:"producttName" ,label:"Product name", placeholder:"Set a name for the new product" }
+              fields:{ type:"textArea",id:"producttName" , value:cell.getValue(), label:"Product name", placeholder:"Set a name for the new product" }
             })
             var id = genuuid()
             var newReq = popup.result
@@ -201,6 +250,29 @@ var createTableComp = function ({
               }
 
             }
+          }
+        }
+        if (item.editor == "colorPicker") {
+          item.cellClick = async function (e, cell) {
+            var div = document.createElement("div");
+            div.style.width = "10px";div.style.height = "10px";div.style.position = "absolute";
+            div.style.top = (e.pageY-10)+"px";div.style.left = e.pageX+"px";
+            div.style.zIndex = "999999999999999";
+
+            document.body.appendChild(div)
+            var colorPicker = new Picker({
+              parent:div,
+              onDone: function(color) {
+                console.log(color);
+                let target = cell.getRow().getData()
+                item.editorParams.onChange(target.uuid, color)
+                colorPicker.destroy();div.remove();//clean the picker
+                if (tableOnUpdate) {
+                  tableOnUpdate()
+                }
+              }
+            });
+            colorPicker.openHandler();
           }
         }
         if (item.editor == "modalRelation") {
@@ -267,6 +339,9 @@ var createTableComp = function ({
         let element = document.createElement('div')
         element.addEventListener("click", function(e) {
             item.onClick();
+            if (tableOnUpdate) {
+              tableOnUpdate()
+            }
         }, false);
         element.style.width='100px'
         element.style.height='20px'

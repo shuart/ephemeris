@@ -15,100 +15,55 @@ var createCategoriesView = function () {
   var updateList =  function () {
     setTimeout(async function () {
       var store = await query.currentProject()
-      ephHelpers.updateListElements(currentVisibleList,{
-        items:store.categories
-      })
-    }, 1500);
+      table.updateData(store.categories)
+    }, 1200);
   }
 
   var render = async function () {
     var store = await query.currentProject()
     renderTable(store)
-    currentVisibleList= showListMenu({
-      sourceData:store.categories,
-      displayProp:"name",
-      // targetDomContainer:".center-container",
-      // fullScreen:true,// TODO: perhaps not full screen?
-      display:[
-        {prop:"name", displayAs:"Name", edit:"true"},
-        {prop:"color", displayAs:"Color", color:true, edit:true},
-        {prop:"svgPath", displayAs:"Path", fullText:true,edit:"true"}
-      ],
-      idProp:"uuid",
-      onEditItem: (ev)=>{
-        console.log("Edit");
-        let edit = true;
-        if (ev.target.dataset.prop=="svgPath") {
-          edit = confirm('Categories icons are SVG path. You can edit theme with an SVG editor, or add new one. Modifying the existing paths without replacing theme with a proper new one could make your icon to disapear in the relations view. Do you want to edit the category path?')
-        }
-        if (edit) {
-          var newValue = prompt("Edit Item",ev.target.dataset.value)
-          if (newValue) {
-            push(act.edit("categories", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:newValue}))
-          }
-        }
-        updateList()
-
-      },
-      onEditColorItem: (ev)=>{
-        if (ev.color && ev.color.hex) {
-          push(act.edit("categories", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:(ev.color.hex+"").slice(0,-2)}))
-        }
-        updateList()
-      },
-      onRemoveColorItem: (ev)=>{
-          push(act.edit("categories", {uuid:ev.target.dataset.id, prop:ev.target.dataset.prop, value:undefined}))
-          updateList()
-      },
-      onRemove: (ev)=>{
-        if (confirm("remove item ?")) {
-          push(act.remove("categories",{uuid:ev.target.dataset.id}))
-          updateList()
-        }
-      },
-      onAdd: (ev)=>{
-        let catName = prompt("New Category")
-        push(act.add("categories",{uuid:genuuid(), name:catName, svgPath:undefined}))
-        updateList()
-      },
-      onClick: (ev)=>{
-        //mutations
-        categoryEditorView.update(ev.target.dataset.id)
-        // store.metaLinks = store.metaLinks.filter((i)=>i.target != e.target.dataset.id)
-        // console.log(ev.target);
-        // store.metaLinks.push({source:ev.target.dataset.id , target:e.target.dataset.id})
-        ev.selectDiv.remove()
-        // renderCDC(store.db, searchFilter)
-      }
-    })
   }
 
   var renderTable = function (store) {
+    let defaultIcon = "M294.2 277.7c18 5 34.7 13.4 49.5 24.7l161.5-53.8c8.4-2.8 12.9-11.9 10.1-20.2L454.9 47.2c-2.8-8.4-11.9-12.9-20.2-10.1l-61.1 20.4 33.1 99.4L346 177l-33.1-99.4-61.6 20.5c-8.4 2.8-12.9 11.9-10.1 20.2l53 159.4zm281 48.7L565 296c-2.8-8.4-11.9-12.9-20.2-10.1l-213.5 71.2c-17.2-22-43.6-36.4-73.5-37L158.4 21.9C154 8.8 141.8 0 128 0H16C7.2 0 0 7.2 0 16v32c0 8.8 7.2 16 16 16h88.9l92.2 276.7c-26.1 20.4-41.7 53.6-36 90.5 6.1 39.4 37.9 72.3 77.3 79.2 60.2 10.7 112.3-34.8 113.4-92.6l213.3-71.2c8.3-2.8 12.9-11.8 10.1-20.2zM256 464c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48z"
+
     let data= store.categories
     let columns = [
-      {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
-      {title:"Name", field:"name", editor:"modalInput"}
-      // {title:"Name", field:"name", editor:"input"}
+      // {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
+      {title:"Name", field:"name", editor:"modalInput"},
+      {
+        title:"Color",
+        field:"color",
+        formatter:"colorTag",
+        editor:"colorPicker",
+        editorParams:{
+          onChange:function (target, color) {
+            push(act.edit("categories", {uuid:target, prop:"color", value:(color.hex+"").slice(0,-2)}))
+          }
+        }
+      },
+      {title:"SVG", field:"svgPath", editor:"modalInput"},
+      {
+        formatter:'remove',
+        cellClick:function(e, cell){
+          console.log(e.target.dataset.id);
+          if (confirm("remove item ?")) {
+            push(act.remove("categories",{uuid:e.target.dataset.id}))
+          }
+        }
+      },
     ]
 
     let addAction = function () {
-      let id = genuuid()
-      push(act.add("currentPbs",{
-        uuid:id,
-        name:"Interface between"
-      }))
-      push(act.add("metaLinks",{
-        source:id,
-        target:typeToDisplay,
-        type:"category"
-      }))
+      let catName = prompt("New Category")
+      push(act.add("categories",{uuid:genuuid(), name:catName, svgPath:defaultIcon}))
     }
     let menutest = [
       {type:'action', name:"Add", color:"grey", onClick:e=>{addAction()}},
       {type:'action', name:"Add", color:"grey"},
       {type:'search', name:"Add", color:"grey"}
     ]
-    table = tableComp.create({domElement:"modal", data:data, columns:columns, menu:menutest})
+    table = tableComp.create({onUpdate:e=>{updateList()},domElement:"modal", data:data, columns:columns, menu:menutest})
 
   }
 
