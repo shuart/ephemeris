@@ -58,9 +58,16 @@ var createTopMenu = function (containerSelector) {
       // let link = document.createElement('a')
       // link.classList = "button top_button_pbs"
       // link.innerHTML=
-      html+= `<a data-id="${item.uuid}" class="button top_button_pbs action_toogle_custom_workspace"><i data-id="${item.uuid}" class="dolly icon"></i><div class="content">${item.name}</div></a>`
+      html+= `<a data-id="${item.uuid}" class="button top_button_pbs action_toogle_custom_workspace"><i data-id="${item.uuid}" class=" icon">${convertPathToSVG(item.svgPath, 0,0,36,36, "scale(0.058) translate(55,0)", item.uuid)}</i><div class="content">${item.name}</div></a>`
     }
     return html
+  }
+
+  var convertPathToSVG = function (path, dim1, dim2,dim3,dim4, transform, extraId) {
+    return `
+    <svg style="cursor:pointer;" xmlns="http://www.w3.org/2000/svg" viewBox="${dim1} ${dim2} ${dim3} ${dim4}" data-id="${extraId}">
+      <path data-id="${extraId}" fill="#ffffff" transform="${transform}" d="${path}" />
+    </svg>`
   }
 
   var render = async function () {
