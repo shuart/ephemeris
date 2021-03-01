@@ -5,6 +5,7 @@ var createPbsView = function () {
   var isExtraFieldsVisible =false;
   var extraFields = undefined
   var currentVisibleList = undefined
+  var table = undefined
 
   var init = function () {
     connections()
@@ -13,14 +14,18 @@ var createPbsView = function () {
   }
   var connections =function () {
     document.addEventListener("storeUpdated", async function () {
-      if (objectIsActive && currentVisibleList) {
+      if (objectIsActive && table) {
         var store = await query.currentProject()
-        ephHelpers.updateListElements(currentVisibleList,{
-          items:store.currentPbs,
-          links:store.links,
-          metaLinks:store.metaLinks,
-          displayRules:setDisplayRules(store)
-        })
+        let data = getData(store)
+        table.updateData(data)
+
+
+        // ephHelpers.updateListElements(currentVisibleList,{
+        //   items:store.currentPbs,
+        //   links:store.links,
+        //   metaLinks:store.metaLinks,
+        //   displayRules:setDisplayRules(store)
+        // })
       }
     })
   }
@@ -63,7 +68,81 @@ var createPbsView = function () {
     return ephHelpers.setDisplayOrder(store,"currentPbs")
   }
 
+  var getData = function (store, typeId) {
+    let nodes =  store.currentPbs
+    return nodes
+  }
+
   var render = async function () {
+    var store = await query.currentProject()
+    let data = getData(store)
+    let columns = [
+      // {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
+      {title:"Name", field:"name", editor:"modalInput"},
+      {title:"Description", field:"desc", formatter:"textarea", editor:"modalInput"}
+      // {title:"Name", field:"name", editor:"input"}
+    ]
+    let addAction = function () {
+      let id = genuuid()
+      push(act.add("currentPbs",{
+        uuid:id,
+        name:"Interface between"
+      }))
+      // push(act.add("metaLinks",{
+      //   source:id,
+      //   target:typeId,
+      //   type:"category"
+      // }))
+    }
+    let categoryField = {
+      title:"Category",
+      formatter:'relation',
+      cellClick:function (event, cell) {
+        console.log(event);
+        if (event.target.dataset.id) {
+          showSingleItemService.showById(event.target.dataset.id)
+        }else {
+          createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
+        }
+      },
+      formatterParams:{
+        relationList:store.metaLinks.filter(i=>i.type=="category"),
+        relationTargets: store.categories
+      },
+      field:"category",
+      editor:"modalRelation"
+    }
+    columns.push(categoryField)
+    let tagsField = {
+      title:"Tags",
+      formatter:'relation',
+      cellClick:function (event, cell) {
+        console.log(event);
+        if (event.target.dataset.id) {
+          showSingleItemService.showById(event.target.dataset.id)
+        }else {
+          createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
+        }
+      },
+      formatterParams:{
+        relationList:store.metaLinks.filter(i=>i.type=="tags"),
+        relationTargets: store.tags
+      },
+      field:"tags",
+      editor:"modalRelation"
+    }
+    columns.push(tagsField)
+
+    let menu = [
+      {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
+      {type:'action', name:"Add", color:"grey"},
+      {type:'search', name:"Add", color:"grey"}
+    ]
+    table = tableComp.create({data:data, columns:columns, menu:menu})
+
+  }
+
+  var renderLegacy = async function () {
     var store = await query.currentProject()
     console.log(store.currentPbs);
       currentVisibleList = showListMenu({
