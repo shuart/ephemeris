@@ -59,7 +59,7 @@ var createCategoriesView = function () {
       push(act.add("categories",{uuid:genuuid(), name:catName, svgPath:defaultIcon}))
     }
     let menutest = [
-      {type:'action', name:"Add", color:"grey", onClick:e=>{addAction()}},
+      {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
       {type:'action', name:"Add", color:"grey"},
       {type:'search', name:"Add", color:"grey"}
     ]

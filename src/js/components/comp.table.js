@@ -40,10 +40,9 @@ var createTableComp = function ({
         <div class="example-table${targetClassId}"></div>
       </div>`
     },
-    button:function (name, id, color) {
+    button:function (name, id, elementClass, color) {
       return `
-      <div data-id="${id}" style="display:inline-block; padding:0.2em 1.45em;margin:0.1em; border:0.15em solid #CCCCCC; box-sizing: border-box;text-decoration:none;
-       font-family:'Segoe UI','Roboto',sans-serif;font-weight:400;color:#000000;background-color:#CCCCCC;text-align:center; position:relative;" class="tableListButton">
+      <div data-id="${id}" style="border-radius: 3px;cursor:pointer;display:inline-block; padding:0.2em 1.45em;margin:0.1em; box-sizing: border-box;text-decoration:none;font-weight:400;color:#ffffff;background-color:${color||"#CCCCCC"};text-align:center; position:relative;" class="tableListButton">
       ${name}
       </div>`
     },
@@ -103,7 +102,7 @@ var createTableComp = function ({
     let listObject = formatterParams.relationTargets.filter(t=>listTarget.includes(t.uuid))
     let html =''
     listObject.forEach((item, i) => {
-      html+=theme.tag(item.name, item.uuid);
+      html+=theme.tag(item.name, item.uuid, "#29b5ad");
     });
     onRendered(function(){
       cell.getElement().style.whiteSpace='initial'
@@ -157,8 +156,11 @@ var createTableComp = function ({
     let htmlBlackBow =`
      <div style="opacity:0.5;position: fixed;z-index: 899;top: -25%;left: 0;bottom: 0;right: 0;height: 125%;width: 100%;background: #000;will-change: opacity;"></div>
     `
+    let closeButtonStyle = `style="background-color: #ec5757; cursor:pointer;position: absolute;top: 16px;right: 17px; display:inline-block; padding: 5px 10px; margin:0.1em; border-radius:25px; box-sizing: border-box;text-decoration:none;font-weight:400; color:#ffffff;border:1px solid #ec5757; text-align:center; " `
+
     let html = `
      <div id="modal1" class="" style="${style} z-index: 999; display: block; opacity: 1; top: 10%; transform: scaleX(1) scaleY(1);">
+         <div ${closeButtonStyle} class="action-modalTableContentClose">X</div>
          <div style="padding:10px;" class="modalTableContent"></div>
          <div class="modal-footer">
            <a href="#!" class="action-modalTableContentClose">Disagree</a>
@@ -343,10 +345,11 @@ var createTableComp = function ({
               tableOnUpdate()
             }
         }, false);
-        element.style.width='100px'
-        element.style.height='20px'
-        element.innerHTML=item.name
-        element.style.backgroundColor=item.color ||"red"
+        element.innerHTML= theme.button(item.name,'','',item.color)
+        // element.style.width='100px'
+        // element.style.height='20px'
+        // element.innerHTML=item.name
+        // element.style.backgroundColor=item.color ||"red"
         targetMenuAction.appendChild(element)
       }
 

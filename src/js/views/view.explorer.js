@@ -120,7 +120,7 @@ var createExplorerView = function ({
 
       console.log(data);
       let columns = [
-        {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
+        // {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
         {title:"Name", field:"name", editor:"modalInput"}
         // {title:"Name", field:"name", editor:"input"}
       ]
@@ -174,7 +174,7 @@ var createExplorerView = function ({
         }))
       }
       let menutest = [
-        {type:'action', name:"Add", color:"grey", onClick:e=>{addAction()}},
+        {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
         {type:'action', name:"Add", color:"grey"},
         {type:'search', name:"Add", color:"grey"}
       ]
