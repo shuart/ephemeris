@@ -173,9 +173,15 @@ var createExplorerView = function ({
           type:"category"
         }))
       }
+
+      let showTreeAction = function () {
+        showTreeFromListService.showAll(typeId, function (e) {
+        })
+      }
+
       let menutest = [
         {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
-        {type:'action', name:"Add", color:"grey"},
+        {type:'action', name:"Tree", color:"grey", onClick:e=>{showTreeAction()}},
         {type:'search', name:"Add", color:"grey"}
       ]
       table = tableComp.create({data:data, columns:columns, menu:menutest, onUpdate:onUpdate})

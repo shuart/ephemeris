@@ -133,9 +133,14 @@ var createPbsView = function () {
     }
     columns.push(tagsField)
 
+    let showTreeAction = function () {
+      showTreeFromListService.showAll(undefined, function (e) {
+      })
+    }
+
     let menu = [
       {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
-      {type:'action', name:"Add", color:"grey"},
+      {type:'action', name:"Tree", color:"grey", onClick:e=>{showTreeAction()}},
       {type:'search', name:"Add", color:"grey"}
     ]
     table = tableComp.create({data:data, columns:columns, menu:menu})

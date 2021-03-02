@@ -10,42 +10,57 @@ var createShowTreeFromListService = function () {
 
   }
 
-  var render = function (storeName, callback) {
-    renderMindmapTree(storeName, callback)
+  var render = function (catId, callback) {
+    renderMindmapTree(catId, callback)
   }
 
-  var renderMindmapTree = async function (storeName, callback) {
+  async function generateDataSource(itemList, store) {
+    var placeholder = true
+    var data =undefined
+    if (itemList[0]) {
+      var targets = store.links.map(item => item.target)
+      var roots = itemList.filter(item => !targets.includes(item.uuid))
+      if (roots && roots[1]) {//if more than one root node
+        placeholder = true
+        var newData = itemList.slice()
+        var newLinks = store.links.slice()
+        newData.push({uuid:"placeholder", name:"placeholder"})
+        for (root of roots) {
+          newLinks.push({source:"placeholder", target:root.uuid})
+        }
+        data = hierarchiesList(newData, newLinks)[0]
+      }else {
+        data = hierarchiesList(itemList, store.links)[0]
+      }
+      console.log(data);
+    }
+    return data
+  }
+
+  var getRelatedItems = function (store, catId) {
+    if (!catId) {
+      return store.currentPbs
+    }else {
+      let typeToDisplay = catId
+      let relatedNodes = store.metaLinks.filter(m=>m.target==typeToDisplay)
+      let relatedNodesId = relatedNodes.map(rn=>rn.source)
+      console.log(relatedNodesId);
+      let nodes =  store.currentPbs.filter(n=>relatedNodesId.includes(n.uuid))
+      return nodes
+    }
+  }
+
+  var renderMindmapTree = async function (catId, callback) {
     var callbackFunction = callback || undefined;
-    var storeGroup = storeName || undefined;
+    var storeGroup = catId || undefined;
     var store = await query.currentProject()
+    var itemList = getRelatedItems(store, storeGroup)
 
     if (true) {
-      async function generateDataSource(storeGroup) {
-        var store = await query.currentProject()
-        var placeholder = false
-        var data =undefined
-        if (store[storeGroup].items[0]) {
-          var targets = store[storeGroup].links.map(item => item.target)
-          var roots = store[storeGroup].items.filter(item => !targets.includes(item.uuid))
-          if (roots && roots[1]) {//if more than one root node
-            placeholder = true
-            var newData = store[storeGroup].items.slice()
-            var newLinks = store[storeGroup].links.slice()
-            newData.push({uuid:"placeholder", name:"placeholder"})
-            for (root of roots) {
-              newLinks.push({source:"placeholder", target:root.uuid})
-            }
-            data = hierarchiesList(newData, newLinks)[0]
-          }else {
-            data = hierarchiesList(store[storeGroup].items, store[storeGroup].links)[0]
-          }
-          console.log(data);
-        }
-        return data
-      }
+
 
       displayThree({
-        data:await generateDataSource(storeGroup),
+        data:await generateDataSource(itemList, store),
         edit:true,
         onClose:(e)=>{
           if (callbackFunction) {
@@ -55,38 +70,34 @@ var createShowTreeFromListService = function () {
         onAdd:async (ev)=>{
           var uuid = genuuid()
           var newName = prompt("Name?")
-          push(act.add(storeGroup,{uuid:uuid, name:newName}))
+          push(act.add("currentPbs",{uuid:uuid, name:newName}))
           //push(addRequirement({uuid:uuid, name:newName}))
           if (ev.element.data.uuid != "placeholder") {
-            push(act.addLink(storeGroup,{source:ev.element.data.uuid, target:uuid}))
+            push(act.addLink("currentPbs",{source:ev.element.data.uuid, target:uuid}))
           }
-          let newData = await generateDataSource(storeGroup)
-          ev.sourceTree.setData(newData)
+
           //ev.sourceTree.updateFromRoot(ev.element)
         },
         onMove:async(ev)=>{
           let sourceUuid= ev.element.data.uuid
           let targetUuid = ev.newParent.data.uuid
-
+          var store = await query.currentProject()
           if (checkIfSourceIsParent(sourceUuid,targetUuid, storeGroup, store)) { //check if the target is a child of the source
             alert("The node you are moving is a parent of your target")
-            let newData = await generateDataSource(storeGroup)
-            ev.sourceTree.setData(newData)
           }else {
-            push(act.removeLink(storeGroup,{source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
+            push(act.removeLink("currentPbs",{source:ev.element.parent.data.uuid, target:ev.element.data.uuid}))
 
             if (ev.newParent.data.uuid != "placeholder") {
-              push(act.addLink(storeGroup,{source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
+              push(act.addLink("currentPbs",{source:ev.newParent.data.uuid, target:ev.element.data.uuid}))
             }
-            let newData = await generateDataSource(storeGroup)
-            ev.sourceTree.setData(newData)
+
           }
         },
         onRemove:async (ev)=>{
           if (confirm("Remove?")) {
             if (true) {
               console.log(ev);
-              var originalLinks = store[storeGroup].links.filter(e=>e.source == ev.element.data.uuid)
+              var originalLinks = store.links.filter(e=>e.source == ev.element.data.uuid)
               for (link of originalLinks) {
                 push(act.addLink(storeGroup,{source:ev.element.parent.data.uuid, target:link.target}))
               }
@@ -102,17 +113,18 @@ var createShowTreeFromListService = function () {
             console.log(ev);
             push(act.removeLink(storeGroup,{source:ev.element.data.uuid}))
             //addNewLinks
-            push(act.remove(storeGroup,{uuid:ev.element.data.uuid}))
+            push(act.remove("currentPbs",{uuid:ev.element.data.uuid}))
             //push(addPbsLink({source:ev.element.data.uuid, target:uuid}))
-            let newData = await generateDataSource(storeGroup)
-            ev.sourceTree.setData(newData)
+
           }
         },
         onLabelClicked:(originev)=>{
           showSingleItemService.showById(originev.element.data.uuid)
         },
         onStoreUpdate:async (originev)=>{
-          let newData = await generateDataSource(storeGroup)
+          var store = await query.currentProject()
+          var itemList = getRelatedItems(store, storeGroup)
+          let newData = await generateDataSource(itemList, store)
           originev.sourceTree.setData(newData)
         }
       })
@@ -121,7 +133,7 @@ var createShowTreeFromListService = function () {
 
 
   function checkIfSourceIsParent(sourceUuid,targetUuid, storeGroup, store){
-    var storeLinks = store[storeGroup].links
+    var storeLinks = store.links
     function getParentUuid(uuid, storeLinks) {
       let parentLink = storeLinks.find(l=>l.target == uuid)
       console.log(parentLink);
@@ -160,7 +172,12 @@ var createShowTreeFromListService = function () {
     render(storeGroup, callback)
   }
 
+  var showAll= function (catId, callback) {
+    render(catId, callback)
+  }
 
+
+  self.showAll = showAll
   self.showByStoreGroup = showByStoreGroup
   self.update = update
   self.init = init
