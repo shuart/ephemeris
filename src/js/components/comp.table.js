@@ -31,6 +31,7 @@ var createTableComp = function ({
   var tableOnUpdate = undefined
   var tableMenu = undefined
   var currentTable = undefined
+  var currentTreeMode = false
 
   var theme={
     table:function () {
@@ -378,6 +379,8 @@ var createTableComp = function ({
           {column:"name", dir:"asc"},
       ],
       columns:initCols,
+      dataTree:currentTreeMode,
+      dataTreeStartExpanded:true,
     });
     // var table = new Tabulator(".example-table", {
     //   data:initData,           //load row data from array
@@ -404,6 +407,37 @@ var createTableComp = function ({
     //   ],
     // });
   }
+
+  var tools={}
+  tools.hierarchiesList = function (list, links) {
+    let childProp = "_children"//add to an object for performance
+    let tempOb = {}// object {uuid:*nodeObject*} for fast iteration
+    let itemRoots = {} // {uuid: true} for marking items that are childredn
+    for (var i = 0; i < list.length; i++) {
+      tempOb[ list[i].uuid ] = list[i]
+      itemRoots[ list[i].uuid ] = true
+    }
+    for (var i = 0; i < links.length; i++) {// create _children pro
+      let link = links[i]
+      if (tempOb[link.source] && tempOb[link.target]) {
+        if (!tempOb[link.source][childProp]) {
+          tempOb[link.source][childProp] = []
+        }
+        tempOb[link.source][childProp].push(tempOb[link.target])
+        itemRoots[ link.target ] = false
+      }
+    }
+    let hierarchiesNodesList = []
+    let rootsKeys = Object.keys(itemRoots)
+    for (var i = 0; i < rootsKeys.length; i++) {
+      let key = rootsKeys[i]
+      if (itemRoots[key]) {
+        hierarchiesNodesList.push(tempOb[key])//clean objects used elsewhere from list
+      }
+    }
+    return hierarchiesNodesList
+  }
+
   var updateStyle =function () {
     let elem = document.querySelector(".example-table"+targetClassId);
     elem.style.border ="1px solid rgb(241 241 241)"
@@ -422,6 +456,7 @@ var createTableComp = function ({
     columns=undefined,
     onUpdate=undefined,
     menu=false,
+    dataTree=false,
     domElement=".center-container"
     }={}) {
       targetClassId = Date.now()
@@ -430,6 +465,7 @@ var createTableComp = function ({
       tableOnUpdate = onUpdate;
       tableMenu = menu;
       container = domElement;
+      currentTreeMode = dataTree;
       if (domElement=="modal") {
         let blackbox = renderModalContainer()
         container = '.modalTableContent'
@@ -447,6 +483,7 @@ var createTableComp = function ({
 
   // self.setActive = setActive
   // self.setInactive = setInactive
+  self.tools = tools
   self.create = create
   self.update = update
   self.updateData = updateData

@@ -6,6 +6,7 @@ var createPbsView = function () {
   var extraFields = undefined
   var currentVisibleList = undefined
   var table = undefined
+  var treeMode = true
 
   var init = function () {
     connections()
@@ -70,8 +71,12 @@ var createPbsView = function () {
 
   var getData = function (store, typeId) {
     let nodes =  store.currentPbs
+    if (treeMode) {
+      nodes = tableComp.tools.hierarchiesList(nodes, store.links)
+    }
     return nodes
   }
+
 
   var render = async function () {
     var store = await query.currentProject()
@@ -143,7 +148,7 @@ var createPbsView = function () {
       {type:'action', name:"Tree", color:"grey", onClick:e=>{showTreeAction()}},
       {type:'search', name:"Add", color:"grey"}
     ]
-    table = tableComp.create({data:data, columns:columns, menu:menu})
+    table = tableComp.create({data:data, columns:columns, menu:menu, dataTree:treeMode})
 
   }
 
