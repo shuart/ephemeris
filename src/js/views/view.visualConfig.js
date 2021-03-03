@@ -1730,7 +1730,7 @@ var createvisualConfigView = function () {
     let connectionBetweenFieldsAndInterfaces = store.extraFields.map(function (f) {
       return {uuid:genuuid(), source:f.uuid, target:f.relationId || genuuid()}
     })
-    transferToRelationsForEach(relations,relationsTree, connectionBetweenFieldsAndInterfaces, e=> {e.displayType = "Is Connected to";  e.type = "Is Connected to";})
+    transferToRelationsForEach(relations,relationsTree, connectionBetweenFieldsAndInterfaces, e=> {e.displayType = "displays";  e.type = "displays";})
 
     let connectionBetweenInterfacesAndCats = []
     store.categories.forEach((item, i) => {
