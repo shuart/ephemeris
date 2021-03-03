@@ -161,17 +161,16 @@ var createExplorerView = function ({
       }
 
       //
-      let addAction = function () {
+      let addAction = async function () {
+        var popup= await createPromptPopup({
+          title:"Add a new item",
+          iconHeader:"plus",
+          fields:{ type:"input",id:"requirementName" ,label:"Item name", placeholder:"Set a name for the new item" }
+        })
+        var newReq = popup.result
         let id = genuuid()
-        push(act.add("currentPbs",{
-          uuid:id,
-          name:"Interface between"
-        }))
-        push(act.add("metaLinks",{
-          source:id,
-          target:typeId,
-          type:"category"
-        }))
+        push(act.add("currentPbs",{uuid:id,name:newReq}))
+        push(act.add("metaLinks",{source:id,target:typeId,type:"category"}))
       }
 
       let showTreeAction = function () {
