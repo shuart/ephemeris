@@ -1654,12 +1654,24 @@ var createvisualConfigView = function () {
       e.labels = ["Functions"];
       return e
     })
+    var array2 =store.interfacesTypes.map(function (e) {
+      e.customColor=e.color;
+      e.labels = ["Requirements"];
+      return e
+    })
+    var array3 =store.extraFields.map(function (e) {
+      e.customColor=e.color;
+      e.labels = ["User"];
+      return e
+    })
     // var array2 =store.currentPbs.map((e) => {e.customColor=getCustomColorFromItemId(e.uuid, store, categoryStore)||"#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid, store, categoryStore); return e})
     // var array4 = store.stakeholders.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
 
 
     itemsToDisplay = []
     itemsToDisplay = itemsToDisplay.concat(array1)
+    itemsToDisplay = itemsToDisplay.concat(array2)
+    itemsToDisplay = itemsToDisplay.concat(array3)
 
     relations = []//checl what connection to display TODO store in func
     relationsTree = {}//checl what connection to display TODO store in func
@@ -1706,6 +1718,34 @@ var createvisualConfigView = function () {
       }
       console.log(relationsTree);
     }
+
+    let connectionBetweenCatAndInterfaces = []
+
+
+    let connectionBetweenCatAndFields = store.extraFields.map(function (f) {
+      return {uuid:genuuid(), source:f.target, target:f.uuid}
+    })
+    transferToRelationsForEach(relations,relationsTree, connectionBetweenCatAndFields, e=> {e.displayType = "Has field";  e.type = "Has field";})
+
+    let connectionBetweenFieldsAndInterfaces = store.extraFields.map(function (f) {
+      return {uuid:genuuid(), source:f.uuid, target:f.relationId || genuuid()}
+    })
+    transferToRelationsForEach(relations,relationsTree, connectionBetweenFieldsAndInterfaces, e=> {e.displayType = "Is Connected to";  e.type = "Is Connected to";})
+
+    let connectionBetweenInterfacesAndCats = []
+    store.categories.forEach((item, i) => {
+      let interfacesTypes = store.interfacesTypes
+      for (var i = 0; i < interfacesTypes.length; i++) {
+        let interface = interfacesTypes[i]
+        if (interface[item.uuid]) {
+          connectionBetweenInterfacesAndCats.push({uuid:genuuid(), source:interface.uuid, target:item.uuid})
+        }
+      }
+    });
+
+    transferToRelationsForEach(relations,relationsTree, connectionBetweenInterfacesAndCats, e=> {e.displayType = "Targets";  e.type = "Targets";})
+
+
     if (elementVisibility.metaLinks) {
       //relations = relations.concat(store.metaLinks.map((e) => { e.displayType = e.type; return e}))
       //
