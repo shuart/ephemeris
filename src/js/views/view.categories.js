@@ -29,7 +29,7 @@ var createCategoriesView = function () {
 
     let data= store.categories
     let columns = [
-      // {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
+      {formatter:'action', formatterParams:{name:"Edit"}, width:40, hozAlign:"center", cellClick:function(e, cell){categoryEditorView.update(cell.getRow().getData().uuid)}},
       {title:"Name", field:"name", editor:"modalInput"},
       {
         title:"Color",
@@ -57,6 +57,9 @@ var createCategoriesView = function () {
     let addAction = function () {
       let catName = prompt("New Category")
       push(act.add("categories",{uuid:genuuid(), name:catName, svgPath:defaultIcon}))
+    }
+    let editAction = function () {
+      categoryEditorView.update(ev.target.dataset.id)
     }
     let menutest = [
       {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
