@@ -36,14 +36,14 @@ var createTableComp = function ({
   var theme={
     table:function () {
       return `
-      <div class="ephemeris-table">
+      <div style="padding:5px" class="ephemeris-table">
         <div class="ephemeris-table-menu${targetClassId}"></div>
-        <div class="example-table${targetClassId}"></div>
+        <div style="box-shadow: 0px 0px 2px 0px #b9b9b9;" class="example-table${targetClassId}"></div>
       </div>`
     },
     button:function (name, id, elementClass, color) {
       return `
-      <div data-id="${id}" style="border-radius: 3px;cursor:pointer;display:inline-block; padding:0.2em 1.45em;margin:0.1em; box-sizing: border-box;text-decoration:none;font-weight:400;color:#ffffff;background-color:${color||"#CCCCCC"};text-align:center; position:relative;" class="tableListButton">
+      <div data-id="${id}" style="border-radius: 3px;cursor:pointer;display:inline-block; padding:0.5em 1.45em;margin:0.1em; box-sizing: border-box;text-decoration:none;font-weight:400;color:#ffffff;background-color:${color||"#CCCCCC"};text-align:center; position:relative;" class="tableListButton">
       ${name}
       </div>`
     },
@@ -66,7 +66,7 @@ var createTableComp = function ({
     },
     menu:function () {
       return `
-      <div style="margin-bottom: 8px;display: flex; align-items: center;width: 100%;background: #eee; padding: 10px;" class="bar">
+      <div style="margin-bottom: 8px;display: flex; align-items: center;width: 100%;background: #f9f9f9; padding: 10px;" class="bar">
         <div style="display:flex;" class="table_action_area"></div>
         <div style="width:300px" class="table_searchArea">
         </div>
@@ -75,7 +75,7 @@ var createTableComp = function ({
     search:function () {
       return `
         <div style="width:300px;" class="search">
-          <input style="width: 100%; border: none;height:28px;" type="search" placeholder="search..." />
+          <input style="width: 100%; border: none;height:33px; margin-left:5px;" type="search" placeholder="search..." />
         </div>`
     }
   }
@@ -364,9 +364,18 @@ var createTableComp = function ({
     }={}) {
       initData = data;
       initCols = columns;
+      let mainContainer = document.querySelector(container)
+      let getTargetHeight = '500px'
+      if (container == '.modalTableContent') {//if modal
+        getTargetHeight =window.innerHeight/2
+      }else if(mainContainer && mainContainer.clientHeight) {
+        getTargetHeight = mainContainer.clientHeight - 100
+      }else {
+        getTargetHeight = window.innerHeight - 100
+      }
     currentTable = new Tabulator(".example-table"+targetClassId, {
       data:initData,           //load row data from array
-      height:"811px",
+      height:getTargetHeight+"px",
       virtualDom:true,
       layout:"fitColumns",      //fit columns to width of table
       responsiveLayout:"hide",  //hide columns that dont fit on the table
