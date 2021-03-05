@@ -9,6 +9,7 @@ var createCategoryEditorView = function ({
   let currentActionUuid = undefined
   let sourceOccElement = undefined
   let catID = undefined
+  let table = undefined
 
   let theme = {
     menu : function (action) {
@@ -244,8 +245,96 @@ var createCategoryEditorView = function ({
 
     menuArea.appendChild(toNode(renderMenu()))
     container.appendChild(toNode(await renderProfile(catID)))
-
+    renderTable(catID)
     document.body.appendChild(sourceOccElement)
+
+  }
+
+  var renderTable = async function (uuid) {
+    var store = await query.currentProject()
+    var cat = store.categories.find(i=>i.uuid == uuid)
+    let fieldsHtml = store.extraFields.filter(i=>i.target == cat.uuid).map(e=> `<div>Name:${e.name}, type:${e.type}</div><div class="ui divider"></div>`)
+    let data = store.extraFields.filter(i=>i.target == cat.uuid).map((item) => {
+      let relatedInterface = store.interfacesTypes.find(i =>i.uuid == item.relationId)
+      if (relatedInterface) {
+        item.hasInterfaceTypeTargeted = relatedInterface.name
+      }
+      return item
+
+    })
+    let columns = [
+      //{formatter:'action', formatterParams:{name:"Edit"}, width:40, hozAlign:"center", cellClick:function(e, cell){categoryEditorView.update(cell.getRow().getData().uuid)}},
+      {title:"Name", field:"name", editor:"modalInput"},
+      {title:"Type", field:"type"},
+      {title:"Interface displayed", field:"hasInterfaceTypeTargeted"},
+      // {
+      //   title:"Color",
+      //   field:"color",
+      //   formatter:"colorTag",
+      //   editor:"colorPicker",
+      //   editorParams:{
+      //     onChange:function (target, color) {
+      //       push(act.edit("categories", {uuid:target, prop:"color", value:(color.hex+"").slice(0,-2)}))
+      //     }
+      //   }
+      // },
+      // {title:"SVG", field:"svgPath", editor:"modalInput"},
+      // {
+      //   formatter:'remove',
+      //   cellClick:function(e, cell){
+      //     console.log(e.target.dataset.id);
+      //     if (confirm("remove item ?")) {
+      //       push(act.remove("categories",{uuid:e.target.dataset.id}))
+      //     }
+      //   }
+      // },
+    ]
+    let interfaceToCatRel = {}
+    store.categories.forEach((item, i) => {
+      for (var i = 0; i < store.interfacesTypes.length; i++) {
+        let intType = store.interfacesTypes[i]
+        if (intType[item.uuid]) {
+          // cell.getRow().getData().uuid
+        //  interfaceToCatRel.push({uuid:genuuid(), source:intType.uuid, target:item.uuid})
+          interfaceToCatRel[intType.uuid]=item.uuid
+        }
+      }
+    });
+    let fieldToCat = []
+    store.extraFields.forEach((item, i) => {
+      if (interfaceToCatRel[item.relationId]) {
+        fieldToCat.push({uuid:genuuid(), source:item.uuid, target:interfaceToCatRel[item.relationId]})
+      }
+    });
+
+
+    let targetCol = {
+      title:"Target",
+      formatter:'relation',
+      cellClick:function (event, cell) {
+        console.log(event);
+        if (event.target.dataset.id) {
+          showSingleItemService.showById(event.target.dataset.id)
+        }else {
+          // createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
+        }
+      },
+      formatterParams:{
+        relationList:fieldToCat,
+        relationTargets: store.categories
+      },
+      field:'fieldtarget',
+      editor:"modalRelation"
+    }
+    columns.push(targetCol)
+    let menutest = [
+      // {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
+      {type:'action', name:"Add", color:"grey"},
+      {type:'search', name:"Add", color:"grey"}
+    ]
+
+    table = tableComp.create({onUpdate:e=>{updateList()},domElement:".categoryEditorTable", data:data, columns:columns, menu:menutest})
+
 
   }
 
@@ -271,15 +360,10 @@ var createCategoryEditorView = function ({
 
 
         <div class="ui divider"></div>
-        ${fieldsHtml}
-
-        <div class="ui divider"></div>
         ADD<i data-prop="userFirstName" data-value="${cat.name}" data-id="${cat.uuid}" class="edit icon action_add_extra_relation" style="opacity:0.2"></i>
 
 
 
-        <div class="ui divider"></div>
-        ${fieldsHtml}
         <div class="ui divider"></div>
         ADD from existing<i data-prop="userFirstName" data-value="${cat.name}" data-id="${cat.uuid}" class="edit icon action_connect_to_relation" style="opacity:0.2"></i>
 
@@ -287,6 +371,7 @@ var createCategoryEditorView = function ({
 
         <div class="ui divider"></div>
         ${fieldsHtml}
+        <div class="categoryEditorTable"></div>
       </div>
     </div>
     <div class="ui divider"></div>

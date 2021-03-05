@@ -1655,7 +1655,7 @@ var createvisualConfigView = function () {
       return e
     })
     var array2 =store.interfacesTypes.map(function (e) {
-      e.customColor=e.color;
+      e.customColor=e.color || "red";
       e.labels = ["Requirements"];
       return e
     })
