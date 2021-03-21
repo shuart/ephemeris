@@ -2291,7 +2291,7 @@ var createRelationsView = function () {
       //     'Address': 'img/twemoji/1f3e0.svg',
       //     'Usedr': 'img/twemoji/1f600.svg'
       // },
-      minCollision: 60,
+      minCollision: 110,
       chargeStrength: -500,
       customData: {
         "results": [
