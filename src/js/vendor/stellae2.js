@@ -61,6 +61,7 @@ function stellae(_selector, _options) {
     //THREE JS GLOBALS
     var canvasScale=0.01
     var scene = undefined;
+    var stage = undefined;
     var camera = undefined;
 
     var renderer = undefined;
@@ -77,6 +78,7 @@ function stellae(_selector, _options) {
     var cube = undefined
     var offset = undefined
 
+    var controls = undefined
     var mouse = undefined
     var raycaster = undefined
 
@@ -312,30 +314,38 @@ function stellae(_selector, _options) {
       stats = new Stats();
       document.body.appendChild( stats.dom );
 
+      stage = new THREE.Group();
+      scene.add(stage)
       instancegroup = new THREE.Group();
 
 
-      scene.add( instancegroup );
+      stage.add( instancegroup );
+      stage.rotation.x = -Math.PI / 2;
       //scene.add( cube );
+      controls = new THREE.MapControls( camera, renderer.domElement )
 
 
 
-      camera.position.z = 20;
+      // camera.position.z = 20;
+      camera.position.y = 20;
+      controls.update();
 
       animate();
 
-      plane = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000, 18, 18), new THREE.MeshBasicMaterial({
+      plane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200, 18, 18), new THREE.MeshBasicMaterial({
                   color: 0x00ff00,
                   opacity: 0.0,
                   transparent: true
               }));
-              plane.visible = true;
-              //scene.add(plane);
+              plane.visible = false;
+              //plane.rotation.x = -Math.PI / 2;
+              stage.add(plane);
 
 
 
       container.onmousemove = function (event) {
       console.log("desfes")
+          controls.enabled = true;
           // make sure we don't access anything else
            event.preventDefault();
           // get the mouse positions
@@ -354,6 +364,7 @@ function stellae(_selector, _options) {
           raycaster.setFromCamera( mouse, camera )
           // first check if we've already selected an object by clicking
            if (selectedObject) {
+             controls.enabled = false;
              //restart initSimulation
              simulation.alphaTarget(0.3).restart();
            console.log("selected");
@@ -361,14 +372,15 @@ function stellae(_selector, _options) {
               // check the position where the plane is intersected
                var intersects = raycaster.intersectObject(plane);
               // reposition the selectedobject based on the intersection with the plane
-              let newPosition =intersects[0].point.sub(offset)
+              // let newPosition =intersects[0].point.sub(offset)
+              let newPosition =intersects[0].point
               //circle.edata
               console.log(newPosition);
                // selectedObject.parent.position.copy(intersects[0].point.sub(offset));
                selectedObject.edata.x = newPosition.x/canvasScale
-               selectedObject.edata.y = newPosition.y/canvasScale
+               selectedObject.edata.y = -newPosition.z/canvasScale
                selectedObject.edata.fx = newPosition.x/canvasScale
-               selectedObject.edata.fy = newPosition.y/canvasScale
+               selectedObject.edata.fy = -newPosition.z/canvasScale
            } else {
               // if we haven't selected an object, we check if we might need
               // to reposition our plane. We need to do this here, since
@@ -378,15 +390,22 @@ function stellae(_selector, _options) {
                console.log(scene.children)
                console.log(intersects)
                if (intersects.length > 0) {
+                 // alert("fsefsfs")
+                 controls.enabled = false;
+                 // controls.enableRotate = false
+                 //controls.dispose()
+                 //alert("dfsfs")
                   // now reposition the plane to the selected objects position
-                   plane.position.copy(intersects[0].object.parent.position);
+                   // plane.position.copy(intersects[0].object.parent.position);
+                   // plane.position.z = -0;
                   // and align with the camera.
-                   plane.lookAt(camera.position);
+                   // plane.lookAt(camera.position);
                }
            }
        };
 
           container.onmousedown = function (event) {
+
               // get the mouse positions
                var mouse_x = ( event.clientX / window.innerWidth ) * 2 - 1;
                var mouse_y = -( event.clientY / window.innerHeight ) * 2 + 1;
@@ -403,7 +422,7 @@ function stellae(_selector, _options) {
                var intersects = raycaster.intersectObjects(nodes);
                console.log(intersects[0]);
                if (intersects.length > 0) {
-                  //orbit.enabled = false;
+
                   // the first one is the object we'll be moving around
                    selectedObject = intersects[0].object;
                   // and calculate the offset
@@ -428,6 +447,8 @@ function stellae(_selector, _options) {
       cube.rotation.y += 0.01;
       updateNodesPostionInCanvas()
       updateRelationshipsPostionInCanvas()
+
+      controls.update();
       renderer.render( scene, camera );
       stats.update();
     };
@@ -510,7 +531,7 @@ function stellae(_selector, _options) {
 
         const geometry = new THREE.BufferGeometry().setFromPoints( points );
         const line = new THREE.Line( geometry, material );
-        scene.add(line)
+        instancegroup.add(line)
         relationships.push(line)
         relData.relatedObject = line
         relationshipsData.push(relData)
@@ -2535,7 +2556,7 @@ function stellae(_selector, _options) {
      let circle = createCircle(data)
      circle.edata = data
      let borderCircle = createBorderCircle(data)
-     borderCircle.position.set(0.0,0.0,-0.001)
+     borderCircle.position.set(0.0,0.0,-0.008)
 
      let title = makeTextSprite( data.name, {} )
      title.position.set(0,-0.8,-0.0001)
