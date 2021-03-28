@@ -72,15 +72,23 @@ function stellae(_selector, _options) {
 
     var selectedObject = undefined
     var nodes = []
+    var nodesCore = []
     var nodesData = []
     var relationshipsData = []
     var plane = undefined
+    var helperLine = undefined
     var cube = undefined
     var offset = undefined
 
     var controls = undefined
     var mouse = undefined
     var raycaster = undefined
+
+    var hoovered = undefined
+    var previousHoovered = undefined
+
+    var newLinkSource = undefined
+    var newLinkTarget = undefined
 
     //SHAPE TEMPLATES
     var circleGeometry = undefined
@@ -337,6 +345,22 @@ function stellae(_selector, _options) {
 
       animate();
 
+      //create a line to draw connection
+      const lineMaterial = new THREE.LineBasicMaterial( {
+        color: 0xa5abb6,
+        linewidth: 3,
+
+       } );
+      const linePoints = [];
+      linePoints.push( new THREE.Vector3( - 1, -1, -0.15 ) );
+      linePoints.push( new THREE.Vector3( -1.01, -1.01, -0.15 ) );
+
+      const lineGeometry = new THREE.BufferGeometry().setFromPoints( linePoints );
+      helperLine = new THREE.Line( lineGeometry, lineMaterial );
+      stage.add(helperLine)
+
+      //create a helper plane to get position
+
       plane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200, 18, 18), new THREE.MeshBasicMaterial({
                   color: 0x00ff00,
                   opacity: 0.0,
@@ -349,7 +373,8 @@ function stellae(_selector, _options) {
 
 
       container.onmousemove = function (event) {
-      console.log("desfes")
+          hoovered = undefined; //reset status
+          // console.log("desfes")
           controls.enabled = true;
           // make sure we don't access anything else
            event.preventDefault();
@@ -368,8 +393,31 @@ function stellae(_selector, _options) {
           camera.updateMatrixWorld();
           raycaster.setFromCamera( mouse, camera )
           // first check if we've already selected an object by clicking
+          if (newLinkSource) {
+            var intersects = raycaster.intersectObjects(nodes);
+            controls.enabled = false;
+            console.log(newLinkSource);
+            let rData = newLinkSource.edata
+            helperLine.geometry.attributes.position.needsUpdate = true;
+            helperLine.geometry.attributes.position.array[0] =rData.x*canvasScale
+            helperLine.geometry.attributes.position.array[1] =rData.y*canvasScale
 
-           if (selectedObject) {
+            if (intersects[0]) {
+              let data = intersects[0].object.edata
+              newLinkTarget = intersects[0].object
+              helperLine.geometry.attributes.position.array[3] =data.x*canvasScale
+              helperLine.geometry.attributes.position.array[4] =data.y*canvasScale
+            }else {
+              var intersects = raycaster.intersectObject(plane);
+              let newPosition =intersects[0].point
+
+              helperLine.geometry.attributes.position.array[3] =newPosition.x
+              helperLine.geometry.attributes.position.array[4] =-newPosition.z
+            }
+
+
+          }else if (selectedObject) {
+             hoovered = selectedObject
              controls.enabled = false;
              //restart initSimulation
              simulation.alphaTarget(0.3).restart();
@@ -393,11 +441,10 @@ function stellae(_selector, _options) {
               // we need to have this position before the onmousedown
               // to calculate the offset.
                var intersects = raycaster.intersectObjects(nodes);
-               console.log(scene.children)
-               console.log(intersects)
                if (intersects.length > 0) {
                  // alert("fsefsfs")
                  controls.enabled = false;
+                 hoovered = intersects[0].object
                  // controls.enableRotate = false
                  //controls.dispose()
                  //alert("dfsfs")
@@ -408,6 +455,8 @@ function stellae(_selector, _options) {
                    // plane.lookAt(camera.position);
                }
            }
+           //updateElementStatus
+           updateInteractionStates()
        };
 
           container.onmousedown = function (event) {
@@ -428,19 +477,32 @@ function stellae(_selector, _options) {
                var intersects = raycaster.intersectObjects(nodes);
                console.log(intersects[0]);
                if (intersects.length > 0) {
+                  var intersectsCore = raycaster.intersectObjects(nodesCore);
+                  if (intersectsCore[0]) {
+                    // the first one is the object we'll be moving around
+                     selectedObject = intersects[0].object;
+                    // and calculate the offset
+                     //var intersects = raycaster.intersectObject(plane);
+                     //offset.copy(intersects[0].point).sub(plane.position);
+                  }else {
+                    newLinkSource = intersects[0].object
+                  }
 
-                  // the first one is the object we'll be moving around
-                   selectedObject = intersects[0].object;
-                  // and calculate the offset
-                   var intersects = raycaster.intersectObject(plane);
-                   //offset.copy(intersects[0].point).sub(plane.position);
+
                }
            };
 
           container.onmouseup = function (event) {
+              if (newLinkSource) {
+                enLinkMode()
+              }
+              //reset linkMode
+              newLinkSource = undefined
+              newLinkTarget = undefined
               //orbit.enabled = true;
-               selectedObject = null;
-               simulation.alphaTarget(0);
+              //reset Slected oBject Mode
+              selectedObject = null;
+              simulation.alphaTarget(0);
            }
 
 
@@ -476,6 +538,28 @@ function stellae(_selector, _options) {
         line.geometry.attributes.position.array[4] =rData.target.y*canvasScale
         // console.log(line);
       }
+    }
+
+    function updateInteractionStates() {
+      if (previousHoovered) {
+        previousHoovered.parent.children[1].scale.x = previousHoovered.parent.children[1].scale.x -0.1
+        previousHoovered.parent.children[1].scale.y = previousHoovered.parent.children[1].scale.y -0.1
+        previousHoovered = undefined
+      }
+      if (hoovered) {
+        // console.log(hoovered);
+        previousHoovered = hoovered
+        hoovered.parent.children[1].scale.x = hoovered.parent.children[1].scale.x +0.1
+        hoovered.parent.children[1].scale.y = hoovered.parent.children[1].scale.y +0.1
+      }
+      if (!newLinkSource) {
+        helperLine.geometry.attributes.position.needsUpdate = true;
+        helperLine.geometry.attributes.position.array[0] =-1
+        helperLine.geometry.attributes.position.array[1] =-1
+        helperLine.geometry.attributes.position.array[3] =-1.01
+        helperLine.geometry.attributes.position.array[4] =-1.01
+      }
+
     }
 
     function updateWithD3Data(d3Data) {
@@ -671,7 +755,7 @@ function stellae(_selector, _options) {
         }
     }
 
-    function dragEnded(d) {
+    function dragEnded(d) { //remove after transcribe
         if (!d3.event.active) {
             simulation.alphaTarget(0);
         }
@@ -679,19 +763,18 @@ function stellae(_selector, _options) {
         if (typeof options.onNodeDragEnd === 'function') {
             options.onNodeDragEnd(d);
         }
-        if (linkMode) {
-          enLinkMode()
-        }
+        // if (linkMode) {
+        //   enLinkMode()
+        // }
     }
     function enLinkMode() {
-      if (options.onLinkingEnd && linkModeStartNode && linkModeEndNode && linkModeStartNode !=linkModeEndNode) {
-        options.onLinkingEnd([linkModeStartNode,linkModeEndNode])
+      if (options.onLinkingEnd && newLinkSource && newLinkSource !=newLinkTarget) {
+        options.onLinkingEnd([newLinkSource.edata,newLinkTarget.edata])
       }
-      linkMode = false //get out of link creation
-      linkModeStartNode = undefined //clear Node stored
-      linkModeEndNode = undefined //clear Node stored
-      linkModePreview.remove()
+      newLinkSource = undefined //clear Node stored
+      newLinkTarget = undefined //clear Node stored
     }
+
     function updateLinkModePreview(d, dragContext) {
       var mousePosition = d3.mouse(dragContext);
       // var cm = d3.mouse(dragContext);
@@ -2563,6 +2646,7 @@ function stellae(_selector, _options) {
      circle.edata = data
      let borderCircle = createBorderCircle(data)
      borderCircle.position.set(0.0,0.0,-0.008)
+     borderCircle.edata = data
 
      let title = makeTextSprite( data.name, {} )
      title.position.set(0,-0.8,-0.0001)
@@ -2574,14 +2658,15 @@ function stellae(_selector, _options) {
      if (data.extraLabel) {
        addGlyph(data.extraLabel, group)
      }
-     nodes.push(circle)
+     nodes.push(borderCircle)
+     nodesCore.push(circle)
      return group
     }
 
     function addGlyph(svgPath, group) {
 
       let svgtxt = `<svg style="cursor:pointer;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" data-id="eWAwvjEVAsZxRs5I">
-      <path data-id="eWAwvjEVAsZxRs5I" fill="#ffffff" transform="scale(0.05) translate(10,0)" d="${svgPath}"></path>
+      <path data-id="eWAwvjEVAsZxRs5I" fill="#ffffff" transform="scale(0.04) translate(10,0)" d="${svgPath}"></path>
     </svg>`
 
       let svgCont = document.createElement('div')
@@ -2599,8 +2684,10 @@ function stellae(_selector, _options) {
 
       var canvas = document.createElement("canvas");
       var svgSize = svg.getBoundingClientRect();
-      canvas.width = svgSize.width;
-      canvas.height = svgSize.height;
+      canvas.width = 150;
+      canvas.height = 150;
+      // canvas.width = svgSize.width;
+      // canvas.height = svgSize.height;
       var ctx = canvas.getContext("2d");
 
       var img = document.createElement("img");
@@ -2623,7 +2710,7 @@ function stellae(_selector, _options) {
 
         var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
         var sprite = new THREE.Sprite( spriteMaterial );
-        sprite.position.set(0.1,-0.2,0.05)
+        sprite.position.set(0.18,-0.25,0.05)
         group.add(sprite);
         svgCont.remove()
         //img.remove()
