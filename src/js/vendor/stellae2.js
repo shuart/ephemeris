@@ -286,11 +286,16 @@ function stellae(_selector, _options) {
 
     function setUpGraph(container) {
 
+      let containerDim = container.getBoundingClientRect();
+
+      let h =containerDim.height;
+      let w =containerDim.width;
+
       scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+      camera = new THREE.PerspectiveCamera( 75,w/h, 0.1, 1000 );
 
       renderer = new THREE.WebGLRenderer({ alpha: true, antialias :true });
-      renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.setSize( w,  h );
       container.appendChild( renderer.domElement );
 
       geometry = new THREE.BoxGeometry( 1, 1, 1 );
@@ -349,13 +354,13 @@ function stellae(_selector, _options) {
           // make sure we don't access anything else
            event.preventDefault();
           // get the mouse positions
-           var mouse_x = ( event.clientX / window.innerWidth ) * 2 - 1;
+           var mouse_x = ( (event.clientX-containerDim.x) / containerDim.width ) * 2 - 1;
            var mouse_y = -( event.clientY / window.innerHeight ) * 2 + 1;
           // get the 3D position and create a raycaster
-            mouse.x = mouse_x;
-      			mouse.y = mouse_y;
-      			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-      				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+          mouse.x = mouse_x;
+      		mouse.y = mouse_y;
+      		mouse.x = ( (event.clientX -containerDim.x) / containerDim.width ) * 2 - 1;
+      		mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
            var vector = new THREE.Vector3(mouse_x, mouse_y, 0.5);
            vector.unproject(camera);
            // var raycaster = new THREE.Raycaster(camera.position,
@@ -363,6 +368,7 @@ function stellae(_selector, _options) {
           camera.updateMatrixWorld();
           raycaster.setFromCamera( mouse, camera )
           // first check if we've already selected an object by clicking
+
            if (selectedObject) {
              controls.enabled = false;
              //restart initSimulation
@@ -407,7 +413,7 @@ function stellae(_selector, _options) {
           container.onmousedown = function (event) {
 
               // get the mouse positions
-               var mouse_x = ( event.clientX / window.innerWidth ) * 2 - 1;
+               var mouse_x = ( (event.clientX-containerDim.x) / containerDim.width ) * 2 - 1;
                var mouse_y = -( event.clientY / window.innerHeight ) * 2 + 1;
               // use the projector to check for intersections. First thing to do is unproject
               // the vector.
@@ -427,7 +433,7 @@ function stellae(_selector, _options) {
                    selectedObject = intersects[0].object;
                   // and calculate the offset
                    var intersects = raycaster.intersectObject(plane);
-                   offset.copy(intersects[0].point).sub(plane.position);
+                   //offset.copy(intersects[0].point).sub(plane.position);
                }
            };
 
@@ -2564,8 +2570,65 @@ function stellae(_selector, _options) {
      group.add( circle )
      group.add( borderCircle )
      group.add( title )
+     console.log(data);
+     if (data.extraLabel) {
+       addGlyph(data.extraLabel, group)
+     }
      nodes.push(circle)
      return group
+    }
+
+    function addGlyph(svgPath, group) {
+
+      let svgtxt = `<svg style="cursor:pointer;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" data-id="eWAwvjEVAsZxRs5I">
+      <path data-id="eWAwvjEVAsZxRs5I" fill="#ffffff" transform="scale(0.05) translate(10,0)" d="${svgPath}"></path>
+    </svg>`
+
+      let svgCont = document.createElement('div')
+      // svgCont.innerHTML =svgtxt
+      document.body.appendChild(svgCont)
+      svgCont.style.height ="0px"
+      svgCont.style.overflow ="hidden"
+      svgCont.innerHTML = svgtxt
+
+      // document.getElementById("svgContainer").innerHTML = svgtxt
+
+      var svg = svgCont.querySelector("svg");
+      // var svg = document.getElementById("svgContainer").querySelector("svg");
+      var svgData = (new XMLSerializer()).serializeToString(svg);
+
+      var canvas = document.createElement("canvas");
+      var svgSize = svg.getBoundingClientRect();
+      canvas.width = svgSize.width;
+      canvas.height = svgSize.height;
+      var ctx = canvas.getContext("2d");
+
+      var img = document.createElement("img");
+      //document.body.appendChild(img)
+      img.setAttribute("src", "data:image/svg+xml;base64," + window.btoa(unescape(encodeURIComponent(svgData))) );
+
+      img.onload = function() {
+        //ctx.globalAlpha = 0.4;
+
+        ctx.drawImage(img, 0, 0);
+
+        var texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        //
+        // var geometry =  new THREE.PlaneGeometry( 1, 1 )
+        // // var geometry = new THREE.SphereGeometry(3, 50, 50, 0, Math.PI * 2, 0, Math.PI * 2);
+        // var material = new THREE.MeshBasicMaterial({ map: texture });
+        // //material.map.minFilter = THREE.LinearFilter;
+        // var mesh = new THREE.Mesh(geometry, material);
+
+        var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
+        var sprite = new THREE.Sprite( spriteMaterial );
+        sprite.position.set(0.1,-0.2,0.05)
+        group.add(sprite);
+        svgCont.remove()
+        //img.remove()
+      };
+
     }
 
     function makeTextSprite( message, parameters )
