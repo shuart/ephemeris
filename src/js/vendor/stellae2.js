@@ -408,6 +408,7 @@ function stellae(_selector, _options) {
               helperLine.geometry.attributes.position.array[3] =data.x*canvasScale
               helperLine.geometry.attributes.position.array[4] =data.y*canvasScale
             }else {
+              newLinkTarget = undefined
               var intersects = raycaster.intersectObject(plane);
               let newPosition =intersects[0].point
 
@@ -495,6 +496,11 @@ function stellae(_selector, _options) {
           container.onmouseup = function (event) {
               if (newLinkSource) {
                 enLinkMode()
+              }
+              if (selectedObject) {
+                if (typeof options.onNodeDragEnd === 'function') {
+                    options.onNodeDragEnd(selectedObject.edata);
+                }
               }
               //reset linkMode
               newLinkSource = undefined

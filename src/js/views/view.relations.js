@@ -2508,18 +2508,19 @@ var createRelationsView = function () {
           }
       }else if (addMode == "compose") {
           let isCircularRef = store.links.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
-          let targetIsRoot = !store.links.find(i=> i.target == previousSelectedNode.uuid)
+          // let targetIsRoot = !store.links.find(i=> i.target == previousSelectedNode.uuid)
 
-          if (!isCircularRef && !targetIsRoot) {
+          if (!isCircularRef) {
             // push(movePbs({origin:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
             push(removePbsLink({target:previousSelectedNode.uuid}))
 
             push(act.addLink("currentPbs",{ source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
           }else if(isCircularRef){
             alert("Circular reference. Action not possible")
-          }else if(targetIsRoot){
-            alert("Cannot target the root node")
           }
+          // }else if(targetIsRoot){
+          //   alert("Cannot target the root node")
+          // }
 
       }
     }
