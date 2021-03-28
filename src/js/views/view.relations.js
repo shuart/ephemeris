@@ -2249,6 +2249,9 @@ var createRelationsView = function () {
     console.log(data);
 
     //set up the graph
+    if (activeGraph) {//first clean existing graph
+      activeGraph.cleanAll()
+    }
     activeGraph = new stellae('.interfaceGraph', {
       highlight: [
           {

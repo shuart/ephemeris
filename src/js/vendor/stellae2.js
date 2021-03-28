@@ -74,6 +74,8 @@ function stellae(_selector, _options) {
     var nodes = []
     var nodesCore = []
     var nodesData = []
+    var spriteBuffer = []
+    var spriteTextureBuffer = []
     var relationshipsData = []
     var plane = undefined
     var helperLine = undefined
@@ -2707,6 +2709,7 @@ function stellae(_selector, _options) {
 
         var texture = new THREE.Texture(canvas);
         texture.needsUpdate = true;
+        spriteTextureBuffer.push(texture)
         //
         // var geometry =  new THREE.PlaneGeometry( 1, 1 )
         // // var geometry = new THREE.SphereGeometry(3, 50, 50, 0, Math.PI * 2, 0, Math.PI * 2);
@@ -2716,6 +2719,7 @@ function stellae(_selector, _options) {
 
         var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
         var sprite = new THREE.Sprite( spriteMaterial );
+        spriteBuffer(sprite)
         sprite.position.set(0.18,-0.25,0.05)
         group.add(sprite);
         svgCont.remove()
@@ -2751,11 +2755,13 @@ function stellae(_selector, _options) {
 
        var texture = new THREE.Texture(canvas)
        texture.needsUpdate = true;
+       spriteTextureBuffer.push(texture)
 
        var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
        var sprite = new THREE.Sprite( spriteMaterial );
        //sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
        sprite.scale.set(0.002 * canvas.width, 0.0025 * canvas.height);
+       spriteBuffer.push(sprite)
        return sprite;
     }
 
@@ -2777,6 +2783,68 @@ function stellae(_selector, _options) {
         return toHex(d3.rgb(cls).darker(1))
     }
 
+    function cleanAll() { //TODO use to avoid memory hog
+      console.log('dispose renderer!')
+      renderer.dispose()
+
+      const cleanMaterial = material => {
+        console.log('dispose material!')
+        material.dispose()
+
+        // dispose textures
+        for (const key of Object.keys(material)) {
+          const value = material[key]
+          if (value && typeof value === 'object' && 'minFilter' in value) {
+            console.log('dispose texture!')
+            value.dispose()
+          }
+        }
+      }
+
+      scene.traverse(object => {
+      	if (!object.isMesh) return
+
+      	console.log('dispose geometry!')
+      	object.geometry.dispose()
+
+      	if (object.material.isMaterial) {
+      		cleanMaterial(object.material)
+      	} else {
+      		// an array of materials
+      		for (const material of object.material) cleanMaterial(material)
+      	}
+      })
+
+      for (var i = 0; i < nodes.length; i++) {
+        nodes[i].geometry.dispose()
+        if (nodes[i].material.isMaterial) {
+      		cleanMaterial(nodes[i].material)
+      	} else {
+      		// an array of materials
+      		for (const material of object.material) cleanMaterial(material)
+      	}
+        nodes[i] = []
+        nodesCore[i].geometry.dispose()
+        if (nodesCore[i].material.isMaterial) {
+      		cleanMaterial(nodesCore[i].material)
+      	} else {
+      		// an array of materials
+      		for (const material of nodesCore[i].material) cleanMaterial(material)
+      	}
+        nodesCore[i] =[]
+      }
+      for (var i = 0; i < spriteTextureBuffer.length; i++) {
+        spriteTextureBuffer[i].dispose()
+      }
+      for (var i = 0; i < spriteBuffer.length; i++) {
+        spriteBuffer[i].geometry.dispose()
+        if (spriteBuffer[i].material.isMaterial) {
+      		cleanMaterial(spriteBuffer[i].material)
+      	}
+      }
+
+    }
+
     init(_selector, _options);
 
     return {
@@ -2796,6 +2864,7 @@ function stellae(_selector, _options) {
         getSelectedNodes: getSelectedNodes,
         // getCurrentMousePosition: getCurrentMousePosition,
         getlocalMousePositionFromLayerMousePosition: getlocalMousePositionFromLayerMousePosition,
+        cleanAll: cleanAll,
         version: version
     };
 }
