@@ -577,7 +577,7 @@ function stellae(_selector, _options) {
     function updateHelpers(n,g) {
       // g = [{uuid:"54646", id:'55645646', x:78, y:45, h:88, w:66}]
       // TODO: restore
-      // updateNotes(n);
+      updateNotes(n);
       // updateGroups(g);
     }
 
@@ -617,14 +617,35 @@ function stellae(_selector, _options) {
     function updateNotes(n) {
       for (var i = 0; i < n.length; i++) {
         notes.push(n[i])
+        createNewNote(n[i])
       }
-
     }
     function updateGroups(g) {
       for (var i = 0; i < g.length; i++) {
         groups.push(g[i])
       }
     }
+
+    function createNewNote(n) {
+
+      let text = dcText(n.content, 5, 7, 25, 0x000000);      // text #2, TRANSPARENT
+      text.scale.set(0.1,0.1,0.1); // move geometry up and out
+      text.position.set(n.x,n.y,0.02); // move geometry up and out
+      stage.add(text);
+    }
+
+    // function appendNoteToGraph() {
+    //     var n = appendNote();
+    //     appendLayoutToNote(n)
+    //     return n;
+    // }
+    // function appendGroupToGraph() {
+    //     var g = appendGroup();
+    //     var gLayout = appendLayoutToGroup(g)
+    //     appendResizeToGroup(g, gLayout)
+    //     appendTextToGroup(g)
+    //     return g;
+    // }
 
     function createNewNodes(n) {
       for (var i = 0; i < n.length; i++) {
@@ -751,7 +772,7 @@ function stellae(_selector, _options) {
         // }
     }
     function enLinkMode() {
-      if (options.onLinkingEnd && newLinkSource && newLinkSource !=newLinkTarget) {
+      if (options.onLinkingEnd && newLinkSource && newLinkTarget && newLinkSource !=newLinkTarget) {
         options.onLinkingEnd([newLinkSource.edata,newLinkTarget.edata])
       }
       newLinkSource = undefined //clear Node stored
@@ -843,18 +864,18 @@ function stellae(_selector, _options) {
         appendInfoElement(cls, false, relationship);
     }
 
-    function appendNoteToGraph() {
-        var n = appendNote();
-        appendLayoutToNote(n)
-        return n;
-    }
-    function appendGroupToGraph() {
-        var g = appendGroup();
-        var gLayout = appendLayoutToGroup(g)
-        appendResizeToGroup(g, gLayout)
-        appendTextToGroup(g)
-        return g;
-    }
+    // function appendNoteToGraph() {
+    //     var n = appendNote();
+    //     appendLayoutToNote(n)
+    //     return n;
+    // }
+    // function appendGroupToGraph() {
+    //     var g = appendGroup();
+    //     var gLayout = appendLayoutToGroup(g)
+    //     appendResizeToGroup(g, gLayout)
+    //     appendTextToGroup(g)
+    //     return g;
+    // }
     function appendNote() {
         return note.enter()
                    .append('g')
@@ -2038,10 +2059,10 @@ function stellae(_selector, _options) {
     //     updateNodesAndRelationships(d3Data.nodes, d3Data.relationships);
     // }
 
-    function updateWithCustomData(customData) {
-        var d3Data = customDataToD3Data(customData);
-        updateWithD3Data(d3Data);
-    }
+    // function updateWithCustomData(customData) {
+    //     var d3Data = customDataToD3Data(customData);
+    //     updateWithD3Data(d3Data);
+    // }
 
     function updateInfo(d) {
         clearInfo();
@@ -2501,6 +2522,59 @@ function stellae(_selector, _options) {
         return toHex(d3.rgb(cls).darker(1))
     }
 
+    function dcText(txt, hWorldTxt, hWorldAll, hPxTxt, fgcolor, bgcolor) { // the routine
+      // txt is the text.
+      // hWorldTxt is world height of text in the plane.
+      // hWorldAll is world height of whole rectangle containing the text.
+      // hPxTxt is px height of text in the texture canvas; larger gives sharper text.
+      // The plane and texture canvas are created wide enough to hold the text.
+      // And wider if hWorldAll/hWorldTxt > 1 which indicates padding is desired.
+      var kPxToWorld = hWorldTxt/hPxTxt;                // Px to World multplication factor
+      // hWorldTxt, hWorldAll, and hPxTxt are given; get hPxAll
+      var hPxAll = Math.ceil(hWorldAll/kPxToWorld);     // hPxAll: height of the whole texture canvas
+      // create the canvas for the texture
+      var txtcanvas = document.createElement("canvas"); // create the canvas for the texture
+      var ctx = txtcanvas.getContext("2d");
+      ctx.font = hPxTxt + "px sans-serif";
+      // now get the widths
+      var wPxTxt = ctx.measureText(txt).width;         // wPxTxt: width of the text in the texture canvas
+      var wWorldTxt = wPxTxt*kPxToWorld;               // wWorldTxt: world width of text in the plane
+      var wWorldAll = wWorldTxt+(hWorldAll-hWorldTxt); // wWorldAll: world width of the whole plane
+      var wPxAll = Math.ceil(wWorldAll/kPxToWorld);    // wPxAll: width of the whole texture canvas
+      // next, resize the texture canvas and fill the text
+      txtcanvas.width =  wPxAll;
+      txtcanvas.height = hPxAll;
+      if (bgcolor != undefined) { // fill background if desired (transparent if none)
+        ctx.fillStyle = "#" + bgcolor.toString(16).padStart(6, '0');
+        ctx.fillRect( 0,0, wPxAll,hPxAll);
+      }
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#" + fgcolor.toString(16).padStart(6, '0'); // fgcolor
+      ctx.font = hPxTxt + "px sans-serif";   // needed after resize
+      ctx.fillText(txt, wPxAll/2, hPxAll/2); // the deed is done
+      // next, make the texture
+      var texture = new THREE.Texture(txtcanvas); // now make texture
+      texture.minFilter = THREE.LinearFilter;     // eliminate console message
+      texture.needsUpdate = true;                 // duh
+      // and make the world plane with the texture
+      geometry = new THREE.PlaneGeometry(wWorldAll, hWorldAll);
+      var material = new THREE.MeshBasicMaterial(
+        { side:THREE.DoubleSide, map:texture, transparent:true, opacity:1.0 } );
+      // and finally, the mesh
+      var mesh = new THREE.Mesh(geometry, material);
+      mesh.wWorldTxt = wWorldTxt; // return the width of the text in the plane
+      mesh.wWorldAll = wWorldAll; //    and the width of the whole plane
+      mesh.wPxTxt = wPxTxt;       //    and the width of the text in the texture canvas
+                                  // (the heights of the above items are known)
+      mesh.wPxAll = wPxAll;       //    and the width of the whole texture canvas
+      mesh.hPxAll = hPxAll;       //    and the height of the whole texture canvas
+      mesh.ctx = ctx;             //    and the 2d texture context, for any glitter
+      // console.log(wPxTxt, hPxTxt, wPxAll, hPxAll);
+      // console.log(wWorldTxt, hWorldTxt, wWorldAll, hWorldAll);
+      return mesh;
+    }
+
     function cleanAll() { //TODO use to avoid memory hog
       displayed = false
       renderer.dispose()
@@ -2558,6 +2632,11 @@ function stellae(_selector, _options) {
       	}
       }
 
+    }
+
+    function updateWithCustomData(customData) {
+        var d3Data = customDataToD3Data(customData);
+        updateWithD3Data(d3Data);
     }
 
     init(_selector, _options);
