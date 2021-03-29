@@ -939,61 +939,7 @@ function stellae(_selector, _options) {
         appendInfoElement(cls, false, relationship);
     }
 
-    // function appendNoteToGraph() {
-    //     var n = appendNote();
-    //     appendLayoutToNote(n)
-    //     return n;
-    // }
-    // function appendGroupToGraph() {
-    //     var g = appendGroup();
-    //     var gLayout = appendLayoutToGroup(g)
-    //     appendResizeToGroup(g, gLayout)
-    //     appendTextToGroup(g)
-    //     return g;
-    // }
-    // function appendNote() {
-    //     return note.enter()
-    //                .append('g')
-    //                .attr('class', "note")
-    //                .attr('transform', function (d) {
-    //                  return "translate(" + d.x + ", " + d.y + ")"
-    //                })
-    //                .on('click', function(d) {//catch dblclick on canvas
-    //                    if (typeof options.onNoteClick === 'function') {
-    //                      // var xy = d3.mouse(this);
-    //                      // var transform = d3.zoomTransform(base.node());
-    //                      // var xy1 = transform.invert(xy);
-    //                      //
-    //                      // options.onCanvasDoubleClick({x:xy1[0],y:xy1[1]})
-    //                      //   //options.onNodeDoubleClick(d);
-    //                    }else {
-    //                      var newName = prompt("Content", d.content)
-    //                      if (newName == "") {
-    //                        if (confirm("Remove note?")) {
-    //                          notes=notes.filter(n=>n.uuid!= d.uuid)//remove the note from data
-    //                          d3.select(this).remove()//remove the linked element
-    //                        }
-    //                      }else if (newName) {
-    //                        d.content= newName
-    //                        d3.select(this).select('text').text(d.content);
-    //                      }
-    //                    }
-    //                })
-    //                .call(d3.drag()
-    //                        // .on('start', dragStarted)
-    //                        .on('drag', function(d) {
-    //                           d.x += d3.event.dx;
-    //                           d.y += d3.event.dy;
-    //                           d3.select(this)
-    //                               .attr('transform', "translate(" + d.x  + ", " + d.y  + ")");
-    //                         })
-    //                        .on('end', function () {
-    //                          if (!d3.event.active) {
-    //                              simulation.alphaTarget(0);
-    //                          }
-    //                        }));
-    //
-    // }
+
     function appendGroup() {
         return group.enter()
                    .append('g')
@@ -1044,348 +990,169 @@ function stellae(_selector, _options) {
                            }));
 
     }
-    function appendLayoutToGroup(group) {
-        return group.append('rect')
-                    .attr('class', "groupLayout")
-                   .attr("fill", "#2ab6ab")
-                   .attr("rx", "4")
-                   .style("opacity", .1)
-                   // .attr("x", 10)
-                   // .attr("y", 10)
-                   .attr("width", function (d) {
-                     return d.w
-                   })
-                   .attr("height", function (d) {
-                     return d.h
-                   })
-    }
-    function appendTextToGroup(group) {
-        return group.append('text')
-                   .attr("fill", "black")
-                   .attr('transform', "translate(5, 15)")
-                   .attr('font-weight', "bold")
-                   .text(function (d) {
-                     return d.content || "Group"
-                   });
-    }
-    function appendResizeToGroup(group, layout) {
-        return group.append('circle')
-                    .attr("fill", "grey")
-                    .attr("r", 5)
-                    .attr('transform', function(d){
-                      return "translate(" +(d.w) + ", " + (d.h)  + ")"
-                    })
-                    .on('click', function(d) {//catch dblclick on canvas
-                    })
-                    .call(d3.drag()
-                            // .on('start', dragStarted)
-                            .on('drag', function(d) {
-
-                                // move helper
-                                if ((d.w + d3.event.dx>0) && (d.h + d3.event.dy>0)) {// prevent negative group size
-                                  d.w += d3.event.dx;
-                                  d.h += d3.event.dy;
-                                  d3.select(this)
-                                      .attr('transform', "translate(" + d.w + ", " + d.h + ")");
-                                  //change group size
-                                  d3.select(this.parentNode).select('.groupLayout')
-                                      .attr("width", d.w)
-                                      .attr("height", d.h)
-                                }
-
-                             })
-                            .on('end', function () {
-                              if (!d3.event.active) {
-                                  simulation.alphaTarget(0);
-                              }
-                            }));
-
-    }
-    function appendLayoutToNote(note) {
-        return note.append('text')
-                   .attr("fill", "black")
-                   // .attr("x", 10)
-                   // .attr("y", 10)
-                   // .attr("width", 50)
-                   // .attr("height", 100)
-                   .text(function (d) {
-                     return d.content || 'group'
-                   });
-    }
-
-    function appendNode() {
-        return node.enter()
-                   .append('g')
-                   .attr('class', function(d) {
-                       var highlight, i,
-                           classes = 'node',
-                           label = d.labels[0];
-
-                       if (icon(d)|| options.customPathIcons[d.labels[0]]["path"]) {
-                           classes += ' node-icon';
-                       }
-
-                       if (image(d)) {
-                           classes += ' node-image';
-                       }
-
-                       if (options.highlight) {
-                           for (i = 0; i < options.highlight.length; i++) {
-                               highlight = options.highlight[i];
-
-                               if (d.labels[0] === highlight.class && d.properties[highlight.property] === highlight.value) {
-                                   classes += ' node-highlighted';
-                                   break;
-                               }
-                           }
-                       }
-
-                       return classes;
-                   })
-                   .on('click', function(d) {
-                       if (options.unpinNodeOnClick) {
-                         d.fx = d.fy = null;
-                       }
-
-                       if (typeof options.onNodeClick === 'function') {
-                          // var xy = d3.mouse(base.node()); TODO not usefull remove
-                           options.onNodeClick(d,{canvasPosition: undefined});
-                       }
-                   })
-                   .on('dblclick', function(d) {
-                       stickNode(d);
-
-                       if (typeof options.onNodeDoubleClick === 'function') {
-                           options.onNodeDoubleClick(d);
-                       }
-                   })
-                   .on('mouseenter', function(d) {
-                       if (info) {
-                           updateInfo(d);
-                       }
-                       if (options.fadeOtherNodesOnHoover) {
-                         fadeNodes(0.5,d,this)
-                       }
-                       if (linkMode) {
-                         linkModeEndNode = d
-                       }
-
-                       if (typeof options.onNodeMouseEnter === 'function') {
-                           options.onNodeMouseEnter(d);
-                       }
-                   })
-                   .on('mouseleave', function(d) {
-                       if (info) {
-                           clearInfo(d);
-                       }
-                       if (linkMode) {
-                         linkModeEndNode = undefined
-                       }
-                       if (options.fadeOtherNodesOnHoover) {
-                         unfadeAllNodes()
-                       }
-
-
-                       if (typeof options.onNodeMouseLeave === 'function') {
-                           options.onNodeMouseLeave(d);
-                       }
-                   })
-                   .on("contextmenu", function (d, i) {
-                     if (typeof options.onNodeContextMenu === 'function') {
-                        d3.event.preventDefault();
-                        options.onNodeContextMenu(d);
-                     }
-                   })
-                   .call(d3.drag()
-                           .on('start', dragStarted)
-                           .on('drag', dragged)
-                           .on('end', dragEnded));
-    }
-
-    // function appendNodeToGraph() {
-    //     var n = appendNode();
+    // function appendLayoutToGroup(group) {
+    //     return group.append('rect')
+    //                 .attr('class', "groupLayout")
+    //                .attr("fill", "#2ab6ab")
+    //                .attr("rx", "4")
+    //                .style("opacity", .1)
+    //                // .attr("x", 10)
+    //                // .attr("y", 10)
+    //                .attr("width", function (d) {
+    //                  return d.w
+    //                })
+    //                .attr("height", function (d) {
+    //                  return d.h
+    //                })
+    // }
+    // function appendTextToGroup(group) {
+    //     return group.append('text')
+    //                .attr("fill", "black")
+    //                .attr('transform', "translate(5, 15)")
+    //                .attr('font-weight', "bold")
+    //                .text(function (d) {
+    //                  return d.content || "Group"
+    //                });
+    // }
+    // function appendResizeToGroup(group, layout) {
+    //     return group.append('circle')
+    //                 .attr("fill", "grey")
+    //                 .attr("r", 5)
+    //                 .attr('transform', function(d){
+    //                   return "translate(" +(d.w) + ", " + (d.h)  + ")"
+    //                 })
+    //                 .on('click', function(d) {//catch dblclick on canvas
+    //                 })
+    //                 .call(d3.drag()
+    //                         // .on('start', dragStarted)
+    //                         .on('drag', function(d) {
     //
-    //     appendSelectionRingToNode(n)
-    //     appendRingToNode(n);
-    //     appendOutlineToNode(n);
-    //     appendSideTextToNode(n);
+    //                             // move helper
+    //                             if ((d.w + d3.event.dx>0) && (d.h + d3.event.dy>0)) {// prevent negative group size
+    //                               d.w += d3.event.dx;
+    //                               d.h += d3.event.dy;
+    //                               d3.select(this)
+    //                                   .attr('transform', "translate(" + d.w + ", " + d.h + ")");
+    //                               //change group size
+    //                               d3.select(this.parentNode).select('.groupLayout')
+    //                                   .attr("width", d.w)
+    //                                   .attr("height", d.h)
+    //                             }
     //
-    //     if (options.icons) {
-    //         appendTextToNode(n);
-    //     }
-    //     if (options.customPathIcons) {
-    //         appendCustomPathIcons(n);
-    //     }
-    //     if (options.extraLabels && !options.extraLabelReplaceNormalPath) {
-    //         appendExtraLabelPathIcons(n);
-    //     }
+    //                          })
+    //                         .on('end', function () {
+    //                           if (!d3.event.active) {
+    //                               simulation.alphaTarget(0);
+    //                           }
+    //                         }));
     //
-    //     if (options.images) {
-    //         appendImageToNode(n);
-    //     }
-    //
-    //     return n;
+    // }
+    // function appendLayoutToNote(note) {
+    //     return note.append('text')
+    //                .attr("fill", "black")
+    //                // .attr("x", 10)
+    //                // .attr("y", 10)
+    //                // .attr("width", 50)
+    //                // .attr("height", 100)
+    //                .text(function (d) {
+    //                  return d.content || 'group'
+    //                });
     // }
 
-    // function appendOutlineToNode(node) {
-    //     return node.append('circle')
-    //                .attr('class', 'outline')
-    //                .attr('r', options.nodeRadius)
-    //                .style('fill', function(d) {
-    //                  if (d.customColor) {
-    //                    return d.customColor
-    //                  }else {
-    //                    return options.nodeOutlineFillColor ? options.nodeOutlineFillColor : class2color(d.labels[0]);
-    //                  }
+    // function appendNode() {
+    //     return node.enter()
+    //                .append('g')
+    //                .attr('class', function(d) {
+    //                    var highlight, i,
+    //                        classes = 'node',
+    //                        label = d.labels[0];
+    //
+    //                    if (icon(d)|| options.customPathIcons[d.labels[0]]["path"]) {
+    //                        classes += ' node-icon';
+    //                    }
+    //
+    //                    if (image(d)) {
+    //                        classes += ' node-image';
+    //                    }
+    //
+    //                    if (options.highlight) {
+    //                        for (i = 0; i < options.highlight.length; i++) {
+    //                            highlight = options.highlight[i];
+    //
+    //                            if (d.labels[0] === highlight.class && d.properties[highlight.property] === highlight.value) {
+    //                                classes += ' node-highlighted';
+    //                                break;
+    //                            }
+    //                        }
+    //                    }
+    //
+    //                    return classes;
     //                })
-    //                .style('stroke', function(d) {
-    //                    if (d.customColor) {
-    //                      return class2darkenCustomColor(d.customColor)
-    //                    }else {
-    //                      return options.nodeOutlineFillColor ? class2darkenColor(options.nodeOutlineFillColor) : class2darkenColor(d.labels[0]);
+    //                .on('click', function(d) {
+    //                    if (options.unpinNodeOnClick) {
+    //                      d.fx = d.fy = null;
+    //                    }
+    //
+    //                    if (typeof options.onNodeClick === 'function') {
+    //                       // var xy = d3.mouse(base.node()); TODO not usefull remove
+    //                        options.onNodeClick(d,{canvasPosition: undefined});
     //                    }
     //                })
-    //                .append('title').text(function(d) {
-    //                    return toString(d);
-    //                });
-    // }
+    //                .on('dblclick', function(d) {
+    //                    stickNode(d);
     //
-    // function appendRingToNode(node) {
-    //     return node.append('circle')
-    //                .attr('class', 'ring')
-    //                .attr('r', options.nodeRadius * 1.16)
-    //                .on('mousedown', function(d) {
-    //                    linkMode = true;
-    //                    linkModeStartNode = d;
+    //                    if (typeof options.onNodeDoubleClick === 'function') {
+    //                        options.onNodeDoubleClick(d);
+    //                    }
     //                })
-    //                .append('title').text(function(d) {
-    //                    return toString(d);
-    //                });
-    // }
-    // function appendSelectionRingToNode(node) {
-    //     return node.append('circle')
-    //                .attr('class', 'selection_ring')
-    //                .attr('r', options.nodeRadius * 1.2)
-    //                // .on('mousedown', function(d) {
-    //                //     linkMode = true;
-    //                //     linkModeStartNode = d;
-    //                // })
-    //                // .append('title').text(function(d) {
-    //                //     return toString(d);
-    //                // });
+    //                .on('mouseenter', function(d) {
+    //                    if (info) {
+    //                        updateInfo(d);
+    //                    }
+    //                    if (options.fadeOtherNodesOnHoover) {
+    //                      fadeNodes(0.5,d,this)
+    //                    }
+    //                    if (linkMode) {
+    //                      linkModeEndNode = d
+    //                    }
+    //
+    //                    if (typeof options.onNodeMouseEnter === 'function') {
+    //                        options.onNodeMouseEnter(d);
+    //                    }
+    //                })
+    //                .on('mouseleave', function(d) {
+    //                    if (info) {
+    //                        clearInfo(d);
+    //                    }
+    //                    if (linkMode) {
+    //                      linkModeEndNode = undefined
+    //                    }
+    //                    if (options.fadeOtherNodesOnHoover) {
+    //                      unfadeAllNodes()
+    //                    }
+    //
+    //
+    //                    if (typeof options.onNodeMouseLeave === 'function') {
+    //                        options.onNodeMouseLeave(d);
+    //                    }
+    //                })
+    //                .on("contextmenu", function (d, i) {
+    //                  if (typeof options.onNodeContextMenu === 'function') {
+    //                     d3.event.preventDefault();
+    //                     options.onNodeContextMenu(d);
+    //                  }
+    //                })
+    //                .call(d3.drag()
+    //                        .on('start', dragStarted)
+    //                        .on('drag', dragged)
+    //                        .on('end', dragEnded));
     // }
 
-    function appendCustomPathIcons(node) {
-          return node.append("path")
-                  .attr('fill', function (d) {
-                    return options.customPathIcons[d.labels[0]]["fill"]|| '#ffffff'
-                  })
-                .attr("transform", function (d) {
-                  return options.customPathIcons[d.labels[0]]["transform"]|| "scale("+0.05+") translate(-250, -250)"
-                })
-                .attr("d", function (d) {
-                  if (options.extraLabels && d.extraLabel && options.extraLabelReplaceNormalPath) {
-                    return d.extraLabel || "M296 160H180.6l42.6-129.8C227.2 15 215.7 0 200 0H56C44 0 33.8 8.9 32.2 20.8l-32 240C-1.7 275.2 9.5 288 24 288h118.7L96.6 482.5c-3.6 15.2 8 29.5 23.3 29.5 8.4 0 16.4-4.4 20.8-12l176-304c9.3-15.9-2.2-36-20.7-36z"
-                  }else {
-                    return options.customPathIcons[d.labels[0]]["path"]|| "M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"
-                  }
-                } )//todo chose beter default
-    }
-    function appendExtraLabelPathIcons(node) {
-          return node.filter(function (d) {//only add to node with the extra la bel prop
-              return d.extraLabel
-          })
-          .append("path")
-                //   .attr('fill', function (d) {
-                //     return options.customPathIcons[d.labels[0]]["fill"]|| '#ffffff'
-                //   })
-                // .attr("transform", function (d) {
-                //   return options.customPathIcons[d.labels[0]]["transform"]|| "scale("+0.05+") translate(-250, -250)"
-                // })
-                // .attr("d", function (d) {
-                //   return options.customPathIcons[d.labels[0]]["path"]|| "M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"
-                // } )//todo chose beter default
-              .attr('fill', function (d) {
-                if (d.customLabelColor) {
-                  return d.customColor
-                }else {
-                  return "#73787f";
-                }
-              })
-              .attr('stroke', function (d) {
-                // if (d.customColor) {
-                //   return d.customColor
-                // }else {
-                //   return  '#ffffff';
-                // }
-                return  '#ffffff';
-              })
-              .attr('stroke-width', 10)
-              .attr("transform", function (d) {
-                  return "scale("+0.05+") translate(+200, -50)"
-                })
-                .attr("d", function (d) {
-                  return d.extraLabel || "M296 160H180.6l42.6-129.8C227.2 15 215.7 0 200 0H56C44 0 33.8 8.9 32.2 20.8l-32 240C-1.7 275.2 9.5 288 24 288h118.7L96.6 482.5c-3.6 15.2 8 29.5 23.3 29.5 8.4 0 16.4-4.4 20.8-12l176-304c9.3-15.9-2.2-36-20.7-36z"
-                } )//todo chose beter default
-    }
 
-    function appendTextToNode(node) {
-        return node.append("text")        // Append a text element
-                   .attr("class", "fa")   // Give it the font-awesome class
-                   .attr('font-family', 'Font Awesome 5 Free !important' )
-                   .attr('fill', '#ffffff')
-                   .attr('font-size', function(d) { return "20px"} )
-                   .attr('text-anchor', 'middle')
-                   .html(function(d) {
-                       var _icon = iconCode(d);
-                       return _icon ? _icon : d.id;
-                   })
-                   .attr('y', function(d) {
-                       return icon(d) ? (parseInt(Math.round(options.nodeRadius * 0.32)) + 'px') : '4px';
-                   })
-                   // .html(function(d) {
-                   //     var _icon = iconCode(d);
-                   //     return _icon ? '&#x' + _icon : d.id;
-                   // });
-                          // Specify your icon in unicode (https://fontawesome.com/cheatsheet)
-                   //  .append('text')
-                   // .attr('class', function(d) {
-                   //     return 'text text_node' + (icon(d) ? ' icon' : '');
-                   // })
-                   // .attr('font-family', 'Font Awesome 5 Free')
-                   //  .attr('font-size', function(d) { return d.size+'em'} )
-                   //  .text(function(d) { return '\uf118' });
-                   // .attr('fill', '#000000')
-                   // .attr('font-size', function(d) {
-                   //     return icon(d) ? (options.nodeRadius + 'px') : '10px';
-                   // })
-                   // .attr('pointer-events', 'none')
-                   // .attr('text-anchor', 'middle')
-                   // .html(function(d) {
-                   //     return '<span><i class="fas fa-fish"></i></span>';
-                   // })
-                   // .append('i')
-                   // .attr('class', function(d) {
-                   //     return 'fas fa-fish';
-                   // })
-                   // .html(function(d) {
-                   //     var _icon = icon(d);
-                   //     return _icon ? '&#x' + _icon : d.id;
-                   // });
-    }
-    function appendSideTextToNode(node) {
-        return node.append("text")        // Append a text element
-                   .attr("class", "side")
-                   .attr('fill', '#000000')
-                   .attr('font-size', function(d) { return "10px"} )
-                   .attr('text-anchor', 'middle')
-                   .text(function(d) {
-                       return d.properties.name ? d.properties.name : d.id;
-                   })
-                   .attr('y', function(d) {
-                       return icon(d)||options.customPathIcons[d.labels[0]]["path"]  ? (parseInt(Math.round(options.nodeRadius * 1.32)) + 'px') : '4px';
-                   })
-    }
+
+
+
+
 
     function appendRandomDataToNode(d, maxNodesToGenerate) {
         var data = randomD3Data(d, maxNodesToGenerate);
@@ -1512,9 +1279,6 @@ function stellae(_selector, _options) {
     function class2darkenColor(cls) {
         return d3.rgb(class2color(cls)).darker(1);
     }
-    // function class2darkenCustomColor(cls) {
-    //     return d3.rgb(cls).darker(1);
-    // }
 
     function clearInfo() {
         info.html('');
@@ -1525,8 +1289,6 @@ function stellae(_selector, _options) {
     }
 
     function colors() {
-        // d3.schemeCategory10,
-        // d3.schemeCategory20,
         return [
             '#a5abb6', // dark gray
             '#ffc766', // light orange
@@ -1580,79 +1342,79 @@ function stellae(_selector, _options) {
     }
 
 
-    function icon(d) {//TODO remove
-        var code;
+    // function icon(d) {//TODO remove
+    //     var code;
+    //
+    //     if (options.iconMap && options.showIcons && options.icons) {
+    //         if (options.icons[d.labels[0]] && options.iconMap[options.icons[d.labels[0]]]) {
+    //             code = options.iconMap[options.icons[d.labels[0]]];
+    //         } else if (options.iconMap[d.labels[0]]) {
+    //             code = options.iconMap[d.labels[0]];
+    //         } else if (options.icons[d.labels[0]]) {
+    //             code = options.icons[d.labels[0]];
+    //         }
+    //     }
+    //
+    //     return code;
+    // }
+    // function iconCode(d) {
+    //     var code;
+    //     function faUnicode(name) {
+    //       var testI = document.createElement('i');
+    //       var char;
+    //
+    //       testI.className = 'fa fa-' + name;
+    //       document.body.appendChild(testI);
+    //
+    //       char = window.getComputedStyle( testI, ':before' )
+    //                .content.replace(/'|"/g, '');
+    //
+    //       testI.remove();
+    //
+    //       return char;
+    //     }
+    //     code = faUnicode(options.icons[d.labels[0]])
+    //
+    //     return code;
+    // }
 
-        if (options.iconMap && options.showIcons && options.icons) {
-            if (options.icons[d.labels[0]] && options.iconMap[options.icons[d.labels[0]]]) {
-                code = options.iconMap[options.icons[d.labels[0]]];
-            } else if (options.iconMap[d.labels[0]]) {
-                code = options.iconMap[d.labels[0]];
-            } else if (options.icons[d.labels[0]]) {
-                code = options.icons[d.labels[0]];
-            }
-        }
-
-        return code;
-    }
-    function iconCode(d) {
-        var code;
-        function faUnicode(name) {
-          var testI = document.createElement('i');
-          var char;
-
-          testI.className = 'fa fa-' + name;
-          document.body.appendChild(testI);
-
-          char = window.getComputedStyle( testI, ':before' )
-                   .content.replace(/'|"/g, '');
-
-          testI.remove();
-
-          return char;
-        }
-        code = faUnicode(options.icons[d.labels[0]])
-
-        return code;
-    }
-
-    function image(d) {
-        var i, imagesForLabel, img, imgLevel, label, labelPropertyValue, property, value;
-
-        if (options.images) {
-            imagesForLabel = options.imageMap[d.labels[0]];
-
-            if (imagesForLabel) {
-                imgLevel = 0;
-
-                for (i = 0; i < imagesForLabel.length; i++) {
-                    labelPropertyValue = imagesForLabel[i].split('|');
-
-                    switch (labelPropertyValue.length) {
-                        case 3:
-                        value = labelPropertyValue[2];
-                        /* falls through */
-                        case 2:
-                        property = labelPropertyValue[1];
-                        /* falls through */
-                        case 1:
-                        label = labelPropertyValue[0];
-                    }
-
-                    if (d.labels[0] === label &&
-                        (!property || d.properties[property] !== undefined) &&
-                        (!value || d.properties[property] === value)) {
-                        if (labelPropertyValue.length > imgLevel) {
-                            img = options.images[imagesForLabel[i]];
-                            imgLevel = labelPropertyValue.length;
-                        }
-                    }
-                }
-            }
-        }
-
-        return img;
-    }
+    // function image(d) {
+    //     var i, imagesForLabel, img, imgLevel, label, labelPropertyValue, property, value;
+    //
+    //     if (options.images) {
+    //         imagesForLabel = options.imageMap[d.labels[0]];
+    //
+    //         if (imagesForLabel) {
+    //             imgLevel = 0;
+    //
+    //             for (i = 0; i < imagesForLabel.length; i++) {
+    //                 labelPropertyValue = imagesForLabel[i].split('|');
+    //
+    //                 switch (labelPropertyValue.length) {
+    //                     case 3:
+    //                     value = labelPropertyValue[2];
+    //                     /* falls through */
+    //                     case 2:
+    //                     property = labelPropertyValue[1];
+    //                     /* falls through */
+    //                     case 1:
+    //                     label = labelPropertyValue[0];
+    //                 }
+    //
+    //                 if (d.labels[0] === label &&
+    //                     (!property || d.properties[property] !== undefined) &&
+    //                     (!value || d.properties[property] === value)) {
+    //                     if (labelPropertyValue.length > imgLevel) {
+    //                         img = options.images[imagesForLabel[i]];
+    //                         imgLevel = labelPropertyValue.length;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //
+    //     return img;
+    // }
 
     function init(_selector, _options) {
 
@@ -2155,54 +1917,7 @@ function stellae(_selector, _options) {
         });
     }
 
-    // function updateNodes(n) {
-    //     Array.prototype.push.apply(nodes, n);
-    //     node = svgNodes.selectAll('.node')
-    //                    .data(nodes, function(d) { return d.id; });
-    //     var nodeEnter = appendNodeToGraph();
-    //     node = nodeEnter.merge(node);
-    // }
-    // function updateNotes(n) {
-    //     Array.prototype.push.apply(notes, n);
-    //
-    //     note = svgNotes.selectAll('.note')
-    //                    .data(notes, function(d) { return d.id; });
-    //     var noteEnter = appendNoteToGraph();
-    //     note = noteEnter.merge(note);
-    // }
-    // function updateGroups(n) {
-    //     Array.prototype.push.apply(groups, n);
-    //
-    //     group = svgGroups.selectAll('.group')
-    //                    .data(groups, function(d) { return d.id; });
-    //     var groupEnter = appendGroupToGraph();
-    //     group = groupEnter.merge(group);
-    // }
 
-    // function updateNodesAndRelationships(n, r) {
-    //   if (options.groupLabels ) {
-    //     updateNodes(n);
-    //     var newLinks = r.concat(createGroupLinks(nodes))
-    //     if (options.rootNode) {
-    //       newLinks = newLinks.concat(createRootNode(nodes))
-    //     }
-    //     updateRelationships(r);
-    //
-    //     simulation.nodes(nodes);
-    //     simulation.force('link').links(newLinks);
-    //   }else {
-    //     updateRelationships(r);
-    //     updateNodes(n);
-    //
-    //     simulation.nodes(nodes);
-    //     simulation.force('link').links(relationships);
-    //   }
-    // }
-    // function updateHelpers(n,g) {
-    //   // g = [{uuid:"54646", id:'55645646', x:78, y:45, h:88, w:66}]
-    //   updateNotes(n);
-    //   updateGroups(g);
-    // }
 
 
     function createGroupLinks(nodes) {
