@@ -64,6 +64,8 @@ function stellae(_selector, _options) {
     var stage = undefined;
     var camera = undefined;
 
+    var displayed = true;
+
     var renderer = undefined;
 
     var geometry = undefined
@@ -493,7 +495,10 @@ function stellae(_selector, _options) {
     }
 
     var animate = function () {
-      requestAnimationFrame( animate );
+      if (displayed) {
+        requestAnimationFrame( animate );
+      }
+
 
       cube.rotation.x += 0.01;
       cube.rotation.y += 0.01;
@@ -2734,6 +2739,7 @@ function stellae(_selector, _options) {
     }
 
     function cleanAll() { //TODO use to avoid memory hog
+      displayed = false
       console.log('dispose renderer!')
       renderer.dispose()
 
