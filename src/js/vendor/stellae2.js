@@ -1606,20 +1606,20 @@ function stellae(_selector, _options) {
 
 
 
-    function renderInternal() {
-        tick();
-    }
-
-    var rafId = null;
-    function render() {
-        // if (rafId == null) {
-        //     rafId = requestAnimationFrame(function() {
-        //         rafId = null;
-        //         renderInternal();
-        //     });
-        // }
-        renderInternal()
-    }
+    // function renderInternal() {
+    //     tick();
+    // }
+    //
+    // var rafId = null;
+    // function render() {
+    //     // if (rafId == null) {
+    //     //     rafId = requestAnimationFrame(function() {
+    //     //         rafId = null;
+    //     //         renderInternal();
+    //     //     });
+    //     // }
+    //     renderInternal()
+    // }
 
     function loadCustomData() { //Entry point for loading data
         nodes = []; //set the base elements array
@@ -2503,18 +2503,15 @@ function stellae(_selector, _options) {
 
     function cleanAll() { //TODO use to avoid memory hog
       displayed = false
-      console.log('dispose renderer!')
       renderer.dispose()
 
       const cleanMaterial = material => {
-        console.log('dispose material!')
         material.dispose()
 
         // dispose textures
         for (const key of Object.keys(material)) {
           const value = material[key]
           if (value && typeof value === 'object' && 'minFilter' in value) {
-            console.log('dispose texture!')
             value.dispose()
           }
         }
@@ -2523,7 +2520,6 @@ function stellae(_selector, _options) {
       scene.traverse(object => {
       	if (!object.isMesh) return
 
-      	console.log('dispose geometry!')
       	object.geometry.dispose()
 
       	if (object.material.isMaterial) {
