@@ -72,9 +72,11 @@ function stellae(_selector, _options) {
     var mainMaterial = undefined
 
     var selectedObject = undefined
+    var selectedHelper = undefined
     var nodes = []
     var nodesCore = []
     var nodesData = []
+    var nodesNotes = []
     var spriteBuffer = []
     var spriteTextureBuffer = []
     var relationshipsData = []
@@ -355,7 +357,45 @@ function stellae(_selector, _options) {
               //plane.rotation.x = -Math.PI / 2;
               stage.add(plane);
 
-
+      container.onclick = function (event) {
+        // get the mouse positions
+         var mouse_x = ( (event.clientX-containerDim.x) / containerDim.width ) * 2 - 1;
+         var mouse_y = -( event.clientY / window.innerHeight ) * 2 + 1;
+         var vector = new THREE.Vector3(mouse_x, mouse_y, 0.5);
+         vector.unproject(camera);
+         var raycaster = new THREE.Raycaster(camera.position,
+                 vector.sub(camera.position).normalize());
+         var intersects1 = raycaster.intersectObjects(nodesNotes);
+         var intersects2 = raycaster.intersectObjects(nodes);
+         console.log(intersects2);
+         if (intersects2.length>0) {
+           console.log("node clicked");
+         }else if (intersects1.length>0) {
+           console.log("note clicked");
+           if (typeof options.onNoteClick === 'function') {
+           }else {
+             let node = intersects1[0].object
+             let group = intersects1[0].object.parent
+             let data = group.edata
+             var newName = prompt("Content", data.content)
+             if (newName == "") {
+               if (confirm("Remove note?")) {
+                 notes=notes.filter(n=>n.uuid!= data.uuid)//remove the note from data
+                 nodesNotes=nodesNotes.filter(n=>n!=node)//remove the note from data
+                 // node.dispose()
+                 stage.remove(group)
+               }
+             }else if (newName) {
+               data.content =newName
+               let newText = createTextPlane(newName)
+               group.remove(node)//remove current text
+               group.add(newText)//remove current text
+               nodesNotes=nodesNotes.filter(n=>n!=node)
+               nodesNotes.push(newText)
+             }
+           }
+         }
+      }
 
       container.onmousemove = function (event) {
           hoovered = undefined; //reset status
@@ -416,7 +456,14 @@ function stellae(_selector, _options) {
                selectedObject.edata.y = -newPosition.z/canvasScale
                selectedObject.edata.fx = newPosition.x/canvasScale
                selectedObject.edata.fy = -newPosition.z/canvasScale
-           } else {
+           } else if (selectedHelper) {
+             var intersects = raycaster.intersectObject(plane);
+             let newPosition =intersects[0].point
+             selectedHelper.position.x = newPosition.x
+             selectedHelper.position.y = -newPosition.z
+             selectedHelper.edata.x = newPosition.x/canvasScale
+             selectedHelper.edata.y = -newPosition.z/canvasScale
+           }else {//nothing selected
               // if we haven't selected an object, we check if we might need
               // to reposition our plane. We need to do this here, since
               // we need to have this position before the onmousedown
@@ -434,7 +481,14 @@ function stellae(_selector, _options) {
                    // plane.position.z = -0;
                   // and align with the camera.
                    // plane.lookAt(camera.position);
+               }else{
+                 var intersects = raycaster.intersectObjects(nodesNotes);
+                 if (intersects.length > 0) {
+                   console.log(intersects);
+                   controls.enabled = false;
+                 }
                }
+
            }
            //updateElementStatus
            updateInteractionStates()
@@ -467,8 +521,12 @@ function stellae(_selector, _options) {
                   }else {
                     newLinkSource = intersects[0].object
                   }
-
-
+               }else { //if no nodes, check if there is a note
+                 var intersects = raycaster.intersectObjects(nodesNotes);
+                 if (intersects.length > 0) {
+                   selectedHelper = intersects[0].object.parent
+                   console.log(intersects[0].object.parent);
+                 }
                }
            };
 
@@ -487,6 +545,7 @@ function stellae(_selector, _options) {
               //orbit.enabled = true;
               //reset Slected oBject Mode
               selectedObject = null;
+              selectedHelper = null;
               simulation.alphaTarget(0);
            }
 
@@ -627,7 +686,23 @@ function stellae(_selector, _options) {
     }
 
     function createNewNote(n) {
+      var textGroup = new THREE.Group();
+      textGroup.edata = n
+      let text = createTextPlane(n.content)
+      textGroup.position.set(n.x,n.y,0.02); // move geometry up and out
+      textGroup.add(text);
+      nodesNotes.push(text)
+      stage.add(textGroup);
+    }
 
+    function createTextPlane(content) {
+      let text = dcText(content, 5, 7, 25, 0x000000);      // text #2, TRANSPARENT
+      text.scale.set(0.1,0.1,0.1); // move geometry up and out
+      return text
+    }
+
+    function createGroup(n) {
+      var groupGroup = new THREE.Group();
       let text = dcText(n.content, 5, 7, 25, 0x000000);      // text #2, TRANSPARENT
       text.scale.set(0.1,0.1,0.1); // move geometry up and out
       text.position.set(n.x,n.y,0.02); // move geometry up and out
@@ -876,49 +951,49 @@ function stellae(_selector, _options) {
     //     appendTextToGroup(g)
     //     return g;
     // }
-    function appendNote() {
-        return note.enter()
-                   .append('g')
-                   .attr('class', "note")
-                   .attr('transform', function (d) {
-                     return "translate(" + d.x + ", " + d.y + ")"
-                   })
-                   .on('click', function(d) {//catch dblclick on canvas
-                       if (typeof options.onNoteClick === 'function') {
-                         // var xy = d3.mouse(this);
-                         // var transform = d3.zoomTransform(base.node());
-                         // var xy1 = transform.invert(xy);
-                         //
-                         // options.onCanvasDoubleClick({x:xy1[0],y:xy1[1]})
-                         //   //options.onNodeDoubleClick(d);
-                       }else {
-                         var newName = prompt("Content", d.content)
-                         if (newName == "") {
-                           if (confirm("Remove note?")) {
-                             notes=notes.filter(n=>n.uuid!= d.uuid)//remove the note from data
-                             d3.select(this).remove()//remove the linked element
-                           }
-                         }else if (newName) {
-                           d.content= newName
-                           d3.select(this).select('text').text(d.content);
-                         }
-                       }
-                   })
-                   .call(d3.drag()
-                           // .on('start', dragStarted)
-                           .on('drag', function(d) {
-                              d.x += d3.event.dx;
-                              d.y += d3.event.dy;
-                              d3.select(this)
-                                  .attr('transform', "translate(" + d.x  + ", " + d.y  + ")");
-                            })
-                           .on('end', function () {
-                             if (!d3.event.active) {
-                                 simulation.alphaTarget(0);
-                             }
-                           }));
-
-    }
+    // function appendNote() {
+    //     return note.enter()
+    //                .append('g')
+    //                .attr('class', "note")
+    //                .attr('transform', function (d) {
+    //                  return "translate(" + d.x + ", " + d.y + ")"
+    //                })
+    //                .on('click', function(d) {//catch dblclick on canvas
+    //                    if (typeof options.onNoteClick === 'function') {
+    //                      // var xy = d3.mouse(this);
+    //                      // var transform = d3.zoomTransform(base.node());
+    //                      // var xy1 = transform.invert(xy);
+    //                      //
+    //                      // options.onCanvasDoubleClick({x:xy1[0],y:xy1[1]})
+    //                      //   //options.onNodeDoubleClick(d);
+    //                    }else {
+    //                      var newName = prompt("Content", d.content)
+    //                      if (newName == "") {
+    //                        if (confirm("Remove note?")) {
+    //                          notes=notes.filter(n=>n.uuid!= d.uuid)//remove the note from data
+    //                          d3.select(this).remove()//remove the linked element
+    //                        }
+    //                      }else if (newName) {
+    //                        d.content= newName
+    //                        d3.select(this).select('text').text(d.content);
+    //                      }
+    //                    }
+    //                })
+    //                .call(d3.drag()
+    //                        // .on('start', dragStarted)
+    //                        .on('drag', function(d) {
+    //                           d.x += d3.event.dx;
+    //                           d.y += d3.event.dy;
+    //                           d3.select(this)
+    //                               .attr('transform', "translate(" + d.x  + ", " + d.y  + ")");
+    //                         })
+    //                        .on('end', function () {
+    //                          if (!d3.event.active) {
+    //                              simulation.alphaTarget(0);
+    //                          }
+    //                        }));
+    //
+    // }
     function appendGroup() {
         return group.enter()
                    .append('g')
