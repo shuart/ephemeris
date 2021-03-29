@@ -126,13 +126,6 @@ function stellae(_selector, _options) {
     }
     function checkSelectedNode(start, end, nodes) {
       let selectedNodes = nodes.filter(e=>{
-        console.log("captured nodes");
-        console.log(e.x);
-        console.log(e.y);
-        console.log(start);
-        console.log(end);
-        console.log(e.y < start[1]);
-
         return (e.x > start[0] && e.x < end[0] && e.y > start[1] && e.y < end[1] )
         // return (e.x > start[0] && e.y < start[1] && e.x < end[0] && e.y > end[1] )
         // return {uuid:e.uuid,fx : e.x,fy : e.y}
@@ -155,7 +148,6 @@ function stellae(_selector, _options) {
         selection.attr("visibility", "hidden");
         currentSelectedNodes = checkSelectedNode(start, end, nodes)
         markNodesSelected(currentSelectedNodes)
-        console.log(currentSelectedNodes);
         selectionModeActive = false
         if (typeof options.onSelectionEnd === 'function') {
             options.onSelectionEnd();
@@ -164,7 +156,6 @@ function stellae(_selector, _options) {
 
 
     function moveCurrentGroupedNodes(nodes, delta) {
-      console.log(nodes, delta);
       for (var i = 0; i < nodes.length; i++) {
         let currentNode = nodes[i]
         if (!currentNode.fx) {
@@ -177,12 +168,6 @@ function stellae(_selector, _options) {
     };
     function checkGroupedNode(start, end, nodes) {
       let selectedNodes = nodes.filter(e=>{
-        console.log("captured nodes");
-        console.log(e.x);
-        console.log(e.y);
-        console.log(start);
-        console.log(end);
-        console.log(e.y < start[1]);
 
         return (e.x > start[0] && e.x < end[0] && e.y > start[1] && e.y < end[1] )
         // return (e.x > start[0] && e.y < start[1] && e.x < end[0] && e.y > end[1] )
@@ -226,7 +211,6 @@ function stellae(_selector, _options) {
       let groupFound = false
       for (var i = 0; i < groups.length; i++) {
         let g = groups[i]
-        console.log(delta);
         g.x +=delta[0]
         g.y +=delta[1]
         svg.selectAll(".group").filter(d=>d.uuid ==g.uuid)
@@ -242,7 +226,6 @@ function stellae(_selector, _options) {
         group.nodes = []
       }
       group.nodes.push(node.id)
-      console.log(group);
     }
 
 
@@ -269,7 +252,6 @@ function stellae(_selector, _options) {
     function optimizeRender(transfrom) {
       let scaleLimit =  0.6
       if (transfrom.scale <= scaleLimit) {
-        console.log(optimizeRenderStatus.text);
         if (!optimizeRenderStatus.text) {
            // d3.selectAll(".node").select("text").transition().attr("opacity", 0);
           d3.selectAll(".node").select("text").style("display","none"); //clear all
@@ -376,7 +358,6 @@ function stellae(_selector, _options) {
 
       container.onmousemove = function (event) {
           hoovered = undefined; //reset status
-          // console.log("desfes")
           controls.enabled = true;
           // make sure we don't access anything else
            event.preventDefault();
@@ -398,7 +379,6 @@ function stellae(_selector, _options) {
           if (newLinkSource) {
             var intersects = raycaster.intersectObjects(nodes);
             controls.enabled = false;
-            console.log(newLinkSource);
             let rData = newLinkSource.edata
             helperLine.geometry.attributes.position.needsUpdate = true;
             helperLine.geometry.attributes.position.array[0] =rData.x*canvasScale
@@ -424,15 +404,12 @@ function stellae(_selector, _options) {
              controls.enabled = false;
              //restart initSimulation
              simulation.alphaTarget(0.3).restart();
-           console.log("selected");
-           console.log(selectedObject)
               // check the position where the plane is intersected
                var intersects = raycaster.intersectObject(plane);
               // reposition the selectedobject based on the intersection with the plane
               // let newPosition =intersects[0].point.sub(offset)
               let newPosition =intersects[0].point
               //circle.edata
-              console.log(newPosition);
                // selectedObject.parent.position.copy(intersects[0].point.sub(offset));
                selectedObject.edata.x = newPosition.x/canvasScale
                selectedObject.edata.y = -newPosition.z/canvasScale
@@ -478,7 +455,6 @@ function stellae(_selector, _options) {
                        vector.sub(camera.position).normalize());
               // intersects contains an array of objects that might have been hit
                var intersects = raycaster.intersectObjects(nodes);
-               console.log(intersects[0]);
                if (intersects.length > 0) {
                   var intersectsCore = raycaster.intersectObjects(nodesCore);
                   if (intersectsCore[0]) {
@@ -544,7 +520,6 @@ function stellae(_selector, _options) {
         line.geometry.attributes.position.array[1] =rData.source.y*canvasScale
         line.geometry.attributes.position.array[3] =rData.target.x*canvasScale
         line.geometry.attributes.position.array[4] =rData.target.y*canvasScale
-        // console.log(line);
       }
     }
 
@@ -555,7 +530,6 @@ function stellae(_selector, _options) {
         previousHoovered = undefined
       }
       if (hoovered) {
-        // console.log(hoovered);
         previousHoovered = hoovered
         hoovered.parent.children[1].scale.x = hoovered.parent.children[1].scale.x +0.1
         hoovered.parent.children[1].scale.y = hoovered.parent.children[1].scale.y +0.1
@@ -698,8 +672,6 @@ function stellae(_selector, _options) {
     }
 
     function updateFromSimulation() {
-      // console.log(nodesData);
-      // console.log(nodes);
     }
 
     function exportNodesPosition(condition) {
@@ -713,7 +685,6 @@ function stellae(_selector, _options) {
           return {uuid:e.uuid,fx : e.fx,fy : e.fy}
         });
       }
-        console.log(exportedData);
         return exportedData
     }
     function exportHelpers() {
@@ -826,7 +797,6 @@ function stellae(_selector, _options) {
              .attr('class', 'stellae-graph')
              // .on("mousemove", function() {
              //   var xy  = d3.mouse(this);
-             //   console.log(xy);
              //   var transform = d3.zoomTransform(base.node());
              //   mouseCurrentPosition = transform.invert(xy);
              // })
@@ -860,7 +830,6 @@ function stellae(_selector, _options) {
                    var transform = d3.zoomTransform(base.node());
                    var xy1 = transform.invert(xy);
 
-                   console.log("Mouse:[", xy[0], xy[1], "] Zoomed:[",xy1[0],xy1[1],"]")
                    options.onCanvasDoubleClick({x:xy1[0],y:xy1[1]})
                      //options.onNodeDoubleClick(d);
                  }
@@ -994,7 +963,6 @@ function stellae(_selector, _options) {
                          // var transform = d3.zoomTransform(base.node());
                          // var xy1 = transform.invert(xy);
                          //
-                         // console.log("Mouse:[", xy[0], xy[1], "] Zoomed:[",xy1[0],xy1[1],"]")
                          // options.onCanvasDoubleClick({x:xy1[0],y:xy1[1]})
                          //   //options.onNodeDoubleClick(d);
                        }else {
@@ -1061,7 +1029,6 @@ function stellae(_selector, _options) {
                               d3.select(this)
                                   .attr('transform', "translate(" + d.x  + ", " + d.y  + ")");
                               //move contained node
-                              console.log(currentGroupedNodes);
                               moveCurrentGroupedNodes(currentGroupedNodes, [d3.event.dx,d3.event.dy])
 
                               if (d.master) {//move master node too
@@ -1108,8 +1075,6 @@ function stellae(_selector, _options) {
                       return "translate(" +(d.w) + ", " + (d.h)  + ")"
                     })
                     .on('click', function(d) {//catch dblclick on canvas
-                        console.log('resize');
-                        console.log(layout);
                     })
                     .call(d3.drag()
                             // .on('start', dragStarted)
@@ -1720,8 +1685,6 @@ function stellae(_selector, _options) {
 
           return char;
         }
-        console.log(options.icons[d.labels[0]]);
-        console.log(faUnicode(options.icons[d.labels[0]]));
         code = faUnicode(options.icons[d.labels[0]])
 
         return code;
@@ -2143,7 +2106,6 @@ function stellae(_selector, _options) {
           }
           // if (d.delta ) {
           //   d.delta = Math.max(Math.abs(d.source.xFrom - d.source.x),Math.abs(d.source.yFrom - d.source.y),Math.abs(d.target.xFrom - d.target.x),Math.abs(d.target.yFrom - d.target.y));
-          //   console.log(d.delta);
           // }else {
           //   d.delta=10000 //to kickstart sim at first
           // }
@@ -2387,13 +2349,11 @@ function stellae(_selector, _options) {
           return options.groupLabels.includes(label)
         }
       }
-      console.log(nodes);
       var lastLabel ='none'
       var currentNode = undefined
       var curentIndex =-1;
       var groupLinks = []
       nodes.forEach(function (i) {
-        console.log(checkIfLabelMustGroup(i.labels[0]));
         if (i.labels[0] != lastLabel && i.id!=1 && checkIfLabelMustGroup(i.labels[0])) {
           currentNode = i
           lastLabel = i.labels[0]
@@ -2414,7 +2374,6 @@ function stellae(_selector, _options) {
           })
         }
       })
-      console.log(groupLinks);
       return groupLinks
     }
     function createRootNode(nodes) {
@@ -2425,7 +2384,6 @@ function stellae(_selector, _options) {
       var limitToGroup = "Pbs"
       nodes.forEach(function (i) {
         if (firstNode) {
-          console.log(i.labels[0] == limitToGroup);
           if (!limitToGroup || i.labels[0] == limitToGroup) { //TODO add filter control
             currentNode = i
             curentIndex ++;
@@ -2446,8 +2404,6 @@ function stellae(_selector, _options) {
           firstNode = i
         }
       })
-      console.log("rootLinks");
-      console.log(groupLinks);
       return groupLinks
     }
 
@@ -2484,7 +2440,6 @@ function stellae(_selector, _options) {
 
     function importNodesPosition() {
         nodes.forEach(function (n) {
-          console.log(n); //TODO not working
           // n.fx = 10;
           // n.fy = 100;
           // n.x = 10;
@@ -2586,13 +2541,11 @@ function stellae(_selector, _options) {
 
     // function getCurrentMousePosition() {
     //         var xy1 = mouseCurrentPosition
-    //         console.log("Zoomed:[",xy1[0],xy1[1],"]")
     //         return{x:xy1[0],y:xy1[1]}
     // }
     function getlocalMousePositionFromLayerMousePosition(xy) {
             var transform = d3.zoomTransform(base.node());
             var xy1 = transform.invert(xy);
-            console.log("Zoomed:[",xy1[0],xy1[1],"]")
             return{x:xy1[0],y:xy1[1]}
     }
 
@@ -2662,7 +2615,6 @@ function stellae(_selector, _options) {
      group.add( circle )
      group.add( borderCircle )
      group.add( title )
-     console.log(data);
      if (data.extraLabel) {
        addGlyph(data.extraLabel, group)
      }
@@ -2719,7 +2671,7 @@ function stellae(_selector, _options) {
 
         var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
         var sprite = new THREE.Sprite( spriteMaterial );
-        spriteBuffer(sprite)
+        spriteBuffer.push(sprite)
         sprite.position.set(0.18,-0.25,0.05)
         group.add(sprite);
         svgCont.remove()
@@ -2778,8 +2730,6 @@ function stellae(_selector, _options) {
         if(rgb.b < 16) b = "0" + b;
         return "#"+r+g+b;
       }
-      console.log(cls);
-      console.log(toHex(d3.rgb(cls).darker(1)));
         return toHex(d3.rgb(cls).darker(1))
     }
 
