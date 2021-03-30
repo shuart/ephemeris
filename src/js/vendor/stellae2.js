@@ -73,6 +73,8 @@ function stellae(_selector, _options) {
 
     var selectedObject = undefined
     var selectedHelper = undefined
+    var selectionBox = undefined
+    var selectionBoxActive = false
     var nodes = []
     var nodesCore = []
     var nodesData = []
@@ -346,6 +348,9 @@ function stellae(_selector, _options) {
       helperLine = new THREE.Line( lineGeometry, lineMaterial );
       stage.add(helperLine)
 
+      //create a box for selection
+      selectionBox = createRectangle()
+
       //create a helper plane to get position
 
       plane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200, 18, 18), new THREE.MeshBasicMaterial({
@@ -397,9 +402,27 @@ function stellae(_selector, _options) {
          }
       }
 
+      container.addEventListener( 'wheel', function (event) {
+        controls.enabled = true;
+      } );
+      container.addEventListener( 'keydown', function (event) {
+        console.log("keydi");
+        if (event.ctrlKey || selectionModeActive) {
+           alert("ctr key was pressed during the click");
+           controls.enabled = false;
+        }
+      } );
+      container.addEventListener( 'keyup', function (event) {
+        controls.enabled = true;
+      } );
+
+
       container.onmousemove = function (event) {
           hoovered = undefined; //reset status
-          controls.enabled = true;
+          if (!selectionModeActive) {
+            controls.enabled = true;
+          }
+
           // make sure we don't access anything else
            event.preventDefault();
           // get the mouse positions
@@ -417,7 +440,25 @@ function stellae(_selector, _options) {
           camera.updateMatrixWorld();
           raycaster.setFromCamera( mouse, camera )
           // first check if we've already selected an object by clicking
-          if (newLinkSource) {
+          if (selectionModeActive && selectionBoxActive) {
+            selectionBox.visible =true
+            var intersects = raycaster.intersectObject(plane);
+            let newPosition =intersects[0].point
+            let basePoint_x = selectionBox.geometry.attributes.position.array[3]
+            let basePoint_y = selectionBox.geometry.attributes.position.array[4]
+            selectionBox.geometry.attributes.position.needsUpdate = true;
+            selectionBox.geometry.attributes.position.array[9] =newPosition.x
+            selectionBox.geometry.attributes.position.array[10] =-newPosition.z
+
+            selectionBox.geometry.attributes.position.array[0] =basePoint_x
+            selectionBox.geometry.attributes.position.array[1] =-newPosition.z
+            selectionBox.geometry.attributes.position.array[6] =newPosition.x
+            selectionBox.geometry.attributes.position.array[7] =basePoint_y
+            selectionBox.geometry.attributes.position.array[12] =basePoint_x
+            selectionBox.geometry.attributes.position.array[13] =-newPosition.z
+            selectionBox.computeLineDistances();
+
+          }else if (newLinkSource) {
             var intersects = raycaster.intersectObjects(nodes);
             controls.enabled = false;
             let rData = newLinkSource.edata
@@ -510,7 +551,16 @@ function stellae(_selector, _options) {
                        vector.sub(camera.position).normalize());
               // intersects contains an array of objects that might have been hit
                var intersects = raycaster.intersectObjects(nodes);
-               if (intersects.length > 0) {
+               if (selectionModeActive) {
+                 var intersects = raycaster.intersectObject(plane);
+                 let newPosition =intersects[0].point
+                 selectionBox.geometry.attributes.position.needsUpdate = true;
+                 selectionBox.geometry.attributes.position.array[3] =newPosition.x;
+                 selectionBox.geometry.attributes.position.array[4] =-newPosition.z;
+                 selectionBoxActive = true
+                 // selectionBox.position.x =newPosition.x
+                 // selectionBox.position.y =-newPosition.z
+               } else if (intersects.length > 0) {
                   var intersectsCore = raycaster.intersectObjects(nodesCore);
                   if (intersectsCore[0]) {
                     // the first one is the object we'll be moving around
@@ -546,6 +596,11 @@ function stellae(_selector, _options) {
               //reset Slected oBject Mode
               selectedObject = null;
               selectedHelper = null;
+              //clean selection box
+              selectionBoxActive = false
+              selectionBox.visible =false
+              setSelectionModeInactive()
+              //update sim
               simulation.alphaTarget(0);
            }
 
@@ -2040,9 +2095,11 @@ function stellae(_selector, _options) {
     }
     function setSelectionModeActive() {
       selectionModeActive = true;
+      controls.enabled = false;
     }
     function setSelectionModeInactive() {
       selectionModeActive = false;
+      controls.enabled = true;
     }
 
     // function getCurrentMousePosition() {
@@ -2077,13 +2134,13 @@ function stellae(_selector, _options) {
     //ITEM CREATION
     function createCircleGeometry() {
        var circleRadius = 4;
-       var circleShape = new THREE.Shape()
-         .moveTo( 0, circleRadius )
-         .quadraticCurveTo( circleRadius, circleRadius, circleRadius, 0 )
-         .quadraticCurveTo( circleRadius, - circleRadius, 0, - circleRadius )
-         .quadraticCurveTo( - circleRadius, - circleRadius, - circleRadius, 0 )
-         .quadraticCurveTo( - circleRadius, circleRadius, 0, circleRadius );
-       var geometry = new THREE.ShapeBufferGeometry( circleShape );
+       // var circleShape = new THREE.Shape()
+       //   .moveTo( 0, circleRadius )
+       //   .quadraticCurveTo( circleRadius, circleRadius, circleRadius, 0 )
+       //   .quadraticCurveTo( circleRadius, - circleRadius, 0, - circleRadius )
+       //   .quadraticCurveTo( - circleRadius, - circleRadius, - circleRadius, 0 )
+       //   .quadraticCurveTo( - circleRadius, circleRadius, 0, circleRadius );
+       // var geometry = new THREE.ShapeBufferGeometry( circleShape );
        geometry = new THREE.CircleGeometry( 1, 30 );
        return geometry
     }
@@ -2225,7 +2282,37 @@ function stellae(_selector, _options) {
 
     function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r); ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath(); ctx.fill(); ctx.stroke(); }
 
+    function createRectangle() {
+        const sqLength = 80;
+				const squareShape = new THREE.Shape()
+					.moveTo( 0, 0 )
+					.lineTo( 0, sqLength )
+					.lineTo( sqLength, sqLength )
+					.lineTo( sqLength, 0 )
+					.lineTo( 0, 0 );
+        squareShape.autoClose = true;
 
+  			const points = squareShape.getPoints();
+
+  			const geometryPoints = new THREE.BufferGeometry().setFromPoints( points );
+
+  			// solid line
+        const matLine = new THREE.LineDashedMaterial( {
+        	color: 0x0595d9,
+        	linewidth: 3,
+        	scale: 5,
+        	dashSize: 3,
+        	gapSize: 1,
+        } );
+
+  			let line = new THREE.Line( geometryPoints, matLine );
+        line.computeLineDistances();
+  			line.position.set( 0, 0, 0);
+  			// line.scale.set( 0.1, 0.1, 0.1 );
+  			stage.add( line );
+        line.visible =false
+        return line
+    }
     function class2darkenCustomColor(cls) {
       function toHex(rgb) {
         var r = Math.round(rgb.r).toString(16);
