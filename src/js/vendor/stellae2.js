@@ -75,6 +75,8 @@ function stellae(_selector, _options) {
     var selectedHelper = undefined
     var selectionBox = undefined
     var selectionBoxActive = false
+    var selectionBoxPosition = {x:0,y:0,xEnd:0,yEnd:0};
+    var currentSelectedNodes = [];
     var nodes = []
     var nodesCore = []
     var nodesData = []
@@ -118,25 +120,8 @@ function stellae(_selector, _options) {
         currentSelectedDom.select(".selection_ring").style("opacity",1);
       }
     }
-    function moveCurrentSelectedNodes(delta) {
-      for (var i = 0; i < currentSelectedNodes.length; i++) {
-        let currentNode = currentSelectedNodes[i]
-        if (!currentNode.fx) {
-          currentNode.fx = currentNode.x
-          currentNode.fy = currentNode.y
-        }
-        currentNode.fx += delta[0]
-        currentNode.fy += delta[1]
-      }
-    }
-    function checkSelectedNode(start, end, nodes) {
-      let selectedNodes = nodes.filter(e=>{
-        return (e.x > start[0] && e.x < end[0] && e.y > start[1] && e.y < end[1] )
-        // return (e.x > start[0] && e.y < start[1] && e.x < end[0] && e.y > end[1] )
-        // return {uuid:e.uuid,fx : e.x,fy : e.y}
-      });
-      return selectedNodes
-    }
+
+
 
     var startSelection = function(start) {
         selection.attr("d", rect(start[0], start[0], 0, 0))
@@ -146,21 +131,21 @@ function stellae(_selector, _options) {
     var moveSelection = function(start, moved) {
         selection.attr("d", rect(start[0], start[1], moved[0]-start[0], moved[1]-start[1]));
         currentSelectedNodes = checkSelectedNode(start, moved, nodes)
-        markNodesSelected(currentSelectedNodes)
+        // markNodesSelected(currentSelectedNodes)
     };
 
-    var endSelection = function(start, end) {
-        selection.attr("visibility", "hidden");
-        currentSelectedNodes = checkSelectedNode(start, end, nodes)
-        markNodesSelected(currentSelectedNodes)
-        selectionModeActive = false
-        if (typeof options.onSelectionEnd === 'function') {
-            options.onSelectionEnd();
-        }
-    };
+    // var endSelection = function(start, end) {
+    //     selection.attr("visibility", "hidden");
+    //     currentSelectedNodes = checkSelectedNode(start, end, nodes)
+    //     markNodesSelected(currentSelectedNodes)
+    //     selectionModeActive = false
+    //     if (typeof options.onSelectionEnd === 'function') {
+    //         options.onSelectionEnd();
+    //     }
+    // };
 
 
-    function moveCurrentGroupedNodes(nodes, delta) {
+    function moveCurrentGroupedNodes(nodes, delta, active) {
       for (var i = 0; i < nodes.length; i++) {
         let currentNode = nodes[i]
         if (!currentNode.fx) {
@@ -457,6 +442,10 @@ function stellae(_selector, _options) {
             selectionBox.geometry.attributes.position.array[12] =basePoint_x
             selectionBox.geometry.attributes.position.array[13] =-newPosition.z
             selectionBox.computeLineDistances();
+            selectionBoxPosition.x=basePoint_x
+            selectionBoxPosition.y=basePoint_y
+            selectionBoxPosition.xEnd=newPosition.x
+            selectionBoxPosition.yEnd=-newPosition.z
 
           }else if (newLinkSource) {
             var intersects = raycaster.intersectObjects(nodes);
@@ -495,8 +484,12 @@ function stellae(_selector, _options) {
                // selectedObject.parent.position.copy(intersects[0].point.sub(offset));
                selectedObject.edata.x = newPosition.x/canvasScale
                selectedObject.edata.y = -newPosition.z/canvasScale
+               let delta = [selectedObject.edata.x-selectedObject.edata.fx, selectedObject.edata.y-selectedObject.edata.fy]
                selectedObject.edata.fx = newPosition.x/canvasScale
                selectedObject.edata.fy = -newPosition.z/canvasScale
+               if (currentSelectedNodes[0]) {
+                 moveCurrentSelectedNodes(delta, selectedObject)
+               }
            } else if (selectedHelper) {
              var intersects = raycaster.intersectObject(plane);
              let newPosition =intersects[0].point
@@ -588,6 +581,20 @@ function stellae(_selector, _options) {
                 if (typeof options.onNodeDragEnd === 'function') {
                     options.onNodeDragEnd(selectedObject.edata);
                 }
+                currentSelectedNodes = [] //revome selected nodes from selection
+              }
+              if (selectionBoxActive) {
+                currentSelectedNodes = checkSelectedNode(selectionBoxPosition, nodesCore)
+                //markNodesSelected(currentSelectedNodes)
+                console.log(currentSelectedNodes);
+                //clean selection box
+                selectionBoxActive = false
+                selectionBox.visible =false
+                setSelectionModeInactive()
+
+                if (typeof options.onSelectionEnd === 'function') {
+                    options.onSelectionEnd();
+                }
               }
               //reset linkMode
               newLinkSource = undefined
@@ -596,10 +603,7 @@ function stellae(_selector, _options) {
               //reset Slected oBject Mode
               selectedObject = null;
               selectedHelper = null;
-              //clean selection box
-              selectionBoxActive = false
-              selectionBox.visible =false
-              setSelectionModeInactive()
+
               //update sim
               simulation.alphaTarget(0);
            }
@@ -622,6 +626,29 @@ function stellae(_selector, _options) {
       renderer.render( scene, camera );
       stats.update();
     };
+
+    function checkSelectedNode(selectionBoxPosition, nodes) {
+      console.log(nodesCore);
+      console.log(selectionBoxPosition);
+      let selectedNodes = nodesCore.filter(e=>{
+        return (e.parent.position.x > selectionBoxPosition.x && e.parent.position.x < selectionBoxPosition.xEnd && e.parent.position.y < selectionBoxPosition.y && e.parent.position.y > selectionBoxPosition.yEnd )
+      });
+      return selectedNodes.map(n=>n.parent)
+    }
+
+    function moveCurrentSelectedNodes(delta, active) {
+      for (var i = 0; i < currentSelectedNodes.length; i++) {
+
+        let currentNode = currentSelectedNodes[i]
+        if (currentNode.edata.uuid != active.edata.uuid) {
+          currentNode.edata.fx += delta[0]
+          currentNode.edata.fy += delta[1]
+          currentNode.edata.x += delta[0]
+          currentNode.edata.y += delta[1]
+        }
+
+      }
+    }
 
     function updateNodesPostionInCanvas() {
       for (var i = 0; i < nodesData.length; i++) {
@@ -1641,31 +1668,31 @@ function stellae(_selector, _options) {
         }
     }
 */
-    function stickNode(d) {
-        if (d3.event.sourceEvent.ctrlKey && currentSelectedNodes) {//move other selected nodes
-          let delta = [
-            -d.fx + d3.event.x,
-            -d.fy + d3.event.y
-          ]
-          moveCurrentSelectedNodes(delta)
-        }else {
-          d.fx = d3.event.x;//move only main targeted node
-          d.fy = d3.event.y;
-        }
-        //check if a group is a slave of this node and move it
-        if (currentLinkedSubgroup) {
-          let delta = [
-            d3.event.dx,
-            d3.event.dy
-          ]
-          moveCurrentLinkedSubgroup(currentLinkedSubgroup, delta)
-        }
-
-        if (currentSelectedNodes && !d3.event.sourceEvent.ctrlKey) {//remove selection on move without control
-          currentSelectedNodes = undefined
-          markNodesSelected(currentSelectedNodes)
-        }
-    }
+    // function stickNode(d) {
+    //     if (d3.event.sourceEvent.ctrlKey && currentSelectedNodes) {//move other selected nodes
+    //       let delta = [
+    //         -d.fx + d3.event.x,
+    //         -d.fy + d3.event.y
+    //       ]
+    //       moveCurrentSelectedNodes(delta)
+    //     }else {
+    //       d.fx = d3.event.x;//move only main targeted node
+    //       d.fy = d3.event.y;
+    //     }
+    //     //check if a group is a slave of this node and move it
+    //     if (currentLinkedSubgroup) {
+    //       let delta = [
+    //         d3.event.dx,
+    //         d3.event.dy
+    //       ]
+    //       moveCurrentLinkedSubgroup(currentLinkedSubgroup, delta)
+    //     }
+    //
+    //     if (currentSelectedNodes && !d3.event.sourceEvent.ctrlKey) {//remove selection on move without control
+    //       currentSelectedNodes = undefined
+    //       markNodesSelected(currentSelectedNodes)
+    //     }
+    // }
 
     function tick() {
         tickNodes();
@@ -2091,7 +2118,7 @@ function stellae(_selector, _options) {
 //        smoothTransform(svgTranslate, svgScale);
     }
     function getSelectedNodes() {
-      return currentSelectedNodes
+      return currentSelectedNodes.map(s=>s.edata)
     }
     function setSelectionModeActive() {
       selectionModeActive = true;
@@ -2175,6 +2202,7 @@ function stellae(_selector, _options) {
      let title = makeTextSprite( data.name, {} )
      title.position.set(0,-0.8,-0.0001)
      var group = new THREE.Group();
+     group.edata = data
      group.add( circle )
      group.add( borderCircle )
      group.add( title )
