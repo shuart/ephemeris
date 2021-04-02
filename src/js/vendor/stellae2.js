@@ -360,6 +360,9 @@ function stellae(_selector, _options) {
          console.log(intersects2);
          if (intersects2.length>0) {
            console.log("node clicked");
+           if (typeof options.onNodeClick === 'function') {
+                options.onNodeClick(intersects2[0].object.edata,{canvasPosition: undefined});
+            }
          }else if (intersects1.length>0) {
            console.log("note clicked");
            if (typeof options.onNoteClick === 'function') {
@@ -482,6 +485,10 @@ function stellae(_selector, _options) {
               let newPosition =intersects[0].point
               //circle.edata
                // selectedObject.parent.position.copy(intersects[0].point.sub(offset));
+               if (!selectedObject.edata.fx) {
+                 selectedObject.edata.fx =selectedObject.edata.x
+                 selectedObject.edata.fy =selectedObject.edata.y
+               }
                selectedObject.edata.x = newPosition.x/canvasScale
                selectedObject.edata.y = -newPosition.z/canvasScale
                let delta = [selectedObject.edata.x-selectedObject.edata.fx, selectedObject.edata.y-selectedObject.edata.fy]
@@ -581,7 +588,11 @@ function stellae(_selector, _options) {
                 if (typeof options.onNodeDragEnd === 'function') {
                     options.onNodeDragEnd(selectedObject.edata);
                 }
-                currentSelectedNodes = [] //revome selected nodes from selection
+                if (currentSelectedNodes[0]) {
+                    restoreSelectedElementsSize()
+                    currentSelectedNodes = [] //revome selected nodes from selection
+                }
+
               }
               if (selectionBoxActive) {
                 currentSelectedNodes = checkSelectedNode(selectionBoxPosition, nodesCore)
@@ -591,6 +602,7 @@ function stellae(_selector, _options) {
                 selectionBoxActive = false
                 selectionBox.visible =false
                 setSelectionModeInactive()
+                updateSelectedElementsSize()
 
                 if (typeof options.onSelectionEnd === 'function') {
                     options.onSelectionEnd();
@@ -641,6 +653,10 @@ function stellae(_selector, _options) {
 
         let currentNode = currentSelectedNodes[i]
         if (currentNode.edata.uuid != active.edata.uuid) {
+          if (!currentNode.edata.fx) {
+            currentNode.edata.fx = currentNode.edata.x
+            currentNode.edata.fy = currentNode.edata.y
+          }
           currentNode.edata.fx += delta[0]
           currentNode.edata.fy += delta[1]
           currentNode.edata.x += delta[0]
@@ -687,6 +703,26 @@ function stellae(_selector, _options) {
         helperLine.geometry.attributes.position.array[4] =-1.01
       }
 
+
+    }
+
+    function updateSelectedElementsSize() {
+      if (currentSelectedNodes[0]) {
+        for (var i = 0; i < currentSelectedNodes.length; i++) {
+          currentSelectedNodes[i].children[0].scale.x = currentSelectedNodes[i].children[0].scale.x -0.1
+          currentSelectedNodes[i].children[0].scale.y = currentSelectedNodes[i].children[0].scale.y -0.1
+        }
+
+      }
+    }
+    function restoreSelectedElementsSize() {
+      if (currentSelectedNodes[0]) {
+        for (var i = 0; i < currentSelectedNodes.length; i++) {
+          currentSelectedNodes[i].children[0].scale.x = currentSelectedNodes[i].children[0].scale.x +0.1
+          currentSelectedNodes[i].children[0].scale.y = currentSelectedNodes[i].children[0].scale.y +0.1
+        }
+
+      }
     }
 
     function updateWithD3Data(d3Data) {

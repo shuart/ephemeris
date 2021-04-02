@@ -1264,8 +1264,9 @@ var createRelationsView = function () {
         if (currentSnapshot) {// has a snapshot been activated
           fixedValuesList = store.graphs.find(i=>i.uuid == currentSnapshot).nodesPositions
           console.log(filteredItemsToDisplay.length, fixedValuesList.length);
-          if (fixedValuesList && itemsToDisplay && filteredItemsToDisplay.length-fixedValuesList.length > -1 ) {// if element to display are note the same as the snapshot
-            if (!confirm("Update this snapshot with " + (filteredItemsToDisplay.length-fixedValuesList.length +1) +" newly added items?")) {//TODO why is the +1 needed?
+
+          if (fixedValuesList && itemsToDisplay && filteredItemsToDisplay.length-fixedValuesList.length > 0 ) {// if element to display are note the same as the snapshot
+            if (!confirm("Update this snapshot with " + (filteredItemsToDisplay.length-fixedValuesList.length +0) +" newly added items?")) {//TODO why is the +1 needed?
 
               let originalFilteredItemsToDisplay = deepCopy(filteredItemsToDisplay)
               let originalHiddenItemsFromSideView = deepCopy(hiddenItemsFromSideView)//store value before modyfing theme
