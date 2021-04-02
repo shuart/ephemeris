@@ -222,25 +222,25 @@ function stellae(_selector, _options) {
     }
 
 
-    var zoom = d3.zoom().on('zoom', function() {
-
-        svg.attr("transform", d3.event.transform); // updated for d3 v4
-        // svg.attr('transform', 'translate(' + translate[0] + ', ' + translate[1] + ') scale(' + scale + ')');
-        setTimeout(function () {
-          optimizeRender({translate:svgTranslate,scale:svgScale})
-        }, 10);
-
-
-        if (typeof options.onCanvasZoom === 'function') {
-          if (options.startTransform) {//always fals
-            svgTranslate = [d3.event.transform.x,d3.event.transform.y]
-            svgScale = d3.event.transform.k
-            options.onCanvasZoom({translate:svgTranslate,scale:svgScale})
-          }else {
-            options.onCanvasZoom({translate:svgTranslate,scale:svgScale})
-          }
-        }
-    })
+    // var zoom = d3.zoom().on('zoom', function() {
+    //
+    //     svg.attr("transform", d3.event.transform); // updated for d3 v4
+    //     // svg.attr('transform', 'translate(' + translate[0] + ', ' + translate[1] + ') scale(' + scale + ')');
+    //     setTimeout(function () {
+    //       optimizeRender({translate:svgTranslate,scale:svgScale})
+    //     }, 10);
+    //
+    //
+    //     if (typeof options.onCanvasZoom === 'function') {
+    //       if (options.startTransform) {//always fals
+    //         svgTranslate = [d3.event.transform.x,d3.event.transform.y]
+    //         svgScale = d3.event.transform.k
+    //         options.onCanvasZoom({translate:svgTranslate,scale:svgScale})
+    //       }else {
+    //         options.onCanvasZoom({translate:svgTranslate,scale:svgScale})
+    //       }
+    //     }
+    // })
 
     function optimizeRender(transfrom) {
       let scaleLimit =  0.6
@@ -318,6 +318,16 @@ function stellae(_selector, _options) {
 
       // camera.position.z = 20;
       camera.position.y = 20;
+      if (options.startTransform) {
+        console.log(options.startTransform);
+        camera.position.x = options.startTransform.translate.x
+        camera.position.y = options.startTransform.translate.y
+        camera.position.z = options.startTransform.translate.z
+        controls.target.set(options.startTransform.target.x,options.startTransform.target.y,options.startTransform.target.z)
+        // camera.rotation.x = options.startTransform.rotation.x
+        // camera.rotation.y = options.startTransform.rotation.y
+        // camera.rotation.z = options.startTransform.rotation.z
+      }
       controls.update();
 
       animate();
@@ -536,6 +546,7 @@ function stellae(_selector, _options) {
            }
            //updateElementStatus
            updateInteractionStates()
+           updateTransformCallback()
        };
 
           container.onmousedown = function (event) {
@@ -642,7 +653,7 @@ function stellae(_selector, _options) {
       if(getImageData == true){
             imgData = renderer.domElement.toDataURL('image/png',0.2);
             getImageData = false;
-            // 
+            //
       			// var link = document.createElement("a");
       			// link.download = "demo.png";
       			// link.href = imgData;
@@ -651,6 +662,13 @@ function stellae(_selector, _options) {
         }
       stats.update();
     };
+
+    function updateTransformCallback() {
+          if (typeof options.onCanvasZoom === 'function') {
+            console.log(camera.position);
+            options.onCanvasZoom({translate:camera.position,rotation:camera.rotation, target:controls.target})
+          }
+    }
 
     function checkSelectedNode(selectionBoxPosition, nodes) {
       console.log(nodesCore);

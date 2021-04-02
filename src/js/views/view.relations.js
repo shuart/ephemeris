@@ -15,7 +15,7 @@ var createRelationsView = function () {
   var itemsToFixAtNextUpdate = [];
   var graphSelectionModeActive = false;
 
-  var currentGraphTransformation=[0,0,1]
+  var currentGraphTransformation=undefined;
   var addMode = "compose";
   var addModeInterfaceType = undefined;
   var addItemCatType = undefined;
@@ -2443,7 +2443,7 @@ var createRelationsView = function () {
       },
       onCanvasZoom:function (e) {//TODO finish implementation
         console.log(e);
-        currentGraphTransformation=[e.translate[0],e.translate[1],e.scale]
+        currentGraphTransformation=e
       },
       startTransform:currentGraphTransformation,
       zoomFit: false
