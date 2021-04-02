@@ -63,6 +63,9 @@ function stellae(_selector, _options) {
     var stage = undefined;
     var camera = undefined;
 
+    var getImageData = false;
+    var imgData = undefined;
+
     var displayed = true;
 
     var renderer = undefined;
@@ -276,7 +279,7 @@ function stellae(_selector, _options) {
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera( 75,w/h, 0.1, 1000 );
 
-      renderer = new THREE.WebGLRenderer({ alpha: true, antialias :true });
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias :true,   });
       renderer.setSize( w,  h );
       container.appendChild( renderer.domElement );
 
@@ -636,6 +639,16 @@ function stellae(_selector, _options) {
 
       controls.update();
       renderer.render( scene, camera );
+      if(getImageData == true){
+            imgData = renderer.domElement.toDataURL('image/png',0.2);
+            getImageData = false;
+            // 
+      			// var link = document.createElement("a");
+      			// link.download = "demo.png";
+      			// link.href = imgData;
+      			// link.target = "_blank";
+      			// link.click();
+        }
       stats.update();
     };
 
@@ -2506,6 +2519,14 @@ function stellae(_selector, _options) {
         var d3Data = customDataToD3Data(customData);
         updateWithD3Data(d3Data);
     }
+    function getScreenshot(callback) {
+      getImageData = true;
+      setTimeout(function () {
+        console.log(imgData);
+        callback(imgData)
+      }, 100);
+
+    }
 
     init(_selector, _options);
 
@@ -2524,6 +2545,7 @@ function stellae(_selector, _options) {
         setFocusedNodes:setFocusedNodes,
         setFadeOtherNodesOnHoover: setFadeOtherNodesOnHoover,
         getSelectedNodes: getSelectedNodes,
+        getScreenshot: getScreenshot,
         // getCurrentMousePosition: getCurrentMousePosition,
         getlocalMousePositionFromLayerMousePosition: getlocalMousePositionFromLayerMousePosition,
         cleanAll: cleanAll,

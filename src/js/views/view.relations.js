@@ -792,14 +792,22 @@ var createRelationsView = function () {
       let snapshotName = prompt("Add a Snapshot")
       let useImages = true // create a snsphot when saving graph
       if (useImages) {
-        svgAsPngUri(container.querySelector('.stellae-graph'),{scale: 0.1}).then(function (uri) {
+        activeGraph.getScreenshot(function (uri) {
           let snapId = uuid()
-          resizeCropImage(uri, function (uri) {
+          resizeCropImage(uri, function (urib) {
             let graphItem = {uuid:snapId, preview:uri, view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all"), graphHelpers:activeGraph.exportHelpers()}
             push(act.add("graphs", graphItem))
             setSnapshot(snapId)
           })
         })
+        // svgAsPngUri(container.querySelector('.stellae-graph'),{scale: 0.1}).then(function (uri) {
+        //   let snapId = uuid()
+        //   resizeCropImage(uri, function (uri) {
+        //     let graphItem = {uuid:snapId, preview:uri, view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all"), graphHelpers:activeGraph.exportHelpers()}
+        //     push(act.add("graphs", graphItem))
+        //     setSnapshot(snapId)
+        //   })
+        // })
       }else {
         let snapId = uuid()
         let graphItem = {uuid:genuuid(), view:activeMode, name:snapshotName, groupElements:deepCopy(groupElements), elementVisibility: deepCopy(elementVisibility), hiddenItems:hiddenItemsFromSideView, nodesPositions:activeGraph.exportNodesPosition("all"), graphHelpers:activeGraph.exportHelpers()}
