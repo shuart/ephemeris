@@ -2442,7 +2442,7 @@ var createRelationsView = function () {
         }
       },
       onCanvasZoom:function (e) {//TODO finish implementation
-        console.log(e);
+        // console.log(e);
         currentGraphTransformation=e
       },
       startTransform:currentGraphTransformation,

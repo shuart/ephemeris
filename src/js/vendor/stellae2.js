@@ -665,7 +665,7 @@ function stellae(_selector, _options) {
 
     function updateTransformCallback() {
           if (typeof options.onCanvasZoom === 'function') {
-            console.log(camera.position);
+            //console.log(camera.position);
             options.onCanvasZoom({translate:camera.position,rotation:camera.rotation, target:controls.target})
           }
     }
@@ -707,12 +707,53 @@ function stellae(_selector, _options) {
       for (var i = 0; i < relationshipsData.length; i++) {
         let rData = relationshipsData[i]
         let line = rData.relatedObject
+        let text = rData.relatedObjectText
         line.geometry.attributes.position.needsUpdate = true;
         line.geometry.attributes.position.array[0] =rData.source.x*canvasScale
         line.geometry.attributes.position.array[1] =rData.source.y*canvasScale
         line.geometry.attributes.position.array[3] =rData.target.x*canvasScale
         line.geometry.attributes.position.array[4] =rData.target.y*canvasScale
+        let center = findLineCenterPoint(rData.source, rData.target)
+        text.position.x =center.x*canvasScale
+        text.position.y =center.y*canvasScale
+
+        var p0 = new THREE.Vector3(rData.source.x, rData.source.y, 1);
+        var p1 = new THREE.Vector3(rData.target.x, rData.target.y, 1);
+        var pc = new THREE.Vector3(center.x, center.y, 1);
+        // // get direction of line p0-p1
+        // var direction = p1.clone().sub(p0).normalize();
+        // // // project p2 on line p0-p1
+        // // var line0 = new THREE.Line3(p0, p1);
+        // // any random point outside the line will define plane orientation
+        // var p2 = p1.clone().add(new THREE.Vector3(0.4, 0.8, 1));
+        // // // project p2 on line p0-p1
+        // // var line0 = new THREE.Line3(p0, p1);
+        // var proj = new THREE.Vector3();
+        // line0.closestPointToPoint(p2, true, proj);
+        //
+        // // get plane side direction
+        // var localUp = p2.clone().sub(proj).normalize();
+        //
+        // var proj = new THREE.Vector3();
+        // line0.closestPointToPoint(p2, true, proj);
+        //text.up.copy(new THREE.Vector3(0, 1, 0))
+        // text.lookAt(rData.target.x*canvasScale, rData.target.y*canvasScale)
+        // console.log(rotation(rData.source, rData.target));
+        let angle = rotation(rData.source, rData.target)
+        let mirror = (angle > 90 && angle < 180)
+        let mirror2 = angle < -90 && angle > -180
+        if (mirror || mirror) {
+          angle += 180
+        }
+        text.rotation.z =angle* (3.1416/180)
+        //text.up.copy(new THREE.Vector3(0, 1, 0))
+        // text.lookAt(center.x*canvasScale, center.y*canvasScale)
       }
+    }
+
+
+    function findLineCenterPoint(a, b) {
+    	return { x: (b.x - a.x) / 2 + a.x, y: (b.y - a.y) / 2 + a.y };
     }
 
     function updateInteractionStates() {
@@ -818,8 +859,16 @@ function stellae(_selector, _options) {
         instancegroup.add(line)
         relationships.push(line)
         relData.relatedObject = line
+
         relationshipsData.push(relData)
+
+        let text = dcText(relData.displayType, 5, 7, 25, "#a5abb60", 0xffffff);      // text #2, TRANSPARENT
+        text.scale.set(0.05,0.05,0.05); // move geometry up and out
+        text.position.z= -0.11;
+        relData.relatedObjectText = text
+        instancegroup.add(text)
       }
+
 
     }
     function updateNotes(n) {
@@ -1798,7 +1847,7 @@ function stellae(_selector, _options) {
         }
     }
 
-    function tickRelationshipsOutlines() {
+    function tickRelationshipsOutlines() { //REL postions calculation
       //check if update is needed
         relationship.each(function (d) {
           if (d.source.xFrom &&  d.target.xFrom) {
@@ -1854,7 +1903,7 @@ function stellae(_selector, _options) {
 
         });
         //current functions
-        function tickRelationshipsTexts(text,sourceRotationAngle ,sourceUnitaryNormalVector) {
+        function tickRelationshipsTexts(text,sourceRotationAngle ,sourceUnitaryNormalVector) { //text calculation
           text.attr('transform', function(d) {
               var angle = (sourceRotationAngle + 360) % 360,
                   mirror = angle > 90 && angle < 270,
@@ -2450,6 +2499,9 @@ function stellae(_selector, _options) {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#" + fgcolor.toString(16).padStart(6, '0'); // fgcolor
+      if (fgcolor[0]=="#") {
+        ctx.fillStyle = "grey"
+      }
       ctx.font = hPxTxt + "px sans-serif";   // needed after resize
       ctx.fillText(txt, wPxAll/2, hPxAll/2); // the deed is done
       // next, make the texture
