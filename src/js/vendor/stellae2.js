@@ -318,7 +318,7 @@ function stellae(_selector, _options) {
 
       // camera.position.z = 20;
       camera.position.y = 20;
-      if (options.startTransform) {
+      if (options.startTransform && options.startTransform.translate) {
         console.log(options.startTransform);
         camera.position.x = options.startTransform.translate.x
         camera.position.y = options.startTransform.translate.y

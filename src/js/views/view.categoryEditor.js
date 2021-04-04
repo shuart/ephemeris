@@ -27,8 +27,6 @@ var createCategoryEditorView = function ({
 
   }
 
-
-
   var init = function () {
     connections()
   }
@@ -44,162 +42,23 @@ var createCategoryEditorView = function ({
       update()
     })
     connect(".action_add_extra_field","click",(e)=>{
-      console.log("Edit");
-      var newValue = prompt("Edit Item",e.target.dataset.value)
-      if (newValue) {
-        push(act.add("extraFields", {target:e.target.dataset.id, name:newValue, type:"text"}))
-      }
-      sourceOccElement.remove()
-      update()
+      action_add_extra_field(e.target.dataset.value,e.target.dataset.id)
     })
+
+
 
     connect(".action_add_extra_relation","click", async (e)=>{
-      console.log("Edit");
-      var store = await query.currentProject()
-      let selectOptions = store.categories.map(cat=>{
-        return {name:cat.name, value:cat.uuid}
-      })
-      let currentCat = store.categories.find(c=> c.uuid == e.target.dataset.id)
-
-      var popup=  createPromptPopup({
-        title:"Create a new relation affecting "+currentCat.name,
-        callback :function (res) {
-          console.log(res);
-          if (res.result == "") {
-            // selectedFilter[event.target.dataset.prop] = undefined
-            // document.querySelector('.target_list_menu_top_'+event.target.dataset.prop).style.display = "none"
-          }else {
-            let nameArr = res.result.targetCat.split(',')
-            // let nameArr = res.result.ExistingInt.split(',')
-            //add new interface
-            let uuid = genuuid()
-            push(act.add("interfacesTypes", {uuid:uuid,name:res.result.RelationName}))//TODO add await
-            //add related extrafield
-            push(act.add("extraFields", {target:currentCat.uuid, relationId:uuid, name:res.result.RelationName, type:"relation"}))
-
-
-
-            setTimeout(function () {//add element related in terface pool
-              nameArr.forEach((item, i) => {
-                push(act.edit("interfacesTypes", {uuid:uuid, prop:item, value:true}))
-              });
-
-
-            }, 100);
-            // push(act.add("extraFields", {target:e.target.dataset.id, name:newValue, type:"text"}))
-            // selectedFilter[event.target.dataset.prop] = res.result.split(',')
-            // document.querySelector('.target_list_menu_top_'+event.target.dataset.prop).style.display = "inline"
-          }
-          // refreshList()
-        },
-        fields:[
-          { type:"input",id:"RelationName" ,label:"Relation Name", placeholder:"Set the relation name" },
-          // { type:"input",id:"firstName" ,label:"First Name", placeholder:"Set your first name" },
-
-          { type:"select",id:"targetCat",preSelected:[],selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
-          // { type:"select",id:"projectNamedffd",preSelected:["test"],selectOptions:[{name:"test", value:"fff"},{name:"teffst", value:"fffa"}], label:"Project name", placeholder:"Set a name for the project" }
-        ]
-
-        // fields:{ type:"select",id:"project_filter_"+event.target.dataset.prop,preSelected:[preselected],selectOptions:selectOptions, label:rule.displayAs, optional:true, placeholder:"Search.." }
-      })
-      // var newValue = prompt("Edit Item",)
-      // if (newValue) {
-      //   push(act.add("extraFields", {target:e.target.dataset.id, name:newValue, type:"text"}))
-      // }
-      // sourceOccElement.remove()
-      // update()
+      action_add_extra_relation(cat,e.target.dataset.id)
     })
+
     connect(".action_connect_to_relation","click", async (e)=>{
-      console.log("Edit");
-      var store = await query.currentProject()
-      let selectOptionsRelations = store.interfacesTypes.map(i=>{
-        return {name:i.name, value:i.uuid}
-      })
-      let selectOptions = store.categories.map(cat=>{
-        return {name:cat.name, value:cat.uuid}
-      })
-      let currentCat = store.categories.find(c=> c.uuid == e.target.dataset.id)
-
-      var popup=  createPromptPopup({
-        title:"Add an existing relation affecting "+currentCat.name,
-        callback :function (res) {
-          console.log(res);
-          if (res.result == "") {
-          }else {
-            let existingRelation = res.result.existingRelation.split(',')
-            let nameArr = res.result.targetCat.split(',')
-            push(act.add("extraFields", {target:currentCat.uuid, relationId:existingRelation[0], name:res.result.RelationName, type:"relation"}))
-            setTimeout(function () {//add element related in terface pool
-              nameArr.forEach((item, i) => {
-                push(act.edit("interfacesTypes", {uuid:existingRelation[0], prop:item, value:true}))
-              });
-            }, 100);
-          }
-          // refreshList()
-        },
-        fields:[
-          { type:"input",id:"RelationName" ,label:"Relation Name", placeholder:"Set the relation name" },
-          // { type:"input",id:"firstName" ,label:"First Name", placeholder:"Set your first name" },
-
-          { type:"select",id:"existingRelation",preSelected:[],selectOptions:selectOptionsRelations, label:"Existing Relation", placeholder:"Set existing relations" },
-          { type:"select",id:"targetCat",preSelected:[],selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
-          // { type:"select",id:"projectNamedffd",preSelected:["test"],selectOptions:[{name:"test", value:"fff"},{name:"teffst", value:"fffa"}], label:"Project name", placeholder:"Set a name for the project" }
-        ]
-
-        // fields:{ type:"select",id:"project_filter_"+event.target.dataset.prop,preSelected:[preselected],selectOptions:selectOptions, label:rule.displayAs, optional:true, placeholder:"Search.." }
-      })
-      // var newValue = prompt("Edit Item",)
-      // if (newValue) {
-      //   push(act.add("extraFields", {target:e.target.dataset.id, name:newValue, type:"text"}))
-      // }
-      // sourceOccElement.remove()
-      // update()
+      action_connect_to_relation(e.target.dataset.id)
     })
 
     connect(".action_current_user_close","click",(e)=>{
       sourceOccElement.remove()
     })
 
-
-    //
-    // connect(".action_current_user_select_item_assigned","click",(e)=>{
-    //   var metalinkType = e.target.dataset.prop;
-    //   var sourceTriggerId = e.target.dataset.id;
-    //   var projectStore = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0];
-    //   var metaLinks = query.items("projects").filter(i=>i.uuid == e.target.dataset.project)[0].metaLinks;
-    //   var currentLinksUuidFromDS = JSON.parse(e.target.dataset.value)
-    //   showListMenu({
-    //     sourceData:projectStore.stakeholders,
-    //     parentSelectMenu:e.select ,
-    //     multipleSelection:currentLinksUuidFromDS,
-    //     displayProp:"name",
-    //     searchable : true,
-    //     display:[
-    //       {prop:"name", displayAs:"Name", edit:false},
-    //       {prop:"desc", displayAs:"Description", edit:false}
-    //     ],
-    //     idProp:"uuid",
-    //     onCloseMenu: (ev)=>{
-    //       sourceOccElement.remove()
-    //       update()
-    //     },
-    //     onChangeSelect: (ev)=>{
-    //       console.log(ev.select.getSelected());
-    //       console.log(projectStore.metaLinks);
-    //       projectStore.metaLinks = projectStore.metaLinks.filter(l=>!(l.type == metalinkType && l.source == sourceTriggerId && currentLinksUuidFromDS.includes(l.target)))
-    //       for (newSelected of ev.select.getSelected()) {
-    //         projectStore.metaLinks.push({type:metalinkType, source:sourceTriggerId, target:newSelected})//TODO remove this side effect
-    //       }
-    //       console.log(projectStore.metaLinks);
-    //       saveDB()
-    //       sourceOccElement.remove()
-    //       update()
-    //     },
-    //     onClick: (ev)=>{
-    //       console.log("select");
-    //     }
-    //   })
-    // })
   }
 
   var render = async function (uuid) {
@@ -260,7 +119,6 @@ var createCategoryEditorView = function ({
         item.hasInterfaceTypeTargeted = relatedInterface.name
       }
       return item
-
     })
     let columns = [
       //{formatter:'action', formatterParams:{name:"Edit"}, width:40, hozAlign:"center", cellClick:function(e, cell){categoryEditorView.update(cell.getRow().getData().uuid)}},
@@ -296,17 +154,24 @@ var createCategoryEditorView = function ({
         if (intType[item.uuid]) {
           // cell.getRow().getData().uuid
         //  interfaceToCatRel.push({uuid:genuuid(), source:intType.uuid, target:item.uuid})
-          interfaceToCatRel[intType.uuid]=item.uuid
+          if (!interfaceToCatRel[intType.uuid]) {
+            interfaceToCatRel[intType.uuid] =[]
+          }
+          interfaceToCatRel[intType.uuid].push(item.uuid)
         }
       }
     });
     let fieldToCat = []
     store.extraFields.forEach((item, i) => {
       if (interfaceToCatRel[item.relationId]) {
-        fieldToCat.push({uuid:genuuid(), source:item.uuid, target:interfaceToCatRel[item.relationId]})
+        let relatedCategories = interfaceToCatRel[item.relationId]
+        for (var i = 0; i < relatedCategories.length; i++) {
+
+          fieldToCat.push({uuid:genuuid(), source:item.uuid, target:relatedCategories[i]})
+
+        }
       }
     });
-
 
     let targetCol = {
       title:"Target",
@@ -329,49 +194,36 @@ var createCategoryEditorView = function ({
     columns.push(targetCol)
     let menutest = [
       // {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
-      {type:'action', name:"Add", color:"grey"},
-      {type:'search', name:"Add", color:"grey"}
+      {type:'action', name:"Add text prop", color:"grey",onClick:e=>{action_add_extra_field(cat.name,cat.uuid)}    },
+      {type:'action', name:"Connect to relation", color:"grey",onClick:e=>{action_connect_to_relation(cat.uuid)}    },
+      {type:'action', name:"Add new relation", color:"grey",onClick:e=>{action_add_extra_relation(cat,cat.uuid)}    },
+      // {type:'search', name:"Add", color:"grey"}
     ]
 
-    table = tableComp.create({onUpdate:e=>{updateList()},domElement:".categoryEditorTable", data:data, columns:columns, menu:menutest})
-
-
+    table = tableComp.create(
+      {
+        onUpdate:e=>{updateList()},
+        domElement:".categoryEditorTable",
+        data:data,
+        columns:columns,
+        menu:menutest
+      })
   }
 
   var renderProfile = async function (uuid){
-
     var store = await query.currentProject()
     var cat = store.categories.find(i=>i.uuid == uuid)
-    let fieldsHtml = store.extraFields.filter(i=>i.target == cat.uuid).map(e=> `<div>Name:${e.name}, type:${e.type}</div><div class="ui divider"></div>`)
-
     let html =`
     <h2 class="header">
-      My profile
+      Edit Category
     </h2>
     <div data-id="${cat.uuid}" class="ui segment">
       <div class="content">
         <h3 class="header">First name</h3>
         ${cat.name}
         <i data-prop="userFirstName" data-value="${cat.name}" data-id="${cat.name}" class="edit icon action_current_user_edit_item" style="opacity:0.2"></i>
-
         <div class="ui divider"></div>
-        ADD<i data-prop="userFirstName" data-value="${cat.name}" data-id="${cat.uuid}" class="edit icon action_add_extra_field" style="opacity:0.2"></i>
-
-
-
-        <div class="ui divider"></div>
-        ADD<i data-prop="userFirstName" data-value="${cat.name}" data-id="${cat.uuid}" class="edit icon action_add_extra_relation" style="opacity:0.2"></i>
-
-
-
-        <div class="ui divider"></div>
-        ADD from existing<i data-prop="userFirstName" data-value="${cat.name}" data-id="${cat.uuid}" class="edit icon action_connect_to_relation" style="opacity:0.2"></i>
-
-
-
-        <div class="ui divider"></div>
-        ${fieldsHtml}
-        <div class="categoryEditorTable"></div>
+        <div style="min-height:500px" class="categoryEditorTable"></div>
       </div>
     </div>
     <div class="ui divider"></div>
@@ -382,11 +234,86 @@ var createCategoryEditorView = function ({
     return theme.menu()
   }
 
+  function action_add_extra_field(value,id) {
+    var newValue = prompt("Edit Item",value)
+    if (newValue) {
+      push(act.add("extraFields", {target:id, name:newValue, type:"text"}))
+    }
+    sourceOccElement.remove()
+    update()
+  }
 
+  async function action_add_extra_relation(cat,id) {
+    var store = await query.currentProject()
+    let selectOptions = store.categories.map(cat=>{
+      return {name:cat.name, value:cat.uuid}
+    })
+    let currentCat = store.categories.find(c=> c.uuid == id)
+    var popup=  createPromptPopup({
+      title:"Create a new relation affecting "+currentCat.name,
+      callback :function (res) {
+        console.log(res);
+        if (res.result == "") {
+        }else {
+          let nameArr = res.result.targetCat.split(',')
+          // let nameArr = res.result.ExistingInt.split(',')
+          //add new interface
+          let uuid = genuuid()
+          push(act.add("interfacesTypes", {uuid:uuid,name:res.result.RelationName}))//TODO add await
+          //add related extrafield
+          push(act.add("extraFields", {target:currentCat.uuid, relationId:uuid, name:res.result.RelationName, type:"relation"}))
+          setTimeout(function () {//add element related in terface pool
+            nameArr.forEach((item, i) => {
+              push(act.edit("interfacesTypes", {uuid:uuid, prop:item, value:true}))
+            });
+            sourceOccElement.remove()
+            update()
+          }, 100);
+        }
+        // refreshList()
+      },
+      fields:[
+        { type:"input",id:"RelationName" ,label:"Relation Name", placeholder:"Set the relation name" },
+        { type:"select",id:"targetCat",preSelected:[],selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
+      ]
+    })
+  }
 
-
-
-
+  async function action_connect_to_relation(id) {
+    var store = await query.currentProject()
+    let selectOptionsRelations = store.interfacesTypes.map(i=>{
+      return {name:i.name, value:i.uuid}
+    })
+    let selectOptions = store.categories.map(cat=>{
+      return {name:cat.name, value:cat.uuid}
+    })
+    let currentCat = store.categories.find(c=> c.uuid == id)
+    var popup=  createPromptPopup({
+      title:"Add an existing relation affecting "+currentCat.name,
+      callback :function (res) {
+        console.log(res);
+        if (res.result == "") {
+        }else {
+          let existingRelation = res.result.existingRelation.split(',')
+          let nameArr = res.result.targetCat.split(',')
+          push(act.add("extraFields", {target:currentCat.uuid, relationId:existingRelation[0], name:res.result.RelationName, type:"relation"}))
+          setTimeout(function () {//add element related in terface pool
+            nameArr.forEach((item, i) => {
+              push(act.edit("interfacesTypes", {uuid:existingRelation[0], prop:item, value:true}))
+            });
+            sourceOccElement.remove()
+            update()
+          }, 100);
+        }
+        // refreshList()
+      },
+      fields:[
+        { type:"input",id:"RelationName" ,label:"Relation Name", placeholder:"Set the relation name" },
+        { type:"select",id:"existingRelation",preSelected:[],selectOptions:selectOptionsRelations, label:"Existing Relation", placeholder:"Set existing relations" },
+        { type:"select",id:"targetCat",preSelected:[],selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
+      ]
+    })
+  }
 
   var update = function (uuid) {
     if (uuid) {
