@@ -112,6 +112,44 @@ var createExplorerView = function ({
     return data
   }
 
+  var getAllItemOfCategory = function (store,cat) {
+    let relevantObjects = {}
+    let filteredObject = []
+
+    for (var j = 0; j < cat.length; j++) {
+
+      for (var i = 0; i < store.metaLinks.length; i++) {
+        let link = store.metaLinks[i]
+        if (link.type=="category") {
+          if (link.target == cat[j]) {
+            relevantObjects[link.source] = true
+          }
+        }
+      }
+    }
+
+
+    for (var i = 0; i < store.currentPbs.length; i++) {
+      if (relevantObjects[ store.currentPbs[i].uuid ]) {
+        filteredObject.push(store.currentPbs[i])
+      }
+    }
+    return filteredObject
+  }
+
+  var getRelatedCategories =function (store,field) {
+    //var catInfos = store.categories.find(c=>c.uuid == cat)
+    let fieldObject= store.extraFields.find(e=>e.uuid == field)
+    let fieldRelation= store.interfacesTypes.find(e=>e.uuid == fieldObject.relationId)
+    let allowedRel =[]
+    for (var i = 0; i < store.categories.length; i++) {
+      if (fieldRelation[store.categories[i].uuid]) {
+        allowedRel.push(store.categories[i])
+      }
+    }
+    return allowedRel
+  }
+
   var render =async function ({
     typeId = undefined
     }={}) {
@@ -130,6 +168,10 @@ var createExplorerView = function ({
         if (e.type == "text") {
           return {title:e.name, field:e.uuid, editor:"modalInput", formatter:'textarea'}
         }else if (e.type == "relation") {
+          let allowedTargetsCat =getRelatedCategories(store, e.uuid)
+          console.log(allowedTargetsCat);
+          let allowedTargets =getAllItemOfCategory(store, allowedTargetsCat.map(a=>a.uuid))
+          console.log(allowedTargets);
           return {
             title:e.name,
             formatter:'relation',
@@ -138,7 +180,7 @@ var createExplorerView = function ({
               if (event.target.dataset.id) {
                 showSingleItemService.showById(event.target.dataset.id)
               }else {
-                createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
+                createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),allowedTargets)
               }
             },
             formatterParams:{

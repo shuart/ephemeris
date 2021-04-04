@@ -38,9 +38,16 @@ var createTableComp = function ({
       return `
       <div style="padding:5px" class="ephemeris-table">
         <div class="ephemeris-table-menu${targetClassId}"></div>
-        <div style="box-shadow: 0px 0px 2px 0px #b9b9b9;" class="example-table${targetClassId}"></div>
+        <div style="" class="example-table${targetClassId}"></div>
       </div>`
     },
+    // table:function () {
+    //   return `
+    //   <div style="padding:5px" class="ephemeris-table">
+    //     <div class="ephemeris-table-menu${targetClassId}"></div>
+    //     <div style="box-shadow: 0px 0px 2px 0px #b9b9b9;" class="example-table${targetClassId}"></div>
+    //   </div>`
+    // },
     button:function (name, id, elementClass, color) {
       return `
       <div data-id="${id}" style="border-radius: 3px;cursor:pointer;display:inline-block; padding:0.5em 1.45em;margin:0.1em; box-sizing: border-box;text-decoration:none;font-weight:400;color:#ffffff;background-color:${color||"#CCCCCC"};text-align:center; position:relative;" class="tableListButton">
