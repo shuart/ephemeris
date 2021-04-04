@@ -116,17 +116,20 @@ var store = {
   links:[] //TODO unifier links et metalinks
 }
 
+// var projectPreset = JSON.parse(ephemeris_presets.se)
+// var projectTemplate = JSON.stringify(projectPreset)
 var projectTemplate = JSON.stringify(store)
 var createNewProject = function (name, optionsData) {
   var options = optionsData || {}
-  var secondProject = JSON.parse(projectTemplate)
+  var secondProject = JSON.parse(ephemeris_presets.se)
+  // var secondProject = JSON.parse(projectTemplate)
   var projectUuid = genuuid()
   secondProject.infos[0].projectUuid = projectUuid
   secondProject.infos[0].name = name
   secondProject.uuid = projectUuid
   console.log(secondProject);
   if (options.placeholder) {
-    createPBS(secondProject)
+    // createPBS(secondProject)
   }
   createUserStakeholder(secondProject)
   console.log(secondProject);

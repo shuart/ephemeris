@@ -149,6 +149,12 @@ var createExplorerView = function ({
     }
     return allowedRel
   }
+  var checkIfTarget =function (store,cat, field) {
+    //var catInfos = store.categories.find(c=>c.uuid == cat)
+    let fieldObject= field
+    let fieldRelation= store.interfacesTypes.find(e=>e.uuid == fieldObject.relationId)
+    return fieldRelation[cat]
+  }
 
   var render =async function ({
     typeId = undefined
@@ -168,6 +174,7 @@ var createExplorerView = function ({
         if (e.type == "text") {
           return {title:e.name, field:e.uuid, editor:"modalInput", formatter:'textarea'}
         }else if (e.type == "relation") {
+          let catIsTarget = checkIfTarget(store,typeId , e)
           let allowedTargetsCat =getRelatedCategories(store, e.uuid)
           console.log(allowedTargetsCat);
           let allowedTargets =getAllItemOfCategory(store, allowedTargetsCat.map(a=>a.uuid))
@@ -180,10 +187,13 @@ var createExplorerView = function ({
               if (event.target.dataset.id) {
                 showSingleItemService.showById(event.target.dataset.id)
               }else {
-                createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),allowedTargets)
+                if (!catIsTarget) {
+                  createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),allowedTargets)
+                }
               }
             },
             formatterParams:{
+              isTarget:catIsTarget,
               relationList:store.interfaces.filter(i=>i.typeId==e.relationId),
               relationTargets: store.currentPbs
             },
@@ -228,7 +238,7 @@ var createExplorerView = function ({
       table = tableComp.create({data:data, columns:columns, menu:menutest, onUpdate:onUpdate})
   }
 
-  var createEditRelationPopup = function (itemIdMain,interfaceTypeId, relationList,relationTargets) {
+  var createEditRelationPopup = function (itemIdMain,interfaceTypeId, relationList,relationTargets, isTarget) {
     let selectOptions = relationTargets.map(t=>{
       return {name:t.name, value:t.uuid}
     })

@@ -103,7 +103,12 @@ var createTableComp = function ({
     // let list = formatterParams.relationList.map(r=>r.target).join(",")
     console.log(formatterParams.relationList);
     console.log(cell.getData());
-    let listTarget = formatterParams.relationList.filter(r=>r.source==cell.getData().uuid).map(r=>r.target)
+    let listTarget = []
+    if (formatterParams.isTarget) {
+      listTarget = formatterParams.relationList.filter(r=>r.target==cell.getData().uuid).map(r=>r.source)      
+    }else {
+      listTarget = formatterParams.relationList.filter(r=>r.source==cell.getData().uuid).map(r=>r.target)
+    }
     console.log(cell.getRow());
     console.log(listTarget);
     console.log(formatterParams.relationTargets);

@@ -111,6 +111,7 @@ var createCategoryEditorView = function ({
 
   var renderTable = async function (uuid) {
     var store = await query.currentProject()
+    console.log(JSON.stringify(store, undefined, 4));
     var cat = store.categories.find(i=>i.uuid == uuid)
     let fieldsHtml = store.extraFields.filter(i=>i.target == cat.uuid).map(e=> `<div>Name:${e.name}, type:${e.type}</div><div class="ui divider"></div>`)
     let data = store.extraFields.filter(i=>i.target == cat.uuid).map((item) => {
