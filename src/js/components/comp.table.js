@@ -71,6 +71,10 @@ var createTableComp = function ({
       ${name}
       </div>`
     },
+    svgPath:function (name,id, path) {
+      let html = convertPathToSVG(path, 0,0,50,50, "scale(0.088) translate(5,0)", id)
+      return html
+    },
     menu:function () {
       return `
       <div style="margin-bottom: 8px;display: flex; align-items: center;width: 100%;background: #f9f9f9; padding: 10px;" class="bar">
@@ -97,6 +101,9 @@ var createTableComp = function ({
     // return "<i class='fa fa-print'></i>";
     return theme.removeButton(formatterParams.name|| "Remove", cell.getRow().getData().uuid);
   };
+  customFields.svgPath = function(cell, formatterParams){ //plain text value
+    return theme.svgPath(cell.getValue()|| "No svg", cell.getRow().getData().uuid, cell.getValue());
+  };
 
   customFields.relation = function(cell, formatterParams, onRendered ){ //plain text value
     // return "<i class='fa fa-print'></i>";
@@ -105,7 +112,7 @@ var createTableComp = function ({
     console.log(cell.getData());
     let listTarget = []
     if (formatterParams.isTarget) {
-      listTarget = formatterParams.relationList.filter(r=>r.target==cell.getData().uuid).map(r=>r.source)      
+      listTarget = formatterParams.relationList.filter(r=>r.target==cell.getData().uuid).map(r=>r.source)
     }else {
       listTarget = formatterParams.relationList.filter(r=>r.source==cell.getData().uuid).map(r=>r.target)
     }
@@ -220,11 +227,11 @@ var createTableComp = function ({
       if (item.formatter) {
         if (item.formatter == "action") {
           item.formatter = customFields.action
-          item.width= 100
+          item.width= 105
         }
         if (item.formatter == "remove") {
           item.formatter = customFields.remove
-          item.width= 43
+          item.width= 50
           let callBack = item.cellClick
           item.cellClick = function (e, cell) {
             callBack(e, cell)
@@ -232,6 +239,10 @@ var createTableComp = function ({
               tableOnUpdate()
             }
           }
+        }
+        if (item.formatter == "svgPath") {
+          item.formatter = customFields.svgPath
+          item.width= 40
         }
         if (item.formatter == "relation") {
           item.formatter = customFields.relation
@@ -457,6 +468,13 @@ var createTableComp = function ({
       }
     }
     return hierarchiesNodesList
+  }
+
+  var convertPathToSVG = function (path, dim1, dim2,dim3,dim4, transform, extraId) {
+    return `
+    <svg style="cursor:pointer; height:18px; width:23px;" xmlns="http://www.w3.org/2000/svg" viewBox="${dim1} ${dim2} ${dim3} ${dim4}" data-id="${extraId}">
+      <path data-id="${extraId}" fill="#808080" transform="${transform}" d="${path}" />
+    </svg>`
   }
 
   var updateStyle =function () {

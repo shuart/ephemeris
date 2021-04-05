@@ -42,7 +42,7 @@ var createCategoriesView = function () {
           }
         }
       },
-      {title:"SVG", field:"svgPath", editor:"modalInput"},
+      {title:"SVG",formatter:"svgPath", field:"svgPath", editor:"modalInput"},
       {
         formatter:'remove',
         cellClick:function(e, cell){
