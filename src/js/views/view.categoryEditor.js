@@ -65,7 +65,7 @@ var createCategoryEditorView = function ({
     sourceOccElement = document.createElement('div');
     sourceOccElement.style.height = "100%"
     sourceOccElement.style.width = "100%"
-    sourceOccElement.style.zIndex = "11"
+    sourceOccElement.style.zIndex = "9999999999999999999999999999"
     sourceOccElement.style.position = "fixed"
 
     var dimmer = document.createElement('div');

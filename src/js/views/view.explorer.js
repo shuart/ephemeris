@@ -159,8 +159,12 @@ var createExplorerView = function ({
   var render =async function ({
     typeId = undefined
     }={}) {
+
       var store = await query.currentProject()
+      let catData = createCatData(store)
       let data = getData(store,typeId)
+      let allowedExtraFields = catData.dic[typeId]._parents.map(p=>p.uuid)
+
 
       console.log(data);
       let columns = [
@@ -170,7 +174,8 @@ var createExplorerView = function ({
       ]
 
       //extraFields
-      let fields = store.extraFields.filter(i=>i.target == typeId).map(e=> {
+      let fields = store.extraFields.filter(i=>allowedExtraFields.includes(i.target) || i.target == typeId).map(e=> {
+      // let fields = store.extraFields.filter(i=>i.target == typeId).map(e=> {
         if (e.type == "text") {
           return {title:e.name, field:e.uuid, editor:"modalInput", formatter:'textarea'}
         }else if (e.type == "relation") {
@@ -278,6 +283,40 @@ var createExplorerView = function ({
         ]
       })
 
+  }
+
+  var createCatData = function (store) {
+    let dic = {}
+    let data = []
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      if (!cat._parents) {cat._parents =[]}
+      if (!cat._children) {cat._children =[]}
+      dic[cat.uuid] = cat
+
+    }
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      if (cat.parentCat) {
+        cat.parentCatName = dic[cat.parentCat].name
+        dic[cat.parentCat]._children.push(cat)
+      }else {
+        data.push(cat)
+      }
+    }
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      let currentCat = cat
+      while (currentCat.parentCat) {
+        console.log(currentCat.parentCat);
+        cat._parents.push(dic[currentCat.parentCat])
+        currentCat = dic[currentCat.parentCat]
+
+
+      }
+    }
+    console.log(data);
+    return {data:data, dic:dic}
   }
 
 
