@@ -6,10 +6,12 @@ var createPbsView = function () {
   var extraFields = undefined
   var currentVisibleList = undefined
   var table = undefined
+  var tableComp = undefined
   var treeMode = true
 
   var init = function () {
     connections()
+    tableComp = createTableComp()
     //update()
 
   }
@@ -72,6 +74,7 @@ var createPbsView = function () {
   var getData = function (store, typeId) {
     let nodes =  store.currentPbs
     if (treeMode) {
+
       nodes = tableComp.tools.hierarchiesList(nodes, store.links)
     }
     return nodes

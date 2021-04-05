@@ -235,6 +235,7 @@ var createExplorerView = function ({
         {type:'action', name:"Tree", color:"grey", onClick:e=>{showTreeAction()}},
         {type:'search', name:"Add", color:"grey"}
       ]
+      let tableComp = createTableComp()
       table = tableComp.create({data:data, columns:columns, menu:menutest, onUpdate:onUpdate})
   }
 
@@ -272,7 +273,8 @@ var createExplorerView = function ({
           }
         },
         fields:[
-          { type:"select",id:"targetCat",preSelected:preSelected,selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
+          { type:"selection",id:"targetCat",preSelected:preSelected,selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
+          // { type:"select",id:"targetCat",preSelected:preSelected,selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
         ]
       })
 

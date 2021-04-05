@@ -32,6 +32,10 @@ var createTableComp = function ({
   var tableMenu = undefined
   var currentTable = undefined
   var currentTreeMode = false
+  var currentSelectable =false
+  var currentRowSelectionChanged = function (d,rows) {
+        console.log(d,rows);
+      }
 
   var theme={
     table:function () {
@@ -413,6 +417,8 @@ var createTableComp = function ({
       columns:initCols,
       dataTree:currentTreeMode,
       dataTreeStartExpanded:true,
+      selectable: currentSelectable,
+      rowSelectionChanged:currentRowSelectionChanged,
     });
     // var table = new Tabulator(".example-table", {
     //   data:initData,           //load row data from array
@@ -484,6 +490,9 @@ var createTableComp = function ({
   var getTable = function () {
     return currentTable
   }
+  var selectByValue = function (preSelected) {
+    currentTable.selectRow(currentTable.getRows().filter(row => preSelected.includes(row.getData().value)));
+  }
 
 
   var update = function () {
@@ -496,7 +505,11 @@ var createTableComp = function ({
     onUpdate=undefined,
     menu=false,
     dataTree=false,
-    domElement=".center-container"
+    domElement=".center-container",
+    selectable=false,
+    rowSelectionChanged= function (d,rows) {
+      console.log(d,rows);
+    },
     }={}) {
       targetClassId = Date.now()
       tabledata = data;
@@ -505,6 +518,8 @@ var createTableComp = function ({
       tableMenu = menu;
       container = domElement;
       currentTreeMode = dataTree;
+      currentSelectable=selectable;
+      currentRowSelectionChanged=rowSelectionChanged;
       if (domElement=="modal") {
         let blackbox = renderModalContainer()
         container = '.modalTableContent'
@@ -526,9 +541,9 @@ var createTableComp = function ({
   self.create = create
   self.update = update
   self.updateData = updateData
+  self.getTable = getTable
+  self.selectByValue = selectByValue
   self.init = init
 
   return self
 }
-var tableComp = createTableComp();
-tableComp.init();

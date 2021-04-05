@@ -83,6 +83,14 @@ var createPromptPopupView = function (inputData) {
         </div>
         `
       }
+      if (data.type == "selection") {
+        template= `
+        <div class="ui multiple dropdown form_select_${data.id}">
+          <input class="form_input_${data.id}" type="hidden" name="filters" value="${data.preSelected.join(',')}">
+          <div style="height:300px" class="form_selection_list_${data.id}"></div>
+        </div>
+        `
+      }
       if (data.type == "textArea") {
         template= `
         <div style="width:100%; padding-top: 15px;" class="field">
@@ -281,6 +289,8 @@ var createPromptPopupView = function (inputData) {
 
     setupDropdowns(inputData.fields)
     setupButtons(inputData.fields)
+    setupSelection(inputData.fields)
+
   }
 
   var setupDropdowns = function (fields) {
@@ -299,6 +309,49 @@ var createPromptPopupView = function (inputData) {
       if (item.type=="select") {
         $('.form_select_'+item.id)
           .dropdown('destroy')
+      }
+    });
+  }
+
+  var setupSelection = function (fields) {
+    fields.forEach((item, i) => {
+      if (item.type=="selection") {
+        // $('.form_select_'+item.id)
+        //   .dropdown({//use Fomatic dd script
+        //     clearable: true,
+        //     placeholder: 'any'
+        //   })
+        let container=document.querySelector('.form_selection_list_'+item.id)
+        let columns = [
+          {title:"Name", field:"name"},
+        ]
+
+        let menutest = [
+          {type:'search', name:"Add", color:"grey"}
+        ]
+        let data = item.selectOptions
+        if (data[0].svgPath) {
+          columns.push({title:"Icon", field:"svgPath", formatter:"svgPath"})
+        }
+        let tableComp = createTableComp()
+        let tableObject = tableComp.create(
+        {
+          onUpdate:e=>{updateList()},
+          domElement:'.form_selection_list_'+item.id,
+          data:data,
+          columns:columns,
+          menu:menutest,
+          selectable:true,
+          rowSelectionChanged:function(data, rows){
+          	document.querySelector(`.form_input_${item.id}`).value = data.map(d=>d.value).join(',');
+            if (!data[0]) {document.querySelector(`.form_input_${item.id}`).value =""}
+          },
+        })
+        // let table = tableObject.getTable()
+        // table.getTable().selectRow(item.preSelected);
+        tableObject.selectByValue(item.preSelected)
+        // table.selectRow(table.getRows().filter(row => item.preSelected.includes(row.getData().value)));
+
       }
     });
   }

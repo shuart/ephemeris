@@ -42,7 +42,32 @@ var createCategoriesView = function () {
           }
         }
       },
-      {title:"SVG",formatter:"svgPath", field:"svgPath", editor:"modalInput"},
+      {
+        title:"SVG",
+        formatter:"svgPath",
+        field:"svgPath",
+        cellClick:function (e,cell) {
+            let selectOptions = []
+            let svgListKeys = Object.keys(listOptionsSVG)
+            for (var i = 0; i < svgListKeys.length; i++) {
+              selectOptions.push(  {name:svgListKeys[i], svgPath:listOptionsSVG[svgListKeys[i]], value:listOptionsSVG[svgListKeys[i]]})
+            }
+            var popup=  createPromptPopup({
+              title:"Select an Icon",
+              callback :function (res) {
+                console.log(res);
+                if (res.result == "") {
+                }else {
+                  push(act.edit("categories", {uuid:e.target.dataset.id, prop:"svgPath", value:res.result}))
+                  updateList()
+                }
+              },
+              fields:[
+                { type:"selection",id:"targetIcon",preSelected:[],selectOptions:selectOptions, label:"Select an Icon", placeholder:"Set linkable categories" }
+              ]
+            })
+        }
+      },
       {
         formatter:'remove',
         cellClick:function(e, cell){
@@ -66,6 +91,7 @@ var createCategoriesView = function () {
       {type:'action', name:"Add", color:"grey"},
       {type:'search', name:"Add", color:"grey"}
     ]
+    tableComp = createTableComp()
     table = tableComp.create({onUpdate:e=>{updateList()},domElement:"modal", data:data, columns:columns, menu:menutest})
 
   }

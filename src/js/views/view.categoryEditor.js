@@ -200,7 +200,7 @@ var createCategoryEditorView = function ({
       {type:'action', name:"Add new relation", color:"grey",onClick:e=>{action_add_extra_relation(cat,cat.uuid)}    },
       // {type:'search', name:"Add", color:"grey"}
     ]
-
+    let tableComp = createTableComp()
     table = tableComp.create(
       {
         onUpdate:e=>{updateList()},
