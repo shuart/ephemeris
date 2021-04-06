@@ -104,6 +104,7 @@ var createTopMenu = function (containerSelector) {
       <a class="item action_toogle_work_packages"><i class="briefcase icon"></i>Work packages</a>
       <a class="item action_toogle_change_manager_view"><i class="random icon"></i>Changes</a>
       <a class="item action_toogle_categories_view"><i class="hashtag icon"></i>Categories</a>
+      <a class="item action_toogle_interfaces_editor_view"><i class="hashtag icon"></i>Interfaces</a>
       <a class="item action_toogle_tags_view"><i class="tags icon"></i>Tags</a>
       <a class="item action_toogle_extraFields_view"><i class="table icon"></i>Extra Fields</a>
       <a class="item action_toogle_extra_graphs"><i class="sitemap icon"></i>Extra Graphs</a>

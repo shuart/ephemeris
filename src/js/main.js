@@ -63,6 +63,7 @@ var reparse = false;
   pageManager.addComponent({name:"tags",object:tagsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"interfacesTypes",object:interfacesTypesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"categories",object:categoriesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  pageManager.addComponent({name:"interfacesEditorView",object:interfacesEditorView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"workPackages",object:workPackagesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"documents",object:documentsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"physicalSpaces",object:physicalSpacesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
@@ -222,6 +223,9 @@ var reparse = false;
   })
   connect(".action_toogle_categories_view","click",(e)=>{
     categoriesView.update()
+  })
+  connect(".action_toogle_interfaces_editor_view","click",(e)=>{
+    interfacesEditorView.update()
   })
   connect(".action_toogle_metalinks_view","click",(e)=>{
     metalinksView.update()
