@@ -149,10 +149,11 @@ var createCategoryEditorView = function ({
       // },
     ]
     let interfaceToCatRel = {}
+    let interfaceToCatRelSource = {}
     store.categories.forEach((item, i) => {
       for (var i = 0; i < store.interfacesTypes.length; i++) {
         let intType = store.interfacesTypes[i]
-        if (intType[item.uuid]) {
+        if (intType["hasTarget_"+item.uuid]) {
           // cell.getRow().getData().uuid
         //  interfaceToCatRel.push({uuid:genuuid(), source:intType.uuid, target:item.uuid})
           if (!interfaceToCatRel[intType.uuid]) {
@@ -160,16 +161,31 @@ var createCategoryEditorView = function ({
           }
           interfaceToCatRel[intType.uuid].push(item.uuid)
         }
+        if (intType["hasSource_"+item.uuid]) {
+          // cell.getRow().getData().uuid
+        //  interfaceToCatRel.push({uuid:genuuid(), source:intType.uuid, target:item.uuid})
+          if (!interfaceToCatRelSource[intType.uuid]) {
+            interfaceToCatRelSource[intType.uuid] =[]
+          }
+          interfaceToCatRelSource[intType.uuid].push(item.uuid)
+        }
       }
     });
     let fieldToCat = []
+    let fieldToCatSource = []
     store.extraFields.forEach((item, i) => {
       if (interfaceToCatRel[item.relationId]) {
         let relatedCategories = interfaceToCatRel[item.relationId]
         for (var i = 0; i < relatedCategories.length; i++) {
-
           fieldToCat.push({uuid:genuuid(), source:item.uuid, target:relatedCategories[i]})
-
+        }
+      }
+    });
+    store.extraFields.forEach((item, i) => {
+      if (interfaceToCatRelSource[item.relationId]) {
+        let relatedCategories = interfaceToCatRelSource[item.relationId]
+        for (var i = 0; i < relatedCategories.length; i++) {
+          fieldToCatSource.push({uuid:genuuid(), source:item.uuid, target:relatedCategories[i]})
         }
       }
     });
@@ -193,11 +209,32 @@ var createCategoryEditorView = function ({
       editor:"modalRelation"
     }
     columns.push(targetCol)
+    let sourceCol = {
+      title:"Sources",
+      formatter:'relation',
+      cellClick:function (event, cell) {
+        console.log(event);
+        if (event.target.dataset.id) {
+          showSingleItemService.showById(event.target.dataset.id)
+        }else {
+          // createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
+        }
+      },
+      formatterParams:{
+        relationList:fieldToCatSource,
+        relationTargets: store.categories
+      },
+      field:'fieldtarget',
+      editor:"modalRelation"
+    }
+    columns.push(sourceCol)
+
     let menutest = [
       // {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
       {type:'action', name:"Add text prop", color:"grey",onClick:e=>{action_add_extra_field(cat.name,cat.uuid)}    },
-      {type:'action', name:"Connect to relation", color:"grey",onClick:e=>{action_connect_to_relation(cat.uuid)}    },
-      {type:'action', name:"Add new relation", color:"grey",onClick:e=>{action_add_extra_relation(cat,cat.uuid)}    },
+      {type:'action', name:"Connect to relation as Source", color:"grey",onClick:e=>{action_connect_to_relation(cat.uuid, true)}    },
+      {type:'action', name:"Connect to relation", color:"grey",onClick:e=>{action_connect_to_relation(cat.uuid, false)}    },
+      {type:'action', name:"Add new relation", color:"grey",onClick:e=>{action_add_extra_relation(cat,cat.uuid, true)}    },
       // {type:'search', name:"Add", color:"grey"}
     ]
     let tableComp = createTableComp()
@@ -244,7 +281,7 @@ var createCategoryEditorView = function ({
     update()
   }
 
-  async function action_add_extra_relation(cat,id) {
+  async function action_add_extra_relation(cat,id, isSource) {
     var store = await query.currentProject()
     let selectOptions = store.categories.map(cat=>{
       return {name:cat.name, value:cat.uuid}
@@ -264,8 +301,11 @@ var createCategoryEditorView = function ({
           //add related extrafield
           push(act.add("extraFields", {target:currentCat.uuid, relationId:uuid, name:res.result.RelationName, type:"relation"}))
           setTimeout(function () {//add element related in terface pool
+            if (isSource) {
+              push(act.edit("interfacesTypes", {uuid:uuid, prop:"hasSource_"+currentCat.uuid, value:true})) //add as source
+            }
             nameArr.forEach((item, i) => {
-              push(act.edit("interfacesTypes", {uuid:uuid, prop:item, value:true}))
+              push(act.edit("interfacesTypes", {uuid:uuid, prop:"hasTarget_"+item, value:true}))
             });
             sourceOccElement.remove()
             update()
@@ -280,7 +320,7 @@ var createCategoryEditorView = function ({
     })
   }
 
-  async function action_connect_to_relation(id) {
+  async function action_connect_to_relation(id, isSource) {
     var store = await query.currentProject()
     let selectOptionsRelations = store.interfacesTypes.map(i=>{
       return {name:i.name, value:i.uuid}
@@ -296,12 +336,17 @@ var createCategoryEditorView = function ({
         if (res.result == "") {
         }else {
           let existingRelation = res.result.existingRelation.split(',')
-          let nameArr = res.result.targetCat.split(',')
+          // let nameArr = res.result.targetCat.split(',')
           push(act.add("extraFields", {target:currentCat.uuid, relationId:existingRelation[0], name:res.result.RelationName, type:"relation"}))
           setTimeout(function () {//add element related in terface pool
-            nameArr.forEach((item, i) => {
-              push(act.edit("interfacesTypes", {uuid:existingRelation[0], prop:item, value:true}))
-            });
+            // nameArr.forEach((item, i) => {
+            //   push(act.edit("interfacesTypes", {uuid:existingRelation[0], prop:item, value:true}))
+            // });
+            let uuid = genuuid()
+            push(act.edit("interfacesTypes", {uuid:existingRelation[0], prop:"hasTarget_"+currentCat.uuid, value:true}))
+            if (isSource) {
+              push(act.edit("interfacesTypes", {uuid:existingRelation[0], prop:"hasSource_"+currentCat.uuid, value:true})) //add as source
+            }
             sourceOccElement.remove()
             update()
           }, 100);
@@ -311,7 +356,7 @@ var createCategoryEditorView = function ({
       fields:[
         { type:"input",id:"RelationName" ,label:"Relation Name", placeholder:"Set the relation name" },
         { type:"select",id:"existingRelation",preSelected:[],selectOptions:selectOptionsRelations, label:"Existing Relation", placeholder:"Set existing relations" },
-        { type:"select",id:"targetCat",preSelected:[],selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
+        // { type:"select",id:"targetCat",preSelected:[],selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
       ]
     })
   }
