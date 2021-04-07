@@ -98,14 +98,47 @@ var createExplorerView = function ({
   }
 
   var getData = function (store, typeId) {
+    let catData = createCatData(store)
     let typeToDisplay = typeId
     let relatedNodes = store.metaLinks.filter(m=>m.target==typeToDisplay)
     let relatedNodesId = relatedNodes.map(rn=>rn.source)
     console.log(relatedNodesId);
-    let nodes =  store.currentPbs.filter(n=>relatedNodesId.includes(n.uuid))
+    let nodeMap = {}
+    let nodes=[]
+    for (var i = 0; i < store.currentPbs.length; i++) {
+      nodeMap[store.currentPbs[i].uuid] = store.currentPbs[i]
+      if (relatedNodesId.includes(store.currentPbs[i].uuid)) {
+        nodes.push(store.currentPbs[i])
+      }
+    }
+    // let nodes =  store.currentPbs.filter(n=>relatedNodesId.includes(n.uuid))
     console.log(nodes);
 
     let data = nodes.map(n=>{
+
+      // let catIsTarget = checkIfTarget(store,typeId , e)
+      // let allowedTargetsCat =getRelatedCategories(store, e.uuid, catIsTarget)
+      // console.log(allowedTargetsCat);
+      // let allowedTargets =getAllItemOfCategory(store, allowedTargetsCat.map(a=>a.uuid))
+      // console.log(allowedTargets);
+      let allInterfacesWhereTarget = store.interfaces.filter(i=>i.target==n.uuid)
+      // let allInterfacesWhereTarget = store.interfaces.filter(i=>i.typeId==e.relationId)
+      let allInterfacesWhereSource = store.interfaces.filter(i=>i.source==n.uuid)
+      let currentCat = catData.dic[typeId]
+      for (var i = 0; i < currentCat._assignedExtraFields.length; i++) {
+        let e = currentCat._assignedExtraFields[i]
+        let relatedInterfaceType = e._relatedInterfaceType
+        let isTarget = currentCat._isTargetIn.includes(relatedInterfaceType.uuid)
+        let allAllowedInterfacesWhereTarget = allInterfacesWhereTarget.filter(i=>i.typeId==e.relationId)
+        let allAllowedInterfacesWhereSource = allInterfacesWhereSource.filter(i=>i.typeId==e.relationId)
+        if (isTarget) {
+          n["_extra"+e.uuid] = allAllowedInterfacesWhereTarget.map(i => nodeMap[i.source])
+          n["_targetForExtra"+e.uuid] = true
+        }else {
+          n["_extra"+e.uuid] = allAllowedInterfacesWhereSource.map(i => nodeMap[i.target])
+          n["_sourceForExtra"+e.uuid] = true
+        }
+      }
       return n
       // return {id:1, uuid:n.uuid, name:n.name, progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1}
     })
@@ -139,7 +172,7 @@ var createExplorerView = function ({
 
   var getRelatedCategories =function (store,field, isTarget) {
     //var catInfos = store.categories.find(c=>c.uuid == cat)
-    let fieldObject= store.extraFields.find(e=>e.uuid == field)
+    let fieldObject= field
     let fieldRelation= store.interfacesTypes.find(e=>e.uuid == fieldObject.relationId)
     let allowedRel =[]
     for (var i = 0; i < store.categories.length; i++) {
@@ -168,7 +201,7 @@ var createExplorerView = function ({
     }={}) {
 
       var store = await query.currentProject()
-      let catData = createCatData(store)
+      let catData = createCatData(store)//TDO romove
       let data = getData(store,typeId)
       let allowedExtraFields = catData.dic[typeId]._parents.map(p=>p.uuid)
 
@@ -186,33 +219,27 @@ var createExplorerView = function ({
         if (e.type == "text") {
           return {title:e.name, field:e.uuid, editor:"modalInput", formatter:'textarea'}
         }else if (e.type == "relation") {
-          let catIsTarget = checkIfTarget(store,typeId , e)
-          let allowedTargetsCat =getRelatedCategories(store, e.uuid, catIsTarget)
-          console.log(allowedTargetsCat);
-          let allowedTargets =getAllItemOfCategory(store, allowedTargetsCat.map(a=>a.uuid))
-          console.log(allowedTargets);
           return {
             title:e.name,
-            formatter:'relation',
+            formatter:'tags',
             cellClick:function (event, cell) {
               console.log(event);
               if (event.target.dataset.id) {
                 showSingleItemService.showById(event.target.dataset.id)
               }else {
-                if (!catIsTarget) {
-                  createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),allowedTargets)
+                if (!cell.getRow().getData()["_targetForExtra"+e.uuid]) {
+                  createEditRelationPopup(cell.getRow().getData().uuid,typeId,e)
                 }else {
-                  createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),allowedTargets, catIsTarget)
-
+                  createEditRelationPopup(cell.getRow().getData().uuid,typeId,e, cell.getRow().getData()["_targetForExtra"+e.uuid])
                 }
               }
             },
-            formatterParams:{
-              isTarget:catIsTarget,
-              relationList:store.interfaces.filter(i=>i.typeId==e.relationId),
-              relationTargets: store.currentPbs
-            },
-            field:e.uuid,
+            // formatterParams:{
+            //   isTarget:catIsTarget,
+            //   relationList:store.interfaces.filter(i=>i.typeId==e.relationId),
+            //   relationTargets: store.currentPbs
+            // },
+            field:"_extra"+e.uuid,
             editor:"modalRelation"
           }
         }
@@ -254,8 +281,18 @@ var createExplorerView = function ({
       table = tableComp.create({data:data, columns:columns, menu:menutest, onUpdate:onUpdate})
   }
 
-  var createEditRelationPopup = function (itemIdMain,interfaceTypeId, relationList,relationTargets, isTarget) {
-    let selectOptions = relationTargets.map(t=>{
+  var createEditRelationPopup = async function (itemIdMain,catId, field, isTarget) {
+    var store = await query.currentProject()
+    let e = field
+    let relationList = store.interfaces.filter(i=>i.typeId==e.relationId)
+    // let catData = createCatData(store)
+    // let currentCat = catData.dic[typeId]
+    let catIsTarget = checkIfTarget(store,catId, e)
+    let allowedTargetsCat =getRelatedCategories(store, e, catIsTarget)
+    // console.log(allowedTargetsCat);
+    let allowedTargets =getAllItemOfCategory(store, allowedTargetsCat.map(a=>a.uuid))
+    console.log(allowedTargets);
+    let selectOptions = allowedTargets.map(t=>{
       return {name:t.name, value:t.uuid}
     })
 
@@ -279,7 +316,7 @@ var createExplorerView = function ({
             added.forEach((item, i) => {
               if (isTarget) {
                 push(act.add("interfaces",{
-                  typeId:interfaceTypeId,
+                  typeId:e.relationId,
                   type:"Physical connection",
                   name:"Interface between "+item+" and "+itemIdMain,
                   source:item,
@@ -287,7 +324,7 @@ var createExplorerView = function ({
                 }))
               }else {
                 push(act.add("interfaces",{
-                  typeId:interfaceTypeId,
+                  typeId:e.relationId,
                   type:"Physical connection",
                   name:"Interface between "+itemIdMain+" and "+item,
                   source:itemIdMain,
@@ -311,6 +348,7 @@ var createExplorerView = function ({
 
   var createCatData = function (store) {
     let dic = {}
+    let dicInterfaces = {}
     let data = []
     for (var i = 0; i < store.categories.length; i++) {
       let cat = store.categories[i]
@@ -346,13 +384,51 @@ var createExplorerView = function ({
       for (var j = 0; j < cat._assignedExtraFields.length; j++) {
         let ef = cat._assignedExtraFields[j]
         let relatedInterfaceType = store.interfacesTypes.find(e=>e.uuid == ef.relationId)
-        ef._relatedInterfaceType = relatedInterfaceType
-        cat._relatedInterfacesTypes.push( relatedInterfaceType)
+        if (relatedInterfaceType) {
+          ef._relatedInterfaceType = relatedInterfaceType
+          cat._relatedInterfacesTypes.push( relatedInterfaceType)
+        }
       }
     }
 
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      cat._isTargetIn = []
+      cat._isSourceIn = []
+      for (var j = 0; j < store.interfacesTypes.length; j++) {
+        let currentInterface = store.interfacesTypes[j]
+        console.log(cat);
+        console.log(cat._relatedInterfacesTypes);
+        if (!dicInterfaces[currentInterface.uuid]) {
+          dicInterfaces[currentInterface.uuid] ={targets:[], sources:[],mainTargets:[], mainSources:[]}
+        }
+        let isSource = currentInterface["hasSource_"+cat.uuid]
+        let isTarget = currentInterface["hasTarget_"+cat.uuid]
+        if (isSource) {
+          cat._isSourceIn.push(currentInterface.uuid)
+          dicInterfaces[currentInterface.uuid].mainSources.push(cat)
+        }
+        if (isTarget) {
+          cat._isTargetIn.push(currentInterface.uuid)
+          dicInterfaces[currentInterface.uuid].mainTargets.push(cat)
+        }
+        for (var k = 0; k < cat._parents.length; k++) {
+          let catParent = cat._parents[k]
+          let isSource = currentInterface["hasSource_"+catParent.uuid]
+          let isTarget = currentInterface["hasTarget_"+catParent.uuid]
+          if (isSource) {
+            cat._isSourceIn.push(currentInterface.uuid)
+            dicInterfaces[currentInterface.uuid].sources.push(cat)
+          }
+          if (isTarget) {
+            cat._isTargetIn.push(currentInterface.uuid)
+            dicInterfaces[currentInterface.uuid].targets.push(cat)
+          }
+        }
+      }
+    }
     console.log(data);
-    return {data:data, dic:dic}
+    return {data:data, dic:dic, interfaces:dicInterfaces}
   }
 
 
