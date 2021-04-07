@@ -27,6 +27,14 @@ var createInterfacesEditorView = function () {
 
   var prepareData = function (store) {
     let data = store.interfacesTypes
+    let catData = createCatData(store)
+    for (var i = 0; i < data.length; i++) {
+      data[i]._targets = catData.interfaces[data[i].uuid].targets
+      data[i]._sources = catData.interfaces[data[i].uuid].sources
+      data[i]._mainTargets = catData.interfaces[data[i].uuid].mainTargets
+      data[i]._mainSources = catData.interfaces[data[i].uuid].mainSources
+
+    }
 
     return data
   }
@@ -34,9 +42,18 @@ var createInterfacesEditorView = function () {
   var renderTable = function (store) {
 
     let data = prepareData(store)
-    let catData = createCatData(store)
+    let clickFun = function (event, cell) {
+      // console.log(catData.interfaces[cell.getRow().getData().uuid].sources);
+      console.log(event);
+      if (event.target.dataset.id) {
+        showSingleItemService.showById(event.target.dataset.id)
+      }else {
+        // createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
+      }
+    }
     let columns = [
       {title:"Interface displayed", field:"name"},
+
       {
         title:"Color",
         field:"color",
@@ -48,91 +65,12 @@ var createInterfacesEditorView = function () {
           }
         }
       },
+      {title:"Sources", field:"_mainSources", formatter:"tags",cellClick:clickFun,},
+      {title:"Inherited sources", field:"_sources", formatter:"tags",cellClick:clickFun,},
+      {title:"Targets", field:"_mainTargets", formatter:"tags",cellClick:clickFun,},
+      {title:"Inherited targets", field:"_targets", formatter:"tags",cellClick:clickFun,},
+
     ]
-    let interfaceToCatRel = {}
-    let interfaceToCatRelSource = {}
-    store.categories.forEach((item, i) => {
-      for (var i = 0; i < store.interfacesTypes.length; i++) {
-        let intType = store.interfacesTypes[i]
-        if (intType["hasTarget_"+item.uuid]) {
-          // cell.getRow().getData().uuid
-        //  interfaceToCatRel.push({uuid:genuuid(), source:intType.uuid, target:item.uuid})
-          if (!interfaceToCatRel[intType.uuid]) {
-            interfaceToCatRel[intType.uuid] =[]
-          }
-          interfaceToCatRel[intType.uuid].push(item.uuid)
-        }
-        if (intType["hasSource_"+item.uuid]) {
-          // cell.getRow().getData().uuid
-        //  interfaceToCatRel.push({uuid:genuuid(), source:intType.uuid, target:item.uuid})
-          if (!interfaceToCatRelSource[intType.uuid]) {
-            interfaceToCatRelSource[intType.uuid] =[]
-          }
-          interfaceToCatRelSource[intType.uuid].push(item.uuid)
-        }
-      }
-    });
-    let fieldToCat = []
-    let fieldToCatSource = []
-    store.interfacesTypes.forEach((item, i) => {
-      if (interfaceToCatRel[item.uuid]) {
-        let relatedCategories = interfaceToCatRel[item.uuid]
-        for (var i = 0; i < relatedCategories.length; i++) {
-          fieldToCat.push({uuid:genuuid(), source:item.uuid, target:relatedCategories[i]})
-        }
-      }
-    });
-    store.interfacesTypes.forEach((item, i) => {
-      if (interfaceToCatRelSource[item.uuid]) {
-        let relatedCategories = interfaceToCatRelSource[item.uuid]
-        for (var i = 0; i < relatedCategories.length; i++) {
-          fieldToCatSource.push({uuid:genuuid(), source:item.uuid, target:relatedCategories[i]})
-        }
-      }
-    });
-
-
-
-    let targetCol = {
-      title:"Target",
-      formatter:'relation',
-      cellClick:function (event, cell) {
-        console.log(event);
-        console.log(catData.interfaces[cell.getRow().getData().uuid].targets);
-        if (event.target.dataset.id) {
-          showSingleItemService.showById(event.target.dataset.id)
-        }else {
-          // createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
-        }
-      },
-      formatterParams:{
-        relationList:fieldToCat,
-        relationTargets: store.categories
-      },
-      field:'fieldtarget',
-      editor:"modalRelation"
-    }
-    columns.push(targetCol)
-    let sourceCol = {
-      title:"Sources",
-      formatter:'relation',
-      cellClick:function (event, cell) {
-        console.log(catData.interfaces[cell.getRow().getData().uuid].sources);
-        console.log(event);
-        if (event.target.dataset.id) {
-          showSingleItemService.showById(event.target.dataset.id)
-        }else {
-          // createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
-        }
-      },
-      formatterParams:{
-        relationList:fieldToCatSource,
-        relationTargets: store.categories
-      },
-      field:'fieldtarget',
-      editor:"modalRelation"
-    }
-    columns.push(sourceCol)
 
     let menutest = [
       // {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
@@ -207,7 +145,17 @@ var createInterfacesEditorView = function () {
         console.log(cat);
         console.log(cat._relatedInterfacesTypes);
         if (!dicInterfaces[currentInterface.uuid]) {
-          dicInterfaces[currentInterface.uuid] ={targets:[], sources:[]}
+          dicInterfaces[currentInterface.uuid] ={targets:[], sources:[],mainTargets:[], mainSources:[]}
+        }
+        let isSource = currentInterface["hasSource_"+cat.uuid]
+        let isTarget = currentInterface["hasTarget_"+cat.uuid]
+        if (isSource) {
+          cat._isSourceIn.push(currentInterface.uuid)
+          dicInterfaces[currentInterface.uuid].mainSources.push(cat)
+        }
+        if (isTarget) {
+          cat._isTargetIn.push(currentInterface.uuid)
+          dicInterfaces[currentInterface.uuid].mainTargets.push(cat)
         }
         for (var k = 0; k < cat._parents.length; k++) {
           let catParent = cat._parents[k]

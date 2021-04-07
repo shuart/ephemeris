@@ -154,6 +154,16 @@ var createTableComp = function ({
 
     return html;
   };
+  customFields.tags = function(cell, formatterParams, onRendered ){
+    let html=""
+    cell.getValue().forEach((item, i) => {
+      html+=theme.tag(item.name, item.uuid||"", item.color || "#29b5ad");
+    });
+    onRendered(function(){
+      cell.getElement().style.whiteSpace='initial'
+    });
+    return html;
+  };
 
   var init = function () {
     // connections()
@@ -251,6 +261,10 @@ var createTableComp = function ({
         if (item.formatter == "relation") {
           item.formatter = customFields.relation
           item.width= 100
+        }
+        if (item.formatter == "tags") {
+          item.formatter = customFields.tags
+          item.width= 150
         }
         if (item.formatter == "colorTag") {
           item.formatter = customFields.colorTag
