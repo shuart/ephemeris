@@ -12,20 +12,9 @@ var createExplorerView = function ({
 
   var tabledata = [
     {id:1, name:"Oli Bob", progress:12, gender:"male", rating:1, col:"red", dob:"19/02/1984", car:1},
-    {id:2, name:"Mary May", progress:1, gender:"female", rating:2, col:"blue", dob:"14/05/1982", car:true},
-    {id:3, name:"Christine Lobowski", progress:42, gender:"female", rating:0, col:"green", dob:"22/05/1982", car:"true"},
-    {id:4, name:"Brendon Philips", progress:100, gender:"male", rating:1, col:"orange", dob:"01/08/1980"},
-    {id:5, name:"Margret Marmajuke", progress:16, gender:"female", rating:5, col:"yellow", dob:"31/01/1999"},
-    {id:6, name:"Frank Harbours", progress:38, gender:"male", rating:4, col:"red", dob:"12/05/1966", car:1},
   ];
   var tableCols = [                 //define the table columns
       {title:"Name", field:"name", editor:"input"},
-      {title:"Task Progress", field:"progress", hozAlign:"left", formatter:"progress", editor:true},
-      {title:"Gender", field:"gender", width:95, editor:"select", editorParams:{values:["male", "female"]}},
-      {title:"Rating", field:"rating", formatter:"star", hozAlign:"center", width:100, editor:true},
-      {title:"Color", field:"col", width:130, editor:"input"},
-      {title:"Date Of Birth", field:"dob", width:130, sorter:"date", hozAlign:"center"},
-      {title:"Driver", field:"car", width:90,  hozAlign:"center", formatter:"tickCross", sorter:"boolean", editor:true},
   ]
 
   var theme={
@@ -53,36 +42,9 @@ var createExplorerView = function ({
           </div>
         </div>
       </div>`
-    },
-    actionEvent:function(event) {//todo add separate theme for actions
-      return `
-      <div data-id="${event.id}" style='cursor:pointer' class="event action_event_feed_click_content">
-        <div class="label">
-          <i class="small bullhorn icon"></i>
-        </div>
-        <div class="content">
-          <div data-id="${event.id}" class="summary action_event_feed_click_content">
-            ${event.name? ("Item \'"+event.name + "\'" ): ("An item")} in ${event.storeGroupTxt} has been ${event.typeTxt}.
-            <div class="date">${event.user?"by "+event.user+",":""} ${moment(event.timestamp).fromNow()}</div>
-          </div>
-        </div>
-      </div>`
-    },
-    noEvent:function() {
-      return `
-      <div class="event">
-        <div class="label">
-          <i class="small bullhorn icon"></i>
-        </div>
-        <div class="content">
-          <div class="summary">
-            No events or activity yet
-          </div>
-        </div>
-      </div>`
     }
   }
-
+  
   var init = function () {
     connections()
     // render()
@@ -111,18 +73,9 @@ var createExplorerView = function ({
         nodes.push(store.currentPbs[i])
       }
     }
-    // let nodes =  store.currentPbs.filter(n=>relatedNodesId.includes(n.uuid))
-    console.log(nodes);
 
     let data = nodes.map(n=>{
-
-      // let catIsTarget = checkIfTarget(store,typeId , e)
-      // let allowedTargetsCat =getRelatedCategories(store, e.uuid, catIsTarget)
-      // console.log(allowedTargetsCat);
-      // let allowedTargets =getAllItemOfCategory(store, allowedTargetsCat.map(a=>a.uuid))
-      // console.log(allowedTargets);
       let allInterfacesWhereTarget = store.interfaces.filter(i=>i.target==n.uuid)
-      // let allInterfacesWhereTarget = store.interfaces.filter(i=>i.typeId==e.relationId)
       let allInterfacesWhereSource = store.interfaces.filter(i=>i.source==n.uuid)
       let currentCat = catData.dic[typeId]
       for (var i = 0; i < currentCat._assignedExtraFields.length; i++) {
@@ -205,14 +158,11 @@ var createExplorerView = function ({
       let data = getData(store,typeId)
       let allowedExtraFields = catData.dic[typeId]._parents.map(p=>p.uuid)
 
-
-      console.log(data);
       let columns = [
         // {formatter:'action', formatterParams:{name:"test"}, width:40, hozAlign:"center", cellClick:function(e, cell){alert("Printing row data for: " + cell.getRow().getData().name)}},
         {title:"Name", field:"name", editor:"modalInput"}
         // {title:"Name", field:"name", editor:"input"}
       ]
-
       //extraFields
       let fields = catData.dic[typeId]._assignedExtraFields.map(e=> {
       // let fields = store.extraFields.filter(i=>i.target == typeId).map(e=> {
@@ -234,11 +184,6 @@ var createExplorerView = function ({
                 }
               }
             },
-            // formatterParams:{
-            //   isTarget:catIsTarget,
-            //   relationList:store.interfaces.filter(i=>i.typeId==e.relationId),
-            //   relationTargets: store.currentPbs
-            // },
             field:"_extra"+e.uuid,
             editor:"modalRelation"
           }
@@ -254,7 +199,6 @@ var createExplorerView = function ({
         //update({type,typeId, onUpdate:onUpdate})
       }
 
-      //
       let addAction = async function () {
         var popup= await createPromptPopup({
           title:"Add a new item",
@@ -296,7 +240,6 @@ var createExplorerView = function ({
       return {name:t.name, value:t.uuid}
     })
 
-      console.log(itemIdMain);
       let preSelected = relationList.filter(r=>r.source==itemIdMain).map(sr=>sr.target)
       if (isTarget) {
         preSelected = relationList.filter(r=>r.target==itemIdMain).map(sr=>sr.source)
@@ -431,21 +374,9 @@ var createExplorerView = function ({
     return {data:data, dic:dic, interfaces:dicInterfaces}
   }
 
-
   var update = function (data) {
     render(data)
   }
-
-  // var setData =function ({
-  //   data = [],
-  //   columns=undefined
-  //   }={}) {
-  //     tabledata = data;
-  //     tableCols = columns;
-  //
-  //   update()
-  // }
-
 
   var setActive =function (data) {
     currentData = data||{}
