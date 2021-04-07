@@ -36,10 +36,11 @@ var createCategoriesView = function () {
     for (var i = 0; i < store.categories.length; i++) {
       let cat = store.categories[i]
       if (cat.parentCat) {
-        cat.parentCatName = dic[cat.parentCat].name
+        cat.parentCatName = [ dic[cat.parentCat] ]
         if (!dic[cat.parentCat]._children) {dic[cat.parentCat]._children =[]}
         dic[cat.parentCat]._children.push(cat)
       }else {
+        cat.parentCatName = [ ]//needed so tag formater can go trough the empty array
         data.push(cat)
       }
     }
@@ -90,7 +91,7 @@ var createCategoriesView = function () {
             })
         }
       },
-      {title:"Parent", field:"parentCatName", cellClick:function (e,cell) {
+      {title:"Parent", field:"parentCatName",  formatter:"tags", cellClick:function (e,cell) {
           console.log(cell);
           let selectOptions = store.categories.map(c=> ({name:c.name, value:c.uuid}))
           var popup=  createPromptPopup({

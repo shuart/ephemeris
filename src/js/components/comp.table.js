@@ -256,7 +256,7 @@ var createTableComp = function ({
         }
         if (item.formatter == "svgPath") {
           item.formatter = customFields.svgPath
-          item.width= 40
+          item.width= 50
         }
         if (item.formatter == "relation") {
           item.formatter = customFields.relation
@@ -264,7 +264,7 @@ var createTableComp = function ({
         }
         if (item.formatter == "tags") {
           item.formatter = customFields.tags
-          item.width= 150
+          item.width= 120
         }
         if (item.formatter == "colorTag") {
           item.formatter = customFields.colorTag
