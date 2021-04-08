@@ -232,6 +232,7 @@ var createCategoryEditorView = function ({
     let menutest = [
       // {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
       {type:'action', name:"Add text prop", color:"grey",onClick:e=>{action_add_extra_field(cat.name,cat.uuid)}    },
+      {type:'action', name:"Add time prop", color:"grey",onClick:e=>{action_add_extra_field_time(cat.name,cat.uuid)}    },
       {type:'action', name:"Connect to relation as Source", color:"grey",onClick:e=>{action_connect_to_relation(cat.uuid, true)}    },
       {type:'action', name:"Connect to relation", color:"grey",onClick:e=>{action_connect_to_relation(cat.uuid, false)}    },
       {type:'action', name:"Add new relation", color:"grey",onClick:e=>{action_add_extra_relation(cat,cat.uuid, true)}    },
@@ -276,6 +277,14 @@ var createCategoryEditorView = function ({
     var newValue = prompt("Edit Item",value)
     if (newValue) {
       push(act.add("extraFields", {target:id, name:newValue, type:"text"}))
+    }
+    sourceOccElement.remove()
+    update()
+  }
+  function action_add_extra_field_time(value,id) {
+    var newValue = prompt("Edit Item",value)
+    if (newValue) {
+      push(act.add("extraFields", {target:id, name:newValue, type:"time"}))
     }
     sourceOccElement.remove()
     update()

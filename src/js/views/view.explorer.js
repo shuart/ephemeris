@@ -44,7 +44,7 @@ var createExplorerView = function ({
       </div>`
     }
   }
-  
+
   var init = function () {
     connections()
     // render()
@@ -81,6 +81,9 @@ var createExplorerView = function ({
       for (var i = 0; i < currentCat._assignedExtraFields.length; i++) {
         let e = currentCat._assignedExtraFields[i]
         let relatedInterfaceType = e._relatedInterfaceType
+        if (!relatedInterfaceType) {
+          relatedInterfaceType ={uuid:"notype"} //prevent error when not interfaces
+        }
         let isTarget = currentCat._isTargetIn.includes(relatedInterfaceType.uuid)
         let allAllowedInterfacesWhereTarget = allInterfacesWhereTarget.filter(i=>i.typeId==e.relationId)
         let allAllowedInterfacesWhereSource = allInterfacesWhereSource.filter(i=>i.typeId==e.relationId)
@@ -168,6 +171,8 @@ var createExplorerView = function ({
       // let fields = store.extraFields.filter(i=>i.target == typeId).map(e=> {
         if (e.type == "text") {
           return {title:e.name, field:e.uuid, editor:"modalInput", formatter:'textarea'}
+        }else if (e.type == "time") {
+          return {title:e.name, field:e.uuid, editor:"timePicker", formatter:'time'}
         }else if (e.type == "relation") {
           return {
             title:e.name,

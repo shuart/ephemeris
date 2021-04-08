@@ -154,6 +154,11 @@ var createTableComp = function ({
 
     return html;
   };
+  customFields.time = function(cell, formatterParams, onRendered ){
+    let textTime =  moment(cell.getValue()).format("MMM Do YY")
+    let html=theme.tag(textTime|| "No color", cell.getRow().getData().uuid, "#969695");
+    return html;
+  };
   customFields.tags = function(cell, formatterParams, onRendered ){
     let html=""
     cell.getValue().forEach((item, i) => {
@@ -270,6 +275,10 @@ var createTableComp = function ({
           item.formatter = customFields.colorTag
           item.width= 100
         }
+        if (item.formatter == "time") {
+          item.formatter = customFields.time
+          item.width= 100
+        }
 
       }
 
@@ -317,6 +326,21 @@ var createTableComp = function ({
               }
             });
             colorPicker.openHandler();
+          }
+        }
+        if (item.editor == "timePicker") {
+          item.cellClick = async function (e, cell) {
+            //DEPENDENCIES
+            ephHelpers.promptSingleDatePicker(cell.getValue(), function (ev) {
+              let selected = ev.selectedDates
+              if (selected[0]) {
+                let newDate = moment(selected[0]).add(12, 'hours').toDate()
+                let target = cell.getRow().getData()
+                // onEditItemTime({select:self, selectDiv:sourceEl, target:event.target, value:newDate})
+                push(act.edit("currentPbs", {uuid:target.uuid, prop:item.field,  value:newDate}))
+                if (tableOnUpdate) {tableOnUpdate()}
+              }
+            })
           }
         }
         if (item.editor == "modalRelation") {
