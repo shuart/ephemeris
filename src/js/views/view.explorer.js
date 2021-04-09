@@ -3,7 +3,8 @@ var createExplorerView = function ({
   container=".center-container",
   onClick = undefined,
   searchForAllItemsNames = false,
-  maxElements = undefined
+  maxElements = undefined,
+  manualUpdate = false
   }={}) {
   var self ={};
   var objectIsActive = false;
@@ -51,12 +52,17 @@ var createExplorerView = function ({
   }
   var connections =function () {
     document.addEventListener("storeUpdated", async function () {
-      if (objectIsActive && currentData) {
+      if (objectIsActive && currentData && !manualUpdate) {
         var store = await query.currentProject()
         let data = getData(store,currentData.typeId)
         table.updateData(data)
       }
     })
+  }
+
+  var updateModule = function (store) {
+    let data = getData(store,currentData.typeId)
+    table.updateData(data)
   }
 
   var getData = function (store, typeId) {
@@ -227,7 +233,7 @@ var createExplorerView = function ({
         {type:'search', name:"Add", color:"grey"}
       ]
       let tableComp = createTableComp()
-      table = tableComp.create({data:data, columns:columns, menu:menutest, onUpdate:onUpdate})
+      table = tableComp.create({domElement:container,data:data, columns:columns, menu:menutest, onUpdate:onUpdate})
   }
 
   var createEditRelationPopup = async function (itemIdMain,catId, field, isTarget) {
@@ -345,8 +351,8 @@ var createExplorerView = function ({
       cat._isSourceIn = []
       for (var j = 0; j < store.interfacesTypes.length; j++) {
         let currentInterface = store.interfacesTypes[j]
-        console.log(cat);
-        console.log(cat._relatedInterfacesTypes);
+        // console.log(cat);
+        // console.log(cat._relatedInterfacesTypes);
         if (!dicInterfaces[currentInterface.uuid]) {
           dicInterfaces[currentInterface.uuid] ={targets:[], sources:[],mainTargets:[], mainSources:[]}
         }
@@ -395,6 +401,7 @@ var createExplorerView = function ({
 
   init()
 
+  self.updateModule = updateModule
   self.setActive = setActive
   self.setInactive = setInactive
   self.update = update

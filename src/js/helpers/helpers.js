@@ -663,6 +663,90 @@ ephHelpers.formatCustomFields = function(customFields) {
     }
     return customFieldsDef
 };
+ephHelpers.createCatData = function (store) {
+    let dic = {}
+    let dicInterfaces = {}
+    let data = []
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      if (!cat._parents) {cat._parents =[]}
+      if (!cat._children) {cat._children =[]}
+      dic[cat.uuid] = cat
+
+    }
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      if (cat.parentCat) {
+        cat.parentCatName = dic[cat.parentCat].name
+        dic[cat.parentCat]._children.push(cat)
+      }else {
+        data.push(cat)
+      }
+    }
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      let currentCat = cat
+      while (currentCat.parentCat) {
+        console.log(currentCat.parentCat);
+        cat._parents.push(dic[currentCat.parentCat])
+        currentCat = dic[currentCat.parentCat]
+      }
+    }
+    //assign extra fields
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      let linkedExtraFieldsTargets = cat._parents.map(p=>p.uuid)
+      cat._relatedInterfacesTypes = []
+      cat._assignedExtraFields = store.extraFields.filter(i=>linkedExtraFieldsTargets.includes(i.target) || i.target == cat.uuid)
+      for (var j = 0; j < cat._assignedExtraFields.length; j++) {
+        let ef = cat._assignedExtraFields[j]
+        let relatedInterfaceType = store.interfacesTypes.find(e=>e.uuid == ef.relationId)
+        if (relatedInterfaceType) {
+          ef._relatedInterfaceType = relatedInterfaceType
+          cat._relatedInterfacesTypes.push( relatedInterfaceType)
+        }
+      }
+    }
+
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      cat._isTargetIn = []
+      cat._isSourceIn = []
+      for (var j = 0; j < store.interfacesTypes.length; j++) {
+        let currentInterface = store.interfacesTypes[j]
+        // console.log(cat);
+        // console.log(cat._relatedInterfacesTypes);
+        if (!dicInterfaces[currentInterface.uuid]) {
+          dicInterfaces[currentInterface.uuid] ={targets:[], sources:[],mainTargets:[], mainSources:[]}
+        }
+        let isSource = currentInterface["hasSource_"+cat.uuid]
+        let isTarget = currentInterface["hasTarget_"+cat.uuid]
+        if (isSource) {
+          cat._isSourceIn.push(currentInterface.uuid)
+          dicInterfaces[currentInterface.uuid].mainSources.push(cat)
+        }
+        if (isTarget) {
+          cat._isTargetIn.push(currentInterface.uuid)
+          dicInterfaces[currentInterface.uuid].mainTargets.push(cat)
+        }
+        for (var k = 0; k < cat._parents.length; k++) {
+          let catParent = cat._parents[k]
+          let isSource = currentInterface["hasSource_"+catParent.uuid]
+          let isTarget = currentInterface["hasTarget_"+catParent.uuid]
+          if (isSource) {
+            cat._isSourceIn.push(currentInterface.uuid)
+            dicInterfaces[currentInterface.uuid].sources.push(cat)
+          }
+          if (isTarget) {
+            cat._isTargetIn.push(currentInterface.uuid)
+            dicInterfaces[currentInterface.uuid].targets.push(cat)
+          }
+        }
+      }
+    }
+    console.log(data);
+    return {data:data, dic:dic, interfaces:dicInterfaces}
+  }
 
 
 //Workarounds
