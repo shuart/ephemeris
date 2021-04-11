@@ -58,10 +58,19 @@ var createCompositeView = function ({
     let catId = store.categories.find(c=>c.uuid == currentPage.parentCat).uuid
     console.log(currentPage);
     console.log(catId);
+    let modulesRatio ={explorer:80,timeline:20
+    }
+    if (!currentPage.showTimeline) {
+      modulesRatio.explorer +=modulesRatio.timeline
+      modulesRatio.timeline-=modulesRatio.timeline
+    }
 
     if (currentPage) {
 
-      document.querySelector(container).innerHTML="<div class='partialTimeline'></div><div class='compositeExplorer'></div>"
+      document.querySelector(container).innerHTML=`
+        <div style='height:${modulesRatio.timeline}%' class='partialTimeline'></div>
+        <div style='height:${modulesRatio.explorer}%'class='compositeExplorer'></div>
+      `
       var explorerView = createExplorerView({
         container : ".compositeExplorer"
       });
