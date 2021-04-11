@@ -54,12 +54,14 @@ var createCompositeView = function ({
 
   async function setUpView(data) {
     var store = await query.currentProject()
-    let catId = store.categories[0].uuid
-    // let currentBlueprint = store.blueprints.find(b=> b.uuid == data.blueprintId)
-    let currentBlueprint =true
-    if (currentBlueprint) {
+    let currentPage = store.compositePages.find(p=>p.uuid== currentData.pageUuid)
+    let catId = store.categories.find(c=>c.uuid == currentPage.parentCat).uuid
+    console.log(currentPage);
+    console.log(catId);
 
-      document.querySelector(container).innerHTML="<div class='partialTimeline'>efses</div><div class='compositeExplorer'></div>"
+    if (currentPage) {
+
+      document.querySelector(container).innerHTML="<div class='partialTimeline'></div><div class='compositeExplorer'></div>"
       var explorerView = createExplorerView({
         container : ".compositeExplorer"
       });
@@ -67,13 +69,16 @@ var createCompositeView = function ({
       explorerView.init();
       explorerView.setActive({typeId:catId})
 
-      var timelinePartial = createTimelinePartial({
-        container : ".partialTimeline"
-      })
+      if (currentPage.showTimeline) {
+        var timelinePartial = createTimelinePartial({
+          container : ".partialTimeline"
+        })
 
-      currentModules.push(timelinePartial)
-      timelinePartial.init()
-      timelinePartial.setActive({catId:catId})
+        currentModules.push(timelinePartial)
+        timelinePartial.init()
+        timelinePartial.setActive({catId:catId})
+      }
+
     }
   }
 

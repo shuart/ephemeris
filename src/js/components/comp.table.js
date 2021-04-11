@@ -159,11 +159,24 @@ var createTableComp = function ({
     let html=theme.tag(textTime|| "No color", cell.getRow().getData().uuid, "#969695");
     return html;
   };
+  customFields.boolean = function(cell, formatterParams, onRendered ){
+    let value = cell.getValue()
+    let text ="X"
+    let color ="#bd0000"
+    if (value == true) {
+      text ="V"
+      color ="#29b5ad"
+    }
+    let html=theme.tag(text, cell.getRow().getData().uuid, color);
+    return html;
+  };
   customFields.tags = function(cell, formatterParams, onRendered ){
     let html=""
-    cell.getValue().forEach((item, i) => {
-      html+=theme.tag(item.name, item.uuid||"", item.color || "#29b5ad");
-    });
+    if (cell.getValue()) {
+      cell.getValue().forEach((item, i) => {
+        html+=theme.tag(item.name, item.uuid||"", item.color || "#29b5ad");
+      });
+    }
     onRendered(function(){
       cell.getElement().style.whiteSpace='initial'
     });
@@ -279,6 +292,10 @@ var createTableComp = function ({
           item.formatter = customFields.time
           item.width= 100
         }
+        if (item.formatter == "boolean") {
+          item.formatter = customFields.boolean
+          item.width= 100
+        }
 
       }
 
@@ -297,7 +314,11 @@ var createTableComp = function ({
             console.log(popup);
             if (newReq) {
               let target = cell.getRow().getData()
-              push(act.edit("currentPbs", {uuid:target.uuid, prop:item.field,  value:newReq}))
+              if (item.editorParams) {
+                item.editorParams.onChange(target.uuid, newReq)
+              }else {
+                push(act.edit("currentPbs", {uuid:target.uuid, prop:item.field,  value:newReq}))
+              }
               if (tableOnUpdate) {
                 tableOnUpdate()
               }

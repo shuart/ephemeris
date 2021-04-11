@@ -113,6 +113,7 @@ var store = {
   itemsOrder:[],
   onlineHistory:[],
   actors:[],
+  compositePages:[],
   links:[] //TODO unifier links et metalinks
 }
 

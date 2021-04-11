@@ -45,13 +45,13 @@ var createTopMenu = function (containerSelector) {
     })
     bind(".action_toogle_custom_workspace","click",(e)=>{
       // update()
-      pageManager.setActivePage("explorerView", {typeId:e.target.dataset.id})
+      pageManager.setActivePage("compositeView", {pageUuid:e.target.dataset.id})
     }, container)
   }
 
   var renderCustomWorkspaces = async function () {
     var store = await query.currentProject()
-    let categoriesToDisplay = store.categories
+    let categoriesToDisplay = store.compositePages
     let html =""
     for (var i = 0; i < categoriesToDisplay.length; i++) {
       let item = categoriesToDisplay[i]
@@ -104,6 +104,7 @@ var createTopMenu = function (containerSelector) {
       <a class="item action_toogle_documents"><i class="book icon"></i>Documents</a>
       <a class="item action_toogle_work_packages"><i class="briefcase icon"></i>Work packages</a>
       <a class="item action_toogle_change_manager_view"><i class="random icon"></i>Changes</a>
+      <a class="item action_toogle_composite_pages_view"><i class="hashtag icon"></i>Pages</a>
       <a class="item action_toogle_categories_view"><i class="hashtag icon"></i>Categories</a>
       <a class="item action_toogle_interfaces_editor_view"><i class="hashtag icon"></i>Interfaces</a>
       <a class="item action_toogle_tags_view"><i class="tags icon"></i>Tags</a>

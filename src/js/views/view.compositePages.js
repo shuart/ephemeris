@@ -1,4 +1,4 @@
-var createCategoriesView = function () {
+var createCompositePagesView = function () {
   var self ={};
   var objectIsActive = false;
   var currentVisibleList= undefined;
@@ -26,23 +26,28 @@ var createCategoriesView = function () {
   }
 
   var prepareData = function (store) {
-    let dic = {}
+    // let dic = {}
     let data = []
-    for (var i = 0; i < store.categories.length; i++) {
-      let cat = store.categories[i]
-      dic[cat.uuid] = cat
-
-    }
-    for (var i = 0; i < store.categories.length; i++) {
-      let cat = store.categories[i]
-      if (cat.parentCat) {
-        cat.parentCatName = [ dic[cat.parentCat] ]
-        if (!dic[cat.parentCat]._children) {dic[cat.parentCat]._children =[]}
-        dic[cat.parentCat]._children.push(cat)
-      }else {
-        cat.parentCatName = [ ]//needed so tag formater can go trough the empty array
-        data.push(cat)
-      }
+    // for (var i = 0; i < store.categories.length; i++) {
+    //   let cat = store.categories[i]
+    //   dic[cat.uuid] = cat
+    //
+    // }
+    // for (var i = 0; i < store.categories.length; i++) {
+    //   let cat = store.categories[i]
+    //   if (cat.parentCat) {
+    //     cat.parentCatName = [ dic[cat.parentCat] ]
+    //     if (!dic[cat.parentCat]._children) {dic[cat.parentCat]._children =[]}
+    //     dic[cat.parentCat]._children.push(cat)
+    //   }else {
+    //     cat.parentCatName = [ ]//needed so tag formater can go trough the empty array
+    //     data.push(cat)
+    //   }
+    // }
+    for (var i = 0; i < store.compositePages.length; i++) {
+      let cat = store.categories.find(c=>c.uuid == store.compositePages[i].parentCat)
+      store.compositePages[i].parentCatName = [ cat ]
+      data.push(store.compositePages[i])
     }
     return data
   }
@@ -53,10 +58,13 @@ var createCategoriesView = function () {
     let data= prepareData(store)
     let columns = [
       {formatter:'action', formatterParams:{name:"Edit"}, width:40, hozAlign:"center", cellClick:function(e, cell){categoryEditorView.update(cell.getRow().getData().uuid)}},
-      {title:"Name", field:"name", editor:"modalInput",
+      {
+        title:"Name",
+        field:"name",
+        editor:"modalInput",
         editorParams:{
           onChange:function (target, value) {
-            push(act.edit("categories", {uuid:target, prop:"name", value:value}))
+            push(act.edit("compositePages", {uuid:target, prop:"name", value:value}))
           }
         }
       },
@@ -67,7 +75,7 @@ var createCategoriesView = function () {
         editor:"colorPicker",
         editorParams:{
           onChange:function (target, color) {
-            push(act.edit("categories", {uuid:target, prop:"color", value:(color.hex+"").slice(0,-2)}))
+            push(act.edit("compositePages", {uuid:target, prop:"color", value:(color.hex+"").slice(0,-2)}))
           }
         }
       },
@@ -87,7 +95,7 @@ var createCategoriesView = function () {
                 console.log(res);
                 if (res.result == "") {
                 }else {
-                  push(act.edit("categories", {uuid:e.target.dataset.id, prop:"svgPath", value:res.result}))
+                  push(act.edit("compositePages", {uuid:e.target.dataset.id, prop:"svgPath", value:res.result}))
                   updateList()
                 }
               },
@@ -106,7 +114,7 @@ var createCategoriesView = function () {
               console.log(res);
               if (res.result == "") {
               }else {
-                push(act.edit("categories", {uuid:cell.getRow().getData().uuid, prop:"parentCat", value:res.result}))
+                push(act.edit("compositePages", {uuid:cell.getRow().getData().uuid, prop:"parentCat", value:res.result}))
                 updateList()
               }
             },
@@ -117,19 +125,31 @@ var createCategoriesView = function () {
         }
       },
       {
+        title:"Timeline",
+        field:"showTimeline",
+        formatter:'boolean',
+        cellClick:function(e, cell){
+          console.log(e.target.dataset.id);
+          if (confirm("change status ?")) {
+            push(act.edit("compositePages", {uuid:cell.getRow().getData().uuid, prop:"showTimeline", value:!cell.getValue() }))
+            updateList()
+          }
+        }
+      },
+      {
         formatter:'remove',
         cellClick:function(e, cell){
           console.log(e.target.dataset.id);
           if (confirm("remove item ?")) {
-            push(act.remove("categories",{uuid:e.target.dataset.id}))
+            push(act.remove("compositePages",{uuid:e.target.dataset.id}))
           }
         }
       },
     ]
 
     let addAction = function () {
-      let catName = prompt("New Category")
-      push(act.add("categories",{uuid:genuuid(), name:catName, svgPath:defaultIcon}))
+      let pageName = prompt("New Category")
+      push(act.add("compositePages",{uuid:genuuid(), name:pageName, svgPath:defaultIcon}))
     }
     let editAction = function () {
       categoryEditorView.update(ev.target.dataset.id)
@@ -166,5 +186,5 @@ var createCategoriesView = function () {
   return self
 }
 
-var categoriesView = createCategoriesView()
-categoriesView.init()
+var compositePagesView = createCompositePagesView()
+compositePagesView.init()
