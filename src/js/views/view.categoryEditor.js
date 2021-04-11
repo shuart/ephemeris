@@ -113,124 +113,90 @@ var createCategoryEditorView = function ({
     var store = await query.currentProject()
     console.log(JSON.stringify(store, undefined, 4));
     var cat = store.categories.find(i=>i.uuid == uuid)
-    let fieldsHtml = store.extraFields.filter(i=>i.target == cat.uuid).map(e=> `<div>Name:${e.name}, type:${e.type}</div><div class="ui divider"></div>`)
+    let catData = ephHelpers.createCatData(store)
+    let dataInterfaces = store.interfacesTypes
+    for (var i = 0; i < dataInterfaces.length; i++) {
+      dataInterfaces[i]._targets = catData.interfaces[dataInterfaces[i].uuid].targets
+      dataInterfaces[i]._sources = catData.interfaces[dataInterfaces[i].uuid].sources
+      dataInterfaces[i]._mainTargets = catData.interfaces[dataInterfaces[i].uuid].mainTargets
+      dataInterfaces[i]._mainSources = catData.interfaces[dataInterfaces[i].uuid].mainSources
+    }
+
     let data = store.extraFields.filter(i=>i.target == cat.uuid).map((item) => {
-      let relatedInterface = store.interfacesTypes.find(i =>i.uuid == item.relationId)
+      let relatedInterface = dataInterfaces.find(i =>i.uuid == item.relationId)
       if (relatedInterface) {
         item.hasInterfaceTypeTargeted = relatedInterface.name
+        item.hasInterfaceTypeTargetedObject = relatedInterface
+        item._mainSources = relatedInterface._mainSources
+        item._mainTargets = relatedInterface._mainTargets
+        item._sources = relatedInterface._sources
+        item._targets = relatedInterface._targets
       }
       return item
     })
+
+    let editInterfaces =function (isSource) {
+      return function (event, cell) {
+        //TODO improve
+        if (event.target.dataset.id) {
+          showSingleItemService.showById(event.target.dataset.id)
+        }else {
+            // let preSelected = cell.getValue().map(v=>v.uuid)
+            // let selectOptions = store.categories.map(c=> ({name:c.name, value:c.uuid}))
+            // var popup=  createPromptPopup({
+            //   title:"Select a category",
+            //   callback :function (res) {
+            //     let nameArr = res.result.split(',')
+            //     let originalSelected = preSelected
+            //     let added = nameArr.filter(r=>!originalSelected.includes(r))
+            //     let removedItems = originalSelected.filter(r=>!nameArr.includes(r))
+            //     added.forEach((item, i) => {
+            //       if (isSource) {
+            //         push(act.edit("interfacesTypes", {uuid:cell.getRow().getData().uuid, prop:"hasSource_"+item, value:true})) //add as source
+            //       }else {
+            //         push(act.edit("interfacesTypes", {uuid:cell.getRow().getData().uuid, prop:"hasTarget_"+item, value:true})) //add as source
+            //       }
+            //     });
+            //     removedItems.forEach((item, i) => {
+            //       if (isSource) {
+            //         push(act.edit("interfacesTypes", {uuid:cell.getRow().getData().uuid, prop:"hasSource_"+item, value:false}))
+            //       }else {
+            //         push(act.edit("interfacesTypes", {uuid:cell.getRow().getData().uuid, prop:"hasTarget_"+item, value:false}))
+            //       }
+            //     });
+            //     // updateList()
+            //   },
+            //   fields:[
+            //     { type:"selection",id:"targetIcon",preSelected:preSelected,selectOptions:selectOptions, label:"Select an Parent", placeholder:"Set linkable categories" }
+            //   ]
+            // })
+        }
+      }
+    }
+
     let columns = [
       //{formatter:'action', formatterParams:{name:"Edit"}, width:40, hozAlign:"center", cellClick:function(e, cell){categoryEditorView.update(cell.getRow().getData().uuid)}},
       {title:"Name", field:"name", editor:"modalInput"},
       {title:"Type", field:"type"},
       {title:"Interface displayed", field:"hasInterfaceTypeTargeted"},
-      // {
-      //   title:"Color",
-      //   field:"color",
-      //   formatter:"colorTag",
-      //   editor:"colorPicker",
-      //   editorParams:{
-      //     onChange:function (target, color) {
-      //       push(act.edit("categories", {uuid:target, prop:"color", value:(color.hex+"").slice(0,-2)}))
-      //     }
-      //   }
-      // },
-      // {title:"SVG", field:"svgPath", editor:"modalInput"},
-      // {
-      //   formatter:'remove',
-      //   cellClick:function(e, cell){
-      //     console.log(e.target.dataset.id);
-      //     if (confirm("remove item ?")) {
-      //       push(act.remove("categories",{uuid:e.target.dataset.id}))
-      //     }
-      //   }
-      // },
+      {title:"Sources", field:"_mainSources", formatter:"tags",cellClick:editInterfaces(true),},
+      // {title:"Inherited sources", field:"_sources", formatter:"tags",cellClick:undefined,},
+      {title:"Targets", field:"_mainTargets", formatter:"tags",cellClick:editInterfaces(false),},
+      // {title:"Inherited targets", field:"_targets", formatter:"tags",cellClick:undefined,},
+      {
+        formatter:'remove',
+        cellClick:function(e, cell){
+          console.log(e.target.dataset.id);
+          if (confirm("remove item ?")) {
+            push(act.remove("extraFields",{uuid:e.target.dataset.id}))
+            sourceOccElement.remove()
+            update()
+          }
+        }
+      },
     ]
-    let interfaceToCatRel = {}
-    let interfaceToCatRelSource = {}
-    store.categories.forEach((item, i) => {
-      for (var i = 0; i < store.interfacesTypes.length; i++) {
-        let intType = store.interfacesTypes[i]
-        if (intType["hasTarget_"+item.uuid]) {
-          // cell.getRow().getData().uuid
-        //  interfaceToCatRel.push({uuid:genuuid(), source:intType.uuid, target:item.uuid})
-          if (!interfaceToCatRel[intType.uuid]) {
-            interfaceToCatRel[intType.uuid] =[]
-          }
-          interfaceToCatRel[intType.uuid].push(item.uuid)
-        }
-        if (intType["hasSource_"+item.uuid]) {
-          // cell.getRow().getData().uuid
-        //  interfaceToCatRel.push({uuid:genuuid(), source:intType.uuid, target:item.uuid})
-          if (!interfaceToCatRelSource[intType.uuid]) {
-            interfaceToCatRelSource[intType.uuid] =[]
-          }
-          interfaceToCatRelSource[intType.uuid].push(item.uuid)
-        }
-      }
-    });
-    let fieldToCat = []
-    let fieldToCatSource = []
-    store.extraFields.forEach((item, i) => {
-      if (interfaceToCatRel[item.relationId]) {
-        let relatedCategories = interfaceToCatRel[item.relationId]
-        for (var i = 0; i < relatedCategories.length; i++) {
-          fieldToCat.push({uuid:genuuid(), source:item.uuid, target:relatedCategories[i]})
-        }
-      }
-    });
-    store.extraFields.forEach((item, i) => {
-      if (interfaceToCatRelSource[item.relationId]) {
-        let relatedCategories = interfaceToCatRelSource[item.relationId]
-        for (var i = 0; i < relatedCategories.length; i++) {
-          fieldToCatSource.push({uuid:genuuid(), source:item.uuid, target:relatedCategories[i]})
-        }
-      }
-    });
-
-    let targetCol = {
-      title:"Target",
-      formatter:'relation',
-      cellClick:function (event, cell) {
-        console.log(event);
-        if (event.target.dataset.id) {
-          showSingleItemService.showById(event.target.dataset.id)
-        }else {
-          // createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
-        }
-      },
-      formatterParams:{
-        relationList:fieldToCat,
-        relationTargets: store.categories
-      },
-      field:'fieldtarget',
-      editor:"modalRelation"
-    }
-    columns.push(targetCol)
-    let sourceCol = {
-      title:"Sources",
-      formatter:'relation',
-      cellClick:function (event, cell) {
-        console.log(event);
-        if (event.target.dataset.id) {
-          showSingleItemService.showById(event.target.dataset.id)
-        }else {
-          // createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
-        }
-      },
-      formatterParams:{
-        relationList:fieldToCatSource,
-        relationTargets: store.categories
-      },
-      field:'fieldtarget',
-      editor:"modalRelation"
-    }
-    columns.push(sourceCol)
     //TODO add an extrafield to open relation
     //          pageManager.setActivePage("relations", {param:{context:"extract", uuid:orev.dataset.id}})//TODO should not call page ma,ager directly
-
     let menutest = [
       // {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
       {type:'action', name:"Add text prop", color:"grey",onClick:e=>{action_add_extra_field(cat.name,cat.uuid)}    },
@@ -238,7 +204,6 @@ var createCategoryEditorView = function ({
       {type:'action', name:"Connect to relation as Source", color:"grey",onClick:e=>{action_connect_to_relation(cat.uuid, true)}    },
       {type:'action', name:"Connect to relation", color:"grey",onClick:e=>{action_connect_to_relation(cat.uuid, false)}    },
       {type:'action', name:"Add new relation", color:"grey",onClick:e=>{action_add_extra_relation(cat,cat.uuid, true)}    },
-      // {type:'search', name:"Add", color:"grey"}
     ]
     let tableComp = createTableComp()
     table = tableComp.create(

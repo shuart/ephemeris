@@ -57,7 +57,7 @@ var createCompositePagesView = function () {
 
     let data= prepareData(store)
     let columns = [
-      {formatter:'action', formatterParams:{name:"Edit"}, width:40, hozAlign:"center", cellClick:function(e, cell){categoryEditorView.update(cell.getRow().getData().uuid)}},
+      {formatter:'action', formatterParams:{name:"Edit Category"}, width:110, hozAlign:"center", cellClick:function(e, cell){categoryEditorView.update(cell.getRow().getData().parentCat)}},
       {
         title:"Name",
         field:"name",
@@ -148,15 +148,31 @@ var createCompositePagesView = function () {
     ]
 
     let addAction = function () {
-      let pageName = prompt("New Category")
+      let pageName = prompt("New Page")
       push(act.add("compositePages",{uuid:genuuid(), name:pageName, svgPath:defaultIcon}))
     }
-    let editAction = function () {
-      categoryEditorView.update(ev.target.dataset.id)
+    let addActionCat = function () {
+      let selectOptions = store.categories.map(c=> ({name:c.name, value:c.uuid}))
+      var popup=  createPromptPopup({
+        title:"Select a Category",
+        callback :function (res) {
+          console.log(res);
+          if (res.result == "") {
+          }else {
+            let targetCat = store.categories.find(c=>c.uuid == res.result)
+            push(act.add("compositePages",{uuid:genuuid(), name:targetCat.name, svgPath:targetCat.svgPath, color:targetCat.color, parentCat:targetCat.uuid}))
+            updateList()
+          }
+        },
+        fields:[
+          { type:"selection",id:"targetIcon",preSelected:[],selectOptions:selectOptions, label:"Select an Parent", placeholder:"Set linkable categories" }
+        ]
+      })
     }
+
     let menutest = [
       {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},
-      {type:'action', name:"Add", color:"grey"},
+      {type:'action', name:"Add from existing categories", color:"grey", onClick:e=>{addActionCat()}},
       {type:'search', name:"Add", color:"grey"}
     ]
     tableComp = createTableComp()
