@@ -168,7 +168,7 @@ var createOverview = function (targetSelector) {
                 <div class="statistic">
                   <div class="value">
                     <i class="comment icon"></i>
-                    ${store.requirements.length}
+
                   </div>
                   <div class="label">
                     Requirements
@@ -193,7 +193,8 @@ var createOverview = function (targetSelector) {
                 </div>
                 <div class="statistic">
                   <div class="value">
-                    <i class="cogs icon"></i> ${(store.functions.length)}
+                    <i class="cogs icon"></i>
+                    
                   </div>
                   <div class="label">
                     functions

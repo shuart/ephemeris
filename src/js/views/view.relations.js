@@ -34,39 +34,26 @@ var createRelationsView = function () {
   var showLinksText = true;
 
   var elementVisibility = {
-    functions : true,
-    requirements : true,
     stakeholders : true,
-    physicalSpaces : false,
-    workPackages : false,
     metaLinks : true,
     interfaces : false,
     compose : false
   }
 
   var groupElements={
-    functions: false,
-    requirements: false,
     stakeholders: false,
     pbs:  false
   }
   var defaultElementVisibility = { //todo: why default and not default? An object freeze is used somwhere. not default coud start blank?
-    functions : true,
-    requirements : true,
     stakeholders : true,
-    physicalSpaces : false,
-    workPackages : false,
     metaLinks : true,
     interfaces : false,
     compose : false
   }
 
   var defaultGroupElements={
-    functions: false,
-    requirements: false,
     stakeholders: false,
     pbs:  false,
-    physicalSpaces : false,
   }
 
   var currentSnapshot=undefined
@@ -102,8 +89,6 @@ var createRelationsView = function () {
       items=[
         {name:'Products', type:'currentPbs', icon:"dolly"},
         {name:'Stakeholders', type:'stakeholders',  icon:"user"},
-        {name:'Requirements', type:'requirements', icon:"comment"},
-        {name:'Functions', type:'functions', icon:"cogs"}
       ]
 
       let categoryArray = categoriesItems.map(c=>{
@@ -234,8 +219,8 @@ var createRelationsView = function () {
     // there is multiple mode in this view. default one
     //is relation. This is modified by the init param when non-default view is triggered
     if (options && options.context && options.context == "interfaces") {
-      delfaultElementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
-      elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
+      delfaultElementVisibility = { stakeholders : false, metaLinks : true, interfaces : true, compose : true }
+      elementVisibility = {stakeholders : false, metaLinks : true, interfaces : true, compose : true }
       activeMode = 'interfaces'
       addItemMode = "currentPbs"
     }
@@ -253,18 +238,10 @@ var createRelationsView = function () {
       displayType = "network"
       update()
     }, container)
-    bind(".action_relations_toogle_group_functions","click",(e)=>{ groupElements.functions = !groupElements.functions; update(); }, container)
-    bind(".action_relations_toogle_group_requirements","click",(e)=>{ groupElements.requirements = !groupElements.requirements; update(); }, container)
     bind(".action_relations_toogle_group_stakeholders","click",(e)=>{ groupElements.stakeholders = !groupElements.stakeholders; update(); }, container)
     bind(".action_relations_toogle_group_pbs","click",(e)=>{ groupElements.pbs = !groupElements.pbs; update(); }, container)
-    bind(".action_relations_toogle_group_physicalSpaces","click",(e)=>{ groupElements.physicalSpaces = !groupElements.physicalSpaces; update(); }, container)
-    bind(".action_relations_toogle_group_workPackages","click",(e)=>{ groupElements.workPackages = !groupElements.workPackages; update(); }, container)
 
-    bind(".action_relations_toogle_show_functions","click",(e)=>{ elementVisibility.functions = !elementVisibility.functions; update(); }, container)
-    bind(".action_relations_toogle_show_requirements","click",(e)=>{ elementVisibility.requirements = !elementVisibility.requirements; update(); }, container)
     bind(".action_relations_toogle_show_stakeholders","click",(e)=>{ elementVisibility.stakeholders = !elementVisibility.stakeholders; update(); }, container)
-    bind(".action_relations_toogle_show_physicalSpaces","click",(e)=>{ elementVisibility.physicalSpaces = !elementVisibility.physicalSpaces; update(); }, container)
-    bind(".action_relations_toogle_show_workPackages","click",(e)=>{ elementVisibility.workPackages = !elementVisibility.workPackages; update(); }, container)
     bind(".action_relations_toogle_show_metalinks","click",(e)=>{ elementVisibility.metaLinks = !elementVisibility.metaLinks; update(); }, container)
     bind(".action_relations_toogle_show_interfaces","click",(e)=>{ elementVisibility.interfaces = !elementVisibility.interfaces; update(); }, container)
     bind(".action_relations_toogle_show_compose","click",(e)=>{ elementVisibility.compose = !elementVisibility.compose; update(); }, container)
@@ -966,20 +943,16 @@ var createRelationsView = function () {
           {prop:"name", displayAs:"Name", edit:false},
           {prop:"desc", displayAs:"Description", fullText:true,edit:false},
           {prop:"tags", displayAs:"Tags", meta:()=>store.metaLinks, choices:()=>store.tags, edit:false},
-          {prop:"WpOwn",isTarget:true, displayAs:"Work Packages", meta:()=>store.metaLinks, choices:()=>store.workPackages, edit:false}
 
         ],
         idProp:"uuid",
         extraButtons : [
           {name:"show", class:"show", prop:"uuid", closeAfter:true, action: async (orev)=>{
             if (activeMode=="interfaces") {//TODO should use default
-              elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
+              elementVisibility = {stakeholders : false, metaLinks : true, interfaces : true, compose : true }
             }else {
               elementVisibility = {
-                functions : true,
-                requirements : true,
                 stakeholders : true,
-                physicalSpaces : true,
                 metaLinks : true,
                 interfaces : false,
                 compose : true
@@ -1022,21 +995,15 @@ var createRelationsView = function () {
         fixedValues = false
         hiddenItemsFromSideView= []
         elementVisibility = {
-          functions : false,
-          requirements : false,
           stakeholders : false,
-          physicalSpaces : false,
-          workPackages : false,
           metaLinks : false,
           interfaces : false,
           compose : true
         }
         groupElements={
-          functions: false,
-          requirements: false,
+
           stakeholders: false,
           pbs:  false,
-          physicalSpaces : false,
         }
         addMode='compose'
         currentSnapshot = undefined
@@ -1055,21 +1022,15 @@ var createRelationsView = function () {
         fixedValues = false
         hiddenItemsFromSideView= []
         elementVisibility = {
-          functions : false,
-          requirements : false,
+
           stakeholders : false,
-          physicalSpaces : false,
-          workPackages : false,
           metaLinks : false,
           interfaces : true,
           compose : false
         }
         groupElements={
-          functions: false,
-          requirements: false,
           stakeholders: false,
           pbs:  false,
-          physicalSpaces : false,
         }
         addMode='physical'
         currentSnapshot = undefined
@@ -1085,14 +1046,11 @@ var createRelationsView = function () {
     }, container)
     bind(".action_relations_qs_create_new_empty","click",async (e)=>{
       if (activeMode=="interfaces") {//TODO should use default
-        elementVisibility = {functions : false,requirements : false,  stakeholders : false, metaLinks : true, interfaces : true, compose : true }
+        elementVisibility = {stakeholders : false, metaLinks : true, interfaces : true, compose : true }
       }else {
         elementVisibility = {
-          functions : true,
-          requirements : true,
+
           stakeholders : true,
-          workPackages : true,
-          physicalSpaces : true,
           metaLinks : true,
           interfaces : true,
           compose : true
@@ -1237,15 +1195,10 @@ var createRelationsView = function () {
     currentGroupedLabels = []
 
 
-    if (groupElements.requirements) { currentGroupedLabels.push('Requirements')}
-    if (groupElements.functions) { currentGroupedLabels.push('Functions') };
+
     if (groupElements.stakeholders) { currentGroupedLabels.push('User') }
     if (groupElements.pbs) { currentGroupedLabels.push('Pbs') }
-    if (groupElements.physicalSpaces) { currentGroupedLabels.push('physicalSpaces') }
-    // if (groupElements.requirements) { groups.push(array3); currentGroupedLabels.push('Requirements')}
-    // if (groupElements.functions) { groups.push(array1); currentGroupedLabels.push('Functions') };
-    // if (groupElements.stakeholders) { groups.push(array4); currentGroupedLabels.push('User') }
-    // if (groupElements.pbs) { groups.push(array2); currentGroupedLabels.push('Pbs') }
+
 
     for (group of groups) {
       var groupLinks1  = group.map((e)=>{
@@ -1665,20 +1618,12 @@ var createRelationsView = function () {
         categoryStore[store.metaLinks[i].source] = store.metaLinks[i].target
       }
     }
-    var array1 =store.functions.map((e) => {e.customColor="#ffc766";e.labels = ["Functions"]; return e})
     var array2 =store.currentPbs.map((e) => {e.customColor=getCustomColorFromItemId(e.uuid, store, categoryStore)||"#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid, store, categoryStore); return e})
-    var array3 = store.requirements.map((e) => {e.customColor="#ff75ea";e.labels = ["Requirements"]; return e})
     var array4 = store.stakeholders.map((e) => {e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
-    var array5 = store.physicalSpaces.map((e) => {e.customColor="#02b5ab ";e.labels = ["physicalSpaces"]; return e})
-    var array6 = store.workPackages.map((e) => {e.customColor="#b8431f ";e.labels = ["workPackages"]; return e})
 
     itemsToDisplay = []
     itemsToDisplay = itemsToDisplay.concat(array2)
-    if (elementVisibility.requirements) { itemsToDisplay = itemsToDisplay.concat(array3) }
-    if (elementVisibility.functions) { itemsToDisplay = itemsToDisplay.concat(array1) }
     if (elementVisibility.stakeholders) { itemsToDisplay = itemsToDisplay.concat(array4) }
-    if (elementVisibility.physicalSpaces) { itemsToDisplay = itemsToDisplay.concat(array5) }
-    if (elementVisibility.workPackages) { itemsToDisplay = itemsToDisplay.concat(array6) }
 
     relations = []//checl what connection to display TODO store in func
     relationsTree = {}//checl what connection to display TODO store in func
@@ -1759,10 +1704,7 @@ var createRelationsView = function () {
     if (elementVisibility.compose) {
       // relations = relations.concat(store.currentPbs.links.map((e) => { e.displayType = "Composed by";  e.type = "Composed by"; return e}))
       transferToRelationsForEach(relations,relationsTree, store.links, e=> {e.displayType = "Composed by";  e.type = "Composed by";})
-      if (elementVisibility.physicalSpaces) {
-        // relations = relations.concat(store.physicalSpaces.links.map((e) => {e.displayType = "Contains"; e.type = "Contains"; return e}))
-        transferToRelationsForEach(relations,relationsTree, store.links, e=> {e.displayType = "Contains"; e.type = "Contains";})
-      }
+
       groupLinks = []//TODO WHat is the point?
     }
     //check if some relation are on the same nodes;
@@ -1861,11 +1803,8 @@ var createRelationsView = function () {
     if (options && options.param) {
       if (options.param.context && options.param.context == "extract") {
         elementVisibility = {
-          functions : true,
-          requirements : true,
+
           stakeholders : true,
-          physicalSpaces : true,
-          workPackages : true,
           metaLinks : true,
           interfaces : true,
           compose : true
@@ -1885,11 +1824,8 @@ var createRelationsView = function () {
       }
       if (options.param.context && options.param.context == "extractDirect") {
         elementVisibility = {
-          functions : true,
-          requirements : true,
+
           stakeholders : true,
-          physicalSpaces : true,
-          workPackages : true,
           metaLinks : true,
           interfaces : true,
           compose : true
@@ -2055,15 +1991,11 @@ var createRelationsView = function () {
           <div data-type="stakeholders" class="${addItemMode=="stakeholders" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Stakeholder" data-position="bottom center">
             <i data-type="stakeholders" class="user icon action_interface_change_add_item_type"></i>
           </div>
-          <div data-type="requirements" class="${addItemMode=="requirements" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Requirement" data-position="bottom center">
-            <i data-type="requirements" class="comment icon action_interface_change_add_item_type"></i>
-          </div>
+
           <div data-type="currentPbs" class="${addItemMode=="currentPbs" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Product" data-position="bottom center">
             <i data-type="currentPbs" class="dolly icon action_interface_change_add_item_type"></i>
           </div>
-          <div data-type="functions" class="${addItemMode=="functions" ? 'active':''} ui icon button add_relations_nodes action_interface_change_add_item_type" data-tooltip="Functions" data-position="bottom center">
-            <i data-type="functions" class="cogs icon action_interface_change_add_item_type"></i>
-          </div>
+
         </div>
 
         <div class="ui simple dropdown item">
@@ -2134,11 +2066,7 @@ var createRelationsView = function () {
       <div class="item">
         <div class="header">Show Items</div>
         <div class="menu">
-        <a class="${elementVisibility.functions ? 'active teal':''} ui item action_relations_toogle_show_functions">Functions</a>
-        <a class="${elementVisibility.requirements ? 'active teal':''} ui item action_relations_toogle_show_requirements">Requirements</a>
         <a class="${elementVisibility.stakeholders ? 'active teal':''} ui item action_relations_toogle_show_stakeholders">Stakeholders</a>
-        <a class="${elementVisibility.physicalSpaces ? 'active teal':''} ui item action_relations_toogle_show_physicalSpaces">Physical Spaces</a>
-        <a class="${elementVisibility.workPackages ? 'active teal':''} ui item action_relations_toogle_show_workPackages">Work Packages</a>
         </div>
       </div>
       <div class="item">
@@ -2152,12 +2080,8 @@ var createRelationsView = function () {
       <div class="item">
         <div class="header">Group Items Together</div>
         <div class="menu">
-        <a class="${groupElements.functions ? 'active teal':''} ui item action_relations_toogle_group_functions">Functions</a>
-        <a class="${groupElements.requirements ? 'active teal':''} ui item action_relations_toogle_group_requirements">Requirements</a>
         <a class="${groupElements.stakeholders ? 'active teal':''} ui item action_relations_toogle_group_stakeholders">Stakeholders</a>
         <a class="${groupElements.pbs ? 'active teal':''} ui item action_relations_toogle_group_pbs">Products</a>
-        <a class="${groupElements.physicalSpaces ? 'active teal':''} ui item action_relations_toogle_group_physicalSpaces">Physical Spaces</a>
-        <a class="${groupElements.workPackages ? 'active teal':''} ui item action_relations_toogle_group_workPackages">Work Packages</a>
         </div>
       </div>
       <div class="item">
@@ -2278,31 +2202,11 @@ var createRelationsView = function () {
       rootNode:false,
       showLinksOverlay:false,
       fadeOtherNodesOnHoover:fadeOtherNodesOnHoover,
-      // icons: {
-      //     'Functions': 'cogs',
-      //     'Pbs': 'dolly',
-      //     'Requirements': 'comment',
-      //     'User': 'user',
-      //     'Project': 'building'
-      // },
+
       customPathIcons: {
-          'Functions': {fill:"#ffffff", transform:"scale("+0.05+") translate(-290, -250)", path:"M512.1 191l-8.2 14.3c-3 5.3-9.4 7.5-15.1 5.4-11.8-4.4-22.6-10.7-32.1-18.6-4.6-3.8-5.8-10.5-2.8-15.7l8.2-14.3c-6.9-8-12.3-17.3-15.9-27.4h-16.5c-6 0-11.2-4.3-12.2-10.3-2-12-2.1-24.6 0-37.1 1-6 6.2-10.4 12.2-10.4h16.5c3.6-10.1 9-19.4 15.9-27.4l-8.2-14.3c-3-5.2-1.9-11.9 2.8-15.7 9.5-7.9 20.4-14.2 32.1-18.6 5.7-2.1 12.1.1 15.1 5.4l8.2 14.3c10.5-1.9 21.2-1.9 31.7 0L552 6.3c3-5.3 9.4-7.5 15.1-5.4 11.8 4.4 22.6 10.7 32.1 18.6 4.6 3.8 5.8 10.5 2.8 15.7l-8.2 14.3c6.9 8 12.3 17.3 15.9 27.4h16.5c6 0 11.2 4.3 12.2 10.3 2 12 2.1 24.6 0 37.1-1 6-6.2 10.4-12.2 10.4h-16.5c-3.6 10.1-9 19.4-15.9 27.4l8.2 14.3c3 5.2 1.9 11.9-2.8 15.7-9.5 7.9-20.4 14.2-32.1 18.6-5.7 2.1-12.1-.1-15.1-5.4l-8.2-14.3c-10.4 1.9-21.2 1.9-31.7 0zm-10.5-58.8c38.5 29.6 82.4-14.3 52.8-52.8-38.5-29.7-82.4 14.3-52.8 52.8zM386.3 286.1l33.7 16.8c10.1 5.8 14.5 18.1 10.5 29.1-8.9 24.2-26.4 46.4-42.6 65.8-7.4 8.9-20.2 11.1-30.3 5.3l-29.1-16.8c-16 13.7-34.6 24.6-54.9 31.7v33.6c0 11.6-8.3 21.6-19.7 23.6-24.6 4.2-50.4 4.4-75.9 0-11.5-2-20-11.9-20-23.6V418c-20.3-7.2-38.9-18-54.9-31.7L74 403c-10 5.8-22.9 3.6-30.3-5.3-16.2-19.4-33.3-41.6-42.2-65.7-4-10.9.4-23.2 10.5-29.1l33.3-16.8c-3.9-20.9-3.9-42.4 0-63.4L12 205.8c-10.1-5.8-14.6-18.1-10.5-29 8.9-24.2 26-46.4 42.2-65.8 7.4-8.9 20.2-11.1 30.3-5.3l29.1 16.8c16-13.7 34.6-24.6 54.9-31.7V57.1c0-11.5 8.2-21.5 19.6-23.5 24.6-4.2 50.5-4.4 76-.1 11.5 2 20 11.9 20 23.6v33.6c20.3 7.2 38.9 18 54.9 31.7l29.1-16.8c10-5.8 22.9-3.6 30.3 5.3 16.2 19.4 33.2 41.6 42.1 65.8 4 10.9.1 23.2-10 29.1l-33.7 16.8c3.9 21 3.9 42.5 0 63.5zm-117.6 21.1c59.2-77-28.7-164.9-105.7-105.7-59.2 77 28.7 164.9 105.7 105.7zm243.4 182.7l-8.2 14.3c-3 5.3-9.4 7.5-15.1 5.4-11.8-4.4-22.6-10.7-32.1-18.6-4.6-3.8-5.8-10.5-2.8-15.7l8.2-14.3c-6.9-8-12.3-17.3-15.9-27.4h-16.5c-6 0-11.2-4.3-12.2-10.3-2-12-2.1-24.6 0-37.1 1-6 6.2-10.4 12.2-10.4h16.5c3.6-10.1 9-19.4 15.9-27.4l-8.2-14.3c-3-5.2-1.9-11.9 2.8-15.7 9.5-7.9 20.4-14.2 32.1-18.6 5.7-2.1 12.1.1 15.1 5.4l8.2 14.3c10.5-1.9 21.2-1.9 31.7 0l8.2-14.3c3-5.3 9.4-7.5 15.1-5.4 11.8 4.4 22.6 10.7 32.1 18.6 4.6 3.8 5.8 10.5 2.8 15.7l-8.2 14.3c6.9 8 12.3 17.3 15.9 27.4h16.5c6 0 11.2 4.3 12.2 10.3 2 12 2.1 24.6 0 37.1-1 6-6.2 10.4-12.2 10.4h-16.5c-3.6 10.1-9 19.4-15.9 27.4l8.2 14.3c3 5.2 1.9 11.9-2.8 15.7-9.5 7.9-20.4 14.2-32.1 18.6-5.7 2.1-12.1-.1-15.1-5.4l-8.2-14.3c-10.4 1.9-21.2 1.9-31.7 0zM501.6 431c38.5 29.6 82.4-14.3 52.8-52.8-38.5-29.6-82.4 14.3-52.8 52.8z"},
-          'Pbs': {fill:"#ffffff", transform:"scale("+0.05+") translate(-250, -250)", path:"M294.2 277.7c18 5 34.7 13.4 49.5 24.7l161.5-53.8c8.4-2.8 12.9-11.9 10.1-20.2L454.9 47.2c-2.8-8.4-11.9-12.9-20.2-10.1l-61.1 20.4 33.1 99.4L346 177l-33.1-99.4-61.6 20.5c-8.4 2.8-12.9 11.9-10.1 20.2l53 159.4zm281 48.7L565 296c-2.8-8.4-11.9-12.9-20.2-10.1l-213.5 71.2c-17.2-22-43.6-36.4-73.5-37L158.4 21.9C154 8.8 141.8 0 128 0H16C7.2 0 0 7.2 0 16v32c0 8.8 7.2 16 16 16h88.9l92.2 276.7c-26.1 20.4-41.7 53.6-36 90.5 6.1 39.4 37.9 72.3 77.3 79.2 60.2 10.7 112.3-34.8 113.4-92.6l213.3-71.2c8.3-2.8 12.9-11.8 10.1-20.2zM256 464c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48z"},
-          'Requirements': {fill:"#ffffff", transform:"scale("+0.05+") translate(-250, -250)", path:"M256 32C114.6 32 0 125.1 0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3 0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4 0 256-93.1 256-208S397.4 32 256 32z"},
-          'User': {fill:"#ffffff", transform:"scale("+0.05+") translate(-210, -250)", path:"M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48v-41.6c0-74.2-60.2-134.4-134.4-134.4z"},
-          'Project': {fill:"#73787f", transform:"scale("+0.05+") translate(-220, -250)", path:"M128 148v-40c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12zm140 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm-128 96h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm128 0h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm-76 84v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm76 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm180 124v36H0v-36c0-6.6 5.4-12 12-12h19.5V24c0-13.3 10.7-24 24-24h337c13.3 0 24 10.7 24 24v440H436c6.6 0 12 5.4 12 12zM79.5 463H192v-67c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v67h112.5V49L80 48l-.5 415z"},
-          'physicalSpaces': {fill:"#ffffff", transform:"scale("+0.05+") translate(-220, -250)", path:"M128 148v-40c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12zm140 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm-128 96h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm128 0h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm-76 84v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm76 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm180 124v36H0v-36c0-6.6 5.4-12 12-12h19.5V24c0-13.3 10.7-24 24-24h337c13.3 0 24 10.7 24 24v440H436c6.6 0 12 5.4 12 12zM79.5 463H192v-67c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v67h112.5V49L80 48l-.5 415z"},
-          'workPackages': {fill:"#ffffff", transform:"scale("+0.05+") translate(-220, -250)", path:"M461.2 128H80c-8.84 0-16-7.16-16-16s7.16-16 16-16h384c8.84 0 16-7.16 16-16 0-26.51-21.49-48-48-48H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h397.2c28.02 0 50.8-21.53 50.8-48V176c0-26.47-22.78-48-50.8-48zM416 336c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32z"}
-          // 'Functions': 'cogs',
-          // 'Pbs': 'dolly',
-          // 'Requirements': 'comment',
-          // 'User': 'user',
-          // 'Project': 'building'
+
       },
-      // images: {
-      //     'Address': 'img/twemoji/1f3e0.svg',
-      //     'Usedr': 'img/twemoji/1f600.svg'
-      // },
+
       minCollision: 110,
       chargeStrength: -500,
       customData: {
@@ -2423,8 +2327,6 @@ var createRelationsView = function () {
         let availableItems =[
           {name:'Product', type:'currentPbs', icon:"dolly"},
           {name:'Stakeholder', type:'stakeholders',  icon:"user"},
-          {name:'Requirement', type:'requirements', icon:"comment"},
-          {name:'Function', type:'functions', icon:"cogs"}
         ]
         if (addItemMode) {//if item mode engaged
           var popup= await createPromptPopup({
@@ -2463,42 +2365,8 @@ var createRelationsView = function () {
     var store = await query.currentProject() //TODO ugly
     var nodeTypes = [lastSelectedNode.labels[0],previousSelectedNode.labels[0]]
     console.log(nodeTypes);
-    console.log(nodeTypes[0] =="Requirements" && nodeTypes[1] == "User");
-    if (nodeTypes[0] =="Requirements" && nodeTypes[1] == "User") {
-      console.log("Requirements", "User");
-      push(act.add("metaLinks",{type:"origin", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="User" && nodeTypes[1] == "Requirements") {
-      console.log( "User", "Requirements");
-      push(act.add("metaLinks",{type:"origin", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "Requirements") {
-      push(act.add("metaLinks",{type:"originNeed", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="Requirements" && nodeTypes[1] == "Pbs") {
-      push(act.add("metaLinks",{type:"originNeed", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="Functions" && nodeTypes[1] == "Requirements") {
-      push(act.add("metaLinks",{type:"originNeed", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="Requirements" && nodeTypes[1] == "Functions") {
-      push(act.add("metaLinks",{type:"originNeed", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "Functions") {
-      push(act.add("metaLinks",{type:"originNeed", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="Functions" && nodeTypes[1] == "Pbs") {
-      push(act.add("metaLinks",{type:"originFunction", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="physicalSpaces" && nodeTypes[1] == "Pbs") {
-      push(act.add("metaLinks",{type:"contains", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "physicalSpaces") {
-      push(act.add("metaLinks",{type:"contains", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="workPackages" && nodeTypes[1] == "Pbs") {
-      push(act.add("metaLinks",{type:"WpOwn", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "workPackages") {
-      push(act.add("metaLinks",{type:"WpOwn", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="workPackages" && nodeTypes[1] == "Requirements") {
-      push(act.add("metaLinks",{type:"WpOwnNeed", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="Requirements" && nodeTypes[1] == "workPackages") {
-      push(act.add("metaLinks",{type:"WpOwnNeed", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="workPackages" && nodeTypes[1] == "User") {
-      push(act.add("metaLinks",{type:"assignedTo", source:lastSelectedNode.uuid, target:previousSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="User" && nodeTypes[1] == "workPackages") {
-      push(act.add("metaLinks",{type:"assignedTo", source:previousSelectedNode.uuid, target:lastSelectedNode.uuid}))
-    }else if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "Pbs") {
+
+    if (nodeTypes[0] =="Pbs" && nodeTypes[1] == "Pbs") {
       //check for circular references
       if (addMode == "physical") {
           let isCircularRef = store.interfaces.find(i => (i.target == lastSelectedNode.uuid && i.source == previousSelectedNode.uuid)|| (i.source == lastSelectedNode.uuid && i.target == previousSelectedNode.uuid) )
@@ -2563,9 +2431,7 @@ var createRelationsView = function () {
   }
 
   async function addItems(type, uuid, initValue, addItemCatType) {
-    if (type == 'requirements') {
-      push(addRequirement({uuid:uuid, name:initValue}))
-    }else if (type == 'currentPbs') {
+    if (type == 'currentPbs') {
       let store = await query.currentProject()
       push(addPbs({uuid:uuid, name:initValue}))
       push(addPbsLink({source:store.currentPbs[0].uuid, target:uuid}))
@@ -2574,8 +2440,6 @@ var createRelationsView = function () {
       }
     }else if (type == 'stakeholders') {
       push(act.add('stakeholders',{uuid:uuid, name:initValue}))
-    }else if (type = 'functions') {
-      push(act.add('functions',{uuid:uuid, name:initValue}))
     }
   }
 
