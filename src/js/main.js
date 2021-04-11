@@ -62,7 +62,6 @@ var reparse = false;
   pageManager.addComponent({name:"interfacesTypes",object:interfacesTypesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"categories",object:categoriesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"interfacesEditorView",object:interfacesEditorView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
-  pageManager.addComponent({name:"workPackages",object:workPackagesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"documents",object:documentsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"extraGraphsView",object:extraGraphsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"interfacesListView",object:interfacesListView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
@@ -155,9 +154,7 @@ var reparse = false;
   connect(".action_toogle_meetings_manager","click",(e)=>{
     pageManager.setActivePage("meetingsManager")
   })
-  connect(".action_toogle_work_packages","click",(e)=>{
-    pageManager.setActivePage("workPackages")
-  })
+
   connect(".action_toogle_documents","click",(e)=>{
     pageManager.setActivePage("documents")
   })

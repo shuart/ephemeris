@@ -228,6 +228,8 @@ var createCategoryEditorView = function ({
       editor:"modalRelation"
     }
     columns.push(sourceCol)
+    //TODO add an extrafield to open relation
+    //          pageManager.setActivePage("relations", {param:{context:"extract", uuid:orev.dataset.id}})//TODO should not call page ma,ager directly
 
     let menutest = [
       // {type:'action', name:"Add", color:"#29b5ad", onClick:e=>{addAction()}},

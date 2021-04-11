@@ -12,21 +12,6 @@ var store = {
   events:[],
   timeTracks:[],
   timeLinks:[],
-  requirements:[
-      {uuid:"fefsfse", name:"A requirement"},
-      {uuid:"555sfse", name:"A linked requirement"},
-      {uuid:"444sfse", name:"An other linked requirement"},
-
-      {uuid:"789sfse", name:"Yet an other linked requirement"},
-      {uuid:"999sfse", name:"Requirements can have many levels"},
-      {uuid:"f54846e", name:"Another exemple requirement"}
-  ],
-  functions:[
-      {uuid:"fefsf867", name:"A function"},
-      {uuid:"55567687", name:"A linked function"},
-      {uuid:"f54877777", name:"Another function"},
-      {uuid:"99eeee86fse", name:"Another linked function"},
-    ],
   stakeholders:[
       {uuid:"fefiose", name:"A", lastName:"Stakeholder", org:"na", role:"", mail:""},
       {uuid:"f896546e", name:"John", lastName:"Doe", org:"Entreprise inc", role:"PM", mail:""}
@@ -82,12 +67,6 @@ var store = {
       ]
     }
   ],
-  workPackages:[
-      {uuid: uuid(), name: "A work package"}
-    ],
-  physicalSpaces:[
-      {uuid: uuid(), name: "A physical space"}
-    ],
   graphs:[
       [{uuid: "f896546e", fx: 303.3567591326126, fy: 456.92026148965726},
       {uuid: "fefiose", fx: 280.90578607861664, fy: 340.49053534573414}]
