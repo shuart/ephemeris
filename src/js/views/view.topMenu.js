@@ -83,10 +83,7 @@ var createTopMenu = function (containerSelector) {
         <a class="button top_button_stakeholders action_toogle_stakeholders"><i class="address book icon"></i><div class="content">Stakeholders</div></a>
 
         ${await renderCustomWorkspaces()}
-        <a class="button top_button_requirements action_toogle_requirements_view"><i class="comment icon"></i><div class="content">Requirements</div></a>
-        <a class="button top_button_functions action_toogle_functions_view"><i class="cogs icon"></i><div class="content">Functions</div></a>
         <a class="button top_button_pbs action_toogle_tree_pbs"><i class="dolly icon"></i><div class="content">Products</div></a>
-        <a class="button top_button_physicalSpaces action_toogle_physical_spaces"><i class="building icon"></i><div class="content">Physical Spaces</div></a>
 
         <a class="button top_button_relations action_toogle_diag_relations_quickstart"><i class="sitemap icon"></i><div class="content">Relations</div></a>
 

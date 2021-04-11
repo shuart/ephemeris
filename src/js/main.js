@@ -49,8 +49,6 @@ var reparse = false;
   pageManager.addComponent({name:"projects",object:projectsView,haveSideBar:false})
   pageManager.addComponent({name:"csc",object:cscViewer})
   pageManager.addComponent({name:"overview",object:overview,linkedComponents:["leftMenuProjectTree"],haveSideBar:false})
-  pageManager.addComponent({name:"requirements",object:requirementsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
-  pageManager.addComponent({name:"functions",object:functionsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"planning",object:planningView, haveSideBar:false})
   pageManager.addComponent({name:"pbs",object:pbsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"relations",object:relationsView, haveSideBar:false})
@@ -66,7 +64,6 @@ var reparse = false;
   pageManager.addComponent({name:"interfacesEditorView",object:interfacesEditorView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"workPackages",object:workPackagesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"documents",object:documentsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
-  pageManager.addComponent({name:"physicalSpaces",object:physicalSpacesView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"extraGraphsView",object:extraGraphsView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"interfacesListView",object:interfacesListView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"singleActionView",object:singleActionView, haveSideBar:false})
@@ -106,12 +103,6 @@ var reparse = false;
   })
   connect(".action_toogle_csc","click",(e)=>{
     pageManager.setActivePage("csc")
-  })
-  connect(".action_toogle_requirements_view","click",(e)=>{
-    pageManager.setActivePage("requirements")
-  })
-  connect(".action_toogle_functions_view","click",(e)=>{
-    pageManager.setActivePage("functions")
   })
   connect(".action_toogle_planning_view","click",(e)=>{
     pageManager.setActivePage("planning")
@@ -170,9 +161,7 @@ var reparse = false;
   connect(".action_toogle_documents","click",(e)=>{
     pageManager.setActivePage("documents")
   })
-  connect(".action_toogle_physical_spaces","click",(e)=>{
-    pageManager.setActivePage("physicalSpaces")
-  })
+
   connect(".action_toogle_extra_graphs","click",(e)=>{
     pageManager.setActivePage("extraGraphsView")
   })
