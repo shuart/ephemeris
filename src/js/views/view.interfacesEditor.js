@@ -42,15 +42,44 @@ var createInterfacesEditorView = function () {
   var renderTable = function (store) {
 
     let data = prepareData(store)
-    let clickFun = function (event, cell) {
-      // console.log(catData.interfaces[cell.getRow().getData().uuid].sources);
-      console.log(event);
-      if (event.target.dataset.id) {
-        showSingleItemService.showById(event.target.dataset.id)
-      }else {
-        // createEditRelationPopup(cell.getRow().getData().uuid,e.relationId,store.interfaces.filter(i=>i.typeId==e.relationId),store.currentPbs)
+    let editInterfaces =function (isSource) {
+      return function (event, cell) {
+        if (event.target.dataset.id) {
+          showSingleItemService.showById(event.target.dataset.id)
+        }else {
+              let preSelected = cell.getValue().map(v=>v.uuid)
+              let selectOptions = store.categories.map(c=> ({name:c.name, value:c.uuid}))
+              var popup=  createPromptPopup({
+                title:"Select a category",
+                callback :function (res) {
+                  let nameArr = res.result.split(',')
+                  let originalSelected = preSelected
+                  let added = nameArr.filter(r=>!originalSelected.includes(r))
+                  let removedItems = originalSelected.filter(r=>!nameArr.includes(r))
+                  added.forEach((item, i) => {
+                    if (isSource) {
+                      push(act.edit("interfacesTypes", {uuid:cell.getRow().getData().uuid, prop:"hasSource_"+item, value:true})) //add as source
+                    }else {
+                      push(act.edit("interfacesTypes", {uuid:cell.getRow().getData().uuid, prop:"hasTarget_"+item, value:true})) //add as source
+                    }
+                  });
+                  removedItems.forEach((item, i) => {
+                    if (isSource) {
+                      push(act.edit("interfacesTypes", {uuid:cell.getRow().getData().uuid, prop:"hasSource_"+item, value:false}))
+                    }else {
+                      push(act.edit("interfacesTypes", {uuid:cell.getRow().getData().uuid, prop:"hasTarget_"+item, value:false}))
+                    }
+                  });
+                  updateList()
+                },
+                fields:[
+                  { type:"selection",id:"targetIcon",preSelected:preSelected,selectOptions:selectOptions, label:"Select an Parent", placeholder:"Set linkable categories" }
+                ]
+              })
+        }
       }
     }
+
     let columns = [
       {title:"Interface displayed", field:"name"},
 
@@ -65,10 +94,10 @@ var createInterfacesEditorView = function () {
           }
         }
       },
-      {title:"Sources", field:"_mainSources", formatter:"tags",cellClick:clickFun,},
-      {title:"Inherited sources", field:"_sources", formatter:"tags",cellClick:clickFun,},
-      {title:"Targets", field:"_mainTargets", formatter:"tags",cellClick:clickFun,},
-      {title:"Inherited targets", field:"_targets", formatter:"tags",cellClick:clickFun,},
+      {title:"Sources", field:"_mainSources", formatter:"tags",cellClick:editInterfaces(true),},
+      {title:"Inherited sources", field:"_sources", formatter:"tags",cellClick:undefined,},
+      {title:"Targets", field:"_mainTargets", formatter:"tags",cellClick:editInterfaces(false),},
+      {title:"Inherited targets", field:"_targets", formatter:"tags",cellClick:undefined,},
 
     ]
 
