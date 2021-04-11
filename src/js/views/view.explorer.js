@@ -205,6 +205,17 @@ var createExplorerView = function ({
         columns.push(item)
       });
 
+      //add remove option
+      columns.push({
+        formatter:'remove',
+        cellClick:function(e, cell){
+          console.log(e.target.dataset.id);
+          if (confirm("remove item ?")) {
+            push(act.remove("currentPbs",{uuid:e.target.dataset.id}))
+          }
+        }
+      },)
+
       let onUpdate  =function () {
         //alert("fesfef")
         //update({type,typeId, onUpdate:onUpdate})

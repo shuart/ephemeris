@@ -4,6 +4,7 @@ var objectIsActive = true;
 
 var persist = {}
 var memoryDataset = {}
+var currentTomstone = {}
 
 var localDB = undefined
 
@@ -120,12 +121,29 @@ var applyToInMemoryData = function(msg, data) {
     throw new Error('Unknown dataset: ' + msg.dataset);
   }
 
-  let row = table.find(row => row.uuid === msg.row);
-  if (!row) {
-    table.push({ uuid: msg.row, [msg.column]: msg.value });
-  } else {
-    row[msg.column] = msg.value;
+  if (msg.column == "tombstone") {
+    //delete element
+    let row = table.find(row => row.uuid === msg.row);
+    if (row) {
+      for( var i = 0; i < table.length; i++){
+          if ( table[i].uuid === msg.row) {
+              table.splice(i, 1);
+          }
+      }
+      currentTomstone[msg.row] = true //prevent further uses on this row
+    }
+  }else if (!currentTomstone[msg.row]) {
+
+    let row = table.find(row => row.uuid === msg.row);
+    if (!row) {
+      table.push({ uuid: msg.row, [msg.column]: msg.value });
+    } else {
+      row[msg.column] = msg.value;
+    }
+
   }
+
+
 
   return data
 }
@@ -195,6 +213,7 @@ var recordInitialMessagesFromTemplate = function (projectId, template) {
   appendToDB(projectId,transcribed);
 }
 var buildProjectFromMessages = async function (projectId) {
+  currentTomstone ={} //reset the tomstone record
   let relevantMessages = await dbConnector.getDbReferences().localDB.getAllFromIndex('messages', 'projectIndex', projectId);
   let messages = {}
   relevantMessages.forEach((item, i) => {

@@ -172,7 +172,7 @@ var createTableComp = function ({
   };
   customFields.tags = function(cell, formatterParams, onRendered ){
     let html=""
-    if (cell.getValue()) {
+    if (cell.getValue() && cell.getValue()[0]) {
       cell.getValue().forEach((item, i) => {
         html+=theme.tag(item.name, item.uuid||"", item.color || "#29b5ad");
       });
