@@ -58,7 +58,10 @@ var createCompositeView = function ({
     let catId = store.categories.find(c=>c.uuid == currentPage.parentCat).uuid
     console.log(currentPage);
     console.log(catId);
-    let modulesRatio ={explorer:80,timeline:20
+    let modulesRatio ={
+      explorer:80,
+      timeline:20,
+      kanban:20,
     }
     if (!currentPage.showTimeline) {
       modulesRatio.explorer +=modulesRatio.timeline
@@ -69,6 +72,7 @@ var createCompositeView = function ({
 
       document.querySelector(container).innerHTML=`
         <div style='height:${modulesRatio.timeline}%' class='partialTimeline'></div>
+        <div style='height:${modulesRatio.kanban}%' class='partialKanban'></div>
         <div style='height:${modulesRatio.explorer}%'class='compositeExplorer'></div>
       `
       var explorerView = createExplorerView({
@@ -86,6 +90,15 @@ var createCompositeView = function ({
         currentModules.push(timelinePartial)
         timelinePartial.init()
         timelinePartial.setActive({catId:catId})
+      }
+      if (true) {
+        var kanbanPartial = createKanbanPartial({
+          container : ".partialKanban"
+        })
+
+        currentModules.push(kanbanPartial)
+        kanbanPartial.init()
+        kanbanPartial.setActive({catId:catId})
       }
 
     }
