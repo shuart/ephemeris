@@ -25,6 +25,16 @@ var createPromptPopupView = function (inputData) {
         </div>
       `
     },
+    tag:function (name,id, color) {
+      let colorStyle = "background-color:#ffffff;border-style:dashed;border-width: 2px;border-color:grey "
+      if (color) {
+        colorStyle = "background-color:"+color+ ";"
+      }
+      return `
+      <div style="${colorStyle} margin-bottom: 2px;cursor:pointer;" data-inverted="" data-id="${id}" data-tooltip="${name}   " class="ui mini teal label action_list_click_label">
+      ${name}
+      </div>`
+    },
     form: function (data) {
       return `
       ${theme.iconHeader(data)}
@@ -285,8 +295,6 @@ var createPromptPopupView = function (inputData) {
         }
       });
     }
-
-
     setupDropdowns(inputData.fields)
     setupButtons(inputData.fields)
     setupSelection(inputData.fields)
@@ -322,6 +330,11 @@ var createPromptPopupView = function (inputData) {
         //     placeholder: 'any'
         //   })
         let container=document.querySelector('.form_selection_list_'+item.id)
+        let template = `
+          <div class="form_selection_list_tags_${item.id}"></div>
+          <div style="height:300px;" class="form_selection_list_table_${item.id}"></div>
+        `
+        container.innerHTML=template
         let columns = [
           {title:"Name", field:"name"},
         ]
@@ -337,21 +350,27 @@ var createPromptPopupView = function (inputData) {
         let tableObject = tableComp.create(
         {
           onUpdate:e=>{updateList()},
-          domElement:'.form_selection_list_'+item.id,
+          domElement:'.form_selection_list_table_'+item.id,
           data:data,
+          headerVisible:false,
           columns:columns,
           menu:menutest,
-          selectable:true,
+          selectable: item.maxSelectable || true,
           rowSelectionChanged:function(data, rows){
           	document.querySelector(`.form_input_${item.id}`).value = data.map(d=>d.value).join(',');
+          	document.querySelector(`.form_selection_list_tags_${item.id}`).innerHTML = data.map(d=>theme.tag(d.name, d.value, "#00b5ad")).join("");
             if (!data[0]) {document.querySelector(`.form_input_${item.id}`).value =""}
           },
         })
         // let table = tableObject.getTable()
         // table.getTable().selectRow(item.preSelected);
         tableObject.selectByValue(item.preSelected)
+        document.querySelector('.form_selection_list_tags_'+item.id).addEventListener("click", function (event) {
+          if (event.target.dataset && event.target.dataset.id) {
+            tableObject.deselectByValue([event.target.dataset.id])
+          }
+        })
         // table.selectRow(table.getRows().filter(row => item.preSelected.includes(row.getData().value)));
-
       }
     });
   }

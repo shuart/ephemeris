@@ -111,7 +111,7 @@ var createCategoriesView = function () {
               }
             },
             fields:[
-              { type:"selection",id:"targetIcon",preSelected:[],selectOptions:selectOptions, label:"Select an Parent", placeholder:"Set linkable categories" }
+              { type:"selection",id:"targetIcon",preSelected:[],maxSelectable:1, selectOptions:selectOptions, label:"Select an Parent", placeholder:"Set linkable categories" }
             ]
           })
         }

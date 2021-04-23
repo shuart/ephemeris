@@ -30,6 +30,7 @@ var createTableComp = function ({
 
   var tableOnUpdate = undefined
   var tableMenu = undefined
+  var currentHeaderVisible = undefined
   var currentTable = undefined
   var currentTreeMode = false
   var currentSelectable =false
@@ -475,6 +476,7 @@ var createTableComp = function ({
       ],
       columns:initCols,
       dataTree:currentTreeMode,
+      headerVisible:currentHeaderVisible,
       dataTreeStartExpanded:true,
       selectable: currentSelectable,
       rowSelectionChanged:currentRowSelectionChanged,
@@ -552,6 +554,9 @@ var createTableComp = function ({
   var selectByValue = function (preSelected) {
     currentTable.selectRow(currentTable.getRows().filter(row => preSelected.includes(row.getData().value)));
   }
+  var deselectByValue = function (preSelected) {
+    currentTable.deselectRow(currentTable.getRows().filter(row => preSelected.includes(row.getData().value)));
+  }
 
 
   var update = function () {
@@ -564,6 +569,7 @@ var createTableComp = function ({
     onUpdate=undefined,
     menu=false,
     dataTree=false,
+    headerVisible=true,
     domElement=".center-container",
     selectable=false,
     rowSelectionChanged= function (d,rows) {
@@ -577,6 +583,7 @@ var createTableComp = function ({
       tableMenu = menu;
       container = domElement;
       currentTreeMode = dataTree;
+      currentHeaderVisible = headerVisible;
       currentSelectable=selectable;
       currentRowSelectionChanged=rowSelectionChanged;
       if (domElement=="modal") {
@@ -602,6 +609,7 @@ var createTableComp = function ({
   self.updateData = updateData
   self.getTable = getTable
   self.selectByValue = selectByValue
+  self.deselectByValue = deselectByValue
   self.init = init
 
   return self
