@@ -97,7 +97,7 @@ var createPromptPopupView = function (inputData) {
         template= `
         <div class="ui multiple dropdown form_select_${data.id}">
           <input class="form_input_${data.id}" type="hidden" name="filters" value="${data.preSelected.join(',')}">
-          <div style="height:300px" class="form_selection_list_${data.id}"></div>
+          <div style="" class="form_selection_list_${data.id}"></div>
         </div>
         `
       }
@@ -331,8 +331,8 @@ var createPromptPopupView = function (inputData) {
         //   })
         let container=document.querySelector('.form_selection_list_'+item.id)
         let template = `
-          <div class="form_selection_list_tags_${item.id}"></div>
-          <div style="height:300px;" class="form_selection_list_table_${item.id}"></div>
+          <div style="font-weight:bold;border-bottom-style: dashed;border-bottom-width: 2px;border-bottom-color: grey;" class="form_selection_list_tags_${item.id}"></div>
+          <div style="height:300px;" class="form_selection_list_table_${item.id}">Select</div>
         `
         container.innerHTML=template
         let columns = [
@@ -358,16 +358,27 @@ var createPromptPopupView = function (inputData) {
           selectable: item.maxSelectable || true,
           rowSelectionChanged:function(data, rows){
           	document.querySelector(`.form_input_${item.id}`).value = data.map(d=>d.value).join(',');
-          	document.querySelector(`.form_selection_list_tags_${item.id}`).innerHTML = data.map(d=>theme.tag(d.name, d.value, "#00b5ad")).join("");
+            let html = `${item.label}:` + data.map(d=>theme.tag(d.name, d.value, "#00b5ad")).join("");
+          	document.querySelector(`.form_selection_list_tags_${item.id}`).innerHTML = html
             if (!data[0]) {document.querySelector(`.form_input_${item.id}`).value =""}
           },
         })
         // let table = tableObject.getTable()
         // table.getTable().selectRow(item.preSelected);
         tableObject.selectByValue(item.preSelected)
+
+        document.querySelector('.form_selection_list_'+item.id).addEventListener("mouseleave", function (event) {
+          document.querySelector('.form_selection_list_table_'+item.id).style.display= 'none'
+        })
+        document.querySelector('.form_selection_list_table_'+item.id).style.display= 'none'//hide the menu
+
         document.querySelector('.form_selection_list_tags_'+item.id).addEventListener("click", function (event) {
           if (event.target.dataset && event.target.dataset.id) {
             tableObject.deselectByValue([event.target.dataset.id])
+          }else {
+            if (document.querySelector('.form_selection_list_table_'+item.id).style.display!='block') {
+              document.querySelector('.form_selection_list_table_'+item.id).style.display= 'block'
+            }
           }
         })
         // table.selectRow(table.getRows().filter(row => item.preSelected.includes(row.getData().value)));

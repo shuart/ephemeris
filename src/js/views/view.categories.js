@@ -101,7 +101,7 @@ var createCategoriesView = function () {
           console.log(cell);
           let selectOptions = store.categories.map(c=> ({name:c.name, value:c.uuid}))
           var popup=  createPromptPopup({
-            title:"Select a parent",
+            title:"Parent",
             callback :function (res) {
               console.log(res);
               if (res.result == "") {
@@ -111,7 +111,7 @@ var createCategoriesView = function () {
               }
             },
             fields:[
-              { type:"selection",id:"targetIcon",preSelected:[],maxSelectable:1, selectOptions:selectOptions, label:"Select an Parent", placeholder:"Set linkable categories" }
+              { type:"selection",id:"targetIcon",preSelected:[],maxSelectable:1, selectOptions:selectOptions, label:"Select an Parent", placeholder:"Set linkable categories" },
             ]
           })
         }
