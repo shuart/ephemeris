@@ -47,6 +47,9 @@ var createCompositePagesView = function () {
     for (var i = 0; i < store.compositePages.length; i++) {
       let cat = store.categories.find(c=>c.uuid == store.compositePages[i].parentCat)
       store.compositePages[i].parentCatName = [ cat ]
+      if (cat) {
+      store.compositePages[i].parentCatFields =  store.extraFields.filter(i=>i.target == cat.uuid)
+      }
       data.push(store.compositePages[i])
     }
     return data
@@ -109,7 +112,7 @@ var createCompositePagesView = function () {
           console.log(cell);
           let selectOptions = store.categories.map(c=> ({name:c.name, value:c.uuid}))
           var popup=  createPromptPopup({
-            title:"Select a parent",
+            title:"Select a related category",
             callback :function (res) {
               console.log(res);
               if (res.result == "") {
@@ -119,7 +122,7 @@ var createCompositePagesView = function () {
               }
             },
             fields:[
-              { type:"selection",id:"targetIcon",preSelected:[],selectOptions:selectOptions, label:"Select an Parent", placeholder:"Set linkable categories" }
+              { type:"selection",id:"targetIcon",preSelected:[],selectOptions:selectOptions, maxSelectable:1,label:"Select an Parent", placeholder:"Set linkable categories" }
             ]
           })
         }
@@ -134,6 +137,26 @@ var createCompositePagesView = function () {
             push(act.edit("compositePages", {uuid:cell.getRow().getData().uuid, prop:"showTimeline", value:!cell.getValue() }))
             updateList()
           }
+        }
+      },
+      {title:"Options", field:"options",  formatter:"tags", cellClick:function (e,cell) {
+          console.log(cell);
+          let timeProperties = cell.getRow().getData().parentCatFields.filter(c => c.type == "time").map(c=> ({name:c.name, value:c.uuid}))
+          var popup=  createPromptPopup({
+            title:"Timeline options",
+            callback :function (res) {
+              console.log(res);
+              if (res.result == "") {
+              }else {
+                console.log(res);
+                // push(act.edit("compositePages", {uuid:cell.getRow().getData().uuid, prop:"options_timeline", value:res.result}))
+                updateList()
+              }
+            },
+            fields:[
+              { type:"selection",id:"startField",preSelected:[],selectOptions:timeProperties, maxSelectable:1,label:"Select start property", placeholder:"Set linkable categories" }
+            ]
+          })
         }
       },
       {
