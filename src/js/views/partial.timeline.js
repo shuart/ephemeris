@@ -7,6 +7,8 @@ var createTimelinePartial = function ({
   var self ={};
   var objectIsActive = false;
   var catId = undefined
+  var startField = undefined
+  var endField = undefined
   var timeline = undefined
 
   var containerBottom = undefined
@@ -82,7 +84,9 @@ var createTimelinePartial = function ({
     let catData = ephHelpers.createCatData(store)
     let cat = catData.dic[catId]
     let ef = cat._assignedExtraFields
-    let efTime = cat._assignedExtraFields.filter(ef=>ef.type =="time")
+    let efTime = cat._assignedExtraFields.filter(ef=>ef.uuid ==startField)
+    let efTimeEnd = cat._assignedExtraFields.filter(ef=>ef.uuid ==endField)
+    // let efTime = cat._assignedExtraFields.filter(ef=>ef.type =="time")
     if (efTime[0]) {
 
       let typeToDisplay = catId
@@ -96,7 +100,11 @@ var createTimelinePartial = function ({
         if (relatedNodesId.includes(store.currentPbs[i].uuid)) {
           // nodes.push(store.currentPbs[i])
           let elem = store.currentPbs[i]
-          let visElement = {id: genuuid(), content: store.currentPbs[i].name, start: elem[ efTime[0].uuid ]|| Date.now()}
+          let endDate = undefined
+          if (efTimeEnd[0]) {
+            endDate = elem[ efTimeEnd[0].uuid ]
+          }
+          let visElement = {id: genuuid(), content: store.currentPbs[i].name, start: elem[ efTime[0].uuid ]|| Date.now(),end: endDate}
           data.push(visElement)
         }
       }
@@ -580,6 +588,8 @@ var createTimelinePartial = function ({
   var setActive =function (data) {
     if (data) {
       catId = data.catId
+      startField = data.startField
+      endField = data.endField
     }
     objectIsActive = true;
     update()

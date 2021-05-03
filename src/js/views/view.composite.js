@@ -89,7 +89,7 @@ var createCompositeView = function ({
 
         currentModules.push(timelinePartial)
         timelinePartial.init()
-        timelinePartial.setActive({catId:catId})
+        timelinePartial.setActive({catId:catId,startField:currentPage.options_timelineStart, endField:currentPage.options_timelineEnd})
       }
       if (true) {
         var kanbanPartial = createKanbanPartial({

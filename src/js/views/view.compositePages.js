@@ -149,12 +149,14 @@ var createCompositePagesView = function () {
               if (res.result == "") {
               }else {
                 console.log(res);
-                // push(act.edit("compositePages", {uuid:cell.getRow().getData().uuid, prop:"options_timeline", value:res.result}))
+                push(act.edit("compositePages", {uuid:cell.getRow().getData().uuid, prop:"options_timelineStart", value:res.result.startField}))
+                push(act.edit("compositePages", {uuid:cell.getRow().getData().uuid, prop:"options_timelineEnd", value:res.result.endField}))
                 updateList()
               }
             },
             fields:[
-              { type:"selection",id:"startField",preSelected:[],selectOptions:timeProperties, maxSelectable:1,label:"Select start property", placeholder:"Set linkable categories" }
+              { type:"selection",id:"startField",preSelected:[],selectOptions:timeProperties, maxSelectable:1,label:"Select start property", placeholder:"Set linkable categories" },
+              { type:"selection",id:"endField",preSelected:[],selectOptions:timeProperties, maxSelectable:1,label:"Select an end property", placeholder:"Set linkable categories", optional:true }
             ]
           })
         }
