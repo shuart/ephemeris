@@ -462,6 +462,7 @@ var createTableComp = function ({
       }
     currentTable = new Tabulator(".example-table"+targetClassId, {
       data:initData,           //load row data from array
+      clipboard:true,
       height:getTargetHeight+"px",
       virtualDom:true,
       layout:"fitColumns",      //fit columns to width of table
