@@ -43,6 +43,7 @@ var createTableComp = function ({
       return `
       <div style="padding:5px" class="ephemeris-table">
         <div class="ephemeris-table-menu${targetClassId}"></div>
+        <div class="ephemeris-table-custom-area${targetClassId}"></div>
         <div style="" class="example-table${targetClassId}"></div>
       </div>`
     },
@@ -359,7 +360,11 @@ var createTableComp = function ({
                 let newDate = moment(selected[0]).add(12, 'hours').toDate()
                 let target = cell.getRow().getData()
                 // onEditItemTime({select:self, selectDiv:sourceEl, target:event.target, value:newDate})
-                push(act.edit("currentPbs", {uuid:target.uuid, prop:item.field,  value:newDate}))
+                if (item.editorParams.onChange) {
+                  item.editorParams.onChange(target.uuid, item.field, newDate)
+                }else {
+                  push(act.edit("currentPbs", {uuid:target.uuid, prop:item.field,  value:newDate}))
+                }
                 if (tableOnUpdate) {tableOnUpdate()}
               }
             })
@@ -552,6 +557,9 @@ var createTableComp = function ({
   var getTable = function () {
     return currentTable
   }
+  var getTableCustomAreaElem = function () {
+    return document.querySelector(".ephemeris-table-custom-area"+targetClassId)
+  }
   var selectByValue = function (preSelected) {
     currentTable.selectRow(currentTable.getRows().filter(row => preSelected.includes(row.getData().value)));
   }
@@ -608,6 +616,7 @@ var createTableComp = function ({
   self.create = create
   self.update = update
   self.updateData = updateData
+  self.getTableCustomAreaElem = getTableCustomAreaElem
   self.getTable = getTable
   self.selectByValue = selectByValue
   self.deselectByValue = deselectByValue

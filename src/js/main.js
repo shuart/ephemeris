@@ -77,6 +77,8 @@ var reparse = false;
   pageManager.addComponent({name:"compositeView",object:compositeView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"compositePagesView",object:compositeView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   pageManager.addComponent({name:"visualConfigView",object:visualConfigView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
+  //Modal component
+  pageManager.addComponent({name:"localPlanning",object:localPlanningView,linkedComponents:["leftMenuProjectTree"], haveSideBar:false})
   //side menu component
   pageManager.addComponent({name:"leftMenu",object:leftMenu})
   pageManager.addComponent({name:"leftMenuActions",object:leftMenuActions})

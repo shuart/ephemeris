@@ -179,6 +179,24 @@ var createExplorerView = function ({
           return {title:e.name, field:e.uuid, editor:"modalInput", formatter:'textarea'}
         }else if (e.type == "time") {
           return {title:e.name, field:e.uuid, editor:"timePicker", formatter:'time'}
+        }else if (e.type == "actions") {
+          return {
+            title:e.name,
+            field:e.uuid,
+            cellClick:function (event, cell) {
+              localPlanningView.update(cell.getRow().getData().uuid)
+            //   console.log(event);
+            //   if (event.target.dataset.id) {
+            //     showSingleItemService.showById(event.target.dataset.id)
+            //   }else {
+            //     if (!cell.getRow().getData()["_targetForExtra"+e.uuid]) {
+            //       createEditRelationPopup(cell.getRow().getData().uuid,typeId,e)
+            //     }else {
+            //       createEditRelationPopup(cell.getRow().getData().uuid,typeId,e, cell.getRow().getData()["_targetForExtra"+e.uuid])
+            //     }
+            //   }
+            },
+          }
         }else if (e.type == "relation") {
           return {
             title:e.name,
