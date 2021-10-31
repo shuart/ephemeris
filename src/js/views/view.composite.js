@@ -68,6 +68,11 @@ var createCompositeView = function ({
       modulesRatio.timeline-=modulesRatio.timeline
     }
 
+    if (!currentPage.showKanban) { //TODO always undifined add a prop to connect
+      modulesRatio.explorer +=modulesRatio.timeline
+      modulesRatio.kanban-=modulesRatio.kanban
+    }
+
     if (currentPage) {
 
       document.querySelector(container).innerHTML=`
@@ -91,7 +96,7 @@ var createCompositeView = function ({
         timelinePartial.init()
         timelinePartial.setActive({catId:catId,startField:currentPage.options_timelineStart, endField:currentPage.options_timelineEnd})
       }
-      if (true) {
+      if (false) {//TODO reconnect the kanban to a prop currently will never show
         var kanbanPartial = createKanbanPartial({
           container : ".partialKanban"
         })
