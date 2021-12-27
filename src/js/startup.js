@@ -3,6 +3,7 @@ function createStartUp() {
   var sourceEl;
   var view = createAdler()
   var localState={}
+  let userCards = undefined;
   localState.userData = [{"name":"tesddddt", uuid:"1esefsfes"},{"name":"teaaast", uuid:"2esefsfes"}, {"name":"3tggest", uuid:"esefsfes"},{"name":"teebbbest", uuid:"4esefsfes"}]
 
   function init() {
@@ -98,7 +99,7 @@ function createStartUp() {
       
      })
 
-     let userCards = supane.addLens("card",{
+     userCards = supane.addLens("card",{
         // data:{name:key}, 
         data:{nam:"kedzqdzqdzqdqdzqdqzy"}, 
         for:function(){
@@ -191,7 +192,7 @@ function createStartUp() {
         })
       })
       localState.userData = userArray
-      view.update()
+      userCards.update()
     }).catch(function(err) {
     // This code runs if there were any errors
         console.log(err);

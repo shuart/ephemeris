@@ -18,8 +18,10 @@ function createAdler({
     parent= undefined,
     lenses = {},
     name='root',
+    root=undefined,
     textString ="",
     params={},
+    instances={},
     renderAt=undefined,
     wrapperClass="",
   } = {}){
@@ -27,7 +29,9 @@ function createAdler({
     console.log(lenses)
     // var lenses = Object.assign({},parentLenses )
     var renderArray = []
-    var instances=[]
+    if (!root){
+        root = self;
+    }
     var wrapper = createWrapper()
   
     
@@ -66,14 +70,24 @@ function createAdler({
         return lenses[lensName]
     }
     function addLens(lensName,params, renderAt) {
-        let newElement = createAdler({name:lenses[lensName].name, textString:lenses[lensName].textString, lenses:lenses[lensName].lenses,parent:self, container:wrapper, params:params, renderAt:renderAt, wrapperClass:lenses[lensName].wrapperClass})
+        let newElement = createAdler({name:lenses[lensName].name, root:root, instances:instances, textString:lenses[lensName].textString, lenses:lenses[lensName].lenses,parent:self, container:wrapper, params:params, renderAt:renderAt, wrapperClass:lenses[lensName].wrapperClass})
         var toRender = {
             lens:newElement,
             params:params,
             renderAt:renderAt,
         }
+        addInstance(newElement, params.as || lenses[lensName].name)
         renderArray.push(toRender)
         return newElement
+    }
+
+    function addInstance(element, id){//record an instance in the root to find it later
+        instances[id] = element;
+        console.log(instances)
+    }
+
+    function getLens(id){//record an instance in the root to find it later
+        return instances[id]
     }
 
     function render() {
@@ -225,6 +239,9 @@ function createAdler({
 
     function remove() {
         wrapper.DOMElement.remove()
+        if(params.for){ // if multiple clean parent renterAt content
+            parent.getElement(renderAt).innerHTML =""
+        }
     }
 
     function update() {
@@ -257,6 +274,7 @@ function createAdler({
     self.remove = remove
     self.update = update
     self.setData = setData
+    self.getLens = getLens
 
     self.addCSS = addCSS
     self.addLens = addLens

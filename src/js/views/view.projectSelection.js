@@ -8,131 +8,194 @@ var createProjectSelectionView = function (targetSelector) {
   var displayRecentlyClosedItems = false;
   var filterClosedDaysAgo = 1;
 
+  var localState ={}
+  localState.projectsData=[]
+
+  var projectSelectionModule = undefined
+
   var theme = {}
-  theme.noProject = function () {
-    return `
-    <div style="width: 80%;left: 10%;margin-top: 5%;" class="ui placeholder segment">
-      <div class="ui icon header">
-        <i class="city icon"></i>
-        No project yet
-      </div>
-      <div class="ui primary button action_project_selection_add_project">Add Project</div>
-    </div>`
-  }
-  theme.generateProjectTitleHTML = function (projectId, title, reference) {
-    return `
-    <h2 data-id="${projectId}" class="ui header action-load-project">
-       <i class="building outline icon"></i>
-      <div class="content">
-        ${title}
-        <div class="sub header">
-          ${reference}
-          <button data-id="${projectId}" class="ui mini basic button action_project_selection_load_project">
-            Focus
-            <i data-id="${projectId}" class="icon right arrow"></i>
-          </button>
-        </div>
-      </div>
-    </h2>`
-  }
-  theme.generateProjectCardHTML = function (projectId, title, reference, description, infos, image) {
-    return `
-      <div class="card">
-        ${image ?
-          `<div class="image">
-            <img src="${image}">
-          </div>`
-          :
-          `<div class="ui content">
-            <h2 class='ui center small aligned icon header'>
-              <i class="building outline icon"></i>
-            </h2>
-          </div>
-          `
-        }
 
-        <div class="content">
-          <div class="header">${title}</div>
-          <div class="meta">
-            <a>${reference}</a>
-          </div>
-          <div class="description">
-            ${description}
-          </div>
-        </div>
-        <div class="extra content">
-          <span class="right floated">
-            <i class="sitemap icon"></i>
-            ${infos.currentPbsNbr } Sub-Systems
-          </span>
-          <span>
-            <i class="users icon"></i>
-            ${infos.stakeholdersNbr } stakeholders
-          </span>
-        </div>
-        <div class="extra content">
-          <span class="right floated">
+  // theme.generateProjectCardHTML = function (projectId, title, reference, description, infos, image) {
+  //   return `
+  //     <div class="card">
+  //       ${image ?
+  //         `<div class="image">
+  //           <img src="${image}">
+  //         </div>`
+  //         :
+  //         `<div class="ui content">
+  //           <h2 class='ui center small aligned icon header'>
+  //             <i class="building outline icon"></i>
+  //           </h2>
+  //         </div>
+  //         `
+  //       }
 
-          </span>
-          <span>
-            <i class="comment icon"></i>
-            ${infos.requirementsNbr } requirements
-          </span>
-        </div>
-        <div class="extra content">
-          <span>
-            <div class="ui mini basic icon buttons">
-              <button data-id="${projectId}" class="ui button action_project_selection_change_info"><i  data-id="${projectId}"  class="edit icon action_project_selection_change_info"></i></button>
-              <button data-id="${projectId}" class="ui button action_project_selection_change_image"><i  data-id="${projectId}"  class="image icon action_project_selection_change_image"></i></button>
-              <button data-id="${projectId}" class="ui button action_project_selection_remove_image"><i  data-id="${projectId}"  class="x icon icon action_project_selection_remove_image"></i></button>
-            </div>
-            <button data-id="${projectId}" class="ui mini teal button action_project_selection_load_project">
-              Focus
-              <i data-id="${projectId}" class="icon right arrow"></i>
-            </button>
-          </span>
-        </div>
-      </div>
-    `
-  }
-  theme.searchArea = function () {
-    return `
-      <div class="ui icon input">
-          <input class="list-search-input" type="text" placeholder="Search list...">
-          <i class="search icon"></i>
-      </div>
-      <button class="ui mini basic green  button action_project_selection_add_project">
-        Add a new project
-        <i class="icon plus"></i>
-      </button>
-      <div class="ui divider"></div>
-      `
-  }
+  //       <div class="content">
+  //         <div class="header">${title}</div>
+  //         <div class="meta">
+  //           <a>${reference}</a>
+  //         </div>
+  //         <div class="description">
+  //           ${description}
+  //         </div>
+  //       </div>
+  //       <div class="extra content">
+  //         <span class="right floated">
+  //           <i class="sitemap icon"></i>
+  //           ${infos.currentPbsNbr } Sub-Systems
+  //         </span>
+  //         <span>
+  //           <i class="users icon"></i>
+  //           ${infos.stakeholdersNbr } stakeholders
+  //         </span>
+  //       </div>
+  //       <div class="extra content">
+  //         <span class="right floated">
+
+  //         </span>
+  //         <span>
+  //           <i class="comment icon"></i>
+  //           ${infos.requirementsNbr } requirements
+  //         </span>
+  //       </div>
+  //       <div class="extra content">
+  //         <span>
+  //           <div class="ui mini basic icon buttons">
+  //             <button data-id="${projectId}" class="ui button action_project_selection_change_info"><i  data-id="${projectId}"  class="edit icon action_project_selection_change_info"></i></button>
+  //             <button data-id="${projectId}" class="ui button action_project_selection_change_image"><i  data-id="${projectId}"  class="image icon action_project_selection_change_image"></i></button>
+  //             <button data-id="${projectId}" class="ui button action_project_selection_remove_image"><i  data-id="${projectId}"  class="x icon icon action_project_selection_remove_image"></i></button>
+  //           </div>
+  //           <button data-id="${projectId}" class="ui mini teal button action_project_selection_load_project">
+  //             Focus
+  //             <i data-id="${projectId}" class="icon right arrow"></i>
+  //           </button>
+  //         </span>
+  //       </div>
+  //     </div>
+  //   `
+  // }
+
 
 
   var init = function () {
-    connections()
+    // connections()
     //update()
+    setUpView()
+  }
 
+  function setUpView(){
+    projectSelectionModule = createAdler({
+      container:document.querySelector(".center-container"),
+    })
+    projectSelectionModule.createLens("projectSelectionContainer",(d)=>`
+        <div class="projectSelectionView">
+          <div class="mountSite-menu"></div>
+          <div class="mountSite-card columns is-multiline is-mobile"></div>
+        </div>`
+    )
+    projectSelectionModule.createLens("projectSelectionMenu",(d)=>`
+      <nav class="navbar" role="navigation" aria-label="main navigation">    
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-start">
+
+            <div class="buttons">
+              <a class=" action_project_selection_add_project button is-primary is-light">
+              <span class="icon is-small">
+                <i class="fas fa-plus"></i>
+              </span>
+              <span>Add a project</span>
+              </a>
+            </div>
+      
+          </div>
+      
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <p class="control has-icons-left">
+                <input class="input is-rounded" type="text" placeholder="Search">
+                <span class="icon is-left">
+                  <i class="fas fa-search" aria-hidden="true"></i>
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </nav>`
+    )
+    projectSelectionModule.createLens("projectSelectionCards",(d)=>`
+      <div class="column is-one-quarter">
+        <div class="card">
+          <div class="card-image">
+            <figure class="image is-4by3">
+              <img src="https://bulma.io/images/placeholders/1280x960.png" alt="Placeholder image">
+            </figure>
+          </div>
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-4">${d.name}</p>
+                <p class="subtitle is-6">${d.reference}</p>
+              </div>
+            </div>
+
+            <div class="content">
+              ${d.description}
+            </div>
+          </div>
+          <footer class="card-footer">
+            <a href="#" class="card-footer-item">Save</a>
+            <a href="#" class="action_project_selection_change_info card-footer-item">Edit</a>
+            <a href="#" class="action_project_selection_load_project card-footer-item">Load</a>
+          </footer>
+        </div>
+      </div>`
+    )
+    let mainArea = projectSelectionModule.addLens("projectSelectionContainer",{}, '')
+    mainArea.addLens("projectSelectionMenu",{
+      on:[
+        [".action_project_selection_add_project", "click", async (e, p)=>{
+          var popup= await createPromptPopup({
+            title:"Add a new project",
+            imageHeader:"./img/obs.png",
+            fields:{ type:"input",id:"projectName" ,label:"Project name", placeholder:"Set a name for the project" }
+          })
+          if (popup && popup.result) {
+            dbConnector.addProject(createNewProject(popup.result, {placeholder:true}))
+            setTimeout(function () {update()}, 1000);
+          }
+      } ],
+        [".action_startup_remove_user", "click", (e,p)=>{
+            if (confirm("This will remove "+ p.name +" and all it's projects")) {
+              dbConnector.removeUser(p.uuid).then(function () {
+                getUsersData()
+              })
+            }
+        } ]
+      ],
+    }, '.mountSite-menu')
+    mainArea.addLens("projectSelectionCards",{
+      for:function(){
+        return localState.projectsData
+      },
+      on:[
+        [".action_project_selection_load_project", "click", async (e, p)=>{
+          await setCurrentProject(p.uuid)
+          pageManager.setActivePage("overview")
+      } ],
+        [".action_project_selection_change_info", "click", (e,p)=>{
+          setProjectData(p)
+        } ]
+      ],
+      // for:function(){
+      //   return [{test:"test"},{test:"test"},{test:"test"},{test:"test"},{test:"test"},{test:"test"},{test:"test"},{test:"test"},{test:"test"}]
+      // },
+    }, '.mountSite-card')
+    
   }
 
   var connections =function () {
-    connect(".action_project_selection_load_project","click",async (e)=>{
-      await setCurrentProject(e.target.dataset.id)
-      pageManager.setActivePage("overview")
-    })
-    connect(".action_project_selection_add_project","click", async (e)=>{
-      // var newReq = prompt("Add a new Project")
-      var popup= await createPromptPopup({
-        title:"Add a new project",
-        imageHeader:"./img/obs.png",
-        fields:{ type:"input",id:"projectName" ,label:"Project name", placeholder:"Set a name for the project" }
-      })
-      if (popup && popup.result) {
-        dbConnector.addProject(createNewProject(popup.result, {placeholder:true}))
-        setTimeout(function () {update()}, 1000);
-      }
-    })
+
     connect(".action_project_selection_change_info","click",(e)=>{
       setProjectData(e.target.dataset.id)
     })
@@ -149,20 +212,15 @@ var createProjectSelectionView = function (targetSelector) {
       }
 
     })
-    connect(".project-selection-new-project-input","keyup",(e)=>{
-      if (e.keyCode == 13) {
-        var newAction ={project:e.target.dataset.project, open:true, name:e.target.value, des:undefined, dueDate:undefined, created:Date.now(), assignedTo:undefined}
-        push(act.add("actions",newAction))
 
-        update()
-      }
-    })
   }
 
   var render = function () {
-    container.innerHTML ='<div class="ui container"><div class="umenu"></div><div class="ui link cards cardSelectionlist"></div></div>'
-    renderSearchArea(container);
-    renderList(container);
+    // container.innerHTML ='<div class="ui container"><div class="umenu"></div><div class="ui link cards cardSelectionlist"></div></div>'
+    // renderSearchArea(container);
+    // renderList(container);
+    getCurrentProjects()
+    // projectSelectionModule.render()
 
   }
 
@@ -185,15 +243,14 @@ var createProjectSelectionView = function (targetSelector) {
     objectIsActive = false;
   }
 
-  var renderList = async function (container) {
+  var getCurrentProjects = async function () {
+    let projectArray =[]
     //let relevantProjects = await query.allRelatedProjects({uuid:1, name:1, infos:1, reference:1,coverImage:1, currentPbs:1, functions:1, requirements:1, stakeholders:1, description:1})
     let relevantProjects = await query.allRelatedProjects(["infos","currentPbs","requirements","stakeholders"])
-    //TODOREMOVE
-    console.log(relevantProjects);
-    if (app.store.relatedProjects && app.store.relatedProjects[0]) {
+
       let sortedProject = getOrderedProjectList(relevantProjects, app.store.userData.preferences.projectDisplayOrder)
       let sortedVisibleProject = sortedProject.filter(p=>!app.store.userData.preferences.hiddenProject.includes(p.uuid))
-      var html = sortedVisibleProject.filter(e=> fuzzysearch(filterText,e.name) || fuzzysearch(filterText,e.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))).reduce((acc,i)=>{
+      var html = sortedVisibleProject.filter(e=> fuzzysearch(filterText,e.name) || fuzzysearch(filterText,e.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ""))).forEach((i)=>{
         if (!i.currentPbs || !i.requirements || !i.stakeholders) { //in case an issue preveted to get the correct count
           i.currentPbs = [];
           i.requirements = [];
@@ -208,15 +265,17 @@ var createProjectSelectionView = function (targetSelector) {
         let projectImage = i.coverImage || undefined
         console.log(i);
 
-        acc += theme.generateProjectCardHTML(i.uuid, projectCriticalInfo.name, projectCriticalInfo.reference, projectCriticalInfo.description || 'A new project', projectInfos, projectImage)
-        // acc += theme.generateProjectCardHTML(i.uuid, i.name, i.reference, i.description.short || 'A new project', projectInfos, projectImage)
-        return acc
-      },'')
-      container.querySelector('.cardSelectionlist').innerHTML = html
-    }else {
-      app.store.relatedProjects= []
-      container.querySelector('.cardSelectionlist').innerHTML = theme.noProject()
-    }
+        projectArray.push({
+          uuid : i.uuid,
+          name: projectCriticalInfo.name, 
+          reference:projectCriticalInfo.reference, 
+          description: projectCriticalInfo.description || 'A new project', 
+          infos:projectInfos, 
+          image:projectImage,
+        })
+      })
+      localState.projectsData = projectArray
+      projectSelectionModule.render()
   }
 
 
@@ -242,18 +301,16 @@ var createProjectSelectionView = function (targetSelector) {
     });
   }
 
-  var setProjectData = async function (uuid) {
-    let allProjects = await query.items("projects")
-    let currentProject = allProjects.filter(e=> e.uuid == uuid)[0]//TODO USe reducer
-    if (currentProject) {
-      let newName = prompt("Change Project Name?", currentProject.name)
-      let newRef = prompt("Change Project Reference?", currentProject.reference)
-      let newDesc = prompt("Change Project Description?", currentProject.description)
+  var setProjectData = async function (p) {
+
+      let newName = prompt("Change Project Name?", p.name)
+      let newRef = prompt("Change Project Reference?", p.reference)
+      let newDesc = prompt("Change Project Description?", p.description)
 
       if (newName) { dbConnector.setProjectData(uuid, 'name',newName) }
       if (newRef) { dbConnector.setProjectData(uuid, 'reference',newRef) }
       if (newDesc) { dbConnector.setProjectData(uuid, 'description',newDesc) }
-    }
+
     setTimeout(function () {
       update()
     }, 1000);

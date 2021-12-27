@@ -46,6 +46,8 @@ var reparse = false;
 
   //Set up page Manager
 
+  var ephModules = createAdler()
+
   pageManager.addComponent({name:"projects",object:projectsView,haveSideBar:false})
   pageManager.addComponent({name:"csc",object:cscViewer})
   pageManager.addComponent({name:"overview",object:overview,linkedComponents:["leftMenuProjectTree"],haveSideBar:false})
