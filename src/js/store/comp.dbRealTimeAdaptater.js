@@ -417,33 +417,22 @@ var createDbRealTimeAdaptater = function () {
   //custom action to refactor
   function setProjectData(uuid, prop, newValue) {
 
-
     return new Promise(async function(resolve, reject) {
+      let projects = await getProjects(["infos"]) 
+        let project = projects.find(p=>p.uuid == uuid)
+        console.log(projects)
+        console.log(uuid)
+        let itemId = project["infos"][0].uuid
+        let indexToChange = 0
 
-      await projects.find({uuid: uuid}, async function (err, docs) {
-        let indexToChange = docs[0]["infos"].findIndex(i=>i.type == "critical")
-        let idToChange = docs[0]["infos"].find(i=>i.type == "critical")
-        let selectorProperty = "infos."+indexToChange+"."+prop
-        let callBackItem = {type:"update",subtype:"$set", projectUuid:uuid,  selectorProperty:selectorProperty, item:newValue, table:"infos", row:idToChange, col:prop}
+        let selectorProperty = "infos"+"."+indexToChange+"."+prop
+        let callBackItem = {type:"update",subtype:"$set", projectUuid:uuid,  selectorProperty:selectorProperty, item:newValue, table:"infos", row:itemId, col:prop}
 
         await updateDB(callBackItem)
         resolve()
-        });
+
       });
 
-
-    // return new Promise(async function(resolve, reject) {
-    //   await projects.find({uuid: uuid}, async function (err, docs) {
-    //     let selector = {}
-    //     selector[prop] = newValue
-    //     await projects.update({ uuid: uuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-    //         localProjects.update({ uuid: uuid }, {  $set: selector }, {}, function (err, numAffected, affectedDocuments, upsert) {
-    //             console.log("persisted");
-    //           });
-    //         resolve(affectedDocuments)
-    //       });
-    //     });
-    //   });
   }
 
 

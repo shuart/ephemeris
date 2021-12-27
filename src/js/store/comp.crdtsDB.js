@@ -210,6 +210,7 @@ var _import = function (template) {
 
 var recordInitialMessagesFromTemplate = function (projectId, template) {
   let transcribed = generateMessagesFromProject(template)
+  console.log(transcribed)
   appendToDB(projectId,transcribed);
 }
 var buildProjectFromMessages = async function (projectId) {
