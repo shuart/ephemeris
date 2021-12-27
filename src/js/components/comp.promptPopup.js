@@ -40,10 +40,10 @@ var createPromptPopupView = function (inputData) {
       ${theme.iconHeader(data)}
       ${theme.imageHeader(data)}
 
-      <h2 class="ui header">${data.title}</h2>
+      <h2 class="subtitle">${data.title}</h2>
       ${theme.message(data)}
       ${theme.warning(data)}
-      <div class="ui form">
+      <div class="form">
         <div style="width:100%; flex-direction:column;" class="fields">
         ${data.fields.map(f=> theme.input(f)).join('')}
         </div>
@@ -55,9 +55,9 @@ var createPromptPopupView = function (inputData) {
       let template ={}
       if (data.type == "input") {
         template= `
-        <div style="width:100%; padding-top: 15px;" class="field input ">
-          <label ${data.secondary?"style='opacity:0.5;'":""} >${data.label}${!data.optional?"<span style='opacity:0.5;'>*<span>":""}</label>
-          <input type="${data.isPassword?"password":"text"}" class="${data.secondary?"transparent":""} form_input_${data.id}" placeholder="${data.placeholder}">
+        <div style="width:100%; padding-top: 15px;" class="field ">
+          <label class="label" ${data.secondary?"style='opacity:0.5;'":""} >${data.label}${!data.optional?"<span style='opacity:0.5;'>*<span>":""}</label>
+          <input type="${data.isPassword?"password":"text"}" class="input ${data.secondary?"transparent":""} form_input_${data.id}" placeholder="${data.placeholder}">
         </div>
         `
       }
@@ -128,9 +128,10 @@ var createPromptPopupView = function (inputData) {
     },
     cancelOkButtons: function () {
       return `
-       <div class="two ui buttons">
-        <button class="ui basic  button action_prompt_cancel">Cancel</button>
-        <button class="ui teal button action_prompt_ok">Ok</button>
+      <div class="block"></div>
+       <div class="buttons is-centered">
+        <button class="button is-fullwidth is-success action_prompt_ok">Ok</button>
+        <button class="button is-fullwidth is-outlined action_prompt_cancel">Cancel</button>
       </div>`
     },
     cancelButtons: function () {
@@ -140,9 +141,12 @@ var createPromptPopupView = function (inputData) {
     iconHeader: function (data) {
       if (data.iconHeader) {
         return `
-        <div class="ui center aligned icon header">
-          <i class="${data.iconHeader} icon"></i>
-        </div>`
+        <div class="has-text-centered" ><span class="icon-text">
+          <span class="icon is-large">
+            <i class="fa-2x ${data.iconHeader} "></i>
+          </span>
+        </span></div>
+        `
       }else {
         return ""
       }
@@ -150,9 +154,10 @@ var createPromptPopupView = function (inputData) {
     imageHeader: function (data) {
       if (data.imageHeader) {
         return `
-        <div class="ui center aligned icon header">
-          <img style="max-width:300px; width:40%;" class="ui centered medium image" src="${data.imageHeader}">
-        </div>`
+        <div class="has-text-centered" ><figure class="image is-128x128 is-inline-block">
+          <img src="${data.imageHeader}">
+        </figure></div>
+        `
       }else {
         return ""
       }
@@ -219,27 +224,17 @@ var createPromptPopupView = function (inputData) {
     sourceOccElement.style.width = "100%"
     sourceOccElement.style.zIndex = "999999999999"
     sourceOccElement.style.position = "fixed"
+    sourceOccElement.style.top = "0px"
 
     var dimmer = document.createElement('div');
     dimmer.classList="dimmer occurence-dimmer"
     var mainEl = document.createElement('div');
 
-    mainEl.style.position = "fixed"
     mainEl.style.top = "20%"
-    mainEl.style.display = "flex"
-    mainEl.style.flexDirection = "column"
     mainEl.style.zIndex = "9999999999"
-    mainEl.style.backgroundColor = "white"
 
-    mainEl.classList ="ui raised padded container segment"
-    // mainEl.style.width = "50%"
-    mainEl.style.width = "28%"
-    mainEl.style.maxHeight = "60%"
-    // mainEl.style.height = "50%"
-    mainEl.style.left= "36%";
-    mainEl.style.padding = "50px";
-    mainEl.style.overflow = "visible";
-    // mainEl.style.left= "25%";
+    mainEl.classList ="box container"
+    mainEl.style.maxWidth = "500px"
     container = document.createElement('div');
 
     container.style.position = "relative"

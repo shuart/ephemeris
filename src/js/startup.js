@@ -135,7 +135,7 @@ function createStartUp() {
 
         var popup= await createPromptPopup({
           title:"Complete your profile",
-          iconHeader:"user outline",
+          iconHeader:"far fa-user",
           fields:[
             { type:"input",id:"firstName" ,label:"First Name", placeholder:"Set your first name" },
             { type:"input",id:"lastName" ,label:"Last Name", placeholder:"Set your last name" },
