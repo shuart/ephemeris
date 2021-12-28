@@ -3,7 +3,8 @@ var createTableComp = function ({
   // container=".center-container",
   onClick = undefined,
   searchForAllItemsNames = false,
-  maxElements = undefined
+  maxElements = undefined,
+  themeStyle='bulma'
   }={}) {
   var self ={};
   var objectIsActive = false;
@@ -44,7 +45,7 @@ var createTableComp = function ({
       <div style="padding:5px" class="ephemeris-table">
         <div class="ephemeris-table-menu${targetClassId}"></div>
         <div class="ephemeris-table-custom-area${targetClassId}"></div>
-        <div style="" class="example-table${targetClassId}"></div>
+        <div class="zzz example-table${targetClassId}"></div>
       </div>`
     },
     // table:function () {
@@ -55,14 +56,20 @@ var createTableComp = function ({
     //   </div>`
     // },
     button:function (name, id, elementClass, color) {
-      return `
+      if(themeStyle =="bulma"){
+        return `
+        <button data-id="${id}" style="backgrund-color:${color||"#CCCCCC"}" class="button is-light">${name}</button>`
+      }else{
+        return ` 
       <div data-id="${id}" style="border-radius: 3px;cursor:pointer;display:inline-block; padding:0.5em 1.45em;margin:0.1em; box-sizing: border-box;text-decoration:none;font-weight:400;color:#ffffff;background-color:${color||"#CCCCCC"};text-align:center; position:relative;" class="tableListButton">
       ${name}
       </div>`
+      }
+      
     },
     removeButton:function (name, id, color) {
       return `
-      <div data-id="${id}" style="display:inline-block; padding: 4px 10px; margin:0.1em; border-radius:25px; box-sizing: border-box;text-decoration:none;
+      <div data-id="${id}" style="display:inline-block; padding: 3px 10px; margin:0.1em; border-radius:25px; box-sizing: border-box;text-decoration:none;
        font-family:'Segoe UI','Roboto',sans-serif;font-weight:400;color:#ec5757;border:1px solid #ec5757; text-align:center; position:relative;" class="tableListButton">
       X
       </div>`
@@ -82,18 +89,51 @@ var createTableComp = function ({
       return html
     },
     menu:function () {
-      return `
-      <div style="margin-bottom: 8px;display: flex; align-items: center;width: 100%;background: #f9f9f9; padding: 10px;" class="bar">
-        <div style="display:flex;" class="table_action_area"></div>
-        <div style="width:300px" class="table_searchArea">
+      if ( themeStyle == "bulma") {
+        return`
+        <nav class="navbar" role="navigation" aria-label="main navigation">    
+        <div id="navbarBasicExample" class="navbar-menu is-active">
+          <div class="navbar-start">
+            <div class="navbar-item">
+              <div class="table_action_area buttons">
+              </div>
+            </div>
+            
+          </div>
+      
+          <div class="navbar-end">
+            <div class="table_searchArea navbar-item">
+              
+            </div>
+          </div>
         </div>
-      </div>`
+      </nav>`
+      } else {
+        return `
+        <div style="margin-bottom: 8px;display: flex; align-items: center;width: 100%;background: #f9f9f9; padding: 10px;" class="bar">
+          <div style="display:flex;" class="table_action_area"></div>
+          <div style="width:300px" class="table_searchArea">
+          </div>
+        </div>`
+      }
+      
     },
     search:function () {
-      return `
+      if (themeStyle == "bulma") {
+        return `
+            <p class="control has-icons-left">
+              <input class="action_project_selection_search_project input is-rounded" type="text" placeholder="Search">
+              <span class="icon is-left">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </span>
+            </p>`
+      } else {
+        return `
         <div style="width:300px;" class="search">
           <input style="width: 100%; border: none;height:33px; margin-left:5px;" type="search" placeholder="search..." />
         </div>`
+      }
+      
     }
   }
 
@@ -210,7 +250,7 @@ var createTableComp = function ({
     let htmlBlackBow =`
      <div style="opacity:0.5;position: fixed;z-index: 899;top: -25%;left: 0;bottom: 0;right: 0;height: 125%;width: 100%;background: #000;will-change: opacity;"></div>
     `
-    let closeButtonStyle = `style="background-color: #ec5757; cursor:pointer;position: absolute;top: 16px;right: 17px; display:inline-block; padding: 5px 10px; margin:0.1em; border-radius:25px; box-sizing: border-box;text-decoration:none;font-weight:400; color:#ffffff;border:1px solid #ec5757; text-align:center; " `
+    let closeButtonStyle = `style="background-color: #ec5757; cursor:pointer;position: absolute;top: 0px;right: 2px; z-index:99999; display:inline-block; padding: 3px 10px; margin:0.1em; border-radius:25px; box-sizing: border-box;text-decoration:none;font-weight:400; color:#ffffff;border:1px solid #ec5757; text-align:center; " `
 
     let html = `
      <div id="modal1" class="" style="${style} z-index: 999; display: block; opacity: 1; top: 10%; transform: scaleX(1) scaleY(1);">
@@ -432,18 +472,20 @@ var createTableComp = function ({
         targetMenuAction.appendChild(element)
       }else if (item.type=="action") {
         let element = document.createElement('div')
-        element.addEventListener("click", function(e) {
-            item.onClick();
-            if (tableOnUpdate) {
-              tableOnUpdate()
-            }
-        }, false);
+        
         element.innerHTML= theme.button(item.name,'','',item.color)
+        console.log(element.firstElementChild);
+        element.firstElementChild.addEventListener("click", function(e) {
+          item.onClick();
+          if (tableOnUpdate) {
+            tableOnUpdate()
+          }
+        }, false);
         // element.style.width='100px'
         // element.style.height='20px'
         // element.innerHTML=item.name
         // element.style.backgroundColor=item.color ||"red"
-        targetMenuAction.appendChild(element)
+        targetMenuAction.appendChild(element.firstElementChild)
       }
 
     });
@@ -552,7 +594,7 @@ var createTableComp = function ({
 
   var updateStyle =function () {
     let elem = document.querySelector(".example-table"+targetClassId);
-    elem.style.border ="1px solid rgb(241 241 241)"
+    elem.style.border ="0px solid rgb(241 241 241)"
   }
   var getTable = function () {
     return currentTable
