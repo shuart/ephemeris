@@ -1,3 +1,8 @@
 .tabulator-row.tabulator-row-even {
     background-color: #ffffff;
 }
+
+.tabulator .tabulator-header .tabulator-col {
+
+    border: none;
+}
