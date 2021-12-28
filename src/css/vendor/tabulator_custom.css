@@ -6,3 +6,8 @@
 
     border: none;
 }
+.tabulator .tabulator-header {
+    color: #363636;
+    font-weight: normal;
+
+}
