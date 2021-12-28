@@ -145,7 +145,7 @@ textarea {
     width: 250px;
    }
 
-   .main-menu .button{
+   .main-menu .top_button{
     position: relative;
     top: 0px;
     left: 0px;
@@ -163,11 +163,11 @@ textarea {
 
     /* background: linear-gradient(to bottom, #00b5ad, #2ebf91); */
    }
-   .main-menu .button:hover{
+   .main-menu .top_button:hover{
     background-color: #002321;
     transition: background-color 0.5s ease-in-out;
    }
-   .main-menu .button .content{
+   .main-menu .top_button .content{
      position: absolute;
      bottom: 0px;
      visibility: hidden;
@@ -179,7 +179,7 @@ textarea {
      -moz-transition: opacity 0.5s ease-in-out;
      transition: opacity 0.5s ease-in-out;
    }
-   .main-menu .button:hover .content{
+   .main-menu .top_button:hover .content{
      width: 200px;
      visibility: visible;
      opacity: 0.9;
@@ -190,7 +190,7 @@ textarea {
    .main-menu .main-logo{
     background-color: #002321;
     font-size: 30px;
-    padding-top: 9px;
+    padding-top: 4px;
     padding-right: 9px;
     /* background: linear-gradient(to bottom, #00b5ad, #2ebf91); */
    }
@@ -438,7 +438,7 @@ textarea {
         top: 50%;
         left: 50%;
         margin-right: -50%;
-        transform: translate(-50%, -50%) }
+        transform: translate(-50%, -50%) 
 
 }
 .action_startup_load_user{

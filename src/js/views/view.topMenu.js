@@ -25,7 +25,7 @@ var createTopMenu = function (containerSelector) {
       let currentPage =  app.state.currentView;
       let selectedButtonColor = "#057f75"
       //set selectedView active
-      let currentActiveButton = container.querySelector('.top_button_'+currentPage)
+      let currentActivetop_button = container.querySelector('.top_button_'+currentPage)
       if (currentActiveButton) {
         // currentActiveButton.classList.add('active')
         currentActiveButton.style.backgroundColor=selectedButtonColor
@@ -56,9 +56,9 @@ var createTopMenu = function (containerSelector) {
     for (var i = 0; i < categoriesToDisplay.length; i++) {
       let item = categoriesToDisplay[i]
       // let link = document.createElement('a')
-      // link.classList = "button top_button_pbs"
+      // link.classList = "top_button top_button_pbs"
       // link.innerHTML=
-      html+= `<a data-id="${item.uuid}" class="button top_button_pbs action_toogle_custom_workspace"><i data-id="${item.uuid}" class=" icon">${convertPathToSVG(item.svgPath, 0,0,36,36, "scale(0.058) translate(55,0)", item.uuid)}</i><div class="content">${item.name}</div></a>`
+      html+= `<a data-id="${item.uuid}" class="top_button top_button_pbs action_toogle_custom_workspace"><i data-id="${item.uuid}" class=" icon">${convertPathToSVG(item.svgPath, 0,0,36,36, "scale(0.058) translate(55,0)", item.uuid)}</i><div class="content">${item.name}</div></a>`
     }
     return html
   }
@@ -73,23 +73,23 @@ var createTopMenu = function (containerSelector) {
   var render = async function () {
     if (app.state.currentProject) {
       container.innerHTML=`
-      <a class="button top_button_unified action_toogle_unified"><i class="tasks icon"></i><div class="content">Tasks</div></a>
-      <!-- <a class="button top_button_notesManager action_toogle_notes_manager"><i class="sticky note outline icon"></i><div class="content">Notes</div></a> -->
-        <a class="button top_button_overview action_toogle_overview">
+      <a class="top_button top_button_unified action_toogle_unified"><i class="tasks icon"></i><div class="content">Tasks</div></a>
+      <!-- <a class="top_button top_button_notesManager action_toogle_notes_manager"><i class="sticky note outline icon"></i><div class="content">Notes</div></a> -->
+        <a class="top_button top_button_overview action_toogle_overview">
           <i class="columns icon"></i>
           <div class="content">overview</div>
         </a>
 
-        <a class="button top_button_stakeholders action_toogle_stakeholders"><i class="address book icon"></i><div class="content">Stakeholders</div></a>
+        <a class="top_button top_button_stakeholders action_toogle_stakeholders"><i class="address book icon"></i><div class="content">Stakeholders</div></a>
 
         ${await renderCustomWorkspaces()}
-        <a class="button top_button_pbs action_toogle_tree_pbs"><i class="dolly icon"></i><div class="content">Products</div></a>
+        <a class="top_button top_button_pbs action_toogle_tree_pbs"><i class="dolly icon"></i><div class="content">Products</div></a>
 
-        <a class="button top_button_relations action_toogle_diag_relations_quickstart"><i class="sitemap icon"></i><div class="content">Relations</div></a>
+        <a class="top_button top_button_relations action_toogle_diag_relations_quickstart"><i class="sitemap icon"></i><div class="content">Relations</div></a>
 
-        <a class="button top_button_pbs action_toogle_vv_manager_view"><i class="clipboard list icon"></i><div class="content">V&V</div></a>
-        <a class="button top_button_pbs action_toogle_planning_view"><i class="calendar outline icon"></i><div class="content">Planning</div></a>
-        <a class="button top_button_notesManager action_toogle_meetings_manager"><i class="file alternate outline icon"></i><div class="content">Meetings</div></a>
+        <a class="top_button top_button_pbs action_toogle_vv_manager_view"><i class="clipboard list icon"></i><div class="content">V&V</div></a>
+        <a class="top_button top_button_pbs action_toogle_planning_view"><i class="calendar outline icon"></i><div class="content">Planning</div></a>
+        <a class="top_button top_button_notesManager action_toogle_meetings_manager"><i class="file alternate outline icon"></i><div class="content">Meetings</div></a>
       `
       // Removed:
       // <a class="item action_toogle_planning_view"><i class="calendar alternate outline icon"></i>Planning</a>
@@ -115,8 +115,8 @@ var createTopMenu = function (containerSelector) {
       `
     }else{
       container.innerHTML=`
-        <a class="button top_button_unified action_toogle_unified"><i class="tasks icon"></i><div class="content">Tasks</div></a>
-        <!-- <a class="button top_button_notesManager action_toogle_notes_manager"><i class="sticky note outline icon"></i><div class="content">Notes</div></a> -->
+        <a class="top_button top_button_unified action_toogle_unified"><i class="tasks icon"></i><div class="content">Tasks</div></a>
+        <!-- <a class="top_button top_button_notesManager action_toogle_notes_manager"><i class="sticky note outline icon"></i><div class="content">Notes</div></a> -->
       `
       document.querySelector('.target_context_settings').innerHTML=`
       `
