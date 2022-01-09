@@ -12,6 +12,7 @@ function createStartUp() {
     // connect()
     setupView()
     getUsersData()
+    handleUserReconnection()
   }
 
   function setupView(){
@@ -126,6 +127,7 @@ function createStartUp() {
   }
 
   function loadUser(uuid){
+    setLastUser (uuid)
     dbConnector.getUser(uuid).then(async function (user) {
       // app.store.projects = user.projects; //TODO use actions //DBCHANGE
       app.store.userData = user.userData; //TODO use actions
@@ -158,11 +160,33 @@ function createStartUp() {
         app.store.userData.info.userUuid = genuuid()
       }
       updateFileForRetroCompatibility()
-      pageManager.setActivePage("projectSelection")
+      urlHandlerService.setPageFromUrl()
+
+      // pageManager.setActivePage("projectSelection")
+      // pageManager.setActivePage("projectSelection", {param:{context:"firstView"}})
       view.remove()
     }).catch(function(err) {
         console.log(err);
     });
+  }
+
+  function setLastUser (uuid){
+    localStorage.setItem('eph_lastUser', JSON.stringify({uuid:uuid}));
+  }
+  function clearLastUser (){
+    localStorage.setItem('eph_lastUser', null);
+  }
+
+  function handleUserReconnection (){
+    const lastUser = localStorage.getItem('eph_lastUser');
+    console.log(lastUser)
+    if (lastUser) {
+      const lastUserUuid = JSON.parse(lastUser)
+      loadUser(lastUserUuid.uuid)
+    }else{
+      return false
+    }
+
   }
 
   function render() {
@@ -172,6 +196,12 @@ function createStartUp() {
   }
   function update() {
     app.state.currentUser=undefined //TODO move to actions
+    // sourceEl.remove()
+    init()
+  }
+  function logOut() {
+    app.state.currentUser=undefined //TODO move to actions
+    clearLastUser()
     // sourceEl.remove()
     init()
   }
@@ -218,6 +248,7 @@ function createStartUp() {
   self.showLoader = showLoader
   self.update = update
   self.render = render
+  self.logOut = logOut
   self.init = init
   return self
 }

@@ -41,7 +41,7 @@ var createTopMenu = function (containerSelector) {
     });
 
     connect(".topmenu_action_reload_all","click", function (e) {
-      startupScreen.init()
+      startupScreen.logOut()
     })
     bind(".action_toogle_custom_workspace","click",(e)=>{
       // update()

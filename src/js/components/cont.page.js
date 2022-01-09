@@ -27,6 +27,9 @@ var createPageManager = function ({
   }
 
   var setActivePage = function (componentName, data) {
+    if (urlHandlerService) {
+      urlHandlerService.setPageUrl(componentName)
+    }
     let options = data || {}
     options.param = options.param || undefined//todo refactor
 

@@ -88,11 +88,6 @@ var reparse = false;
 
 
 
-  function renderCDC(db, filter) {
-    // cscViewer.update() //TODO remove and centralize
-  }
-
-
   //==========CONNECT
 
   connect(".action_toogle_project_selection","click",(e)=>{
@@ -259,6 +254,9 @@ var reparse = false;
   connect(".action_import_archimate","click",(e)=>{
     importXMLService.importXML()
   })
+
+
+  urlHandlerService.init()
 
   function loadTree(itemsSource, callback) {
       if (document.querySelector("#pbs-container").style.display == "none") {

@@ -147,6 +147,7 @@ var createProjectSelectionView = function (targetSelector) {
       on:[
         [".action_project_selection_load_project", "click", async (e, p)=>{
           await setCurrentProject(p.uuid)
+          urlHandlerService.setProjectUuid(p.uuid)
           pageManager.setActivePage("overview")
       } ],
         [".action_project_selection_change_info", "click", (e,p)=>{
@@ -184,10 +185,9 @@ var createProjectSelectionView = function (targetSelector) {
     render()
   }
 
-  var setActive =function () {
+  var setActive =function (data) {
     objectIsActive = true;
     setCurrentProject(undefined)
-    renderCDC()//TODO Ugly
     if(onlineBridge){
       onlineBridge.connect(app.store.userData.info.bridgeServer, app.store.userData.info.socketPath)
       // setTimeout(function () {update()}, 2000);
