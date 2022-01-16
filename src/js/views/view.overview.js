@@ -2,140 +2,128 @@ var createOverview = function (targetSelector) {
   var self ={};
   var objectIsActive = false;
   var container = document.querySelector(targetSelector)
-
-  var theme = {}
-  theme.startSection=function() {
-    return `
-      <div class="ui horizontal segments">
-        <div class="ui segment">
-          <p></p>
-        </div>
-        <div class="ui segment">
-        </div>
-      </div>
-    `
-  }
-  theme.quickstart=function() {
-    return `
-    <h4>Quickstart guide</h4>
-
-      <div class="ui small steps">
-        <div class="link step action_toogle_stakeholders">
-          <i class="address book icon"></i>
-          <div class="content">
-            <div class="title">Add a stakeholder</div>
-            <div class="description">To start capturing needs</div>
-          </div>
-        </div>
-        <div class="link step action_toogle_requirements_view">
-          <i class="comment icon"></i>
-          <div class="content">
-            <div class="title">Add a requirement</div>
-            <div class="description">To record a user need</div>
-          </div>
-        </div>
-        <div class="link step action_toogle_tree_pbs">
-          <i class="dolly icon"></i>
-          <div class="content">
-            <div class="title">Add a product</div>
-            <div class="description">And link it to a requirement</div>
-          </div>
-        </div>
-      </div>
-    `
-  }
-  theme.quickstartForeignProject=function() {
-    return `
-    <h4>Quickstart guide</h4>
-
-      <div class="ui small steps">
-
-        <div class="link step action_toogle_stakeholders">
-          <i class="address book icon"></i>
-          <div class="content">
-            <div class="title">Add a stakeholder</div>
-            <div class="description">To start capturing needs</div>
-          </div>
-        </div>
-        <div class="link step action_toogle_requirements_view">
-          <i class="comment icon"></i>
-          <div class="content">
-            <div class="title">Add a requirement</div>
-            <div class="description">To record a user need</div>
-          </div>
-        </div>
-        <div class="link step action_toogle_tree_pbs">
-          <i class="dolly icon"></i>
-          <div class="content">
-            <div class="title">Add a product</div>
-            <div class="description">And link it to a requirement</div>
-          </div>
-        </div>
-      </div>
-    `
-  }
+  var overviewModule = undefined
 
 
   var init = function () {
-    connections()
-    update()
+    // update()
+    setUpView()
 
   }
-  var connections =function () {
-    connect(".action_toogle_add_me_in_stakeholders","click",async (e)=>{
-      alert("Select your name in the stakeholder list to mark it as yourself, or add yourself as a new stakeholder")
-      var projectScope = await query.currentProject()
-      showListMenu({
-        sourceData:projectScope.stakeholders,
-        displayProp:"name",
-        display:[
-          {prop:"name", displayAs:"Prénom", edit:false},
-          {prop:"lastName", displayAs:"Nom", edit:false},
-          {prop:"org", displayAs:"Entreprise", edit:false},
-          {prop:"role", displayAs:"Fonction", edit:false},
-          {prop:"mail", displayAs:"E-mail", edit:false}
-        ],
-        idProp:"uuid",
-        showColoredIcons: lettersFromNames,
-        onClick: async (ev)=>{
-          let idToReplace = ev.target.dataset.id
-          if (confirm("Do you want to mark this stakehoder as yourself?")) {
 
-            var projectScope = await query.currentProject()
-            console.log(projectScope);
-
-            push(act.edit("stakeholders", {project:projectScope.uuid, uuid:idToReplace, prop:"uuid", value:app.store.userData.info.userUuid}))
-
-            var metalinksOriginToChange = projectScope.metaLinks.filter(m=>m.source==idToReplace)
-            var metalinksTargetToChange = projectScope.metaLinks.filter(m=>m.target==idToReplace)
-            for (link of metalinksOriginToChange) {
-              // link.source = ev.target.dataset.id
-              push(act.edit("metaLinks", {project:projectScope.uuid, uuid:link.uuid, prop:"source", value:app.store.userData.info.userUuid}))
-            }
-            for (link of metalinksTargetToChange) {
-              // link.target = ev.target.dataset.id
-              push(act.edit("metaLinks", {project:projectScope.uuid, uuid:link.uuid, prop:"target", value:app.store.userData.info.userUuid}))
-            }
-
-            await workarounds.replaceStakeholderIdInMeetings(projectScope, idToReplace, app.store.userData.info.userUuid)
-
-          }
-          setTimeout(function () {
-            render()
-          }, 1000);
-        },
-        extraActions:[
-          {
-            name:"Add",action:(ev)=>{
-              addUserStakeholder()
-              ev.select.remove()
-            }
-          }
-        ]
-      })
+  function setUpView(){
+    overviewModule = createAdler({
+      container:document.querySelector(".center-container"),
     })
+    overviewModule.createLens("overviewModule",(d)=>`
+      <div class="container has-text-centered">
+        <figure class="image is-inline-block is-128x128">
+          <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
+        </figure>
+        <h1 class="title">Title</h1>
+        <div class="block"></div>
+        <div class="tile is-ancestor">
+          <div class="tile is-vertical is-8">
+            <div class="tile">
+              <div class="tile is-parent is-vertical">
+                <article class="tile is-child notification is-primary">
+                  <p class="title">Vertical...</p>
+                  <p class="subtitle">Top tile</p>
+                </article>
+                <article class="tile is-child notification is-warning">
+                  <p class="title">...tiles</p>
+                  <p class="subtitle">Bottom tile</p>
+                </article>
+              </div>
+              <div class="tile is-parent">
+                <article class="tile is-child notification is-info">
+                  <p class="title">Middle tile</p>
+                  <p class="subtitle">With an image</p>
+                  <figure class="image is-4by3">
+                    <img src="https://bulma.io/images/placeholders/640x480.png">
+                  </figure>
+                </article>
+              </div>
+            </div>
+            <div class="tile is-parent">
+              <article class="tile is-child notification is-danger">
+                <p class="title">Wide tile</p>
+                <p class="subtitle">Aligned with the right tile</p>
+                <div class="content">
+                  <!-- Content -->
+                </div>
+              </article>
+            </div>
+          </div>
+          <div class="tile is-parent">
+            <article class="tile is-child notification is-success">
+              <div class="content">
+                <p class="title">Tall tile</p>
+                <p class="subtitle">With even more content</p>
+                <div class="content">
+                  <!-- Content -->
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>`
+    )
 
+    let mainArea = overviewModule.addLens("overviewModule",{}, '')
+    // mainArea.addLens("projectSelectionMenu",{
+    //   on:[
+    //     [".action_project_selection_add_project", "click", async (e, p)=>{
+    //       var popup= await createPromptPopup({
+    //         title:"Add a new project",
+    //         imageHeader:"./img/obs.png",
+    //         fields:{ type:"input",id:"projectName" ,label:"Project name", placeholder:"Set a name for the project" }
+    //       })
+    //       if (popup && popup.result) {
+    //         dbConnector.addProject(createNewProject(popup.result, {placeholder:true}))
+    //         setTimeout(function () {update()}, 1000);
+    //       }
+    //   } ],
+    //     [".action_project_selection_search_project", "keyup", (e,p)=>{
+    //         //e.stopPropagation()
+    //         var value = container.querySelector(".action_project_selection_search_project").value
+    //         var tag = getHashTags(value)
+    //         filterProject = undefined
+    //         if (tag) {
+    //           filterProject = tag[0]
+    //           console.log(filterProject);
+    //           value = value.replace('#'+tag[0]+" ",'');
+    //           value = value.replace('#'+tag[0],'');
+    //         }
+    //         filterText = value;
+    //         getCurrentProjects(true)
+            
+    //     } ]
+    //   ],
+    // }, '.mountSite-menu')
+    // selectionArea = mainArea.addLens("projectSelectionCards",{
+    //   for:function(){
+    //     return localState.projectsData
+    //   },
+    //   on:[
+    //     [".action_project_selection_load_project", "click", async (e, p)=>{
+    //       await setCurrentProject(p.uuid)
+    //       urlHandlerService.setProjectUuid(p.uuid)
+    //       pageManager.setActivePage("overview")
+    //   } ],
+    //     [".action_project_selection_change_info", "click", (e,p)=>{
+    //       setProjectData(p)
+    //     } ],
+    //     [".action_project_selection_change_image", "click", (e,p)=>{
+    //       setProjectImage(p.uuid, function () {
+    //         update()
+    //       })
+    //     } ]
+    //   ],
+    // }, '.mountSite-card')
+    
   }
+
 
   var render = async function () {
     var store = await query.currentProject()
@@ -150,81 +138,8 @@ var createOverview = function (targetSelector) {
       //   createUserStakeholder()
       // }
 
-      var headerHtml =`
-      <h2 class="ui center aligned icon header">
-        <i class="circular building outline icon"></i>
-        ${projectInfos.reference}, ${projectInfos.name}
-      </h2>
-      `
-      var html = `
-      <div class="ui very padded container">
 
-      <div class="ui divider"></div>
-
-        <div style="box-shadow: 0 0px 0px 0 rgba(255, 255, 255, 0.15);border-style: none;" class="ui horizontal segments">
-          <div class="ui basic segment">
-            <div class="ui placeholder segment">
-              <div class="ui four statistics">
-                <div class="statistic">
-                  <div class="value">
-                    <i class="comment icon"></i>
-
-                  </div>
-                  <div class="label">
-                    Requirements
-                  </div>
-                </div>
-                <div class="statistic">
-                  <div class="value">
-                    <i class="users icon"></i>
-                    ${store.stakeholders.length}
-                  </div>
-                  <div class="label">
-                    Stakeholders
-                  </div>
-                </div>
-                <div class="statistic">
-                  <div class="value">
-                    <i class="sitemap icon"></i> ${(store.currentPbs.length - 1)}
-                  </div>
-                  <div class="label">
-                    Sub-Systems
-                  </div>
-                </div>
-                <div class="statistic">
-                  <div class="value">
-                    <i class="cogs icon"></i>
-                    
-                  </div>
-                  <div class="label">
-                    functions
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-          <div style="width: 200px;overflow: auto;max-height: 300px;" class="ui basic segment">
-            <div class="ui center aligned basic segment overviewActivity"></div>
-          </div>
-        </div>
-
-        <div class="ui center aligned basic segment">
-          ${checkIfCurrentUserIsInStakeholders(store) ? theme.quickstart():theme.quickstartForeignProject()}
-        </div>
-
-      </div>
-      `
-      // <div class="statistic">
-      //   <div class="value">
-      //     <img src="/images/avatar/small/joe.jpg" class="ui circular inline image">
-      //     ${(store.currentCDC.length)}
-      //   </div>
-      //   <div class="label">
-      //     Specs
-      //   </div>
-      // </div> TODO readd spec when ready
-      container.innerHTML = headerHtml+html;
+      overviewModule.update()
       createActivityFeed({
         container:'.overviewActivity',
         maxElements:30,
@@ -236,28 +151,6 @@ var createOverview = function (targetSelector) {
     }
   }
 
-  function checkIfCurrentUserIsInStakeholders(store) {
-    return store.stakeholders.find(s=>s.uuid == app.store.userData.info.userUuid)
-  }
-
-  // function createPBS() {
-  //   var store = query.currentProject()
-  //   store.currentPbs.push({name: store.reference+store.name, uuid: "ita2215151-a50f-4dd3-904e-146118d5d444"})
-  //   store.currentPbs.push({name: "A linked product", uuid:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
-  //   store.currentPbs.push({name: "Another linked product", uuid:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
-  //   store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it23bb697b-9418-4671-bf4b-5410af03dfc3"})
-  //   store.currentPbs.links.push({source: "ita2215151-a50f-4dd3-904e-146118d5d444", target:"it9ba7cc64-970a-4846-b9af-560d8125623e"})
-  // }
-  function createUserStakeholder() {
-    var store = query.currentProject()
-    let i = app.store.userData.info
-    store.stakeholders[0] = {uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName, org:"na", role:"", mail:""}
-  }
-  async function addUserStakeholder() {
-    var store = await query.currentProject()
-    let i = app.store.userData.info
-    push(act.add("stakeholders",{uuid:i.userUuid, name:i.userFirstName, lastName:i.userLastName}))
-  }
 
   function updateFileForRetroCompatibility(store) {
     function alertAboutUpdate(extraInfos) {
