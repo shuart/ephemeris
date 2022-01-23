@@ -354,6 +354,11 @@ function stellae(_selector, _options) {
             
         }else if(intersects4.length>0){
           //  alert("fdsfes")
+        }else if(typeof options.onCanvasDoubleClick === 'function' && clickType == "double"){
+          var intersects = raycaster.intersectObject(plane);
+          let newPosition =intersects[0].point
+          // alert(newPosition.x+" "+newPosition.z)
+          options.onCanvasDoubleClick({position:{x:newPosition.x/canvasScale,y:-newPosition.z/canvasScale}})
         }
       }
 

@@ -92,6 +92,10 @@ var createRelationsView = function () {
                 uuid:"efddddsfdsfse",
                 x:10,
                 y:10,
+                vx:10,
+                vy:10,
+                fx:10,
+                fy:10,
                 name:"variable_2",
                 customColor:"#f27506",
                 properties: {
@@ -167,8 +171,8 @@ var createRelationsView = function () {
           <div class="relations_button actions_relations_selection" ><i class="fas fa-border-style"></i></div> 
           <div class="relations_button" ><i class="fa-regular fa-eye"></i></div> 
           <div class="relations_button" ><i class="fa-regular fa-eye-slash"></i></i></div> 
-          <div class="relations_button" ><i class="fa-regular fa-note-sticky"></i></div> 
-          <div class="relations_button" ><i class="fa-solid fa-object-group"></i></div> 
+          <div class="relations_button actions_relations_addNote" ><i class="fa-regular fa-note-sticky"></i></div> 
+          <div class="relations_button actions_relations_addGroup" ><i class="fa-solid fa-object-group"></i></div> 
           <div class="relations_button" ><i class="fa-regular fa-bookmark"></i></div> 
           
 
@@ -181,6 +185,12 @@ var createRelationsView = function () {
       on:[
           [".actions_relations_selection", "click", async ()=>{
             activeGraph.setSelectionModeActive()
+          }],
+          [".actions_relations_addNote", "click", async ()=>{
+            addNote()
+          }],
+          [".actions_relations_addGroup", "click", async ()=>{
+            addGroup()
           }],
       ],
       // on:[
@@ -279,7 +289,32 @@ var createRelationsView = function () {
     }
   }
 
-  /////////
+
+  var createCategoriesData = async function (store) {
+    var store = store || await query.currentProject()
+    let dic = {}
+    let data = []
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      dic[cat.uuid] = cat
+
+    }
+    for (var i = 0; i < store.categories.length; i++) {
+      let cat = store.categories[i]
+      if (cat.parentCat) {
+        cat.parentCatName = [ dic[cat.parentCat] ]
+        if (!dic[cat.parentCat]._children) {dic[cat.parentCat]._children =[]}
+        dic[cat.parentCat]._children.push(cat)
+      }else {
+        cat.parentCatName = [ ]//needed so tag formater can go trough the empty array
+        data.push(cat)
+      }
+    }
+    return data
+  }
+
+  //////////////////////////////////////////////////
+
 
   var render = async function(){
     // document.querySelector(".center-container").innerHTML="<div class='graph' style='width:100%; height:100%; position:absolute;'></div>"
@@ -308,6 +343,10 @@ var createRelationsView = function () {
     // alert("fesfse")
 
     activeGraph = new stellae(".graph",{
+      onCanvasDoubleClick: function (event) {
+        console.log("test");
+        addNode(event)
+      }
         // onLinkingEnd :async function (e) {
         //     console.log(e);
         //     await linkNodes(e[0],e[1])
@@ -365,6 +404,134 @@ var createRelationsView = function () {
     
 
   }
+
+
+  /////////////GRAPH INTERACTIONS//////////////////
+
+  var addNote = function () {
+    var name = prompt("Note")
+    let newId = uuid()
+    var noteObject ={
+        id:newId,
+        uuid:newId,
+        x:0,
+        y:0,
+        name:name,
+        customColor:"#25847d",
+        content:name
+    }
+    data.notes.push(noteObject)
+    partialUpdateGraph({notes:[noteObject]})
+  }
+  var addNode = async function (event) {
+    let categories = await createCategoriesData()
+    console.log(categories);
+
+    let options = categories.map(c => {
+      return { type:"button",id:uuid(), label:c.name, onClick:v=>{
+        // nodeWalk(currentSelected, false)
+        alert("fesfe")
+        }
+      }
+    })
+
+    // let nodeViewable = [{ type:"button",id:uuid(), label:"Show all", onClick:v=>{
+      // nodeWalk(currentSelected, false)
+    // } }]
+    // for (var i = 0; i < itemsToDisplay.length; i++) {
+    //   let e = itemsToDisplay[i]
+    //   if (relatedNodes.includes(e.uuid) ) {
+    //     let field = { type:"button",id:uuid(),customColor:e.customColor,value:e.uuid, label:e.name, onClick:v=>{
+    //       console.log(v);
+    //       hiddenItemsFromSideView = removeFromArray(hiddenItemsFromSideView, v)
+    //       update()
+    //     } }
+    //     nodeViewable.push(field)
+    //   }
+    // }
+
+    var popup= await createPromptPopup({
+      title:"Related Nodes",
+      iconHeader:"sitemap",
+      fields:options,
+      confirmationType:"cancel"
+    })
+
+    var name = prompt("Node")
+    let newId = uuid()
+    var posX = event.position.x;
+    var posY = event.position.y;
+    var nodeObject =  {
+      id:newId,
+      uuid:newId,
+      x:posX,
+      y:posY,
+      fx:posX,
+      fy:posY,
+      name:name,
+      customColor:"#f27506",
+      properties: {
+          name: "variable_2",
+          type:"variable",
+          value:15,
+          function:"",
+      }
+    }
+
+    // var popup= await createPromptPopup({
+    //   title:"Add a new "+availableItems.find(a=>a.type==addItemMode).name,
+    //   iconHeader:availableItems.find(a=>a.type==addItemMode).icon,
+    //   fields:{ type:"input",id:"itemNewName" ,label:"Item name", placeholder:"Set a name for the item" }
+    // })
+    // if (popup && popup.result) {
+    //   var uuid = genuuid()
+    //   addItems(addItemMode, uuid, popup.result, addItemCatType)
+    //   //itemsToFixAtNextUpdate=[]
+    //   itemsToFixAtNextUpdate.push({uuid:uuid, fx:e.x, fy:e.y})
+    //   update()
+    // }
+
+    data.nodes.push(nodeObject)
+    partialUpdateGraph({nodes:[nodeObject]})
+  }
+
+  var addGroup= function () {
+    var name = prompt("Group")
+    let newId = uuid()
+    var groupObject={
+            id:newId,
+            uuid:newId,
+            x:0,
+            y:0,
+            name:name,
+            customColor:"#25847d",
+            content:name
+        }
+    data.groups.push(groupObject)
+    partialUpdateGraph({groups:[groupObject]})
+  }
+
+  var partialUpdateGraph = function (dataToAdd) {
+    var newData = {
+      nodes:[],
+      relationships:[],
+      notes:[],
+      groups:[]
+    }
+    if (dataToAdd.nodes) {
+      newData.nodes = dataToAdd.nodes
+    }
+    if (dataToAdd.notes) {
+      newData.notes = dataToAdd.notes
+    }
+    if (dataToAdd.groups) {
+      newData.groups = dataToAdd.groups
+    }
+    activeGraph.updateWithD3Data(newData)
+  }
+
+
+  ////////////////////////////////////////////////
 
   var update = function () {
     if (objectIsActive) {
