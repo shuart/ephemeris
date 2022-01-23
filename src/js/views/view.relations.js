@@ -140,17 +140,49 @@ var createRelationsView = function () {
           top: 144px;
           padding: 5px;
           box-shadow: 0px 0px 18px -6px rgba(0,0,0,0.35);
+          z-index:999999999999999999999;
         }
+        .relations_button{
+          margin-top:0.6em;
+          opacity: 0.7;
+          margin-bottom:0.6em;
+          display: block;
+          float: none;
+          width: 100%;
+          text-align: center;
+          box-shadow: none;
+          border-radius: 0;
+          cursor:pointer;
+        }
+        .relations_button:hover{
+          opacity: 1;
+        }
+
     `)
     view.createLens("relations_toolbar",(d)=>`
         <div class="relations_toolbar">
-         
+          <div class="relations_button" ><i class="fa-solid fa-circle-plus"></i></div>
+          <div class="relations_button" ><i class="fa-solid fa-code-branch"></i></div>
+          <div class="relations_button" ><i class="fa-solid fa-shuffle"></i></div>
+          <div class="relations_button actions_relations_selection" ><i class="fas fa-border-style"></i></div> 
+          <div class="relations_button" ><i class="fa-regular fa-eye"></i></div> 
+          <div class="relations_button" ><i class="fa-regular fa-eye-slash"></i></i></div> 
+          <div class="relations_button" ><i class="fa-regular fa-note-sticky"></i></div> 
+          <div class="relations_button" ><i class="fa-solid fa-object-group"></i></div> 
+          <div class="relations_button" ><i class="fa-regular fa-bookmark"></i></div> 
+          
+
         </div>
         <div class='graph' style='width:100%; height:100%; position:absolute;'></div>`
     )
 
     let relations_toolbar = view.addLens("relations_toolbar",{
       data:{title:"Ephemeris"},
+      on:[
+          [".actions_relations_selection", "click", async ()=>{
+            activeGraph.setSelectionModeActive()
+          }],
+      ],
       // on:[
       //     [".action_startup_add_user", "click", async ()=>{
       //       var popup= await createPromptPopup({
