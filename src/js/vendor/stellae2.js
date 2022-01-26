@@ -526,6 +526,12 @@ function stellae(_selector, _options) {
                 if (intersects.length > 0) {
                   console.log(intersects);
                   controls.enabled = false;
+                }else{
+                  var intersects = raycaster.intersectObjects(objectsHandles);
+                  if (intersects.length > 0) {
+                    console.log(intersects);
+                    controls.enabled = false;
+                  }
                 }
               }
 
