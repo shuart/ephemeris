@@ -71,61 +71,6 @@ var createRelationsView = function () {
       notes:[],
       groups:[]
     }
-    var dataB = {
-      nodes:[
-            {
-                id:"efsfdsfse",
-                uuid:"efsfdsfse",
-                x:0,
-                y:0,
-                name:"variable_1",
-                customColor:"#f27506",
-                properties: {
-                    name: "variable_1",
-                    type:"variable",
-                    value:5,
-                    function:"",
-                }
-            },
-            {
-                id:"efddddsfdsfse",
-                uuid:"efddddsfdsfse",
-                x:10,
-                y:10,
-                vx:10,
-                vy:10,
-                fx:10,
-                fy:10,
-                name:"variable_2",
-                customColor:"#f27506",
-                properties: {
-                    name: "variable_2",
-                    type:"variable",
-                    value:15,
-                    function:"",
-                }
-            }
-        ],
-        relationships:[
-          {
-            addedDate: 1642265630886,
-            customColor: "#6dce9e",
-            customDashArray: undefined,
-            displayType: "related",
-            index: 0,
-            name: "Interface between eQTCeorQ8bdUFhrv and eZg3kiIRG55DD9ee",
-            source: "efsfdsfse",
-            target: "efddddsfdsfse",
-            type: "Physical connection",
-            typeId: "eCE7v9p9YCO3Y57O",
-            uuid: "ef7IUJkfoYAmU5IO",
-          }
-        ],
-        notes:[],
-        groups:[]
-      }
-
-
 
   var init = function (options) {
     setUpMenu()
@@ -308,6 +253,7 @@ var createRelationsView = function () {
         cat.parentCatName = [ dic[cat.parentCat] ]
         if (!dic[cat.parentCat]._children) {dic[cat.parentCat]._children =[]}
         dic[cat.parentCat]._children.push(cat)
+        data.push(cat)
       }else {
         cat.parentCatName = [ ]//needed so tag formater can go trough the empty array
         data.push(cat)
@@ -324,7 +270,7 @@ var createRelationsView = function () {
       groups:[]
     }
     var store = currentStore || await query.currentProject()
-    var store = await query.currentProject()
+    // var store = await query.currentProject()
     var categoryStore = {}
     for (var i = 0; i < store.metaLinks.length; i++) {
       let metaType = store.metaLinks[i].type
@@ -368,23 +314,18 @@ var createRelationsView = function () {
     view.render()
     var initialGraphData  = await generateDataFromStore()
     data.nodes = initialGraphData.nodes
-    data.relationships = initialGraphData.relationships
-    console.log(data)
-    // alert("fesfse")
+    data.relationships = initialGraphData.relationships;
 
     activeGraph = new stellae(".graph",{
       onCanvasDoubleClick: function (event) {
         console.log("test");
         addNode(event)
-      }
-        // onLinkingEnd :async function (e) {
-        //     console.log(e);
-        //     await linkNodes(e[0],e[1])
-
-        //     console.log("save tree",graph.exportNodesPosition());
-        //     data.nodesPositions = graph.exportNodesPosition()
-        //     update()
-        //   },
+      },
+      onLinkingEnd :async function (e) {
+        linkNodes(e[0], e[1])
+          // console.log("save tree",graph.exportNodesPosition());
+          // data.nodesPositions = graph.exportNodesPosition()
+      },
         //   onNodeClick:function (node,eventData) {
         //     console.log(node,eventData)
         //     updatePropPane(data.nodes.find(n=>n.uuid == node.uuid))
@@ -542,6 +483,9 @@ var createRelationsView = function () {
     if (dataToAdd.nodes) {
       newData.nodes = dataToAdd.nodes
     }
+    if (dataToAdd.relationships) {
+      newData.relationships = dataToAdd.relationships
+    }
     if (dataToAdd.notes) {
       newData.notes = dataToAdd.notes
     }
@@ -555,9 +499,46 @@ var createRelationsView = function () {
   var partialUpdateGraphFromStore = async function () {
     var newStoreData = await generateDataFromStore()
     let nodesDifference = newStoreData.nodes.filter(x => !data.nodes.find(n=>n.uuid == x.uuid));
+    let relationshipsDifference = newStoreData.relationships.filter(x => !data.relationships.find(n=>n.uuid == x.uuid));
     data = newStoreData
-    partialUpdateGraph({nodes:nodesDifference})
+    partialUpdateGraph({nodes:nodesDifference,relationships:relationshipsDifference})
 
+  }
+
+  var linkNodes = async function (sourceNode, targetNode) {
+    var store = await query.currentProject()
+    let catFromNodeId = await _entities.getCategoryFromUuid ([sourceNode.uuid, targetNode.uuid])
+    var sourceCatId = catFromNodeId[sourceNode.uuid].uuid;
+    var targetCatId = catFromNodeId[targetNode.uuid].uuid;
+
+    let availableRelations = await _entities.getCategoriesAvailableRelations(sourceCatId,targetCatId, store)
+    console.log(catFromNodeId[sourceNode.uuid], catFromNodeId[targetNode.uuid])
+    console.log(availableRelations)
+
+    let options = availableRelations.map(r => {
+      return { type:"button",id:uuid(), label:r.name, onClick:async(v)=>{
+          push(act.add("interfaces",{
+            typeId:r.uuid,
+            type:"Physical connection",
+            name:"Interface between "+sourceNode.uuid+" and "+targetNode.uuid,
+            source:sourceNode.uuid,
+            target:targetNode.uuid
+          }))
+          partialUpdateGraphFromStore()
+        }
+      }
+    })
+    if (!availableRelations[0]) {
+      alert("No relations available between these nodes")
+    }else{
+      var popup= await createPromptPopup({
+        title:"Add a new relation",
+        iconHeader:"sitemap",
+        fields:options,
+        confirmationType:"cancel"
+      })
+    }
+    
   }
 
 

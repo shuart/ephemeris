@@ -33,7 +33,7 @@ function stellae(_selector, _options) {
           n4Data: undefined,
           n4DataUrl: undefined,
           nodeOutlineFillColor: undefined,
-          nodeRadius: 25,
+          nodeRadius: 50,
           relationshipColor: '#a5abb6',
           zoomFit: false,
           groupLabels:false,
@@ -1003,11 +1003,13 @@ function stellae(_selector, _options) {
                           // .force('y', d3.forceY().strength(0.02).y(d => svg.node().parentElement.parentElement.clientHeight / 2))
                           .force('collide', d3.forceCollide().radius(function(d) {
                               return options.minCollision;
-                          }).strength(1).iterations(1))
+                          }).strength(1).iterations(2))
                           .force('charge', d3.forceManyBody().strength(options.chargeStrength).distanceMax(800))
                           .force('link', d3.forceLink().id(function(d) {
                               return d.id;
-                          }))
+                          }).distance(function(d) {
+                            return options.linkDistance || 250;
+                           }))
                           // .force('center', d3.forceCenter(svg.node().parentElement.parentElement.clientWidth / 2, svg.node().parentElement.parentElement.clientHeight / 2))
                           .force('center', d3.forceCenter())
                           .alphaDecay(options.decay)
