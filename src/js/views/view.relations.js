@@ -21,7 +21,7 @@ var createRelationsView = function () {
   var container = undefined
 
   var activeGraph = undefined
-
+  var dataAttributes={}
   var data = {
     nodes:[
           {
@@ -165,7 +165,7 @@ var createRelationsView = function () {
     `)
     view.createLens("relations_toolbar",(d)=>`
         <div class="relations_toolbar">
-          <div class="relations_button" ><i class="fa-solid fa-circle-plus"></i></div>
+          <div class="relations_button actions_relations_add_node" ><i class="fa-solid fa-circle-plus"></i></div>
           <div class="relations_button" ><i class="fa-solid fa-code-branch"></i></div>
           <div class="relations_button" ><i class="fa-solid fa-shuffle"></i></div>
           <div class="relations_button actions_relations_selection" ><i class="fas fa-border-style"></i></div> 
@@ -183,6 +183,9 @@ var createRelationsView = function () {
     let relations_toolbar = view.addLens("relations_toolbar",{
       data:{title:"Ephemeris"},
       on:[
+          [".actions_relations_add_node", "click", async ()=>{
+            addNode({position:{x:0,y:0}})
+          }],
           [".actions_relations_selection", "click", async ()=>{
             activeGraph.setSelectionModeActive()
           }],
@@ -313,12 +316,14 @@ var createRelationsView = function () {
     return data
   }
 
-  //////////////////////////////////////////////////
-
-
-  var render = async function(){
-    // document.querySelector(".center-container").innerHTML="<div class='graph' style='width:100%; height:100%; position:absolute;'></div>"
-    view.render()
+  var generateDataFromStore = async function (currentStore) {
+    var localData = {
+      nodes:[],
+      relationships:[],
+      notes:[],
+      groups:[]
+    }
+    var store = currentStore || await query.currentProject()
     var store = await query.currentProject()
     var categoryStore = {}
     for (var i = 0; i < store.metaLinks.length; i++) {
@@ -327,8 +332,8 @@ var createRelationsView = function () {
         categoryStore[store.metaLinks[i].source] = store.metaLinks[i].target
       }
     }
-    var array2 =store.currentPbs.map((e) => {e.id=e.uuid, e.customColor=getCustomColorFromItemId(e.uuid, store, categoryStore)||"#6dce9e";e.labels = ["Pbs"]; e.extraLabel=getSvgPathFromItemId(e.uuid, store, categoryStore); return e})
-    var array4 = store.stakeholders.map((e) => {e.id=e.uuid, e.customColor="#68bdf6 ";e.labels = ["User"]; e.properties= {"fullName": e.lastName}; return e})
+    var array2 =store.currentPbs.map((e) => {e.id=e.uuid, e.customColor=getCustomColorFromItemId(e.uuid, store, categoryStore)||"#6dce9e"; e.extraLabel=getSvgPathFromItemId(e.uuid, store, categoryStore); return e})
+    var array4 = store.stakeholders.map((e) => {e.id=e.uuid, e.customColor="#68bdf6 "; e.properties= {"fullName": e.lastName}; return e})
 
     var itemsToDisplay = []
     itemsToDisplay = itemsToDisplay.concat(array2)
@@ -337,8 +342,33 @@ var createRelationsView = function () {
     var interfacesToTypesMapping = mapInterfacesToIds(store)
     var relationsData = transferToRelationsForEach(store.interfaces, e=> {e.displayType = getInterfaceTypeFromUuid(store,interfacesToTypesMapping, e.uuid); e.customDashArray = getInterfaceDashArrayTypeFromUuid(store,interfacesToTypesMapping, e.uuid); e.customColor="#6dce9e";})
     
-    data.nodes = itemsToDisplay
-    data.relationships = relationsData.relations
+    localData.nodes = itemsToDisplay
+    localData.relationships = relationsData.relations
+    console.log(localData)
+    return localData
+  }
+
+  var updateGraph = function (newData) {
+    console.log(dataAttributes)
+    for (let index = 0; index < newData.nodes.length; index++) {
+      if (dataAttributes[ newData.nodes[index].uuid ]) {
+        newData.nodes[index].fx = dataAttributes[ newData.nodes[index].uuid ].fx
+        newData.nodes[index].fy = dataAttributes[ newData.nodes[index].uuid ].fy
+      }
+      
+    }
+    activeGraph.updateWithD3Data(newData)
+  }
+
+  //////////////////////////////////////////////////
+
+
+  var render = async function(){
+    // document.querySelector(".center-container").innerHTML="<div class='graph' style='width:100%; height:100%; position:absolute;'></div>"
+    view.render()
+    var initialGraphData  = await generateDataFromStore()
+    data.nodes = initialGraphData.nodes
+    data.relationships = initialGraphData.relationships
     console.log(data)
     // alert("fesfse")
 
@@ -399,7 +429,7 @@ var createRelationsView = function () {
         //   zoomFit: false
     })
 
-    activeGraph.updateWithD3Data(data)
+    updateGraph(data)
     
     
 
@@ -428,9 +458,21 @@ var createRelationsView = function () {
     console.log(categories);
 
     let options = categories.map(c => {
-      return { type:"button",id:uuid(), label:c.name, onClick:v=>{
-        // nodeWalk(currentSelected, false)
-        alert("fesfe")
+      return { type:"button",id:uuid(), label:c.name, onClick:async(v)=>{
+
+          let nodeInfo=await _entities.add({categoryId: c.uuid})
+
+          var name = nodeInfo.name
+          let newId = nodeInfo.uuid
+          var posX = event.position.x;
+          var posY = event.position.y;
+          // var nodeObject =  {
+          //   customColor:"#f27506",
+          // }
+          dataAttributes[nodeInfo.uuid] = Object.assign({}, dataAttributes[nodeInfo.uuid],{x:posX,y:posY,fx:posX,fy:posY} )
+          partialUpdateGraphFromStore()
+          // data.nodes.push(nodeObject)
+          // partialUpdateGraph({nodes:[nodeObject]})
         }
       }
     })
@@ -451,32 +493,12 @@ var createRelationsView = function () {
     // }
 
     var popup= await createPromptPopup({
-      title:"Related Nodes",
+      title:"Add a new Node",
       iconHeader:"sitemap",
       fields:options,
       confirmationType:"cancel"
     })
 
-    var name = prompt("Node")
-    let newId = uuid()
-    var posX = event.position.x;
-    var posY = event.position.y;
-    var nodeObject =  {
-      id:newId,
-      uuid:newId,
-      x:posX,
-      y:posY,
-      fx:posX,
-      fy:posY,
-      name:name,
-      customColor:"#f27506",
-      properties: {
-          name: "variable_2",
-          type:"variable",
-          value:15,
-          function:"",
-      }
-    }
 
     // var popup= await createPromptPopup({
     //   title:"Add a new "+availableItems.find(a=>a.type==addItemMode).name,
@@ -491,8 +513,7 @@ var createRelationsView = function () {
     //   update()
     // }
 
-    data.nodes.push(nodeObject)
-    partialUpdateGraph({nodes:[nodeObject]})
+
   }
 
   var addGroup= function () {
@@ -527,7 +548,16 @@ var createRelationsView = function () {
     if (dataToAdd.groups) {
       newData.groups = dataToAdd.groups
     }
-    activeGraph.updateWithD3Data(newData)
+    
+    updateGraph(newData)
+    
+  }
+  var partialUpdateGraphFromStore = async function () {
+    var newStoreData = await generateDataFromStore()
+    let nodesDifference = newStoreData.nodes.filter(x => !data.nodes.find(n=>n.uuid == x.uuid));
+    data = newStoreData
+    partialUpdateGraph({nodes:nodesDifference})
+
   }
 
 

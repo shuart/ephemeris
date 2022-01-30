@@ -325,7 +325,7 @@ textarea {
 
    .center-container{
      height: 100%;
-     padding-top: 15px;
+     /* padding-top: 15px; */
      padding-left: 10px;
      padding-right: 10px;
      overflow: auto;

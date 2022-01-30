@@ -63,7 +63,7 @@ var createPromptPopupView = function (inputData) {
       }
       if (data.type == "button") {
         template= `
-        <div style="width:100%; padding-top: 15px;" class="field input ">
+        <div style="width:100%; padding-top: 1px;padding-bottom: 1px;" class="field ">
           <button style="${data.customColor?"background-color:"+data.customColor+";":""}" class="ui fluid teal button button_input_${data.id}">
             ${data.label}
           </button>
