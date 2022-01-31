@@ -95,7 +95,7 @@ var createPromptPopupView = function (inputData) {
       }
       if (data.type == "selection") {
         template= `
-        <div class="ui multiple dropdown form_select_${data.id}">
+        <div style="cursor:pointer;" class="form_select_${data.id}">
           <input class="form_input_${data.id}" type="hidden" name="filters" value="${data.preSelected.join(',')}">
           <div style="" class="form_selection_list_${data.id}"></div>
         </div>
@@ -326,7 +326,7 @@ var createPromptPopupView = function (inputData) {
         //   })
         let container=document.querySelector('.form_selection_list_'+item.id)
         let template = `
-          <div style="font-weight:bold;border-bottom-style: dashed;border-bottom-width: 2px;border-bottom-color: grey;" class="form_selection_list_tags_${item.id}"></div>
+          <div style="font-weight:bold;border-bottom-style: dashed;border-bottom-width: 2px;border-bottom-color: #cbcbcb;" class="form_selection_list_tags_${item.id}"></div>
           <div style="height:300px;" class="form_selection_list_table_${item.id}">Select</div>
         `
         container.innerHTML=template
@@ -353,7 +353,7 @@ var createPromptPopupView = function (inputData) {
           selectable: item.maxSelectable || true,
           rowSelectionChanged:function(data, rows){
           	document.querySelector(`.form_input_${item.id}`).value = data.map(d=>d.value).join(',');
-            let html = `${item.label}:` + data.map(d=>theme.tag(d.name, d.value, "#00b5ad")).join("");
+            let html = `${item.label}:` + data.map(d=>theme.tag(d.name+'  X', d.value, "#00b5ad")).join("");
           	document.querySelector(`.form_selection_list_tags_${item.id}`).innerHTML = html
             if (!data[0]) {document.querySelector(`.form_input_${item.id}`).value =""}
           },
