@@ -82,13 +82,17 @@ _entities.getCategoriesAvailableRelations = async function (catSource,catTarget,
     if (dic[catSource]._parents[0]) {//if has parents
       for (let index = 0; index < dic[catSource]._parents.length; index++) {
         const element = dic[catSource]._parents[index];
-        isSource = currentInterface["hasSource_"+element.uuid]
+        if (!isSource) {
+          isSource = currentInterface["hasSource_"+element.uuid]
+        }
       }
     }
     if (dic[catTarget]._parents[0]) {//if has parents
       for (let index = 0; index < dic[catTarget]._parents.length; index++) {
         const element = dic[catTarget]._parents[index];
-        isTarget = currentInterface["hasTarget_"+element.uuid]
+        if (!isTarget) {
+          isTarget = currentInterface["hasTarget_"+element.uuid]
+        }
       }
     }
     console.log(currentInterface);
