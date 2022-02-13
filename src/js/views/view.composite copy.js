@@ -13,7 +13,7 @@ var createCompositeView = function ({
   var pageSettings = [
     {
       moduleType:"timeline",
-
+      
     }
   ]
 
@@ -65,7 +65,7 @@ var createCompositeView = function ({
       <div class="compositeModule">
         <div class="compositeModuleSettings">dzqdqdzq
         </div>
-        <div style='height:${d.modulesRatio}%' class='composite-${d.uuid}'></div>
+        <div style='height:${d.modulesRatio}%' class='composite-${d.moduleName}'></div>
         <div class="compositeModuleAdd">
          <h2 class="subtitle is-inline">Add</h2>
 
@@ -88,106 +88,76 @@ var createCompositeView = function ({
     }, '')
   }
 
-  function generatePageData(store){
+  async function setUpView(data) {
+    var store = await query.currentProject()
     let currentPage = store.compositePages.find(p=>p.uuid== currentData.pageUuid)
-    if (currentPage) { //Is a page
-      let catId = store.categories.find(c=>c.uuid == currentPage.parentCat).uuid
-      console.log(currentPage);
-      console.log(catId);
-      let modulesRatio ={
-        explorer:80,
-        timeline:20,
-        kanban:20,
-      }
-      // if (!currentPage.showTimeline) {
-      //   modulesRatio.explorer +=modulesRatio.timeline
-      //   modulesRatio.timeline-=modulesRatio.timeline
-      // }
-  
-      // if (!currentPage.showKanban) { //TODO always undifined add a prop to connect
-      //   modulesRatio.explorer +=modulesRatio.timeline
-      //   modulesRatio.kanban-=modulesRatio.kanban
-      // }
-  
-      localState.modulesData=[
-        {
-          modulesRatio:modulesRatio.timeline,
-          moduleType:"timeline",
-          uuid:"timeline",
-          settings:{catId:catId,startField:currentPage.options_timelineStart, endField:currentPage.options_timelineEnd},
-         },
-        // {
-        //   modulesRatio:modulesRatio.kanban,
-        //   moduleType:"kanban",
-        //   uuid:"kanban",
-        //   settings:{catId:catId},
-        //  },
-        {
-          modulesRatio:modulesRatio.explorer,
-          moduleType:"explorer",
-          uuid:"explorer",
-          settings:{typeId:catId},
-         },
-        {
-          modulesRatio:20,
-          moduleType:"textArea",
-          uuid:"textArea",
-          settings:{},
-         },
-      ]
-      
-    }else{//is another element
-      let currentElement = store.currentPbs.find(p=>p.uuid== currentData.pageUuid)
-      if (currentElement) {
-        alert('is element')
-      }
+    let catId = store.categories.find(c=>c.uuid == currentPage.parentCat).uuid
+    console.log(currentPage);
+    console.log(catId);
+    let modulesRatio ={
+      explorer:80,
+      timeline:20,
+      kanban:20,
     }
-  }
+    if (!currentPage.showTimeline) {
+      modulesRatio.explorer +=modulesRatio.timeline
+      modulesRatio.timeline-=modulesRatio.timeline
+    }
 
-  function appendModules(modulesData){
-    for (let index = 0; index < modulesData.length; index++) {
-      const element = modulesData[index];
-      if (element.moduleType == "explorer") {
-        var explorerView = createExplorerView({
-          container : ".composite-explorer"
-        });
-        currentModules.push(explorerView)
-        explorerView.init();
-        explorerView.setActive(element.settings)
-      }else if(element.moduleType == "timeline"){
+    if (!currentPage.showKanban) { //TODO always undifined add a prop to connect
+      modulesRatio.explorer +=modulesRatio.timeline
+      modulesRatio.kanban-=modulesRatio.kanban
+    }
+
+    localState.modulesData=[
+      {modulesRatio:modulesRatio.timeline ,moduleName:"timeline" },
+      {modulesRatio:modulesRatio.kanban ,moduleName:"kanban" },
+      {modulesRatio:modulesRatio.explorer ,moduleName:"explorer" },
+      {modulesRatio:20 ,moduleName:"textArea" },
+    ]
+
+    if (currentPage) {
+      compositeModule.render()
+      // document.querySelector(container).innerHTML=`
+      //   <div style='height:${modulesRatio.timeline}%' class='partialTimeline'></div>
+      //   <div style='height:${modulesRatio.kanban}%' class='partialKanban'></div>
+      //   <div style='height:${modulesRatio.explorer}%'class='compositeExplorer'></div>
+      // `
+      var explorerView = createExplorerView({
+        container : ".composite-explorer"
+      });
+      currentModules.push(explorerView)
+      explorerView.init();
+      explorerView.setActive({typeId:catId})
+
+      if (currentPage.showTimeline) {
         var timelinePartial = createTimelinePartial({
           container : ".composite-timeline"
         })
+
         currentModules.push(timelinePartial)
         timelinePartial.init()
-        timelinePartial.setActive(element.settings)
-      }else if(element.moduleType == "kanban"){
+        timelinePartial.setActive({catId:catId,startField:currentPage.options_timelineStart, endField:currentPage.options_timelineEnd})
+      }
+      if (false) {//TODO reconnect the kanban to a prop currently will never show
         var kanbanPartial = createKanbanPartial({
           container : ".composite-kanban"
         })
+
         currentModules.push(kanbanPartial)
         kanbanPartial.init()
-        kanbanPartial.setActive(element.settings)
-      }else if(element.moduleType == "textArea"){
+        kanbanPartial.setActive({catId:catId})
+      }
+      if(true){
         var textAreaPartial = createTextAreaPartial({
           container : ".composite-textArea"
         })
+
         currentModules.push(textAreaPartial)
         textAreaPartial.init()
-        textAreaPartial.setActive(element.settings)
-
+        textAreaPartial.setActive({catId:catId,startField:currentPage.options_timelineStart, endField:currentPage.options_timelineEnd})
       }
-      
-    }
 
-  }
-
-  async function setUpView(data) {
-    var store = await query.currentProject()
-    generatePageData(store)// fill the localState module data
-    if (localState.modulesData) {
-      compositeModule.render()
-      appendModules(localState.modulesData)
     }
   }
 

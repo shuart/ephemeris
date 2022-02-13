@@ -400,7 +400,7 @@ var createTableComp = function ({
                 let newDate = moment(selected[0]).add(12, 'hours').toDate()
                 let target = cell.getRow().getData()
                 // onEditItemTime({select:self, selectDiv:sourceEl, target:event.target, value:newDate})
-                if (item.editorParams.onChange) {
+                if (item.editorParams && item.editorParams.onChange) {
                   item.editorParams.onChange(target.uuid, item.field, newDate)
                 }else {
                   push(act.edit("currentPbs", {uuid:target.uuid, prop:item.field,  value:newDate}))

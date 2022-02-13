@@ -236,5 +236,7 @@ ephemeris_presets.se = `{
     "settings": [],
     "itemsOrder": [],
     "onlineHistory": [],
+    "compositePages":[],
+    "pageModules":[],
     "links": []
 }`
