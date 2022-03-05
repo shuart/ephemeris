@@ -326,7 +326,7 @@ var createPromptPopupView = function (inputData) {
         //   })
         let container=document.querySelector('.form_selection_list_'+item.id)
         let template = `
-          <div style="font-weight:bold;border-bottom-style: dashed;border-bottom-width: 2px;border-bottom-color: #cbcbcb;" class="form_selection_list_tags_${item.id}"></div>
+          <div style="font-weight:bold;font-weight: bold;padding: 4px; margin: 8px; border-style: dashed;border-width: 2px;border-color: #cbcbcb7d;" class="form_selection_list_tags_${item.id}"></div>
           <div style="height:300px;" class="form_selection_list_table_${item.id}">Select</div>
         `
         container.innerHTML=template
