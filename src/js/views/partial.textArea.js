@@ -52,7 +52,7 @@ var createTextAreaPartial = function ({
         ]
       },
       placeholder: 'Compose an epic...',
-      theme: 'snow'
+      theme: 'bubble'
     });
   }
 

@@ -52,6 +52,9 @@ var createCompositeView = function ({
       .compositeModuleAdd{
         opacity:0;
       }
+      .ql-tooltip {
+        z-index:50
+      }
     `)
     compositeModule.createLens("compositeContainer",(d)=>`
         <div class="pageRootView">
@@ -134,6 +137,12 @@ var createCompositeView = function ({
           uuid:"textArea",
           settings:{},
          },
+         {
+          modulesRatio:20,
+          moduleType:"textArea",
+          uuid:"textArea2",
+          settings:{},
+         },
       ]
       
     }else{//is another element
@@ -149,28 +158,28 @@ var createCompositeView = function ({
       const element = modulesData[index];
       if (element.moduleType == "explorer") {
         var explorerView = createExplorerView({
-          container : ".composite-explorer"
+          container : ".composite-"+element.uuid
         });
         currentModules.push(explorerView)
         explorerView.init();
         explorerView.setActive(element.settings)
       }else if(element.moduleType == "timeline"){
         var timelinePartial = createTimelinePartial({
-          container : ".composite-timeline"
+          container : ".composite-"+element.uuid
         })
         currentModules.push(timelinePartial)
         timelinePartial.init()
         timelinePartial.setActive(element.settings)
       }else if(element.moduleType == "kanban"){
         var kanbanPartial = createKanbanPartial({
-          container : ".composite-kanban"
+          container : ".composite-"+element.uuid
         })
         currentModules.push(kanbanPartial)
         kanbanPartial.init()
         kanbanPartial.setActive(element.settings)
       }else if(element.moduleType == "textArea"){
         var textAreaPartial = createTextAreaPartial({
-          container : ".composite-textArea"
+          container : ".composite-"+element.uuid
         })
         currentModules.push(textAreaPartial)
         textAreaPartial.init()
