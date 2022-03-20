@@ -72,7 +72,7 @@ var createCompositeView = function ({
         <div class="compositeModuleAdd">
          <h2 class="subtitle is-inline">Add</h2>
 
-          <button class="button is-info is-light is-small">Text</button>
+          <button class="button is-info is-light is-small action_composite_add_module">Text</button>
         </div>
       </div>
       `
@@ -87,11 +87,19 @@ var createCompositeView = function ({
         //   {modulesRatio:'50' ,moduleName:"timeline" },
         // ]
       },
-      on:[],
+      on:[
+        [".action_composite_add_module", "click", async (e, p)=>{
+          // await setCurrentProject(p.uuid)
+          // urlHandlerService.setProjectUuid(p.uuid)
+          // pageManager.setActivePage("overview")
+          addNewModule()
+          // _modules.add({source:currentData.pageUuid})
+        } ],
+      ],
     }, '')
   }
 
-  function generatePageData(store){
+  async function generatePageData(store){
     let currentPage = store.compositePages.find(p=>p.uuid== currentData.pageUuid)
     if (currentPage) { //Is a page
       let catId = store.categories.find(c=>c.uuid == currentPage.parentCat).uuid
@@ -144,7 +152,9 @@ var createCompositeView = function ({
           settings:{},
          },
       ]
-      
+      let currentPageModules = await _modules.getAllModulesAttachedToSourceId({source:currentData.pageUuid})
+      localState.modulesData = localState.modulesData.concat(currentPageModules)
+      console.log(localState.modulesData)
     }else{//is another element
       let currentElement = store.currentPbs.find(p=>p.uuid== currentData.pageUuid)
       if (currentElement) {
@@ -193,11 +203,37 @@ var createCompositeView = function ({
 
   async function setUpView(data) {
     var store = await query.currentProject()
-    generatePageData(store)// fill the localState module data
+    await generatePageData(store)// fill the localState module data
     if (localState.modulesData) {
+      console.log(localState.modulesData)
       compositeModule.render()
       appendModules(localState.modulesData)
     }
+  }
+
+  async function addNewModule(){
+    let moduleTypes = [
+      {name:"explorer", moduleType:"explorer"},
+      {name:"timeline", moduleType:"timeline"},
+      {name:"kanban", moduleType:"kanban"},
+      {name:"textArea", moduleType:"textArea"},
+    ]
+  
+    let options = moduleTypes.map(c => {
+      return { type:"button",id:uuid(), label:c.name, onClick:async(v)=>{
+  
+          _modules.add({source:currentData.pageUuid, moduleType:c.moduleType})
+          alert("efsesf")
+        }
+      }
+    })
+  
+    var popup= await createPromptPopup({
+      title:"Add a new Module",
+      iconHeader:"sitemap",
+      fields:options,
+      confirmationType:"cancel"
+    })
   }
 
   async function render() {
