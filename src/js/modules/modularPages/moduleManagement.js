@@ -39,6 +39,7 @@ _modules.remove = async function (uuid) {
   // if (source) {
   //   push(act.add("moduleLinks",{source:source,target:id,type:"module"}))
   // }
+  //TODO remove links also
   return true
 }
 

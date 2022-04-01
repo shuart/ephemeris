@@ -2,10 +2,14 @@ var createTextAreaPartial = function ({
   onSave= undefined,
   onClose= undefined,
   container=undefined,
-  originalData = ""
+  originalData = "",
+  uuid=''
   }={}) {
   var self ={};
-  var catId = undefined
+  var catId = undefined;
+  var initialData = undefined;
+  var saveAvailable = true;
+  var saveInterval = 3000;
 
 
   var init = function () {
@@ -30,13 +34,24 @@ var createTextAreaPartial = function ({
     // })
   }
 
+  var saveContent = function(content){
+    // push(act.edit("pageModules",{uuid:uuid,prop:"content", value:JSON.stringify(content), project:e.target.dataset.project}))
+    push(act.edit("pageModules",{uuid:uuid,prop:"content", value:JSON.stringify(content)}))
+  }
+
   var prepareData = function (store) {
-    return []
+    let moduleInfo = store.pageModules.find(p=>p.uuid==uuid)
+    if(moduleInfo){
+      return {initialData:JSON.parse(moduleInfo.content)}
+    }else{
+      return {}
+    }
    }
 
    var render = async function () {
     var store = await query.currentProject()
     let data = prepareData(store)
+    initialData = data.initialData// not needed
     let domElement = document.querySelector(container)
     renderDomMarkup(domElement)
     setUpTextArea(data)
@@ -53,6 +68,29 @@ var createTextAreaPartial = function ({
       },
       placeholder: 'Compose an epic...',
       theme: 'bubble'
+    });
+    // editor.setContents([
+    //   { insert: 'Hello ' },
+    //   { insert: 'World!', attributes: { bold: true } },
+    //   { insert: '\n' }
+    // ]);
+    editor.setContents(data.initialData);
+    
+    editor.on('text-change', () => {
+      if(saveAvailable){
+        const { ops } = editor.getContents();
+        // $(`input[name="richContent"]`).val(JSON.stringify(ops));
+        console.log(ops)
+        saveContent(ops)
+        saveAvailable = false;
+        setTimeout(function(){
+          saveAvailable = true;
+        },saveInterval)
+
+      }else{
+        //TODO let the user know that saving is not in progress
+      }
+
     });
   }
 

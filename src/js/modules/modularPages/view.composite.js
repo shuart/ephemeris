@@ -194,7 +194,8 @@ var createCompositeView = function ({
         kanbanPartial.setActive(element.settings)
       }else if(element.moduleType == "textArea"){
         var textAreaPartial = createTextAreaPartial({
-          container : ".composite-"+element.uuid
+          container : ".composite-"+element.uuid,
+          uuid:element.uuid,
         })
         currentModules.push(textAreaPartial)
         textAreaPartial.init()
