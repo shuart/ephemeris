@@ -33,6 +33,15 @@ _modules.add = async function ({
   return {uuid:id}
 }
 
+_modules.remove = async function (uuid) {
+
+  push(act.remove("pageModules",{uuid:uuid}))
+  // if (source) {
+  //   push(act.add("moduleLinks",{source:source,target:id,type:"module"}))
+  // }
+  return true
+}
+
 _modules.getAllModulesAttachedToSourceId = async function ({
   source = undefined,
   }={}) {

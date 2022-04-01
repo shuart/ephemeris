@@ -66,7 +66,8 @@ var createCompositeView = function ({
     )
     compositeModule.createLens("modules",(d)=>`
       <div class="compositeModule">
-        <div class="compositeModuleSettings">dzqdqdzq
+        <div class="compositeModuleSettings">
+          <button class="button is-info is-light is-small action_composite_remove_module">X</button>
         </div>
         <div style='height:${d.modulesRatio}%' class='composite-${d.uuid}'></div>
         <div class="compositeModuleAdd">
@@ -94,6 +95,10 @@ var createCompositeView = function ({
           // pageManager.setActivePage("overview")
           addNewModule()
           // _modules.add({source:currentData.pageUuid})
+        } ],
+        [".action_composite_remove_module", "click", async (e, p)=>{
+          console.log(e,p)
+          removeModule(p.uuid)
         } ],
       ],
     }, '')
@@ -234,6 +239,9 @@ var createCompositeView = function ({
       fields:options,
       confirmationType:"cancel"
     })
+  }
+  async function removeModule(uuid){
+    _modules.remove(uuid)
   }
 
   async function render() {
