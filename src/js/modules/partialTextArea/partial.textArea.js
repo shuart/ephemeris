@@ -9,7 +9,8 @@ var createTextAreaPartial = function ({
   var catId = undefined;
   var initialData = undefined;
   var saveAvailable = true;
-  var saveInterval = 3000;
+  var saveInterval = 5000;
+  var editor = undefined;
 
 
   var init = function () {
@@ -34,14 +35,16 @@ var createTextAreaPartial = function ({
     // })
   }
 
-  var saveContent = function(content){
+  var saveContent = function(){
     // push(act.edit("pageModules",{uuid:uuid,prop:"content", value:JSON.stringify(content), project:e.target.dataset.project}))
-    push(act.edit("pageModules",{uuid:uuid,prop:"content", value:JSON.stringify(content)}))
+    const { ops } = editor.getContents();
+    push(act.edit("pageModules",{uuid:uuid,prop:"content", value:JSON.stringify(ops)}))
+    console.log("savved");
   }
 
   var prepareData = function (store) {
     let moduleInfo = store.pageModules.find(p=>p.uuid==uuid)
-    if(moduleInfo){
+    if(moduleInfo && moduleInfo.content){
       return {initialData:JSON.parse(moduleInfo.content)}
     }else{
       return {}
@@ -58,7 +61,7 @@ var createTextAreaPartial = function ({
   }
 
   var setUpTextArea = function (data) {
-    var editor = new Quill(document.querySelector(container).querySelector(".textEditor"),{
+    editor = new Quill(document.querySelector(container).querySelector(".textEditor"),{
       modules: {
         toolbar: [
           [{ header: [1, 2, false] }],
@@ -78,12 +81,10 @@ var createTextAreaPartial = function ({
     
     editor.on('text-change', () => {
       if(saveAvailable){
-        const { ops } = editor.getContents();
-        // $(`input[name="richContent"]`).val(JSON.stringify(ops));
-        console.log(ops)
-        saveContent(ops)
+        
         saveAvailable = false;
         setTimeout(function(){
+          saveContent()
           saveAvailable = true;
         },saveInterval)
 
@@ -96,6 +97,7 @@ var createTextAreaPartial = function ({
 
   var renderDomMarkup =function (container) {
     container.innerHTML = `
+      <div class="textEditorSettings">Setting</div>
       <div class="textEditor"></div>
     `
   }
