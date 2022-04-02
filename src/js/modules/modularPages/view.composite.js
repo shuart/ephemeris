@@ -144,18 +144,6 @@ var createCompositeView = function ({
           uuid:"explorer",
           settings:{typeId:catId},
          },
-        {
-          modulesRatio:20,
-          moduleType:"textArea",
-          uuid:"textArea",
-          settings:{},
-         },
-         {
-          modulesRatio:20,
-          moduleType:"textArea",
-          uuid:"textArea2",
-          settings:{},
-         },
       ]
       let currentPageModules = await _modules.getAllModulesAttachedToSourceId({source:currentData.pageUuid})
       localState.modulesData = localState.modulesData.concat(currentPageModules)
