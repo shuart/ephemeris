@@ -61,14 +61,17 @@ var createTextAreaPartial = function ({
   }
 
   var setUpTextArea = function (data) {
-    editor = new Quill(document.querySelector(container).querySelector(".textEditor"),{
+    let selectorArea = document.querySelector(container).querySelector(".textEditor")
+    editor = new Quill(selectorArea,{
       modules: {
+        
         toolbar: [
           [{ header: [1, 2, false] }],
           ['bold', 'italic', 'underline'],
           ['image', 'code-block']
         ]
       },
+      bounds: selectorArea,
       placeholder: 'Compose an epic...',
       theme: 'bubble'
     });

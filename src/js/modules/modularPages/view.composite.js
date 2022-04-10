@@ -71,9 +71,7 @@ var createCompositeView = function ({
         </div>
         <div style='height:${d.modulesRatio}%' class='composite-${d.uuid}'></div>
         <div class="compositeModuleAdd">
-         <h2 class="subtitle is-inline">Add</h2>
-
-          <button class="button is-info is-light is-small action_composite_add_module">Text</button>
+          <button class="button is-info is-light is-small action_composite_add_module">+</button>
         </div>
       </div>
       `
@@ -189,6 +187,15 @@ var createCompositeView = function ({
         textAreaPartial.init()
         textAreaPartial.setActive(element.settings)
 
+      }else if(element.moduleType == "propsArea"){
+        var propsAreaPartial = createPropsAreaPartial({
+          container : ".composite-"+element.uuid,
+          uuid:element.uuid,
+        })
+        currentModules.push(propsAreaPartial)
+        propsAreaPartial.init()
+        propsAreaPartial.setActive(element.settings)
+
       }
       
     }
@@ -211,6 +218,7 @@ var createCompositeView = function ({
       {name:"timeline", moduleType:"timeline"},
       {name:"kanban", moduleType:"kanban"},
       {name:"textArea", moduleType:"textArea"},
+      {name:"propsArea", moduleType:"propsArea"},
     ]
   
     let options = moduleTypes.map(c => {
