@@ -533,3 +533,33 @@ var createPromptPopup = function ({
 
 // var promptPopup = createPromptPopup()
 // createInputPopup({originalData:jsonFile})
+
+//USAGE
+// var popup= await createPromptPopup({
+//   title:"Edit",
+//   iconHeader:"dolly",
+//   fields:{ type:"textArea",id:"producttName" , value:cell.getValue(), label:"Product name", placeholder:"Set a name for the new product" }
+// })
+// var id = genuuid()
+// var newReq = popup.result
+//OR
+let selectOptions = store.categories.map(cat=>{
+  return {name:cat.name, value:cat.uuid}
+})
+// let currentCat = store.categories.find(c=> c.uuid == id)
+// var popup=  createPromptPopup({
+//   title:"Create a new relation affecting "+currentCat.name,
+//   callback :function (res) {
+//     console.log(res);
+//     if (res.result == "") {
+//        //DO SOmething
+//     }else {
+//       //DO SOmething
+//     }
+//     // refreshList()
+//   },
+//   fields:[
+//     { type:"input",id:"RelationName" ,label:"Relation Name", placeholder:"Set the relation name" },
+//     { type:"select",id:"targetCat",preSelected:[],selectOptions:selectOptions, label:"target categories", placeholder:"Set linkable categories" }
+//   ]
+// })

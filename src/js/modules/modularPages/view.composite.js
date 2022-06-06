@@ -196,6 +196,15 @@ var createCompositeView = function ({
         propsAreaPartial.init()
         propsAreaPartial.setActive(element.settings)
 
+      }else if(element.moduleType == "tableArea"){
+        var tableAreaPartial = createTableAreaPartial({
+          container : ".composite-"+element.uuid,
+          uuid:element.uuid,
+        })
+        currentModules.push(tableAreaPartial)
+        tableAreaPartial.init()
+        tableAreaPartial.setActive(element.settings)
+
       }
       
     }
@@ -219,6 +228,7 @@ var createCompositeView = function ({
       {name:"kanban", moduleType:"kanban"},
       {name:"textArea", moduleType:"textArea"},
       {name:"propsArea", moduleType:"propsArea"},
+      {name:"tableArea", moduleType:"tableArea"},
     ]
   
     let options = moduleTypes.map(c => {
