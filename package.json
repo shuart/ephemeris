@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/shuart/ephemeris#readme",
   "devDependencies": {
-    "nw-builder": "^3.5.7"
+    "nw-builder": "^3.8.6"
   },
   "dependencies": {
     "gulp": "^4.0.0"
